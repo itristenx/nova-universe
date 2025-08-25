@@ -1,0 +1,144 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Ticket Updated</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #374151;
+        margin: 0;
+        padding: 0;
+        background-color: #f9fafb;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .content {
+        padding: 32px 24px;
+      }
+      .ticket-id {
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 16px;
+      }
+      .btn-primary {
+        display: inline-block;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        margin: 16px 8px 16px 0;
+      }
+      .footer {
+        background: #f8fafc;
+        text-align: center;
+        padding: 24px;
+        color: #64748b;
+        font-size: 12px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .footer a {
+        color: #3b82f6;
+        text-decoration: none;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 32px 24px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .ticket-id {
+        background: #10b981;
+      }
+      .update-card {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: 24px;
+        margin: 24px 0;
+      }
+      .update-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .update-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #10b981;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-right: 12px;
+      }
+      .update-comment {
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 16px;
+        margin-top: 16px;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>🔄 Ticket Updated</h1>
+      </div>
+      <div class='content'>
+        <p>Hello {{customer.name}},</p>
+        <p>Great news! There's been an update to your support ticket.</p>
+
+        <div class='ticket-id'>Ticket #{{ticket.id}}</div>
+
+        <div class='update-card'>
+          <div class='update-header'>
+            <div class='update-avatar'>{{substring update.user.name 0 1}}</div>
+            <div class='update-info'>
+              <h3>{{update.user.name}}</h3>
+              <div class='update-time'>{{formatDateTime update.createdAt}}</div>
+            </div>
+          </div>
+
+          {{#if update.comment}}
+            <div class='update-comment'>
+              {{update.comment}}
+            </div>
+          {{/if}}
+        </div>
+
+        <a href='{{baseUrl}}/tickets/{{ticket.id}}' class='btn-primary'>View Full Conversation</a>
+
+        <p><strong>📬 Stay in the loop:</strong><br />
+          You'll receive email notifications for all updates to your ticket.</p>
+      </div>
+      <div class='footer'>
+        <p>This message was sent from {{companyName}} Support</p>
+        <p>Ticket #{{ticket.id}} • <a href='{{baseUrl}}/tickets/{{ticket.id}}'>View Online</a></p>
+      </div>
+    </div>
+  </body>
+</html>

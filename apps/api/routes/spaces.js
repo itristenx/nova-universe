@@ -1,493 +1,611 @@
 /**
- * Space Management API Routes
- * Provides space booking, metrics, and management endpoints
+ * Enhanced Nova Spaces API Routes
+ * Enterprise-grade space management competing with Maptician
+ * Provides advanced booking, analytics, visitor management, and integrations
  */
 
 import express from 'express';
-import db from '../db.js';
 import { logger } from '../logger.js';
+import { novaSpacesService } from '../lib/nova-spaces-service.js';
 
 const router = express.Router();
 
-// Mock data for development
-const mockSpaceMetrics = {
-  totalSpaces: 145,
-  availableSpaces: 23,
-  occupiedSpaces: 98,
-  maintenanceSpaces: 24,
-  utilizationRate: 67.6,
-  upcomingBookings: 15,
-  overdue: 3,
-  lastUpdated: new Date().toISOString()
+// Initialize the enhanced spaces service
+let serviceReady = false;
+novaSpacesService
+  .initialize()
+  .then(() => {
+    serviceReady = true;
+    logger.info('Enhanced Nova Spaces Service ready');
+  })
+  .catch((error) => {
+    logger.error('Failed to initialize Enhanced Nova Spaces Service:', error);
+  });
+
+// Middleware to check service readiness
+const ensureServiceReady = (req, res, next) => {
+  if (!serviceReady) {
+    return res.status(503).json({
+      success: false,
+      error: 'Spaces service is initializing, please try again in a moment',
+    });
+  }
+  next();
 };
 
-const mockSpaces = [
-  {
-    id: 'conf-001',
-    name: 'Conference Room A',
-    type: 'conference',
-    capacity: 12,
-    status: 'available',
-    floor: 1,
-    building: 'Main',
-    amenities: ['projector', 'whiteboard', 'video_conf'],
-    currentBooking: null
-  },
-  {
-    id: 'conf-002',
-    name: 'Conference Room B',
-    type: 'conference',
-    capacity: 8,
-    status: 'occupied',
-    floor: 1,
-    building: 'Main',
-    amenities: ['projector', 'whiteboard'],
-    currentBooking: {
-      id: 'book-001',
-      user: 'john.doe@company.com',
-      title: 'Team Standup',
-      startTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      endTime: new Date(Date.now() + 30 * 60 * 1000).toISOString()
-    }
-  },
-  {
-    id: 'desk-001',
-    name: 'Desk 1A',
-    type: 'desk',
-    capacity: 1,
-    status: 'available',
-    floor: 1,
-    building: 'Main',
-    amenities: ['monitor', 'docking_station'],
-    currentBooking: null
-  },
-  {
-    id: 'desk-002',
-    name: 'Desk 1B',
-    type: 'desk',
-    capacity: 1,
-    status: 'maintenance',
-    floor: 1,
-    building: 'Main',
-    amenities: ['monitor'],
-    currentBooking: null
-  }
-];
+// =====================================
+// BUILDING & INFRASTRUCTURE ENDPOINTS
+// =====================================
 
-const mockBookings = [
-  {
-    id: 'book-001',
-    spaceId: 'conf-002',
-    spaceName: 'Conference Room B',
-    user: 'john.doe@company.com',
-    userName: 'John Doe',
-    title: 'Team Standup',
-    startTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-    status: 'active',
-    attendees: 5
-  },
-  {
-    id: 'book-002',
-    spaceId: 'conf-001',
-    spaceName: 'Conference Room A',
-    user: 'jane.smith@company.com',
-    userName: 'Jane Smith',
-    title: 'Client Meeting',
-    startTime: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    status: 'upcoming',
-    attendees: 8
-  },
-  {
-    id: 'book-003',
-    spaceId: 'desk-001',
-    spaceName: 'Desk 1A',
-    user: 'mike.wilson@company.com',
-    userName: 'Mike Wilson',
-    title: 'Focus Work',
-    startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
-    status: 'upcoming',
-    attendees: 1
-  }
-];
-
-// Get space metrics
-router.get('/metrics', async (req, res) => {
+/**
+ * GET /api/v1/spaces/buildings
+ * Get all buildings with real-time metrics
+ */
+router.get('/buildings', ensureServiceReady, async (req, res) => {
   try {
-    // In a real implementation, this would query the database
-    res.json({
-      success: true,
-      data: mockSpaceMetrics
-    });
+    const { search, city, country } = req.query;
+    const result = await novaSpacesService.getBuildings({ search, city, country });
+    res.json(result);
   } catch (error) {
-    logger.error('Error fetching space metrics:', error);
+    logger.error('Error fetching buildings:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch space metrics'
+      error: 'Failed to fetch buildings',
     });
   }
 });
 
-// Get all spaces
-router.get('/', async (req, res) => {
+/**
+ * GET /api/v1/spaces/buildings/:id
+ * Get building details with floor plans and real-time data
+ */
+router.get('/buildings/:id', ensureServiceReady, async (req, res) => {
   try {
-    const { type, status, floor, building } = req.query;
-    let filteredSpaces = [...mockSpaces];
-    
-    if (type) {
-      filteredSpaces = filteredSpaces.filter(space => space.type === type);
+    const building = await novaSpacesService.getBuildingDetails(req.params.id);
+    if (!building) {
+      return res.status(404).json({
+        success: false,
+        error: 'Building not found',
+      });
     }
-    if (status) {
-      filteredSpaces = filteredSpaces.filter(space => space.status === status);
-    }
-    if (floor) {
-      filteredSpaces = filteredSpaces.filter(space => space.floor === parseInt(floor));
-    }
-    if (building) {
-      filteredSpaces = filteredSpaces.filter(space => space.building === building);
-    }
-    
     res.json({
       success: true,
-      data: filteredSpaces,
-      total: filteredSpaces.length
+      data: building,
     });
+  } catch (error) {
+    logger.error('Error fetching building details:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch building details',
+    });
+  }
+});
+
+// =====================================
+// SPACE MANAGEMENT ENDPOINTS
+// =====================================
+
+/**
+ * GET /api/v1/spaces
+ * Get spaces with advanced filtering and real-time data
+ */
+router.get('/', ensureServiceReady, async (req, res) => {
+  try {
+    const {
+      buildingId,
+      floorId,
+      type,
+      category,
+      status,
+      minCapacity,
+      maxCapacity,
+      amenities,
+      features,
+      accessibility,
+      available,
+      availableFrom,
+      availableTo,
+      search,
+      tags,
+      page = 1,
+      limit = 25,
+      include,
+    } = req.query;
+
+    const filters = {
+      buildingId,
+      floorId,
+      type: type ? (Array.isArray(type) ? type : type.split(',')) : undefined,
+      category,
+      status: status ? (Array.isArray(status) ? status : status.split(',')) : undefined,
+      capacity: {
+        min: minCapacity ? parseInt(minCapacity) : undefined,
+        max: maxCapacity ? parseInt(maxCapacity) : undefined,
+      },
+      amenities: amenities
+        ? Array.isArray(amenities)
+          ? amenities
+          : amenities.split(',')
+        : undefined,
+      features: features ? (Array.isArray(features) ? features : features.split(',')) : undefined,
+      accessibility: accessibility
+        ? Array.isArray(accessibility)
+          ? accessibility
+          : accessibility.split(',')
+        : undefined,
+      available: available === 'true',
+      availableFrom: availableFrom ? new Date(availableFrom) : undefined,
+      availableTo: availableTo ? new Date(availableTo) : undefined,
+      search,
+      tags: tags ? (Array.isArray(tags) ? tags : tags.split(',')) : undefined,
+    };
+
+    const options = {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      include: include ? (Array.isArray(include) ? include : include.split(',')) : [],
+    };
+
+    const result = await novaSpacesService.getSpaces(filters, options);
+    res.json(result);
   } catch (error) {
     logger.error('Error fetching spaces:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch spaces'
+      error: 'Failed to fetch spaces',
     });
   }
 });
 
-// Get space by ID
-router.get('/:id', async (req, res) => {
+/**
+ * GET /api/v1/spaces/:id
+ * Get detailed space information with real-time data
+ */
+router.get('/:id', ensureServiceReady, async (req, res) => {
   try {
-    const space = mockSpaces.find(s => s.id === req.params.id);
+    const space = await novaSpacesService.getSpaceDetails(req.params.id);
     if (!space) {
       return res.status(404).json({
         success: false,
-        error: 'Space not found'
+        error: 'Space not found',
       });
     }
-    
     res.json({
       success: true,
-      data: space
+      data: space,
     });
   } catch (error) {
-    logger.error('Error fetching space:', error);
+    logger.error('Error fetching space details:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch space'
+      error: 'Failed to fetch space details',
     });
   }
 });
 
-// Create a new space
-router.post('/', async (req, res) => {
+/**
+ * POST /api/v1/spaces
+ * Create a new space with full validation
+ */
+router.post('/', ensureServiceReady, async (req, res) => {
   try {
-    const { name, type, capacity, floor, building, amenities } = req.body;
-    
-    if (!name || !type || !capacity) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required fields: name, type, capacity'
-      });
+    // TODO: Add authentication middleware and get userId from req.user
+    const userId = req.user?.id || 'system';
+    const result = await novaSpacesService.createSpace(req.body, userId);
+
+    if (!result.success) {
+      return res.status(400).json(result);
     }
-    
-    const newSpace = {
-      id: `${type}-${Date.now()}`,
-      name,
-      type,
-      capacity: parseInt(capacity),
-      status: 'available',
-      floor: parseInt(floor) || 1,
-      building: building || 'Main',
-      amenities: amenities || [],
-      currentBooking: null
-    };
-    
-    mockSpaces.push(newSpace);
-    
-    res.status(201).json({
-      success: true,
-      data: newSpace
-    });
+
+    res.status(201).json(result);
   } catch (error) {
     logger.error('Error creating space:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to create space'
+      error: 'Failed to create space',
     });
   }
 });
 
-// Update space
-router.put('/:id', async (req, res) => {
+/**
+ * PUT /api/v1/spaces/:id
+ * Update space information
+ */
+router.put('/:id', ensureServiceReady, async (req, res) => {
   try {
-    const spaceIndex = mockSpaces.findIndex(s => s.id === req.params.id);
-    if (spaceIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: 'Space not found'
-      });
+    const userId = req.user?.id || 'system';
+    const result = await novaSpacesService.updateSpace(req.params.id, req.body, userId);
+
+    if (!result.success) {
+      return res.status(400).json(result);
     }
-    
-    const updatedSpace = {
-      ...mockSpaces[spaceIndex],
-      ...req.body,
-      id: req.params.id // Prevent ID changes
-    };
-    
-    mockSpaces[spaceIndex] = updatedSpace;
-    
-    res.json({
-      success: true,
-      data: updatedSpace
-    });
+
+    res.json(result);
   } catch (error) {
     logger.error('Error updating space:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to update space'
+      error: 'Failed to update space',
     });
   }
 });
 
-// Delete space
-router.delete('/:id', async (req, res) => {
+/**
+ * DELETE /api/v1/spaces/:id
+ * Delete a space
+ */
+router.delete('/:id', ensureServiceReady, async (req, res) => {
   try {
-    const spaceIndex = mockSpaces.findIndex(s => s.id === req.params.id);
-    if (spaceIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        error: 'Space not found'
-      });
+    const userId = req.user?.id || 'system';
+    const result = await novaSpacesService.deleteSpace(req.params.id, userId);
+
+    if (!result.success) {
+      return res.status(400).json(result);
     }
-    
-    mockSpaces.splice(spaceIndex, 1);
-    
-    res.json({
-      success: true,
-      message: 'Space deleted successfully'
-    });
+
+    res.json(result);
   } catch (error) {
     logger.error('Error deleting space:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to delete space'
+      error: 'Failed to delete space',
     });
   }
 });
 
-// Get bookings for a space
-router.get('/:id/bookings', async (req, res) => {
-  try {
-    const spaceBookings = mockBookings.filter(b => b.spaceId === req.params.id);
-    
-    res.json({
-      success: true,
-      data: spaceBookings
-    });
-  } catch (error) {
-    logger.error('Error fetching space bookings:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch space bookings'
-    });
-  }
-});
+// =====================================
+// BOOKING MANAGEMENT ENDPOINTS
+// =====================================
 
-// Create booking for a space
-router.post('/:id/bookings', async (req, res) => {
+/**
+ * GET /api/v1/spaces/bookings
+ * Get bookings with advanced filtering
+ */
+router.get('/bookings', ensureServiceReady, async (req, res) => {
   try {
-    const { title, startTime, endTime, attendees, user, userName } = req.body;
-    
-    if (!title || !startTime || !endTime) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required fields: title, startTime, endTime'
-      });
-    }
-    
-    const space = mockSpaces.find(s => s.id === req.params.id);
-    if (!space) {
-      return res.status(404).json({
-        success: false,
-        error: 'Space not found'
-      });
-    }
-    
-    const newBooking = {
-      id: `book-${Date.now()}`,
-      spaceId: req.params.id,
-      spaceName: space.name,
-      user: user || 'unknown@company.com',
-      userName: userName || 'Unknown User',
-      title,
-      startTime,
-      endTime,
-      status: new Date(startTime) <= new Date() ? 'active' : 'upcoming',
-      attendees: attendees || 1
+    const { spaceId, userId, status, startDate, endDate, page = 1, limit = 25 } = req.query;
+
+    const filters = {
+      spaceId,
+      userId,
+      status: status ? (Array.isArray(status) ? status : status.split(',')) : undefined,
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
     };
-    
-    mockBookings.push(newBooking);
-    
-    res.status(201).json({
-      success: true,
-      data: newBooking
-    });
-  } catch (error) {
-    logger.error('Error creating booking:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create booking'
-    });
-  }
-});
 
-// Get all bookings
-router.get('/bookings/all', async (req, res) => {
-  try {
-    const { status, user, date } = req.query;
-    let filteredBookings = [...mockBookings];
-    
-    if (status) {
-      filteredBookings = filteredBookings.filter(b => b.status === status);
-    }
-    if (user) {
-      filteredBookings = filteredBookings.filter(b => b.user.includes(user));
-    }
-    if (date) {
-      const targetDate = new Date(date);
-      filteredBookings = filteredBookings.filter(b => {
-        const bookingDate = new Date(b.startTime);
-        return bookingDate.toDateString() === targetDate.toDateString();
-      });
-    }
-    
-    res.json({
-      success: true,
-      data: filteredBookings,
-      total: filteredBookings.length
-    });
+    const options = { page: parseInt(page), limit: parseInt(limit) };
+    const result = await novaSpacesService.getBookings(filters, options);
+    res.json(result);
   } catch (error) {
     logger.error('Error fetching bookings:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch bookings'
+      error: 'Failed to fetch bookings',
     });
   }
 });
 
-// Cancel booking
-router.delete('/bookings/:bookingId', async (req, res) => {
+/**
+ * POST /api/v1/spaces/bookings
+ * Create a new booking with conflict detection
+ */
+router.post('/bookings', ensureServiceReady, async (req, res) => {
   try {
-    const bookingIndex = mockBookings.findIndex(b => b.id === req.params.bookingId);
-    if (bookingIndex === -1) {
-      return res.status(404).json({
+    const userId = req.user?.id || 'system';
+    const result = await novaSpacesService.createBooking(req.body, userId);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    res.status(201).json(result);
+  } catch (error) {
+    logger.error('Error creating booking:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create booking',
+    });
+  }
+});
+
+/**
+ * GET /api/v1/spaces/:id/availability
+ * Check space availability with smart suggestions
+ */
+router.get('/:id/availability', ensureServiceReady, async (req, res) => {
+  try {
+    const { startTime, endTime, duration, attendees } = req.query;
+
+    if (!startTime || !endTime) {
+      return res.status(400).json({
         success: false,
-        error: 'Booking not found'
+        error: 'startTime and endTime are required',
       });
     }
-    
-    mockBookings.splice(bookingIndex, 1);
-    
-    res.json({
-      success: true,
-      message: 'Booking cancelled successfully'
-    });
+
+    const options = {
+      duration: duration ? parseInt(duration) : undefined,
+      attendees: attendees ? parseInt(attendees) : undefined,
+      includeSuggestions: true,
+    };
+
+    const result = await novaSpacesService.checkAvailability(
+      req.params.id,
+      new Date(startTime),
+      new Date(endTime),
+      options,
+    );
+
+    res.json(result);
   } catch (error) {
-    logger.error('Error cancelling booking:', error);
+    logger.error('Error checking availability:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to cancel booking'
+      error: 'Failed to check availability',
     });
   }
 });
 
-// Get occupancy data
-router.get('/occupancy/current', async (req, res) => {
+/**
+ * POST /api/v1/spaces/find-alternatives
+ * Find alternative spaces when preferred space is unavailable
+ */
+router.post('/find-alternatives', ensureServiceReady, async (req, res) => {
   try {
-    const occupancyData = {
-      timestamp: new Date().toISOString(),
-      totalCapacity: mockSpaces.reduce((sum, space) => sum + space.capacity, 0),
-      currentOccupancy: mockBookings
-        .filter(b => b.status === 'active')
-        .reduce((sum, booking) => sum + booking.attendees, 0),
-      utilizationByFloor: {
-        1: {
-          capacity: mockSpaces.filter(s => s.floor === 1).reduce((sum, s) => sum + s.capacity, 0),
-          occupied: mockBookings
-            .filter(b => b.status === 'active')
-            .filter(b => mockSpaces.find(s => s.id === b.spaceId)?.floor === 1)
-            .reduce((sum, b) => sum + b.attendees, 0)
-        }
-      },
-      utilizationByType: {
-        conference: {
-          total: mockSpaces.filter(s => s.type === 'conference').length,
-          occupied: mockBookings
-            .filter(b => b.status === 'active')
-            .filter(b => mockSpaces.find(s => s.id === b.spaceId)?.type === 'conference')
-            .length
-        },
-        desk: {
-          total: mockSpaces.filter(s => s.type === 'desk').length,
-          occupied: mockBookings
-            .filter(b => b.status === 'active')
-            .filter(b => mockSpaces.find(s => s.id === b.spaceId)?.type === 'desk')
-            .length
-        }
-      }
-    };
-    
-    res.json({
-      success: true,
-      data: occupancyData
-    });
+    const result = await novaSpacesService.findAlternativeSpaces(req.body);
+    res.json(result);
   } catch (error) {
-    logger.error('Error fetching occupancy data:', error);
+    logger.error('Error finding alternatives:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch occupancy data'
+      error: 'Failed to find alternative spaces',
     });
   }
 });
 
-// Get floor plan data (placeholder for future implementation)
-router.get('/floorplan/:floor', async (req, res) => {
+// =====================================
+// ANALYTICS & REPORTING ENDPOINTS
+// =====================================
+
+/**
+ * GET /api/v1/spaces/metrics
+ * Get comprehensive space metrics and analytics
+ */
+router.get('/metrics', ensureServiceReady, async (req, res) => {
   try {
-    const floor = parseInt(req.params.floor);
-    const floorSpaces = mockSpaces.filter(s => s.floor === floor);
-    
-    const floorPlan = {
-      floor,
-      spaces: floorSpaces.map(space => ({
-        ...space,
-        coordinates: { x: Math.random() * 800, y: Math.random() * 600 }, // Mock coordinates
-        dimensions: { width: 50, height: 40 } // Mock dimensions
-      })),
-      layout: {
-        width: 800,
-        height: 600,
-        scale: 1
-      }
-    };
-    
-    res.json({
-      success: true,
-      data: floorPlan
-    });
+    const { period = 'week', buildingId, spaceType } = req.query;
+    const filters = { period, buildingId, spaceType };
+    const result = await novaSpacesService.getSpaceMetrics(filters);
+    res.json(result);
   } catch (error) {
-    logger.error('Error fetching floor plan:', error);
+    logger.error('Error fetching space metrics:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch floor plan'
+      error: 'Failed to fetch space metrics',
+    });
+  }
+});
+
+/**
+ * GET /api/v1/spaces/:id/utilization
+ * Get utilization report for a specific space
+ */
+router.get('/:id/utilization', ensureServiceReady, async (req, res) => {
+  try {
+    const { period = 'week' } = req.query;
+    const result = await novaSpacesService.getUtilizationReport(req.params.id, period);
+    res.json(result);
+  } catch (error) {
+    logger.error('Error generating utilization report:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate utilization report',
+    });
+  }
+});
+
+/**
+ * GET /api/v1/spaces/analytics/dashboard
+ * Get dashboard analytics data
+ */
+router.get('/analytics/dashboard', ensureServiceReady, async (req, res) => {
+  try {
+    const { buildingId } = req.query;
+    const result = await novaSpacesService.getDashboardAnalytics(buildingId);
+    res.json(result);
+  } catch (error) {
+    logger.error('Error fetching dashboard analytics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch dashboard analytics',
+    });
+  }
+});
+
+// =====================================
+// VISITOR MANAGEMENT ENDPOINTS
+// =====================================
+
+/**
+ * POST /api/v1/spaces/visitors
+ * Register a new visitor
+ */
+router.post('/visitors', ensureServiceReady, async (req, res) => {
+  try {
+    const hostUserId = req.user?.id || req.body.hostUserId;
+    if (!hostUserId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Host user ID is required',
+      });
+    }
+
+    const result = await novaSpacesService.registerVisitor(req.body, hostUserId);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    res.status(201).json(result);
+  } catch (error) {
+    logger.error('Error registering visitor:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to register visitor',
+    });
+  }
+});
+
+/**
+ * POST /api/v1/spaces/visitors/:id/checkin
+ * Check in a visitor
+ */
+router.post('/visitors/:id/checkin', ensureServiceReady, async (req, res) => {
+  try {
+    const result = await novaSpacesService.checkInVisitor(req.params.id, req.body);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    res.json(result);
+  } catch (error) {
+    logger.error('Error checking in visitor:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to check in visitor',
+    });
+  }
+});
+
+// =====================================
+// IOT & SENSOR ENDPOINTS
+// =====================================
+
+/**
+ * GET /api/v1/spaces/:id/sensors
+ * Get real-time sensor data for a space
+ */
+router.get('/:id/sensors', ensureServiceReady, async (req, res) => {
+  try {
+    const { types } = req.query;
+    const sensorTypes = types ? types.split(',') : [];
+    const result = await novaSpacesService.getSensorData(req.params.id, sensorTypes);
+    res.json(result);
+  } catch (error) {
+    logger.error('Error fetching sensor data:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch sensor data',
+    });
+  }
+});
+
+/**
+ * POST /api/v1/spaces/:id/occupancy/update
+ * Update occupancy from sensor data
+ */
+router.post('/:id/occupancy/update', ensureServiceReady, async (req, res) => {
+  try {
+    const result = await novaSpacesService.updateOccupancyFromSensors(req.params.id);
+    res.json(result);
+  } catch (error) {
+    logger.error('Error updating occupancy:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update occupancy',
+    });
+  }
+});
+
+// =====================================
+// INTEGRATION ENDPOINTS
+// =====================================
+
+/**
+ * POST /api/v1/spaces/calendar/sync
+ * Sync with external calendar systems
+ */
+router.post('/calendar/sync', ensureServiceReady, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User authentication required',
+      });
+    }
+
+    const result = await novaSpacesService.syncCalendars(userId);
+    res.json(result);
+  } catch (error) {
+    logger.error('Error syncing calendars:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to sync calendars',
+    });
+  }
+});
+
+/**
+ * POST /api/v1/spaces/bookings/:id/meeting
+ * Create Zoom/Teams meeting for booking
+ */
+router.post('/bookings/:id/meeting', ensureServiceReady, async (req, res) => {
+  try {
+    const { platform = 'zoom' } = req.body;
+    const result = await novaSpacesService.createMeetingForBooking(req.params.id, platform);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    res.json(result);
+  } catch (error) {
+    logger.error('Error creating meeting for booking:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create meeting for booking',
+    });
+  }
+});
+
+// =====================================
+// LEGACY ENDPOINTS (for backward compatibility)
+// =====================================
+
+// Keep some mock endpoints for backward compatibility during transition
+const mockSpaceMetrics = {
+  totalSpaces: 145,
+  availableSpaces: 67,
+  occupiedSpaces: 72,
+  maintenanceSpaces: 6,
+  utilizationRate: 74.5,
+  peakOccupancyTime: '2:00 PM',
+  averageBookingDuration: 90,
+  mostPopularSpaces: [
+    { spaceId: '1', name: 'Conference Room A', bookingCount: 23 },
+    { spaceId: '2', name: 'Focus Pod 3', bookingCount: 18 },
+    { spaceId: '3', name: 'Meeting Room B', bookingCount: 15 },
+  ],
+  lastUpdated: new Date().toISOString(),
+};
+
+/**
+ * GET /api/v1/spaces/metrics/legacy
+ * Legacy metrics endpoint for backward compatibility
+ */
+router.get('/metrics/legacy', async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      data: mockSpaceMetrics,
+    });
+  } catch (error) {
+    logger.error('Error fetching legacy metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch metrics',
     });
   }
 });

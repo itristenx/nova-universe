@@ -10,7 +10,7 @@ const AdminTVActivation: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isAuthenticated, user, isLoading } = useAuthStore();
-  
+
   const [deviceId, setDeviceId] = useState<string>('');
   const [screenSize, setScreenSize] = useState<string>('');
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
@@ -23,9 +23,9 @@ const AdminTVActivation: React.FC = () => {
   // If auth is still loading, show loading
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-sm border p-8 max-w-md w-full text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+        <div className="w-full max-w-md rounded-lg border bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>
@@ -43,7 +43,7 @@ const AdminTVActivation: React.FC = () => {
     // Get device info from URL params (if coming from QR scan)
     const deviceParam = searchParams.get('device');
     const screenParam = searchParams.get('screen');
-    
+
     if (deviceParam) {
       // Coming from QR scan
       setMode('scan');
@@ -53,7 +53,7 @@ const AdminTVActivation: React.FC = () => {
       // Regular admin access - show generation mode
       setMode('generate');
     }
-    
+
     // Load available dashboards
     loadDashboards();
   }, [searchParams]);
@@ -110,7 +110,7 @@ const AdminTVActivation: React.FC = () => {
         assetTag: `TV-${Date.now()}`,
         serialNumber: `SN-${Date.now()}`,
         type: 'nova-tv',
-        department: 'General'
+        department: 'General',
       });
       toast.success('Activation code generated! Check Device Management page.');
       navigate('/admin/devices');
@@ -126,30 +126,33 @@ const AdminTVActivation: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <div className="border-b border-gray-200 bg-white px-6 py-4">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-100 rounded-lg p-2">
-              <Tv className="w-6 h-6 text-blue-600" />
+            <div className="rounded-lg bg-blue-100 p-2">
+              <Tv className="h-6 w-6 text-blue-600" />
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">Nova TV Device Activation</h1>
               <p className="text-sm text-gray-600">
-                {mode === 'scan' ? 'Activate scanned TV device' : 'Generate activation code or scan QR'}
+                {mode === 'scan'
+                  ? 'Activate scanned TV device'
+                  : 'Generate activation code or scan QR'}
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <div className="text-sm text-gray-500">
-              Logged in as {user?.displayName || `${user?.firstName} ${user?.lastName}` || user?.email}
+              Logged in as{' '}
+              {user?.displayName || `${user?.firstName} ${user?.lastName}` || user?.email}
             </div>
             {mode === 'generate' && (
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              <div className="flex rounded-lg bg-gray-100 p-1">
                 <button
                   onClick={() => setMode('generate')}
-                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                    mode === 'generate' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600'
+                  className={`rounded-md px-3 py-1 text-sm transition-colors ${
+                    mode === 'generate' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
                   }`}
                 >
                   Generate Code
@@ -161,23 +164,23 @@ const AdminTVActivation: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="mx-auto max-w-4xl p-6">
         {mode === 'scan' && deviceId ? (
           // QR Scan Mode - Device detected
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid gap-8 md:grid-cols-2">
             {/* Device Information */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-                <Monitor className="w-5 h-5 text-gray-600" />
+            <div className="rounded-lg border bg-white p-6 shadow-sm">
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-medium text-gray-900">
+                <Monitor className="h-5 w-5 text-gray-600" />
                 Device Information
               </h2>
-              
+
               <div className="space-y-4">
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="rounded-lg bg-gray-50 p-4">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="font-medium text-gray-700">Device ID:</span>
-                      <p className="text-gray-900 font-mono text-xs break-all">{deviceId}</p>
+                      <p className="font-mono text-xs break-all text-gray-900">{deviceId}</p>
                     </div>
                     <div>
                       <span className="font-medium text-gray-700">Screen Size:</span>
@@ -185,14 +188,15 @@ const AdminTVActivation: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <AlertCircle className="mt-0.5 h-5 w-5 text-blue-600" />
                     <div className="text-sm">
-                      <div className="font-medium text-blue-800 mb-1">Activation Process</div>
+                      <div className="mb-1 font-medium text-blue-800">Activation Process</div>
                       <div className="text-blue-700">
-                        This device is waiting for activation. Select a dashboard below and click "Activate Device" to complete the setup.
+                        This device is waiting for activation. Select a dashboard below and click
+                        "Activate Device" to complete the setup.
                       </div>
                     </div>
                   </div>
@@ -201,16 +205,16 @@ const AdminTVActivation: React.FC = () => {
             </div>
 
             {/* Dashboard Selection */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-gray-600" />
+            <div className="rounded-lg border bg-white p-6 shadow-sm">
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-medium text-gray-900">
+                <Settings className="h-5 w-5 text-gray-600" />
                 Dashboard Configuration
               </h2>
-              
+
               {error && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                    <AlertCircle className="mt-0.5 h-5 w-5 text-red-600" />
                     <div className="text-sm text-red-700">{error}</div>
                   </div>
                 </div>
@@ -218,18 +222,21 @@ const AdminTVActivation: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="dashboard-select" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="dashboard-select"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
                     Select Dashboard
                   </label>
-                  
+
                   {loading ? (
-                    <div className="animate-pulse bg-gray-200 h-10 rounded-lg"></div>
+                    <div className="h-10 animate-pulse rounded-lg bg-gray-200"></div>
                   ) : (
                     <select
                       id="dashboard-select"
                       value={selectedDashboard}
                       onChange={(e) => setSelectedDashboard(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Choose a dashboard...</option>
                       {dashboards.map((dashboard) => (
@@ -242,16 +249,20 @@ const AdminTVActivation: React.FC = () => {
                 </div>
 
                 {selectedDashboard && (
-                  <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="rounded-lg bg-gray-50 p-4">
                     {(() => {
-                      const selected = dashboards.find(d => d.id === selectedDashboard);
+                      const selected = dashboards.find((d) => d.id === selectedDashboard);
                       return selected ? (
                         <div className="text-sm">
-                          <h4 className="font-medium text-gray-900 mb-2">{selected.name}</h4>
-                          <p className="text-gray-600 mb-2">{selected.description || 'No description available'}</p>
+                          <h4 className="mb-2 font-medium text-gray-900">{selected.name}</h4>
+                          <p className="mb-2 text-gray-600">
+                            {selected.description || 'No description available'}
+                          </p>
                           <div className="flex items-center gap-4 text-xs text-gray-500">
                             <span>Department: {selected.department}</span>
-                            <span>Created: {new Date(selected.createdAt).toLocaleDateString()}</span>
+                            <span>
+                              Created: {new Date(selected.createdAt).toLocaleDateString()}
+                            </span>
                           </div>
                         </div>
                       ) : null;
@@ -262,16 +273,16 @@ const AdminTVActivation: React.FC = () => {
                 <button
                   onClick={handleActivateDevice}
                   disabled={loading || !selectedDashboard}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 px-6 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-gray-400"
                 >
                   {loading ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white"></div>
                       <span>Activating Device...</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="w-5 h-5" />
+                      <CheckCircle className="h-5 w-5" />
                       <span>Activate Device</span>
                     </>
                   )}
@@ -281,22 +292,20 @@ const AdminTVActivation: React.FC = () => {
           </div>
         ) : (
           // Generate Mode - Show options
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-lg shadow-sm border p-8">
-              <div className="text-center mb-8">
-                <div className="bg-blue-100 rounded-full p-6 w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                  <QrCode className="w-12 h-12 text-blue-600" />
+          <div className="mx-auto max-w-2xl">
+            <div className="rounded-lg border bg-white p-8 shadow-sm">
+              <div className="mb-8 text-center">
+                <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-blue-100 p-6">
+                  <QrCode className="h-12 w-12 text-blue-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Nova TV Device Activation</h2>
-                <p className="text-gray-600">
-                  Choose how you want to activate a Nova TV device
-                </p>
+                <h2 className="mb-4 text-2xl font-bold text-gray-900">Nova TV Device Activation</h2>
+                <p className="text-gray-600">Choose how you want to activate a Nova TV device</p>
               </div>
 
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                    <AlertCircle className="mt-0.5 h-5 w-5 text-red-600" />
                     <div className="text-sm text-red-700">{error}</div>
                   </div>
                 </div>
@@ -304,14 +313,17 @@ const AdminTVActivation: React.FC = () => {
 
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="dashboard-select-gen" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="dashboard-select-gen"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
                     Select Default Dashboard
                   </label>
                   <select
                     id="dashboard-select-gen"
                     value={selectedDashboard}
                     onChange={(e) => setSelectedDashboard(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Choose a dashboard...</option>
                     {dashboards.map((dashboard) => (
@@ -322,26 +334,26 @@ const AdminTVActivation: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <button
                     onClick={handleGenerateActivationCode}
                     disabled={loading || !selectedDashboard}
-                    className="flex flex-col items-center p-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                    className="flex flex-col items-center rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-blue-500 hover:bg-blue-50 disabled:opacity-50"
                   >
-                    <RefreshCw className="w-8 h-8 text-blue-600 mb-3" />
-                    <h3 className="font-medium text-gray-900 mb-2">Generate Activation Code</h3>
-                    <p className="text-sm text-gray-600 text-center">
+                    <RefreshCw className="mb-3 h-8 w-8 text-blue-600" />
+                    <h3 className="mb-2 font-medium text-gray-900">Generate Activation Code</h3>
+                    <p className="text-center text-sm text-gray-600">
                       Create a new activation code for a TV device
                     </p>
                   </button>
 
                   <button
                     onClick={() => navigate('/admin/devices')}
-                    className="flex flex-col items-center p-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    className="flex flex-col items-center rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-blue-500 hover:bg-blue-50"
                   >
-                    <Monitor className="w-8 h-8 text-blue-600 mb-3" />
-                    <h3 className="font-medium text-gray-900 mb-2">Manage Devices</h3>
-                    <p className="text-sm text-gray-600 text-center">
+                    <Monitor className="mb-3 h-8 w-8 text-blue-600" />
+                    <h3 className="mb-2 font-medium text-gray-900">Manage Devices</h3>
+                    <p className="text-center text-sm text-gray-600">
                       View and manage all Nova TV devices
                     </p>
                   </button>
@@ -352,37 +364,43 @@ const AdminTVActivation: React.FC = () => {
         )}
 
         {success && (
-          <div className="mt-8 bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl shadow-xl p-8 text-center">
-            <div className="bg-green-100 rounded-full p-6 w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-              <CheckCircle className="w-12 h-12 text-green-600" />
+          <div className="mt-8 rounded-2xl bg-gradient-to-br from-green-50 to-blue-50 p-8 text-center shadow-xl">
+            <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 p-6">
+              <CheckCircle className="h-12 w-12 text-green-600" />
             </div>
-            
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              TV Activated Successfully!
-            </h2>
-            
-            <p className="text-gray-600 mb-6">
-              The Nova TV device has been configured and will start displaying the selected dashboard shortly.
+
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">TV Activated Successfully!</h2>
+
+            <p className="mb-6 text-gray-600">
+              The Nova TV device has been configured and will start displaying the selected
+              dashboard shortly.
             </p>
-            
-            <div className="bg-white rounded-lg p-4 mb-6">
+
+            <div className="mb-6 rounded-lg bg-white p-4">
               <div className="text-sm text-gray-600">
-                <p><strong>Device ID:</strong> {deviceId}</p>
-                <p><strong>Screen Size:</strong> {screenSize}</p>
-                <p><strong>Dashboard:</strong> {dashboards.find(d => d.id === selectedDashboard)?.name}</p>
+                <p>
+                  <strong>Device ID:</strong> {deviceId}
+                </p>
+                <p>
+                  <strong>Screen Size:</strong> {screenSize}
+                </p>
+                <p>
+                  <strong>Dashboard:</strong>{' '}
+                  {dashboards.find((d) => d.id === selectedDashboard)?.name}
+                </p>
               </div>
             </div>
 
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => navigate('/nova-tv')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
               >
                 Nova TV Management
               </button>
               <button
                 onClick={() => navigate('/admin/devices')}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                className="rounded-lg bg-gray-600 px-6 py-3 font-medium text-white transition-colors hover:bg-gray-700"
               >
                 Device Inventory
               </button>

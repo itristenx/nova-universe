@@ -13,14 +13,14 @@ export class GoAlertClient {
     this.axios = axios.create({
       baseURL: this.baseUrl,
       timeout: 10000,
-      headers: this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {}
+      headers: this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {},
     });
   }
 
   async getServices() {
     try {
       const response = await this.axios.get('/api/v2/services');
-      return response.data.map(service => this.transformService(service));
+      return response.data.map((service) => this.transformService(service));
     } catch (error) {
       console.error('Error fetching services:', error.message);
       return [];
@@ -32,7 +32,7 @@ export class GoAlertClient {
       const response = await this.axios.post('/api/v2/services', {
         name: service.name,
         description: service.description,
-        escalation_policy_id: service.escalationPolicyId
+        escalation_policy_id: service.escalationPolicyId,
       });
       return this.transformService(response.data);
     } catch (error) {
@@ -65,9 +65,9 @@ export class GoAlertClient {
       const params = new URLSearchParams();
       if (filters.serviceId) params.append('service_id', filters.serviceId);
       if (filters.status) params.append('status', filters.status);
-      
+
       const response = await this.axios.get(`/api/v2/alerts?${params.toString()}`);
-      return response.data.map(alert => this.transformAlert(alert));
+      return response.data.map((alert) => this.transformAlert(alert));
     } catch (error) {
       console.error('Error fetching alerts:', error.message);
       return [];
@@ -80,7 +80,7 @@ export class GoAlertClient {
         summary: alert.summary,
         details: alert.details,
         service_id: alert.serviceId,
-        dedup_key: alert.dedupKey
+        dedup_key: alert.dedupKey,
       });
       return this.transformAlert(response.data);
     } catch (error) {
@@ -112,7 +112,7 @@ export class GoAlertClient {
   async getEscalationPolicies() {
     try {
       const response = await this.axios.get('/api/v2/escalation-policies');
-      return response.data.map(policy => this.transformEscalationPolicy(policy));
+      return response.data.map((policy) => this.transformEscalationPolicy(policy));
     } catch (error) {
       console.error('Error fetching escalation policies:', error.message);
       return [];
@@ -122,7 +122,7 @@ export class GoAlertClient {
   async getSchedules() {
     try {
       const response = await this.axios.get('/api/v2/schedules');
-      return response.data.map(schedule => this.transformSchedule(schedule));
+      return response.data.map((schedule) => this.transformSchedule(schedule));
     } catch (error) {
       console.error('Error fetching schedules:', error.message);
       return [];
@@ -132,7 +132,7 @@ export class GoAlertClient {
   async getOnCall(scheduleId) {
     try {
       const response = await this.axios.get(`/api/v2/schedules/${scheduleId}/on-call`);
-      return response.data.map(onCall => this.transformOnCall(onCall));
+      return response.data.map((onCall) => this.transformOnCall(onCall));
     } catch (error) {
       console.error('Error fetching on-call data:', error.message);
       return [];
@@ -142,7 +142,7 @@ export class GoAlertClient {
   async getUsers() {
     try {
       const response = await this.axios.get('/api/v2/users');
-      return response.data.map(user => this.transformUser(user));
+      return response.data.map((user) => this.transformUser(user));
     } catch (error) {
       console.error('Error fetching users:', error.message);
       return [];
@@ -166,8 +166,12 @@ export class GoAlertClient {
       name: goalertService.name,
       description: goalertService.description,
       escalationPolicyId: goalertService.escalation_policy_id,
-      createdAt: goalertService.created_at ? new Date(goalertService.created_at).toISOString() : null,
-      updatedAt: goalertService.updated_at ? new Date(goalertService.updated_at).toISOString() : null
+      createdAt: goalertService.created_at
+        ? new Date(goalertService.created_at).toISOString()
+        : null,
+      updatedAt: goalertService.updated_at
+        ? new Date(goalertService.updated_at).toISOString()
+        : null,
     };
   }
 
@@ -181,8 +185,10 @@ export class GoAlertClient {
       serviceName: goalertAlert.service_name,
       dedupKey: goalertAlert.dedup_key,
       createdAt: goalertAlert.created_at ? new Date(goalertAlert.created_at).toISOString() : null,
-      acknowledgedAt: goalertAlert.acknowledged_at ? new Date(goalertAlert.acknowledged_at).toISOString() : null,
-      closedAt: goalertAlert.closed_at ? new Date(goalertAlert.closed_at).toISOString() : null
+      acknowledgedAt: goalertAlert.acknowledged_at
+        ? new Date(goalertAlert.acknowledged_at).toISOString()
+        : null,
+      closedAt: goalertAlert.closed_at ? new Date(goalertAlert.closed_at).toISOString() : null,
     };
   }
 
@@ -192,7 +198,7 @@ export class GoAlertClient {
       name: goalertPolicy.name,
       description: goalertPolicy.description,
       repeat: goalertPolicy.repeat,
-      steps: goalertPolicy.steps || []
+      steps: goalertPolicy.steps || [],
     };
   }
 
@@ -201,7 +207,7 @@ export class GoAlertClient {
       id: goalertSchedule.id,
       name: goalertSchedule.name,
       description: goalertSchedule.description,
-      timeZone: goalertSchedule.time_zone
+      timeZone: goalertSchedule.time_zone,
     };
   }
 
@@ -210,7 +216,7 @@ export class GoAlertClient {
       userId: goalertOnCall.user_id,
       userName: goalertOnCall.user_name,
       start: goalertOnCall.start ? new Date(goalertOnCall.start).toISOString() : null,
-      end: goalertOnCall.end ? new Date(goalertOnCall.end).toISOString() : null
+      end: goalertOnCall.end ? new Date(goalertOnCall.end).toISOString() : null,
     };
   }
 
@@ -219,7 +225,7 @@ export class GoAlertClient {
       id: goalertUser.id,
       name: goalertUser.name,
       email: goalertUser.email,
-      role: goalertUser.role
+      role: goalertUser.role,
     };
   }
 }
@@ -230,10 +236,10 @@ export const goalertClient = new GoAlertClient();
 // Export Nova-compatible alerting management functions
 export async function getNovaServices() {
   const services = await goalertClient.getServices();
-  return services.map(service => ({
+  return services.map((service) => ({
     ...service,
     source: 'goalert',
-    managedBy: 'nova'
+    managedBy: 'nova',
   }));
 }
 
@@ -242,7 +248,7 @@ export async function createNovaService(serviceData) {
   return {
     ...service,
     source: 'goalert',
-    managedBy: 'nova'
+    managedBy: 'nova',
   };
 }
 
@@ -251,7 +257,7 @@ export async function updateNovaService(id, updates) {
   return {
     ...service,
     source: 'goalert',
-    managedBy: 'nova'
+    managedBy: 'nova',
   };
 }
 
@@ -261,10 +267,10 @@ export async function deleteNovaService(id) {
 
 export async function getNovaAlerts(filters) {
   const alerts = await goalertClient.getAlerts(filters);
-  return alerts.map(alert => ({
+  return alerts.map((alert) => ({
     ...alert,
     source: 'goalert',
-    managedBy: 'nova'
+    managedBy: 'nova',
   }));
 }
 
@@ -273,7 +279,7 @@ export async function createNovaAlert(alertData) {
   return {
     ...alert,
     source: 'goalert',
-    managedBy: 'nova'
+    managedBy: 'nova',
   };
 }
 
@@ -282,7 +288,7 @@ export async function acknowledgeNovaAlert(id) {
   return {
     ...alert,
     source: 'goalert',
-    managedBy: 'nova'
+    managedBy: 'nova',
   };
 }
 
@@ -291,34 +297,34 @@ export async function closeNovaAlert(id) {
   return {
     ...alert,
     source: 'goalert',
-    managedBy: 'nova'
+    managedBy: 'nova',
   };
 }
 
 export async function getNovaEscalationPolicies() {
   const policies = await goalertClient.getEscalationPolicies();
-  return policies.map(policy => ({
+  return policies.map((policy) => ({
     ...policy,
     source: 'goalert',
-    managedBy: 'nova'
+    managedBy: 'nova',
   }));
 }
 
 export async function getNovaSchedules() {
   const schedules = await goalertClient.getSchedules();
-  return schedules.map(schedule => ({
+  return schedules.map((schedule) => ({
     ...schedule,
     source: 'goalert',
-    managedBy: 'nova'
+    managedBy: 'nova',
   }));
 }
 
 export async function getNovaOnCall(scheduleId) {
   const onCall = await goalertClient.getOnCall(scheduleId);
-  return onCall.map(entry => ({
+  return onCall.map((entry) => ({
     ...entry,
     source: 'goalert',
-    managedBy: 'nova'
+    managedBy: 'nova',
   }));
 }
 
@@ -326,11 +332,11 @@ export async function getNovaAlertingHealth() {
   const info = await goalertClient.getSystemInfo();
   const services = await getNovaServices();
   const alerts = await getNovaAlerts();
-  
+
   const totalServices = services.length;
-  const activeAlerts = alerts.filter(a => a.status === 'active').length;
-  const acknowledgedAlerts = alerts.filter(a => a.status === 'acknowledged').length;
-  
+  const activeAlerts = alerts.filter((a) => a.status === 'active').length;
+  const acknowledgedAlerts = alerts.filter((a) => a.status === 'acknowledged').length;
+
   return {
     service: 'goalert',
     version: info.version,
@@ -339,7 +345,7 @@ export async function getNovaAlertingHealth() {
     activeAlerts,
     acknowledgedAlerts,
     closedAlerts: alerts.length - activeAlerts - acknowledgedAlerts,
-    healthScore: activeAlerts === 0 ? 100 : Math.max(0, 100 - (activeAlerts * 10))
+    healthScore: activeAlerts === 0 ? 100 : Math.max(0, 100 - activeAlerts * 10),
   };
 }
 

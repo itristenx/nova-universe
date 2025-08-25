@@ -5,7 +5,12 @@
 
 import express from 'express';
 import { logger } from '../logger.js';
-import { isSlackAvailable, getSlackApp, initializeSlackApp, validateSlackEnv } from '../services/nova-comms.js';
+import {
+  isSlackAvailable,
+  getSlackApp,
+  initializeSlackApp,
+  validateSlackEnv,
+} from '../services/nova-comms.js';
 
 const router = express.Router();
 
@@ -38,7 +43,7 @@ router.get('/health', (req, res) => {
   try {
     const slackApp = getSlackApp();
     const isAvailable = isSlackAvailable();
-    
+
     res.json({
       status: 'healthy',
       slack: {
@@ -82,7 +87,7 @@ router.get('/slack/status', (req, res) => {
   try {
     const isAvailable = isSlackAvailable();
     const slackApp = getSlackApp();
-    
+
     let config = null;
     try {
       config = validateSlackEnv();
@@ -94,15 +99,17 @@ router.get('/slack/status', (req, res) => {
       enabled: process.env.SLACK_BOT_TOKEN && process.env.SLACK_SIGNING_SECRET ? true : false,
       initialized: isAvailable,
       app_instance: slackApp !== null,
-      config: config ? {
-        port: config.port,
-        adminUrl: config.adminUrl,
-        serviceUserId: config.serviceUserId,
-        serviceUserEmail: config.serviceUserEmail,
-        serviceUserName: config.serviceUserName,
-        serviceUserRole: config.serviceUserRole,
-        tenantId: config.tenantId,
-      } : null,
+      config: config
+        ? {
+            port: config.port,
+            adminUrl: config.adminUrl,
+            serviceUserId: config.serviceUserId,
+            serviceUserEmail: config.serviceUserEmail,
+            serviceUserName: config.serviceUserName,
+            serviceUserRole: config.serviceUserRole,
+            tenantId: config.tenantId,
+          }
+        : null,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -138,7 +145,7 @@ router.post('/slack/initialize', async (req, res) => {
     }
 
     const slackApp = initializeSlackApp();
-    
+
     res.json({
       message: 'Slack integration initialized successfully',
       status: 'success',
@@ -181,7 +188,7 @@ router.post('/slack/initialize', async (req, res) => {
 router.post('/slack/test', async (req, res) => {
   try {
     const slackApp = getSlackApp();
-    
+
     if (!slackApp) {
       return res.status(400).json({
         error: 'Slack integration not initialized',
@@ -192,7 +199,7 @@ router.post('/slack/test', async (req, res) => {
     // Test authentication by calling auth.test
     const client = slackApp.client;
     const authTest = await client.auth.test();
-    
+
     res.json({
       message: 'Slack integration test successful',
       status: 'success',

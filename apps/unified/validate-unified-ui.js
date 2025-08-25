@@ -22,7 +22,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   reset: '\x1b[0m',
-  bold: '\x1b[1m'
+  bold: '\x1b[1m',
 };
 
 function log(message, color = 'reset') {
@@ -61,10 +61,10 @@ const requiredPages = [
   'src/pages/tickets/TicketsPage.tsx',
   'src/pages/assets/AssetsPage.tsx',
   'src/pages/spaces/SpacesPage.tsx',
-  'src/pages/admin/AdminPage.tsx'
+  'src/pages/admin/AdminPage.tsx',
 ];
 
-requiredPages.forEach(page => {
+requiredPages.forEach((page) => {
   const fullPath = join(__dirname, page);
   if (existsSync(fullPath)) {
     checkSuccess(`${page}`);
@@ -83,10 +83,10 @@ const requiredComponents = [
   'src/components/layout/AppLayout.tsx',
   'src/components/common/AuthGuard.tsx',
   'src/components/dashboard/DashboardStats.tsx',
-  'src/components/dashboard/QuickActions.tsx'
+  'src/components/dashboard/QuickActions.tsx',
 ];
 
-requiredComponents.forEach(component => {
+requiredComponents.forEach((component) => {
   const fullPath = join(__dirname, component);
   if (existsSync(fullPath)) {
     checkSuccess(`${component}`);
@@ -103,20 +103,20 @@ log('\n🛣️  Checking Routes in App.tsx:', 'bold');
 const appTsxPath = join(__dirname, 'src/App.tsx');
 if (existsSync(appTsxPath)) {
   const appContent = readFileSync(appTsxPath, 'utf8');
-  
+
   const requiredRoutes = [
     '/dashboard',
     '/knowledge',
-    '/ai', 
+    '/ai',
     '/monitoring',
     '/learning',
     '/tickets',
     '/assets',
     '/spaces',
-    '/admin'
+    '/admin',
   ];
 
-  requiredRoutes.forEach(route => {
+  requiredRoutes.forEach((route) => {
     if (appContent.includes(`path="${route}"`)) {
       checkSuccess(`Route: ${route}`);
       passed++;
@@ -134,9 +134,9 @@ if (existsSync(appTsxPath)) {
 log('\n🔧 Checking TypeScript Compilation:', 'bold');
 
 try {
-  execSync('npx tsc --noEmit --skipLibCheck', { 
+  execSync('npx tsc --noEmit --skipLibCheck', {
     cwd: __dirname,
-    stdio: 'pipe' 
+    stdio: 'pipe',
   });
   checkSuccess('TypeScript compilation successful');
   passed++;
@@ -152,20 +152,20 @@ log('\n📦 Checking Dependencies:', 'bold');
 const packageJsonPath = join(__dirname, 'package.json');
 if (existsSync(packageJsonPath)) {
   const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-  
+
   const requiredDeps = [
     'react',
-    'react-dom', 
+    'react-dom',
     'react-router-dom',
     'zustand',
     'tailwindcss',
     '@heroicons/react',
-    'lucide-react'
+    'lucide-react',
   ];
 
   const allDeps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-  
-  requiredDeps.forEach(dep => {
+
+  requiredDeps.forEach((dep) => {
     if (allDeps[dep]) {
       checkSuccess(`Dependency: ${dep}`);
       passed++;
@@ -185,7 +185,7 @@ log('\n🔐 Checking Role-Based Access Control:', 'bold');
 const sidebarPath = join(__dirname, 'src/components/layout/Sidebar.tsx');
 if (existsSync(sidebarPath)) {
   const sidebarContent = readFileSync(sidebarPath, 'utf8');
-  
+
   if (sidebarContent.includes('role') && sidebarContent.includes('filter')) {
     checkSuccess('Role-based navigation filtering implemented');
     passed++;
@@ -193,8 +193,12 @@ if (existsSync(sidebarPath)) {
     checkWarning('Role-based navigation filtering may not be implemented');
     warnings++;
   }
-  
-  if (sidebarContent.includes('admin') && sidebarContent.includes('agent') && sidebarContent.includes('user')) {
+
+  if (
+    sidebarContent.includes('admin') &&
+    sidebarContent.includes('agent') &&
+    sidebarContent.includes('user')
+  ) {
     checkSuccess('All user roles supported');
     passed++;
   } else {
@@ -212,7 +216,7 @@ log('\n🎨 Checking Apple Design Principles:', 'bold');
 const tailwindConfigPath = join(__dirname, 'tailwind.config.js');
 if (existsSync(tailwindConfigPath)) {
   const tailwindContent = readFileSync(tailwindConfigPath, 'utf8');
-  
+
   if (tailwindContent.includes('nova-')) {
     checkSuccess('Nova color palette implemented');
     passed++;
@@ -234,7 +238,10 @@ log(`⚠️  Warnings: ${warnings}`, 'yellow');
 const total = passed + failed + warnings;
 const successRate = Math.round((passed / total) * 100);
 
-log(`\n🎯 Success Rate: ${successRate}%`, successRate >= 90 ? 'green' : successRate >= 70 ? 'yellow' : 'red');
+log(
+  `\n🎯 Success Rate: ${successRate}%`,
+  successRate >= 90 ? 'green' : successRate >= 70 ? 'yellow' : 'red',
+);
 
 if (failed === 0) {
   log('\n🎉 All critical tests passed! Nova Unified UI is ready for deployment.', 'green');

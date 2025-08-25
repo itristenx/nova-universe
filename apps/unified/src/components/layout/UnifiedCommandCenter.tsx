@@ -2,9 +2,9 @@
  * Unified Command Center - Phase 1 Implementation
  * Advanced search and command interface inspired by ServiceNow and Apple
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   MagnifyingGlassIcon,
   ClockIcon,
@@ -24,44 +24,44 @@ import {
   ChatBubbleLeftRightIcon,
   DocumentMagnifyingGlassIcon,
   CogIcon,
-} from '@heroicons/react/24/outline'
-import { useAuthStore } from '@stores/auth'
+} from '@heroicons/react/24/outline';
+import { useAuthStore } from '@stores/auth';
 
 interface SearchScope {
-  id: string
-  name: string
-  icon: React.ComponentType<any>
-  color: string
-  placeholder: string
+  id: string;
+  name: string;
+  icon: React.ComponentType<any>;
+  color: string;
+  placeholder: string;
 }
 
 interface SearchResult {
-  id: string
-  title: string
-  description: string
-  url: string
-  scope: string
-  icon: React.ComponentType<any>
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  scope: string;
+  icon: React.ComponentType<any>;
   metadata?: {
-    status?: string
-    priority?: string
-    assignee?: string
-    lastModified?: string
-  }
+    status?: string;
+    priority?: string;
+    assignee?: string;
+    lastModified?: string;
+  };
 }
 
 interface QuickAction {
-  id: string
-  name: string
-  icon: React.ComponentType<any>
-  action: () => void
-  shortcut?: string
-  category: string
+  id: string;
+  name: string;
+  icon: React.ComponentType<any>;
+  action: () => void;
+  shortcut?: string;
+  category: string;
 }
 
 interface CommandCenterProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const searchScopes: SearchScope[] = [
@@ -114,23 +114,23 @@ const searchScopes: SearchScope[] = [
     color: 'text-purple-600',
     placeholder: 'navigation:commandCenter.scopes.ai.placeholder',
   },
-]
+];
 
 export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
-  const { t } = useTranslation(['navigation', 'common'])
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { user } = useAuthStore()
-  
-  const [query, setQuery] = useState('')
-  const [selectedScope, setSelectedScope] = useState('all')
-  const [results, setResults] = useState<SearchResult[]>([])
-  const [recentSearches, setRecentSearches] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  
-  const searchInputRef = useRef<HTMLInputElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation(['navigation', 'common']);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuthStore();
+
+  const [query, setQuery] = useState('');
+  const [selectedScope, setSelectedScope] = useState('all');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Quick actions based on user role
   const quickActions: QuickAction[] = [
@@ -209,23 +209,23 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
       action: () => navigate('/ai/automation'),
       category: 'AI',
     },
-  ]
+  ];
 
   // Enhanced search function with AI scope integration and prepared for full API integration
   const performSearch = useCallback(async (searchQuery: string, scope: string) => {
     if (!searchQuery.trim()) {
-      setResults([])
-      return
+      setResults([]);
+      return;
     }
 
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
       // AI scope - provide relevant AI feature results
       if (scope === 'ai') {
-        const aiResults: SearchResult[] = []
-        const query = searchQuery.toLowerCase()
-        
+        const aiResults: SearchResult[] = [];
+        const query = searchQuery.toLowerCase();
+
         if (query.includes('predict') || query.includes('analytic') || query.includes('forecast')) {
           aiResults.push({
             id: 'ai-analytics',
@@ -234,10 +234,13 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
             url: '/ai/analytics',
             scope: 'ai',
             icon: ChartBarIcon,
-            metadata: { status: t('navigation:commandCenter.searchResults.status.active'), lastModified: 'Today' }
-          })
+            metadata: {
+              status: t('navigation:commandCenter.searchResults.status.active'),
+              lastModified: 'Today',
+            },
+          });
         }
-        
+
         if (query.includes('chat') || query.includes('bot') || query.includes('assistant')) {
           aiResults.push({
             id: 'ai-chatbot',
@@ -246,10 +249,10 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
             url: '/ai/chatbot',
             scope: 'ai',
             icon: ChatBubbleLeftRightIcon,
-            metadata: { status: t('navigation:commandCenter.searchResults.status.available247') }
-          })
+            metadata: { status: t('navigation:commandCenter.searchResults.status.available247') },
+          });
         }
-        
+
         if (query.includes('classify') || query.includes('ticket') || query.includes('routing')) {
           aiResults.push({
             id: 'ai-classification',
@@ -258,10 +261,13 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
             url: '/ai/classification',
             scope: 'ai',
             icon: CpuChipIcon,
-            metadata: { status: t('navigation:commandCenter.searchResults.status.learning'), lastModified: 'Today' }
-          })
+            metadata: {
+              status: t('navigation:commandCenter.searchResults.status.learning'),
+              lastModified: 'Today',
+            },
+          });
         }
-        
+
         if (query.includes('knowledge') || query.includes('search') || query.includes('article')) {
           aiResults.push({
             id: 'ai-knowledge',
@@ -270,10 +276,10 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
             url: '/ai/knowledge',
             scope: 'ai',
             icon: DocumentMagnifyingGlassIcon,
-            metadata: { status: t('navigation:commandCenter.searchResults.status.enhanced') }
-          })
+            metadata: { status: t('navigation:commandCenter.searchResults.status.enhanced') },
+          });
         }
-        
+
         if (query.includes('workflow') || query.includes('automat') || query.includes('process')) {
           aiResults.push({
             id: 'ai-automation',
@@ -282,10 +288,10 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
             url: '/ai/automation',
             scope: 'ai',
             icon: CogIcon,
-            metadata: { status: t('navigation:commandCenter.searchResults.status.optimizing') }
-          })
+            metadata: { status: t('navigation:commandCenter.searchResults.status.optimizing') },
+          });
         }
-        
+
         // If no specific matches, show all AI features
         if (aiResults.length === 0) {
           aiResults.push(
@@ -296,154 +302,155 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
               url: '/ai',
               scope: 'ai',
               icon: SparklesIcon,
-              metadata: { status: t('navigation:commandCenter.searchResults.status.active') }
+              metadata: { status: t('navigation:commandCenter.searchResults.status.active') },
             },
-            ...([
-              { 
-                id: 'ai-analytics', 
-                title: t('navigation:commandCenter.searchResults.aiAnalytics.title'), 
-                icon: ChartBarIcon, 
-                url: '/ai/analytics' 
+            ...[
+              {
+                id: 'ai-analytics',
+                title: t('navigation:commandCenter.searchResults.aiAnalytics.title'),
+                icon: ChartBarIcon,
+                url: '/ai/analytics',
               },
-              { 
-                id: 'ai-chatbot', 
-                title: t('navigation:commandCenter.searchResults.aiChatbot.title'), 
-                icon: ChatBubbleLeftRightIcon, 
-                url: '/ai/chatbot' 
+              {
+                id: 'ai-chatbot',
+                title: t('navigation:commandCenter.searchResults.aiChatbot.title'),
+                icon: ChatBubbleLeftRightIcon,
+                url: '/ai/chatbot',
               },
-              { 
-                id: 'ai-classification', 
-                title: t('navigation:commandCenter.searchResults.aiClassification.title'), 
-                icon: CpuChipIcon, 
-                url: '/ai/classification' 
+              {
+                id: 'ai-classification',
+                title: t('navigation:commandCenter.searchResults.aiClassification.title'),
+                icon: CpuChipIcon,
+                url: '/ai/classification',
               },
-              { 
-                id: 'ai-knowledge', 
-                title: t('navigation:commandCenter.searchResults.aiKnowledge.title'), 
-                icon: DocumentMagnifyingGlassIcon, 
-                url: '/ai/knowledge' 
+              {
+                id: 'ai-knowledge',
+                title: t('navigation:commandCenter.searchResults.aiKnowledge.title'),
+                icon: DocumentMagnifyingGlassIcon,
+                url: '/ai/knowledge',
               },
-              { 
-                id: 'ai-automation', 
-                title: t('navigation:commandCenter.searchResults.aiAutomation.title'), 
-                icon: CogIcon, 
-                url: '/ai/automation' 
+              {
+                id: 'ai-automation',
+                title: t('navigation:commandCenter.searchResults.aiAutomation.title'),
+                icon: CogIcon,
+                url: '/ai/automation',
               },
-            ].map(feature => ({
+            ].map((feature) => ({
               ...feature,
-              description: feature.id === 'ai-analytics' 
-                ? t('navigation:commandCenter.searchResults.aiAnalytics.description')
-                : feature.id === 'ai-chatbot'
-                ? t('navigation:commandCenter.searchResults.aiChatbot.description')
-                : feature.id === 'ai-classification'
-                ? t('navigation:commandCenter.searchResults.aiClassification.description')
-                : feature.id === 'ai-knowledge'
-                ? t('navigation:commandCenter.searchResults.aiKnowledge.description')
-                : t('navigation:commandCenter.searchResults.aiAutomation.description'),
+              description:
+                feature.id === 'ai-analytics'
+                  ? t('navigation:commandCenter.searchResults.aiAnalytics.description')
+                  : feature.id === 'ai-chatbot'
+                    ? t('navigation:commandCenter.searchResults.aiChatbot.description')
+                    : feature.id === 'ai-classification'
+                      ? t('navigation:commandCenter.searchResults.aiClassification.description')
+                      : feature.id === 'ai-knowledge'
+                        ? t('navigation:commandCenter.searchResults.aiKnowledge.description')
+                        : t('navigation:commandCenter.searchResults.aiAutomation.description'),
               scope: 'ai' as const,
-              metadata: { status: t('navigation:commandCenter.searchResults.status.available') }
-            })))
-          )
+              metadata: { status: t('navigation:commandCenter.searchResults.status.available') },
+            })),
+          );
         }
-        
-        setResults(aiResults)
-        return
+
+        setResults(aiResults);
+        return;
       }
-      
+
       // Search implementation for other scopes will integrate with backend APIs
       // Currently returns empty results for non-AI scopes during Phase 1-3 development
       // Future implementation will connect to:
       // - Ticket search API for tickets scope
-      // - Asset search API for assets scope  
+      // - Asset search API for assets scope
       // - Knowledge search API for knowledge scope
       // - User search API for users scope
       // - Space search API for spaces scope
-      setResults([])
-    } catch (error) {
-      console.error('Search error:', error)
-      setResults([])
+      setResults([]);
+    } catch (_error) {
+      console.error('Search error:', error);
+      setResults([]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [])
+  }, []);
 
   // Handle search input changes
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      performSearch(query, selectedScope)
-    }, 150)
+      performSearch(query, selectedScope);
+    }, 150);
 
-    return () => clearTimeout(debounceTimer)
-  }, [query, selectedScope, performSearch])
+    return () => clearTimeout(debounceTimer);
+  }, [query, selectedScope, performSearch]);
 
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return
+      if (!isOpen) return;
 
       switch (e.key) {
         case 'Escape':
-          onClose()
-          break
+          onClose();
+          break;
         case 'ArrowDown':
-          e.preventDefault()
-          setSelectedIndex(prev => Math.min(prev + 1, results.length - 1))
-          break
+          e.preventDefault();
+          setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
+          break;
         case 'ArrowUp':
-          e.preventDefault()
-          setSelectedIndex(prev => Math.max(prev - 1, 0))
-          break
+          e.preventDefault();
+          setSelectedIndex((prev) => Math.max(prev - 1, 0));
+          break;
         case 'Enter':
-          e.preventDefault()
+          e.preventDefault();
           if (results[selectedIndex]) {
-            navigate(results[selectedIndex].url)
-            onClose()
+            navigate(results[selectedIndex].url);
+            onClose();
           }
-          break
+          break;
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, results, selectedIndex, navigate, onClose])
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, results, selectedIndex, navigate, onClose]);
 
   // Auto-focus search input when opened
   useEffect(() => {
     if (isOpen && searchInputRef.current) {
-      searchInputRef.current.focus()
+      searchInputRef.current.focus();
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        onClose()
+        onClose();
       }
-    }
+    };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isOpen, onClose])
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, onClose]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
-  const currentScope = searchScopes.find(scope => scope.id === selectedScope) || searchScopes[0]
+  const currentScope = searchScopes.find((scope) => scope.id === selectedScope) || searchScopes[0];
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
-      <div className="flex min-h-screen items-start justify-center pt-16 px-4">
+      <div className="flex min-h-screen items-start justify-center px-4 pt-16">
         <div
           ref={containerRef}
-          className="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+          className="w-full max-w-2xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
         >
           {/* Header */}
-          <div className="flex items-center gap-3 p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3 border-b border-gray-200 p-4 dark:border-gray-700">
             <div className="flex items-center gap-2">
-              <CommandLineIcon className="w-5 h-5 text-gray-400" />
+              <CommandLineIcon className="h-5 w-5 text-gray-400" />
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {t('navigation:commandCenter.title')}
               </span>
@@ -451,39 +458,39 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
             <div className="flex-1" />
             <button
               onClick={onClose}
-              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="rounded-lg p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
               aria-label={t('navigation:commandCenter.closeLabel')}
               title={t('navigation:commandCenter.closeLabel')}
             >
-              <XMarkIcon className="w-4 h-4 text-gray-500" />
+              <XMarkIcon className="h-4 w-4 text-gray-500" />
             </button>
           </div>
 
           {/* Search Scopes */}
-          <div className="flex gap-1 p-3 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex gap-1 border-b border-gray-100 p-3 dark:border-gray-800">
             {searchScopes.map((scope) => {
-              const Icon = scope.icon
+              const Icon = scope.icon;
               return (
                 <button
                   key={scope.id}
                   onClick={() => setSelectedScope(scope.id)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
                     selectedScope === scope.id
                       ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                       : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${selectedScope === scope.id ? scope.color : ''}`} />
+                  <Icon className={`h-4 w-4 ${selectedScope === scope.id ? scope.color : ''}`} />
                   {t(scope.name)}
                 </button>
-              )
+              );
             })}
           </div>
 
           {/* Search Input */}
           <div className="relative p-4">
             <div className="flex items-center gap-3">
-              <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -493,7 +500,7 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
                 className="flex-1 bg-transparent text-lg placeholder-gray-400 outline-none dark:text-white"
               />
               {isLoading && (
-                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
               )}
             </div>
           </div>
@@ -505,50 +512,50 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
                 {results.length > 0 ? (
                   <div className="space-y-1 px-2">
                     {results.map((result, index) => {
-                      const Icon = result.icon
+                      const Icon = result.icon;
                       return (
                         <button
                           key={result.id}
                           onClick={() => {
-                            navigate(result.url)
-                            onClose()
+                            navigate(result.url);
+                            onClose();
                           }}
-                          className={`w-full flex items-center gap-3 p-3 mx-2 rounded-lg text-left transition-colors ${
+                          className={`mx-2 flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors ${
                             index === selectedIndex
                               ? 'bg-blue-50 dark:bg-blue-900/30'
                               : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                           }`}
                         >
-                          <Icon className="w-5 h-5 text-gray-400" />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-gray-900 dark:text-white truncate">
+                          <Icon className="h-5 w-5 text-gray-400" />
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-medium text-gray-900 dark:text-white">
                               {result.title}
                             </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            <div className="truncate text-sm text-gray-500 dark:text-gray-400">
                               {result.description}
                             </div>
                             {result.metadata && (
-                              <div className="flex gap-2 mt-1">
+                              <div className="mt-1 flex gap-2">
                                 {result.metadata.status && (
-                                  <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">
+                                  <span className="rounded bg-gray-100 px-2 py-0.5 text-xs dark:bg-gray-800">
                                     {result.metadata.status}
                                   </span>
                                 )}
                                 {result.metadata.priority && (
-                                  <span className="text-xs px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded">
+                                  <span className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-700 dark:bg-red-900/30 dark:text-red-300">
                                     {result.metadata.priority}
                                   </span>
                                 )}
                               </div>
                             )}
                           </div>
-                          <ArrowRightIcon className="w-4 h-4 text-gray-400" />
+                          <ArrowRightIcon className="h-4 w-4 text-gray-400" />
                         </button>
-                      )
+                      );
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <div className="py-8 text-center text-gray-500 dark:text-gray-400">
                     {t('navigation:commandCenter.noResults', { query })}
                   </div>
                 )}
@@ -557,59 +564,67 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
               <div className="pb-4">
                 {/* Quick Actions */}
                 <div className="px-4 py-2">
-                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">
+                  <h3 className="mb-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                     {t('navigation:commandCenter.quickActions.title')}
                   </h3>
-                  
+
                   {/* Group actions by category */}
                   {Object.entries(
-                    quickActions.reduce((acc, action) => {
-                      if (!acc[action.category]) {
-                        acc[action.category] = []
-                      }
-                      acc[action.category].push(action)
-                      return acc
-                    }, {} as Record<string, QuickAction[]>)
+                    quickActions.reduce(
+                      (acc, action) => {
+                        if (!acc[action.category]) {
+                          acc[action.category] = [];
+                        }
+                        acc[action.category].push(action);
+                        return acc;
+                      },
+                      {} as Record<string, QuickAction[]>,
+                    ),
                   ).map(([category, actions]) => (
                     <div key={category} className="mb-4 last:mb-0">
-                      {Object.keys(quickActions.reduce((acc, action) => {
-                        if (!acc[action.category]) {
-                          acc[action.category] = []
-                        }
-                        acc[action.category].push(action)
-                        return acc
-                      }, {} as Record<string, QuickAction[]>)).length > 1 && (
-                        <h4 className="text-xs font-medium text-gray-500 dark:text-gray-500 mb-2 px-2">
+                      {Object.keys(
+                        quickActions.reduce(
+                          (acc, action) => {
+                            if (!acc[action.category]) {
+                              acc[action.category] = [];
+                            }
+                            acc[action.category].push(action);
+                            return acc;
+                          },
+                          {} as Record<string, QuickAction[]>,
+                        ),
+                      ).length > 1 && (
+                        <h4 className="mb-2 px-2 text-xs font-medium text-gray-500 dark:text-gray-500">
                           {category}
                         </h4>
                       )}
                       <div className="space-y-1">
                         {actions.map((action) => {
-                          const Icon = action.icon
+                          const Icon = action.icon;
                           return (
                             <button
                               key={action.id}
                               onClick={() => {
-                                action.action()
-                                onClose()
+                                action.action();
+                                onClose();
                               }}
-                              className="w-full flex items-center gap-3 p-2 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                              className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                             >
-                              <Icon className={`w-5 h-5 ${
-                                category === 'AI' 
-                                  ? 'text-purple-500' 
-                                  : 'text-gray-400'
-                              }`} />
+                              <Icon
+                                className={`h-5 w-5 ${
+                                  category === 'AI' ? 'text-purple-500' : 'text-gray-400'
+                                }`}
+                              />
                               <span className="flex-1 text-gray-900 dark:text-white">
                                 {action.name}
                               </span>
                               {action.shortcut && (
-                                <span className="text-xs text-gray-400 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
+                                <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-400 dark:bg-gray-800">
                                   {action.shortcut}
                                 </span>
                               )}
                             </button>
-                          )
+                          );
                         })}
                       </div>
                     </div>
@@ -618,8 +633,8 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
 
                 {/* Recent Searches */}
                 {recentSearches.length > 0 && (
-                  <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800">
-                    <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">
+                  <div className="border-t border-gray-100 px-4 py-2 dark:border-gray-800">
+                    <h3 className="mb-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                       {t('navigation:commandCenter.recentSearches.title')}
                     </h3>
                     <div className="space-y-1">
@@ -627,9 +642,9 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
                         <button
                           key={index}
                           onClick={() => setQuery(search)}
-                          className="w-full flex items-center gap-3 p-2 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                          className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                         >
-                          <ClockIcon className="w-4 h-4 text-gray-400" />
+                          <ClockIcon className="h-4 w-4 text-gray-400" />
                           <span className="text-gray-700 dark:text-gray-300">{search}</span>
                         </button>
                       ))}
@@ -641,33 +656,31 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between bg-gray-50 px-4 py-3 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded">
+                <kbd className="rounded border border-gray-300 bg-white px-1.5 py-0.5 dark:border-gray-600 dark:bg-gray-700">
                   ↑↓
                 </kbd>
                 {t('navigation:commandCenter.shortcuts.navigate')}
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded">
+                <kbd className="rounded border border-gray-300 bg-white px-1.5 py-0.5 dark:border-gray-600 dark:bg-gray-700">
                   ↵
                 </kbd>
                 {t('navigation:commandCenter.shortcuts.select')}
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded">
+                <kbd className="rounded border border-gray-300 bg-white px-1.5 py-0.5 dark:border-gray-600 dark:bg-gray-700">
                   Esc
                 </kbd>
                 {t('navigation:commandCenter.shortcuts.close')}
               </span>
             </div>
-            <div>
-              {t('navigation:commandCenter.poweredBy')}
-            </div>
+            <div>{t('navigation:commandCenter.poweredBy')}</div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

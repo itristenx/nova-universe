@@ -1,11 +1,11 @@
 /**
  * Nova Integration Layer (NIL) - Core Integration Engine
  * Enterprise-grade integration framework following industry standards
- * 
+ *
  * @version 2.0.0
  * @author Nova Team
  * @license MIT
- * 
+ *
  * This implementation follows Enterprise Integration Patterns (EIP) by Gregor Hohpe
  * and includes modern best practices for microservices integration.
  */
@@ -96,14 +96,14 @@ export class IConnector {
       supportsPush: true,
       supportsPoll: true,
       rateLimit: 100,
-      dataTypes: []
+      dataTypes: [],
     };
   }
 
   getSchema() {
     return {
       input: {},
-      output: {}
+      output: {},
     };
   }
 }
@@ -118,21 +118,21 @@ export const ConnectorType = {
   MONITORING: 'MONITORING',
   PROJECT_MANAGEMENT: 'PROJECT_MANAGEMENT',
   AI_PLATFORM: 'AI_PLATFORM',
-  DATA_INTELLIGENCE: 'DATA_INTELLIGENCE'
+  DATA_INTELLIGENCE: 'DATA_INTELLIGENCE',
 };
 
 export const HealthStatus = {
   HEALTHY: 'healthy',
   DEGRADED: 'degraded',
   UNHEALTHY: 'unhealthy',
-  UNKNOWN: 'unknown'
+  UNKNOWN: 'unknown',
 };
 
 export const SyncStrategy = {
   POLLING: 'POLLING',
   WEBHOOK: 'WEBHOOK',
   EVENT_DRIVEN: 'EVENT_DRIVEN',
-  BATCH: 'BATCH'
+  BATCH: 'BATCH',
 };
 
 // Core Types
@@ -142,14 +142,14 @@ const ConnectorConfigSchema = {
   endpoints: 'object',
   rateLimits: 'object',
   retryPolicy: 'object',
-  security: 'object'
+  security: 'object',
 };
 
 const HealthStatusSchema = {
   status: 'string', // 'healthy' | 'degraded' | 'unhealthy' | 'unknown'
   lastCheck: 'date',
   metrics: 'array',
-  issues: 'array'
+  issues: 'array',
 };
 
 const SyncOptionsSchema = {
@@ -157,7 +157,7 @@ const SyncOptionsSchema = {
   filters: 'object',
   batchSize: 'number',
   parallel: 'boolean',
-  dryRun: 'boolean'
+  dryRun: 'boolean',
 };
 
 const SyncResultSchema = {
@@ -165,7 +165,7 @@ const SyncResultSchema = {
   status: 'string', // 'success' | 'partial' | 'failed'
   metrics: 'object',
   errors: 'array',
-  data: 'array'
+  data: 'array',
 };
 
 /**
@@ -181,7 +181,7 @@ export class NovaIntegrationLayer extends EventEmitter {
     this.circuitBreakers = new Map();
     this.rateLimiters = new Map();
     this.initialized = false;
-    
+
     // Initialize logging
     this.logger = this.createLogger();
   }
@@ -192,15 +192,15 @@ export class NovaIntegrationLayer extends EventEmitter {
   async initialize() {
     try {
       this.logger.info('Initializing Nova Integration Layer...');
-      
+
       // Initialize Prisma clients dynamically
       await this.initializePrismaClients();
-      
+
       // Only proceed with database operations if Prisma is available
       if (this.prisma) {
         // Load registered connectors from database
         const connectorConfigs = await this.prisma.connector.findMany({
-          where: { status: 'ACTIVE' }
+          where: { status: 'ACTIVE' },
         });
 
         // Initialize each connector with circuit breaker pattern
@@ -240,19 +240,21 @@ export class NovaIntegrationLayer extends EventEmitter {
       try {
         const coreModule = await import('../../../prisma/generated/core/index.js');
         CorePrismaClient = coreModule.PrismaClient;
-        
+
         const integrationModule = await import('../../../prisma/generated/integration/index.js');
         IntegrationPrismaClient = integrationModule.PrismaClient;
-        
+
         this.coreDb = new CorePrismaClient({
           datasources: {
-            core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL }
-          }
+            core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL },
+          },
         });
         this.prisma = new IntegrationPrismaClient({
           datasources: {
-            integration_db: { url: process.env.INTEGRATION_DATABASE_URL || process.env.DATABASE_URL }
-          }
+            integration_db: {
+              url: process.env.INTEGRATION_DATABASE_URL || process.env.DATABASE_URL,
+            },
+          },
         });
         this.logger.info('Prisma clients initialized successfully');
       } catch (importError) {
@@ -271,7 +273,7 @@ export class NovaIntegrationLayer extends EventEmitter {
   async registerConnector(connectorClass, config) {
     try {
       const connector = new connectorClass();
-      
+
       // Validate configuration
       const validation = connector.validateConfig(config);
       if (!validation.valid) {
@@ -299,8 +301,8 @@ export class NovaIntegrationLayer extends EventEmitter {
             capabilities: connector.getCapabilities(),
             status: 'ACTIVE',
             tenantId: this.config.tenantId,
-            createdBy: this.config.userId
-          }
+            createdBy: this.config.userId,
+          },
         });
       } else {
         this.logger.warn(`Connector ${config.id} registered in memory only (no database)`);
@@ -335,23 +337,23 @@ export class NovaIntegrationLayer extends EventEmitter {
         strategy: 'POLLING',
         options: options,
         status: 'PENDING',
-        triggerType: 'MANUAL'
-      }
+        triggerType: 'MANUAL',
+      },
     });
 
     try {
       // Update job status
       await this.prisma.syncJob.update({
         where: { id: job.id },
-        data: { 
+        data: {
           status: 'RUNNING',
-          startedAt: new Date()
-        }
+          startedAt: new Date(),
+        },
       });
 
       // Execute sync with circuit breaker
       const circuitBreaker = this.circuitBreakers.get(connectorId);
-      const result = circuitBreaker 
+      const result = circuitBreaker
         ? await circuitBreaker.fire('sync', options)
         : await connector.sync(options);
 
@@ -365,8 +367,8 @@ export class NovaIntegrationLayer extends EventEmitter {
           recordsProcessed: result.metrics?.totalRecords || 0,
           recordsSucceeded: result.metrics?.successCount || 0,
           recordsFailed: result.metrics?.errorCount || 0,
-          errorMessage: result.errors?.[0]?.message
-        }
+          errorMessage: result.errors?.[0]?.message,
+        },
       });
 
       // Emit events
@@ -381,8 +383,8 @@ export class NovaIntegrationLayer extends EventEmitter {
           status: 'FAILED',
           completedAt: new Date(),
           errorMessage: error.message,
-          errorDetails: { stack: error.stack }
-        }
+          errorDetails: { stack: error.stack },
+        },
       });
 
       this.emit('sync:failed', { connectorId, jobId: job.id, error });
@@ -397,7 +399,7 @@ export class NovaIntegrationLayer extends EventEmitter {
     try {
       // Get identity mapping
       const identity = await this.prisma.identityMapping.findUnique({
-        where: { novaUserId: userId }
+        where: { novaUserId: userId },
       });
 
       if (!identity) {
@@ -415,23 +417,23 @@ export class NovaIntegrationLayer extends EventEmitter {
         tickets: [],
         alerts: [],
         hr: {},
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
 
       // Fetch data from each active connector
       for (const [connectorId, connector] of this.connectors) {
         try {
           const connectorData = await this.fetchUserDataFromConnector(
-            connector, 
-            identity.externalMappings
+            connector,
+            identity.externalMappings,
           );
-          
+
           // Use Nova Synth to normalize and transform data before merging
           const normalizedData = await this.normalizeUserAttributesWithSynth(
-            connectorData, 
-            connector.type
+            connectorData,
+            connector.type,
           );
-          
+
           // Merge data into profile
           this.mergeConnectorData(profile, normalizedData, connectorId);
         } catch (error) {
@@ -442,7 +444,9 @@ export class NovaIntegrationLayer extends EventEmitter {
       // Use Nova Synth to validate the final profile
       const validationResult = await this.validateProfileWithSynth(profile);
       if (validationResult.score < 0.7) {
-        this.logger.warn(`Profile quality below threshold for user ${userId}: ${validationResult.score}`);
+        this.logger.warn(
+          `Profile quality below threshold for user ${userId}: ${validationResult.score}`,
+        );
       }
 
       // Use Nova Synth to deduplicate any duplicate entries
@@ -463,7 +467,7 @@ export class NovaIntegrationLayer extends EventEmitter {
   async getUserAssets(userId, type = 'all') {
     try {
       const identity = await this.prisma.identityMapping.findUnique({
-        where: { novaUserId: userId }
+        where: { novaUserId: userId },
       });
 
       if (!identity) {
@@ -472,16 +476,16 @@ export class NovaIntegrationLayer extends EventEmitter {
 
       const assets = [];
       const deviceConnectors = ['jamf', 'intune', 'crowdstrike'];
-      
+
       for (const connectorId of deviceConnectors) {
         const connector = this.connectors.get(connectorId);
         if (!connector) continue;
 
         try {
           const connectorAssets = await this.fetchUserAssetsFromConnector(
-            connector, 
-            identity.externalMappings, 
-            type
+            connector,
+            identity.externalMappings,
+            type,
           );
           assets.push(...connectorAssets);
         } catch (error) {
@@ -502,28 +506,28 @@ export class NovaIntegrationLayer extends EventEmitter {
   async getUserTickets(userId, options = {}) {
     try {
       const { status = 'all', limit = 20 } = options;
-      
+
       // Query Nova ticketing database
       const whereClause = status === 'all' ? {} : { status: status.toUpperCase() };
-      
+
       const tickets = await this.prisma.ticket.findMany({
         where: {
           userId: userId,
-          ...whereClause
+          ...whereClause,
         },
         orderBy: {
-          createdAt: 'desc'
+          createdAt: 'desc',
         },
         take: limit,
         include: {
           comments: {
             orderBy: { createdAt: 'desc' },
-            take: 3
-          }
-        }
+            take: 3,
+          },
+        },
       });
 
-      return tickets.map(ticket => ({
+      return tickets.map((ticket) => ({
         id: ticket.id,
         title: ticket.title,
         description: ticket.description,
@@ -533,7 +537,7 @@ export class NovaIntegrationLayer extends EventEmitter {
         assignedTo: ticket.assignedTo,
         createdAt: ticket.createdAt,
         updatedAt: ticket.updatedAt,
-        recentComments: ticket.comments
+        recentComments: ticket.comments,
       }));
     } catch (error) {
       this.emit('user360:tickets:error', { userId, error });
@@ -547,7 +551,7 @@ export class NovaIntegrationLayer extends EventEmitter {
   async getUserActivity(userId, since) {
     try {
       const identity = await this.prisma.identityMapping.findUnique({
-        where: { novaUserId: userId }
+        where: { novaUserId: userId },
       });
 
       if (!identity) {
@@ -555,7 +559,7 @@ export class NovaIntegrationLayer extends EventEmitter {
       }
 
       const activities = [];
-      
+
       // Get activities from each connector that supports it
       for (const [connectorId, connector] of this.connectors) {
         if (!connector.getCapabilities?.()?.supportsActivityLogs) continue;
@@ -564,13 +568,15 @@ export class NovaIntegrationLayer extends EventEmitter {
           const connectorActivities = await this.fetchUserActivityFromConnector(
             connector,
             identity.externalMappings,
-            since
+            since,
           );
-          
-          activities.push(...connectorActivities.map(activity => ({
-            ...activity,
-            source: connectorId
-          })));
+
+          activities.push(
+            ...connectorActivities.map((activity) => ({
+              ...activity,
+              source: connectorId,
+            })),
+          );
         } catch (error) {
           console.warn(`Failed to fetch activity from ${connectorId}:`, error.message);
         }
@@ -590,7 +596,7 @@ export class NovaIntegrationLayer extends EventEmitter {
   async updateUserProfile(userId, updates, metadata = {}) {
     try {
       const identity = await this.prisma.identityMapping.findUnique({
-        where: { novaUserId: userId }
+        where: { novaUserId: userId },
       });
 
       if (!identity) {
@@ -602,14 +608,14 @@ export class NovaIntegrationLayer extends EventEmitter {
         where: { userId },
         update: {
           ...updates,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         create: {
           userId,
           ...updates,
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
 
       // Create audit trail
@@ -621,12 +627,12 @@ export class NovaIntegrationLayer extends EventEmitter {
           changes: updates,
           performedBy: metadata.updatedBy || 'system',
           reason: metadata.reason || 'Profile update',
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       });
 
       this.emit('user360:profile:updated', { userId, updates, metadata });
-      
+
       return updatedProfile;
     } catch (error) {
       this.emit('user360:profile:error', { userId, error });
@@ -651,17 +657,19 @@ export class NovaIntegrationLayer extends EventEmitter {
 
       // Calculate merge confidence using Nova Synth
       const mergeConfidence = await this.calculateMergeConfidenceWithSynth(
-        primaryProfile, 
-        secondaryProfile
+        primaryProfile,
+        secondaryProfile,
       );
 
       if (mergeConfidence < 0.7) {
-        this.logger.warn(`Low confidence merge detected (${mergeConfidence}) for users ${primaryUserId} and ${secondaryUserId}`);
+        this.logger.warn(
+          `Low confidence merge detected (${mergeConfidence}) for users ${primaryUserId} and ${secondaryUserId}`,
+        );
       }
 
       // Perform merge based on strategy
       let mergedData = {};
-      
+
       switch (strategy) {
         case 'replace':
           mergedData = secondaryProfile;
@@ -689,7 +697,7 @@ export class NovaIntegrationLayer extends EventEmitter {
       await this.updateUserProfile(primaryUserId, mergedData, {
         updatedBy: mergedBy,
         reason: `Profile merge: ${reason}`,
-        confidence: mergeConfidence
+        confidence: mergeConfidence,
       });
 
       // Archive secondary profile
@@ -699,8 +707,8 @@ export class NovaIntegrationLayer extends EventEmitter {
           status: 'MERGED',
           mergedInto: primaryUserId,
           mergedAt: new Date(),
-          mergedBy: mergedBy
-        }
+          mergedBy: mergedBy,
+        },
       });
 
       // Create detailed audit trail
@@ -712,26 +720,26 @@ export class NovaIntegrationLayer extends EventEmitter {
           changes: {
             strategy,
             secondaryUserId,
-            mergedFields: Object.keys(mergedData)
+            mergedFields: Object.keys(mergedData),
           },
           performedBy: mergedBy,
           reason: reason,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       });
 
-      this.emit('user360:profiles:merged', { 
-        primaryUserId, 
-        secondaryUserId, 
-        strategy, 
-        mergedBy 
+      this.emit('user360:profiles:merged', {
+        primaryUserId,
+        secondaryUserId,
+        strategy,
+        mergedBy,
       });
 
       return {
         success: true,
         primaryUserId,
         secondaryUserId,
-        mergedFields: Object.keys(mergedData)
+        mergedFields: Object.keys(mergedData),
       };
     } catch (error) {
       this.emit('user360:merge:error', { primaryUserId, secondaryUserId, error });
@@ -751,13 +759,13 @@ export class NovaIntegrationLayer extends EventEmitter {
     try {
       // Use circuit breaker if available
       const circuitBreaker = this.circuitBreakers.get(request.connectorId);
-      const result = circuitBreaker 
+      const result = circuitBreaker
         ? await circuitBreaker.fire('push', request)
         : await connector.push(request);
-      
+
       // Log the action
       await this.logAction(request, result);
-      
+
       this.emit('action:executed', { request, result });
       return result;
     } catch (error) {
@@ -770,7 +778,7 @@ export class NovaIntegrationLayer extends EventEmitter {
    * Get connector health status
    */
   async getConnectorHealth(connectorId) {
-    const connectors = connectorId 
+    const connectors = connectorId
       ? [this.connectors.get(connectorId)].filter(Boolean)
       : Array.from(this.connectors.values());
 
@@ -783,15 +791,15 @@ export class NovaIntegrationLayer extends EventEmitter {
             status: 'unhealthy',
             lastCheck: new Date(),
             metrics: [],
-            issues: [error.message]
+            issues: [error.message],
           };
         }
-      })
+      }),
     );
 
     return healthStatuses
-      .filter(result => result.status === 'fulfilled')
-      .map(result => result.value);
+      .filter((result) => result.status === 'fulfilled')
+      .map((result) => result.value);
   }
 
   // Private helper methods
@@ -800,7 +808,7 @@ export class NovaIntegrationLayer extends EventEmitter {
     // Dynamic connector loading based on type
     const ConnectorClass = await this.getConnectorClass(config.type);
     const connector = new ConnectorClass();
-    
+
     await connector.initialize(config.config);
     this.connectors.set(config.id, connector);
   }
@@ -811,7 +819,7 @@ export class NovaIntegrationLayer extends EventEmitter {
       case 'IDENTITY_PROVIDER':
         const { OktaConnector } = await import('./connectors/okta-connector.js');
         return OktaConnector;
-      
+
       case 'DEVICE_MANAGEMENT':
         // Handle multiple device management connectors
         try {
@@ -821,11 +829,11 @@ export class NovaIntegrationLayer extends EventEmitter {
           const { IntuneConnector } = await import('./connectors/intune-connector.js');
           return IntuneConnector;
         }
-      
+
       case 'SECURITY_PLATFORM':
         const { CrowdStrikeConnector } = await import('./connectors/crowdstrike-connector.js');
         return CrowdStrikeConnector;
-      
+
       case 'COLLABORATION':
         // Handle multiple collaboration connectors
         try {
@@ -835,15 +843,17 @@ export class NovaIntegrationLayer extends EventEmitter {
           const { ZoomConnector } = await import('./connectors/zoom-connector.js');
           return ZoomConnector;
         }
-      
+
       case 'AI_PLATFORM':
         const { NovaSynthConnector } = await import('./connectors/nova-synth-connector.js');
         return NovaSynthConnector;
-      
+
       case 'DATA_INTELLIGENCE':
-        const { NovaSynthConnector: DataNovaSynthConnector } = await import('./connectors/nova-synth-connector.js');
+        const { NovaSynthConnector: DataNovaSynthConnector } = await import(
+          './connectors/nova-synth-connector.js'
+        );
         return DataNovaSynthConnector;
-      
+
       default:
         throw new Error(`Unknown connector type: ${type}`);
     }
@@ -853,16 +863,16 @@ export class NovaIntegrationLayer extends EventEmitter {
     // Implementation for scheduled sync jobs
     setInterval(async () => {
       const scheduledConnectors = await this.prisma.connector.findMany({
-        where: { 
+        where: {
           syncEnabled: true,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       });
 
       for (const connector of scheduledConnectors) {
         const lastSync = connector.lastSync;
         const interval = connector.syncInterval * 1000; // Convert to milliseconds
-        
+
         if (!lastSync || Date.now() - lastSync.getTime() >= interval) {
           try {
             await this.executeSync(connector.id, { type: 'incremental' });
@@ -880,7 +890,7 @@ export class NovaIntegrationLayer extends EventEmitter {
       for (const [connectorId, connector] of this.connectors) {
         try {
           const health = await connector.health();
-          
+
           // Store health metrics
           await this.prisma.connectorMetric.create({
             data: {
@@ -888,8 +898,8 @@ export class NovaIntegrationLayer extends EventEmitter {
               metricType: 'GAUGE',
               metricName: 'health_status',
               value: health.status === 'healthy' ? 1 : 0,
-              dimensions: { status: health.status }
-            }
+              dimensions: { status: health.status },
+            },
           });
         } catch (error) {
           this.logger.error(`Health check failed for ${connectorId}:`, error);
@@ -954,20 +964,24 @@ export class NovaIntegrationLayer extends EventEmitter {
 
       if (capabilities.dataTypes?.includes('devices') && (type === 'all' || type === 'devices')) {
         const devices = await this.fetchUserDevices(connector, connectorUserId);
-        assets.push(...devices.map(device => ({
-          ...device,
-          type: 'device',
-          source: connector.id
-        })));
+        assets.push(
+          ...devices.map((device) => ({
+            ...device,
+            type: 'device',
+            source: connector.id,
+          })),
+        );
       }
 
       if (capabilities.dataTypes?.includes('licenses') && (type === 'all' || type === 'licenses')) {
         const licenses = await this.fetchUserLicenses(connector, connectorUserId);
-        assets.push(...licenses.map(license => ({
-          ...license,
-          type: 'license',
-          source: connector.id
-        })));
+        assets.push(
+          ...licenses.map((license) => ({
+            ...license,
+            type: 'license',
+            source: connector.id,
+          })),
+        );
       }
 
       return assets;
@@ -988,7 +1002,7 @@ export class NovaIntegrationLayer extends EventEmitter {
       }
 
       const capabilities = connector.getCapabilities?.() || {};
-      
+
       if (!capabilities.supportsActivityLogs) {
         return [];
       }
@@ -996,9 +1010,8 @@ export class NovaIntegrationLayer extends EventEmitter {
       // Use polling method if available to get recent activity
       if (typeof connector.poll === 'function') {
         const events = await connector.poll();
-        return events.filter(event => 
-          event.timestamp >= since && 
-          event.data?.userId === connectorUserId
+        return events.filter(
+          (event) => event.timestamp >= since && event.data?.userId === connectorUserId,
         );
       }
 
@@ -1038,7 +1051,7 @@ export class NovaIntegrationLayer extends EventEmitter {
     // Implementation varies by connector type
     if (connector.type === 'IDENTITY_PROVIDER') {
       // Okta-style user fetch
-      return await connector.getUser?.(userId) || {};
+      return (await connector.getUser?.(userId)) || {};
     }
     return {};
   }
@@ -1050,7 +1063,7 @@ export class NovaIntegrationLayer extends EventEmitter {
     try {
       if (connector.type === 'DEVICE_MANAGEMENT' || connector.type === 'SECURITY_PLATFORM') {
         // For device management connectors, get devices assigned to user
-        const devices = await connector.getUserDevices?.(userId) || [];
+        const devices = (await connector.getUserDevices?.(userId)) || [];
         return devices;
       }
       return [];
@@ -1067,7 +1080,7 @@ export class NovaIntegrationLayer extends EventEmitter {
     try {
       if (connector.type === 'IDENTITY_PROVIDER') {
         // Get apps assigned to user through IdP
-        const apps = await connector.getUserApps?.(userId) || [];
+        const apps = (await connector.getUserApps?.(userId)) || [];
         return apps;
       }
       return [];
@@ -1083,11 +1096,11 @@ export class NovaIntegrationLayer extends EventEmitter {
   async fetchUserSecurity(connector, userId) {
     try {
       if (connector.type === 'SECURITY_PLATFORM') {
-        const security = await connector.getUserSecurity?.(userId) || {};
+        const security = (await connector.getUserSecurity?.(userId)) || {};
         return security;
       }
       if (connector.type === 'IDENTITY_PROVIDER') {
-        const mfaStatus = await connector.getUserMFAStatus?.(userId) || {};
+        const mfaStatus = (await connector.getUserMFAStatus?.(userId)) || {};
         return { mfa: mfaStatus };
       }
       return {};
@@ -1103,7 +1116,7 @@ export class NovaIntegrationLayer extends EventEmitter {
   async fetchUserLicenses(connector, userId) {
     try {
       if (connector.type === 'IDENTITY_PROVIDER' || connector.type === 'COLLABORATION') {
-        const licenses = await connector.getUserLicenses?.(userId) || [];
+        const licenses = (await connector.getUserLicenses?.(userId)) || [];
         return licenses;
       }
       return [];
@@ -1120,29 +1133,29 @@ export class NovaIntegrationLayer extends EventEmitter {
     const merged = { ...primaryProfile };
 
     // Merge arrays
-    ['devices', 'apps', 'tickets', 'alerts'].forEach(key => {
+    ['devices', 'apps', 'tickets', 'alerts'].forEach((key) => {
       if (secondaryProfile[key] && Array.isArray(secondaryProfile[key])) {
         merged[key] = [...(merged[key] || []), ...secondaryProfile[key]];
       }
     });
 
     // Merge objects with preference to non-empty values
-    ['identity', 'security', 'hr'].forEach(key => {
+    ['identity', 'security', 'hr'].forEach((key) => {
       if (secondaryProfile[key] && typeof secondaryProfile[key] === 'object') {
         merged[key] = {
           ...(merged[key] || {}),
           ...Object.fromEntries(
-            Object.entries(secondaryProfile[key]).filter(([_, value]) => 
-              value !== null && value !== undefined && value !== ''
-            )
-          )
+            Object.entries(secondaryProfile[key]).filter(
+              ([_, value]) => value !== null && value !== undefined && value !== '',
+            ),
+          ),
         };
       }
     });
 
     // Update metadata
     merged.lastUpdated = new Date();
-    
+
     return merged;
   }
 
@@ -1154,37 +1167,43 @@ export class NovaIntegrationLayer extends EventEmitter {
       }
 
       // Use Nova Synth for intelligent data transformation if available
-      this.transformDataWithSynth(data, connectorId).then(transformedData => {
-        data = transformedData;
-      }).catch(error => {
-        console.warn(`Nova Synth transformation failed for ${connectorId}:`, error.message);
-        // Continue with original data
-      });
+      this.transformDataWithSynth(data, connectorId)
+        .then((transformedData) => {
+          data = transformedData;
+        })
+        .catch((error) => {
+          console.warn(`Nova Synth transformation failed for ${connectorId}:`, error.message);
+          // Continue with original data
+        });
 
       // Merge profile information
       if (data.profile) {
         profile.identity = {
           ...profile.identity,
-          [`${connectorId}_profile`]: data.profile
+          [`${connectorId}_profile`]: data.profile,
         };
       }
 
       // Merge devices
       if (data.devices && Array.isArray(data.devices)) {
-        profile.devices.push(...data.devices.map(device => ({
-          ...device,
-          source: connectorId,
-          lastSync: new Date()
-        })));
+        profile.devices.push(
+          ...data.devices.map((device) => ({
+            ...device,
+            source: connectorId,
+            lastSync: new Date(),
+          })),
+        );
       }
 
       // Merge apps
       if (data.apps && Array.isArray(data.apps)) {
-        profile.apps.push(...data.apps.map(app => ({
-          ...app,
-          source: connectorId,
-          lastSync: new Date()
-        })));
+        profile.apps.push(
+          ...data.apps.map((app) => ({
+            ...app,
+            source: connectorId,
+            lastSync: new Date(),
+          })),
+        );
       }
 
       // Merge security data
@@ -1198,7 +1217,7 @@ export class NovaIntegrationLayer extends EventEmitter {
         if (data.security.riskScore !== undefined) {
           profile.security.riskScore = Math.max(
             profile.security.riskScore || 0,
-            data.security.riskScore
+            data.security.riskScore,
           );
         }
 
@@ -1208,7 +1227,6 @@ export class NovaIntegrationLayer extends EventEmitter {
 
       // Update last sync timestamp
       profile.lastUpdated = new Date();
-      
     } catch (error) {
       console.error(`Failed to merge data from ${connectorId}:`, error.message);
     }
@@ -1222,8 +1240,8 @@ export class NovaIntegrationLayer extends EventEmitter {
         eventCategory: 'SYSTEM_EVENT',
         source: request.connectorId,
         data: { request, result },
-        status: result.success ? 'COMPLETED' : 'FAILED'
-      }
+        status: result.success ? 'COMPLETED' : 'FAILED',
+      },
     });
   }
 
@@ -1248,8 +1266,8 @@ export class NovaIntegrationLayer extends EventEmitter {
         {
           timeout: config.timeout || 30000,
           errorThresholdPercentage: 50,
-          resetTimeout: 60000
-        }
+          resetTimeout: 60000,
+        },
       );
 
       this.circuitBreakers.set(connectorId, circuitBreaker);
@@ -1264,19 +1282,23 @@ export class NovaIntegrationLayer extends EventEmitter {
     const limiter = rateLimit({
       windowMs: 60 * 1000, // 1 minute
       max: rateLimits?.perMinute || 100,
-      message: 'Too many requests from this connector'
+      message: 'Too many requests from this connector',
     });
-    
+
     this.rateLimiters.set(connectorId, limiter);
   }
 
   createLogger() {
     // Simple logger implementation
     return {
-      info: (message, ...args) => console.log(`[INFO] ${new Date().toISOString()} ${message}`, ...args),
-      warn: (message, ...args) => console.warn(`[WARN] ${new Date().toISOString()} ${message}`, ...args),
-      error: (message, ...args) => console.error(`[ERROR] ${new Date().toISOString()} ${message}`, ...args),
-      debug: (message, ...args) => console.debug(`[DEBUG] ${new Date().toISOString()} ${message}`, ...args)
+      info: (message, ...args) =>
+        console.log(`[INFO] ${new Date().toISOString()} ${message}`, ...args),
+      warn: (message, ...args) =>
+        console.warn(`[WARN] ${new Date().toISOString()} ${message}`, ...args),
+      error: (message, ...args) =>
+        console.error(`[ERROR] ${new Date().toISOString()} ${message}`, ...args),
+      debug: (message, ...args) =>
+        console.debug(`[DEBUG] ${new Date().toISOString()} ${message}`, ...args),
     };
   }
 
@@ -1288,7 +1310,7 @@ export class NovaIntegrationLayer extends EventEmitter {
         throw new Error(`Missing required field: ${field}`);
       }
     }
-    
+
     return { valid: true, errors: [] };
   }
 
@@ -1311,8 +1333,8 @@ export class NovaIntegrationLayer extends EventEmitter {
         target: data,
         parameters: {
           transformationRules: this.getTransformationRulesForConnector(connectorId),
-          outputFormat: 'nova_standard'
-        }
+          outputFormat: 'nova_standard',
+        },
       });
 
       return result.success ? result.data.transformedData : data;
@@ -1340,10 +1362,10 @@ export class NovaIntegrationLayer extends EventEmitter {
           matchingCriteria: {
             email: { weight: 0.4, required: true },
             name: { weight: 0.3, fuzzy: true },
-            employeeId: { weight: 0.3, exact: true }
+            employeeId: { weight: 0.3, exact: true },
           },
-          confidenceThreshold: 0.8
-        }
+          confidenceThreshold: 0.8,
+        },
       });
 
       return result.success ? result.data : null;
@@ -1370,10 +1392,10 @@ export class NovaIntegrationLayer extends EventEmitter {
           deduplicationRules: {
             keyFields: ['email', 'employeeId'],
             fuzzyFields: ['name', 'department'],
-            mergeBehavior: 'intelligent'
+            mergeBehavior: 'intelligent',
           },
-          similarityThreshold: 0.9
-        }
+          similarityThreshold: 0.9,
+        },
       });
 
       return result.success ? result.data.uniqueRecords : profiles;
@@ -1400,10 +1422,10 @@ export class NovaIntegrationLayer extends EventEmitter {
           validationRules: {
             required: ['email', 'identity'],
             recommended: ['devices', 'security'],
-            format: 'nova_user360'
+            format: 'nova_user360',
           },
-          strictMode: false
-        }
+          strictMode: false,
+        },
       });
 
       return result.success ? result.data : { isValid: true, score: 1.0 };
@@ -1428,8 +1450,8 @@ export class NovaIntegrationLayer extends EventEmitter {
         target: { primary: primaryProfile, secondary: secondaryProfile },
         parameters: {
           confidenceModel: 'profile_merge',
-          context: { operation: 'user360_merge' }
-        }
+          context: { operation: 'user360_merge' },
+        },
       });
 
       return result.success ? result.data.confidenceScore : 0.5;
@@ -1455,8 +1477,8 @@ export class NovaIntegrationLayer extends EventEmitter {
         parameters: {
           secondaryProfile: secondaryProfile,
           mergeStrategy: 'intelligent',
-          preserveConflicts: true
-        }
+          preserveConflicts: true,
+        },
       });
 
       return result.success ? result.data.mergedProfile : null;
@@ -1481,8 +1503,8 @@ export class NovaIntegrationLayer extends EventEmitter {
         target: attributes,
         parameters: {
           normalizationRules: this.getNormalizationRulesForSystem(sourceSystem),
-          targetFormat: 'nova_user360'
-        }
+          targetFormat: 'nova_user360',
+        },
       });
 
       return result.success ? result.data.normalizedAttributes : attributes;
@@ -1500,18 +1522,18 @@ export class NovaIntegrationLayer extends EventEmitter {
       'okta-connector': [
         { field: 'firstName', target: 'profile.givenName' },
         { field: 'lastName', target: 'profile.familyName' },
-        { field: 'email', target: 'profile.email', normalize: true }
+        { field: 'email', target: 'profile.email', normalize: true },
       ],
       'jamf-connector': [
         { field: 'deviceName', target: 'device.hostname' },
         { field: 'serialNumber', target: 'device.serialNumber' },
-        { field: 'osVersion', target: 'device.osVersion', format: 'version' }
+        { field: 'osVersion', target: 'device.osVersion', format: 'version' },
       ],
       'crowdstrike-connector': [
         { field: 'hostname', target: 'device.hostname' },
         { field: 'agentVersion', target: 'security.agentVersion' },
-        { field: 'lastSeen', target: 'device.lastActivity', format: 'date' }
-      ]
+        { field: 'lastSeen', target: 'device.lastActivity', format: 'date' },
+      ],
     };
 
     return rules[connectorId] || [];
@@ -1522,20 +1544,20 @@ export class NovaIntegrationLayer extends EventEmitter {
    */
   getNormalizationRulesForSystem(systemType) {
     const rules = {
-      'IDENTITY_PROVIDER': {
+      IDENTITY_PROVIDER: {
         name: { case: 'title', trim: true },
         email: { case: 'lower', validate: 'email' },
-        department: { case: 'title', normalize: 'department_codes' }
+        department: { case: 'title', normalize: 'department_codes' },
       },
-      'DEVICE_MANAGEMENT': {
+      DEVICE_MANAGEMENT: {
         hostname: { case: 'lower', trim: true },
         osVersion: { format: 'semantic_version' },
-        serialNumber: { case: 'upper', trim: true }
+        serialNumber: { case: 'upper', trim: true },
       },
-      'SECURITY_PLATFORM': {
+      SECURITY_PLATFORM: {
         riskScore: { range: [0, 100], normalize: 'score' },
-        severity: { map: 'severity_levels' }
-      }
+        severity: { map: 'severity_levels' },
+      },
     };
 
     return rules[systemType] || {};
@@ -1551,12 +1573,12 @@ const NILConfigSchema = {
   tenantId: 'string',
   userId: 'string',
   database: {
-    url: 'string'
+    url: 'string',
   },
   security: {
     encryptionKey: 'string',
-    jwtSecret: 'string'
-  }
+    jwtSecret: 'string',
+  },
 };
 
 // User 360 profile schema
@@ -1570,7 +1592,7 @@ const User360ProfileSchema = {
   tickets: 'array', // TicketInfo[]
   alerts: 'array', // AlertInfo[]
   hr: 'object', // HRInfo
-  lastUpdated: 'date'
+  lastUpdated: 'date',
 };
 
 // Action request schema
@@ -1579,7 +1601,7 @@ const ActionRequestSchema = {
   action: 'string',
   target: 'string',
   parameters: 'object', // Record<string, any>
-  requestedBy: 'string'
+  requestedBy: 'string',
 };
 
 // Action result schema
@@ -1587,26 +1609,26 @@ const ActionResultSchema = {
   success: 'boolean',
   message: 'string',
   data: 'any',
-  error: 'string'
+  error: 'string',
 };
 
 // Validation result schema
 const ValidationResultSchema = {
   valid: 'boolean',
-  errors: 'array' // string[]
+  errors: 'array', // string[]
 };
 
 // Sync metrics schema
 const SyncMetricsSchema = {
   totalRecords: 'number',
   successCount: 'number',
-  errorCount: 'number'
+  errorCount: 'number',
 };
 
 // Security info schema
 const SecurityInfoSchema = {
   mfa: 'boolean',
-  riskScore: 'number'
+  riskScore: 'number',
 };
 
 // Export singleton instance
@@ -1614,10 +1636,10 @@ export const novaIntegrationLayer = new NovaIntegrationLayer({
   tenantId: process.env.TENANT_ID || 'default',
   userId: process.env.USER_ID || 'system',
   database: {
-    url: process.env.INTEGRATION_DATABASE_URL || ''
+    url: process.env.INTEGRATION_DATABASE_URL || '',
   },
   security: {
     encryptionKey: process.env.ENCRYPTION_KEY || '',
-    jwtSecret: process.env.JWT_SECRET || ''
-  }
+    jwtSecret: process.env.JWT_SECRET || '',
+  },
 });

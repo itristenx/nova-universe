@@ -21,10 +21,16 @@ try {
     getServerInfo: () => ({ status: 'not_available', tools: [], resources: [], prompts: [] }),
     getCapabilities: () => ({ tools: {}, resources: {}, prompts: {} }),
     getStatus: () => ({ status: 'not_available', uptime: 0, connections: 0 }),
-    start: async () => { throw new Error('MCP Server not available'); },
-    stop: async () => { throw new Error('MCP Server not available'); },
+    start: async () => {
+      throw new Error('MCP Server not available');
+    },
+    stop: async () => {
+      throw new Error('MCP Server not available');
+    },
     listTools: () => [],
-    callTool: async () => { throw new Error('MCP Server not available'); }
+    callTool: async () => {
+      throw new Error('MCP Server not available');
+    },
   };
 }
 
@@ -77,7 +83,8 @@ router.get('/.well-known/oauth-authorization-server', async (req, res) => {
  *       201:
  *         description: Client registered successfully
  */
-router.post('/oauth/register', 
+router.post(
+  '/oauth/register',
   createRateLimiter({ windowMs: 60 * 1000, max: 10 }), // 10 registrations per minute
   async (req, res) => {
     try {
@@ -88,7 +95,7 @@ router.post('/oauth/register',
       logger.error('Failed to register OAuth client:', error);
       res.status(400).json({ error: error.message });
     }
-  }
+  },
 );
 
 /**
@@ -124,33 +131,34 @@ router.post('/oauth/register',
  *       302:
  *         description: Redirect to client with authorization code
  */
-router.get('/oauth/authorize', 
+router.get(
+  '/oauth/authorize',
   createRateLimiter({ windowMs: 60 * 1000, max: 30 }), // 30 requests per minute
   async (req, res) => {
     try {
       const result = await novaMCPServer.authorize(req.query);
-      
+
       // Redirect back to client with authorization code
       const redirectUrl = new URL(req.query.redirect_uri);
       redirectUrl.searchParams.set('code', result.code);
       if (result.state) {
         redirectUrl.searchParams.set('state', result.state);
       }
-      
+
       res.redirect(redirectUrl.toString());
     } catch (error) {
       logger.error('Authorization failed:', error);
-      
+
       // Redirect with error
       const redirectUrl = new URL(req.query.redirect_uri);
       redirectUrl.searchParams.set('error', error.message);
       if (req.query.state) {
         redirectUrl.searchParams.set('state', req.query.state);
       }
-      
+
       res.redirect(redirectUrl.toString());
     }
-  }
+  },
 );
 
 /**
@@ -182,7 +190,8 @@ router.get('/oauth/authorize',
  *       200:
  *         description: Access token issued successfully
  */
-router.post('/oauth/token',
+router.post(
+  '/oauth/token',
   createRateLimiter({ windowMs: 60 * 1000, max: 60 }), // 60 requests per minute
   async (req, res) => {
     try {
@@ -190,11 +199,11 @@ router.post('/oauth/token',
       res.json(tokenResponse);
     } catch (error) {
       logger.error('Token exchange failed:', error);
-      res.status(400).json({ 
-        error: error.message.includes('invalid_') ? error.message : 'invalid_request'
+      res.status(400).json({
+        error: error.message.includes('invalid_') ? error.message : 'invalid_request',
       });
     }
-  }
+  },
 );
 
 /**
@@ -221,7 +230,8 @@ router.post('/oauth/token',
  *       200:
  *         description: Token revoked successfully
  */
-router.post('/oauth/revoke',
+router.post(
+  '/oauth/revoke',
   createRateLimiter({ windowMs: 60 * 1000, max: 30 }), // 30 requests per minute
   async (req, res) => {
     try {
@@ -231,7 +241,7 @@ router.post('/oauth/revoke',
       logger.error('Token revocation failed:', error);
       res.status(400).json({ error: error.message });
     }
-  }
+  },
 );
 
 // OAuth 2.1 middleware for protected MCP endpoints
@@ -241,14 +251,14 @@ const authenticateOAuth = async (req, res, next) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'invalid_token' });
     }
-    
+
     const token = authHeader.substring(7);
     const tokenData = novaMCPServer.validateAccessToken(token);
-    
+
     if (!tokenData) {
       return res.status(401).json({ error: 'invalid_token' });
     }
-    
+
     req.oauth = tokenData;
     next();
   } catch (error) {
@@ -282,22 +292,22 @@ router.get(
         serverInfo: novaMCPServer.getServerInfo ? novaMCPServer.getServerInfo() : {},
         capabilities: novaMCPServer.getCapabilities ? novaMCPServer.getCapabilities() : {},
         status: novaMCPServer.getStatus ? novaMCPServer.getStatus() : { status: 'unknown' },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-      
+
       res.json({
         success: true,
-        ...status
+        ...status,
       });
     } catch (error) {
       logger.error('Failed to get MCP Server status:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to get MCP Server status',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -326,26 +336,26 @@ router.get(
           uptime: novaMCPServer.getStatus ? novaMCPServer.getStatus().uptime : 0,
           connections: novaMCPServer.getStatus ? novaMCPServer.getStatus().connections : 0,
           lastHealthCheck: new Date().toISOString(),
-          healthStatus: novaMCPServer.isRunning ? 'healthy' : 'stopped'
-        }
+          healthStatus: novaMCPServer.isRunning ? 'healthy' : 'stopped',
+        },
       ];
 
       res.json({
         success: true,
         servers,
         totalServers: servers.length,
-        runningServers: servers.filter(s => s.status === 'running').length,
-        timestamp: new Date().toISOString()
+        runningServers: servers.filter((s) => s.status === 'running').length,
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Failed to list MCP servers:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to list MCP servers',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -361,7 +371,9 @@ router.post(
   authenticateJWT,
   createRateLimiter({ windowMs: 60 * 1000, max: 10 }), // 10 requests per minute
   [
-    body('action').isIn(['start', 'stop', 'restart']).withMessage('Action must be start, stop, or restart')
+    body('action')
+      .isIn(['start', 'stop', 'restart'])
+      .withMessage('Action must be start, stop, or restart'),
   ],
   async (req, res) => {
     try {
@@ -370,7 +382,7 @@ router.post(
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -380,7 +392,7 @@ router.post(
       if (serverId !== 'nova-mcp-server') {
         return res.status(404).json({
           success: false,
-          error: 'Server not found'
+          error: 'Server not found',
         });
       }
 
@@ -408,7 +420,7 @@ router.post(
           case 'restart':
             if (novaMCPServer.stop && novaMCPServer.start) {
               await novaMCPServer.stop();
-              await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+              await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
               await novaMCPServer.start();
               result = { message: 'Server restarted successfully' };
             } else {
@@ -421,7 +433,7 @@ router.post(
         return res.status(500).json({
           success: false,
           error: `Failed to ${action} server`,
-          details: serverError.message
+          details: serverError.message,
         });
       }
 
@@ -430,17 +442,17 @@ router.post(
         serverId,
         action,
         ...result,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error(`MCP Server control failed:`, error);
       res.status(500).json({
         success: false,
         error: 'Server control failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -458,7 +470,7 @@ router.get(
   async (req, res) => {
     try {
       let tools = [];
-      
+
       if (novaMCPServer.listTools) {
         tools = novaMCPServer.listTools();
       } else if (novaMCPServer.getServerInfo) {
@@ -470,17 +482,17 @@ router.get(
         success: true,
         tools,
         totalTools: tools.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Failed to list MCP tools:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to list MCP tools',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -495,9 +507,7 @@ router.post(
   '/tools/:toolName/call',
   authenticateJWT,
   createRateLimiter({ windowMs: 60 * 1000, max: 50 }), // 50 requests per minute
-  [
-    body('arguments').optional().isObject().withMessage('Arguments must be an object')
-  ],
+  [body('arguments').optional().isObject().withMessage('Arguments must be an object')],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -505,7 +515,7 @@ router.post(
         return res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
       }
 
@@ -515,7 +525,7 @@ router.post(
       if (!novaMCPServer.callTool) {
         return res.status(503).json({
           success: false,
-          error: 'MCP tool execution not available'
+          error: 'MCP tool execution not available',
         });
       }
 
@@ -527,17 +537,17 @@ router.post(
         success: true,
         toolName,
         result,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error(`MCP Tool ${req.params.toolName} execution failed:`, error);
       res.status(500).json({
         success: false,
         error: 'Tool execution failed',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -555,7 +565,7 @@ router.get(
   async (req, res) => {
     try {
       let resources = [];
-      
+
       if (novaMCPServer.getServerInfo) {
         const serverInfo = novaMCPServer.getServerInfo();
         resources = serverInfo.resources || [];
@@ -565,17 +575,17 @@ router.get(
         success: true,
         resources,
         totalResources: resources.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Failed to list MCP resources:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to list MCP resources',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -593,7 +603,7 @@ router.get(
   async (req, res) => {
     try {
       let prompts = [];
-      
+
       if (novaMCPServer.getServerInfo) {
         const serverInfo = novaMCPServer.getServerInfo();
         prompts = serverInfo.prompts || [];
@@ -603,17 +613,17 @@ router.get(
         success: true,
         prompts,
         totalPrompts: prompts.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       logger.error('Failed to list MCP prompts:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to list MCP prompts',
-        details: error.message
+        details: error.message,
       });
     }
-  }
+  },
 );
 
 export default router;

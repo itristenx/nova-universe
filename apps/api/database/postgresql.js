@@ -72,7 +72,7 @@ class PostgreSQLManager {
       return true;
     } catch (error) {
       this.connectionAttempts++;
-      
+
       // Only log the first attempt and final failure to reduce noise
       if (this.connectionAttempts === 1) {
         logger.error(`❌ PostgreSQL initialization failed:`, error.message);
@@ -109,8 +109,9 @@ class PostgreSQLManager {
    */
   setupPoolEventHandlers() {
     // Only log connection events in production or when explicitly requested
-    const verboseLogging = process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
-    
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+
     this.pool.on('connect', (_client) => {
       if (verboseLogging) {
         logger.debug('🔗 New PostgreSQL client connected');
@@ -173,10 +174,11 @@ class PostgreSQLManager {
 
     const startTime = Date.now();
     const client = options.client || null;
-    const verboseLogging = process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
     let shouldReleaseClient = false;
     let activeClient;
-    
+
     try {
       if (client) {
         activeClient = client;
@@ -198,7 +200,7 @@ class PostgreSQLManager {
       if (verboseLogging) {
         logger.debug('Query executed successfully.');
       }
-      
+
       const duration = Date.now() - startTime;
       // Always log slow queries regardless of verbosity
       if (duration > 1000) {

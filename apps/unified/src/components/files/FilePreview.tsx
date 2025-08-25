@@ -1,69 +1,64 @@
-import { useState, useEffect } from 'react'
-import { 
-  XMarkIcon,
-  ArrowDownTrayIcon,
-  DocumentIcon,
-  PhotoIcon
-} from '@heroicons/react/24/outline'
-import { cn } from '@utils/index'
-import { fileStorageService, type UploadedFile } from '@/services/fileStorage'
+import { useState, useEffect } from 'react';
+import { XMarkIcon, ArrowDownTrayIcon, DocumentIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { cn } from '@utils/index';
+import { fileStorageService, type UploadedFile } from '@/services/fileStorage';
 
 interface FilePreviewProps {
-  file: UploadedFile | null
-  onClose: () => void
-  className?: string
+  file: UploadedFile | null;
+  onClose: () => void;
+  className?: string;
 }
 
 export function FilePreview({ file, onClose, className }: FilePreviewProps) {
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!file) {
-      setDownloadUrl(null)
-      setError(null)
-      return
+      setDownloadUrl(null);
+      setError(null);
+      return;
     }
 
     const loadPreview = async () => {
       try {
-        setLoading(true)
-        setError(null)
-        const url = await fileStorageService.getDownloadUrl(file.key, 3600)
-        setDownloadUrl(url)
+        setLoading(true);
+        setError(null);
+        const url = await fileStorageService.getDownloadUrl(file.key, 3600);
+        setDownloadUrl(url);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load preview')
+        setError(err instanceof Error ? err.message : 'Failed to load preview');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadPreview()
-  }, [file])
+    loadPreview();
+  }, [file]);
 
   const handleDownload = async () => {
-    if (!file || !downloadUrl) return
-    
+    if (!file || !downloadUrl) return;
+
     try {
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.download = file.originalName
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = file.originalName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (err) {
-      console.error('Download failed:', err)
+      console.error('Download failed:', err);
     }
-  }
+  };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -71,27 +66,28 @@ export function FilePreview({ file, onClose, className }: FilePreviewProps) {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+      minute: '2-digit',
+    });
+  };
 
-  const isImage = file?.contentType.startsWith('image/')
-  const isPDF = file?.contentType === 'application/pdf'
+  const isImage = file?.contentType.startsWith('image/');
+  const isPDF = file?.contentType === 'application/pdf';
 
-  if (!file) return null
+  if (!file) return null;
 
   return (
-    <div className={cn('fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75', className)}>
-      <div className="relative max-h-full max-w-4xl w-full mx-4 bg-white rounded-lg shadow-xl dark:bg-gray-800">
+    <div
+      className={cn(
+        'bg-opacity-75 fixed inset-0 z-50 flex items-center justify-center bg-black',
+        className,
+      )}
+    >
+      <div className="relative mx-4 max-h-full w-full max-w-4xl rounded-lg bg-white shadow-xl dark:bg-gray-800">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
           <div className="flex items-center space-x-3">
             <div className="text-gray-400">
-              {isImage ? (
-                <PhotoIcon className="h-6 w-6" />
-              ) : (
-                <DocumentIcon className="h-6 w-6" />
-              )}
+              {isImage ? <PhotoIcon className="h-6 w-6" /> : <DocumentIcon className="h-6 w-6" />}
             </div>
             <div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -102,11 +98,11 @@ export function FilePreview({ file, onClose, className }: FilePreviewProps) {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={handleDownload}
-              className="rounded-md bg-nova-600 px-3 py-2 text-sm text-white hover:bg-nova-700 focus:outline-none focus:ring-2 focus:ring-nova-500 focus:ring-offset-2"
+              className="bg-nova-600 hover:bg-nova-700 focus:ring-nova-500 rounded-md px-3 py-2 text-sm text-white focus:ring-2 focus:ring-offset-2 focus:outline-none"
               title="Download file"
             >
               <ArrowDownTrayIcon className="h-4 w-4" />
@@ -140,21 +136,21 @@ export function FilePreview({ file, onClose, className }: FilePreviewProps) {
           {downloadUrl && !loading && !error && (
             <div className="space-y-4">
               {/* Preview Area */}
-              <div className="rounded-lg border border-gray-200 dark:border-gray-700 min-h-96 flex items-center justify-center">
+              <div className="flex min-h-96 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700">
                 {isImage ? (
                   <img
                     src={downloadUrl}
                     alt={file.originalName}
-                    className="max-w-full max-h-96 rounded-lg"
+                    className="max-h-96 max-w-full rounded-lg"
                   />
                 ) : isPDF ? (
                   <iframe
                     src={downloadUrl}
-                    className="w-full h-96 rounded-lg"
+                    className="h-96 w-full rounded-lg"
                     title={file.originalName}
                   />
                 ) : (
-                  <div className="text-center py-12">
+                  <div className="py-12 text-center">
                     <DocumentIcon className="mx-auto h-16 w-16 text-gray-300 dark:text-gray-600" />
                     <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
                       Preview not available
@@ -170,7 +166,9 @@ export function FilePreview({ file, onClose, className }: FilePreviewProps) {
               <dl className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <dt className="font-medium text-gray-900 dark:text-gray-100">Upload Date</dt>
-                  <dd className="text-gray-500 dark:text-gray-400">{formatDate(file.uploadedAt)}</dd>
+                  <dd className="text-gray-500 dark:text-gray-400">
+                    {formatDate(file.uploadedAt)}
+                  </dd>
                 </div>
                 <div>
                   <dt className="font-medium text-gray-900 dark:text-gray-100">Storage Provider</dt>
@@ -182,13 +180,13 @@ export function FilePreview({ file, onClose, className }: FilePreviewProps) {
                 </div>
                 <div>
                   <dt className="font-medium text-gray-900 dark:text-gray-100">File ID</dt>
-                  <dd className="text-gray-500 dark:text-gray-400 font-mono text-xs">{file.id}</dd>
+                  <dd className="font-mono text-xs text-gray-500 dark:text-gray-400">{file.id}</dd>
                 </div>
                 {file.metadata && Object.keys(file.metadata).length > 0 && (
                   <div className="col-span-2">
-                    <dt className="font-medium text-gray-900 dark:text-gray-100 mb-2">Metadata</dt>
+                    <dt className="mb-2 font-medium text-gray-900 dark:text-gray-100">Metadata</dt>
                     <dd className="text-gray-500 dark:text-gray-400">
-                      <pre className="bg-gray-50 dark:bg-gray-900 p-2 rounded text-xs overflow-auto">
+                      <pre className="overflow-auto rounded bg-gray-50 p-2 text-xs dark:bg-gray-900">
                         {JSON.stringify(file.metadata, null, 2)}
                       </pre>
                     </dd>
@@ -200,5 +198,5 @@ export function FilePreview({ file, onClose, className }: FilePreviewProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

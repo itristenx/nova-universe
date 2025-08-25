@@ -1,13 +1,9 @@
-import { ReactNode } from 'react'
+import { ReactNode } from 'react';
 
 interface AuthLayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function AuthLayout({ children }: AuthLayoutProps) {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {children}
-    </div>
-  )
+  return <div className="min-h-screen bg-gray-50 dark:bg-gray-900">{children}</div>;
 }

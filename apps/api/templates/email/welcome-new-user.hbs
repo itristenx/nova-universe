@@ -1,0 +1,157 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Welcome to {{companyName}}</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #374151;
+        margin: 0;
+        padding: 0;
+        background-color: #f9fafb;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .content {
+        padding: 32px 24px;
+      }
+      .ticket-id {
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 16px;
+      }
+      .btn-primary {
+        display: inline-block;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        margin: 16px 8px 16px 0;
+      }
+      .footer {
+        background: #f8fafc;
+        text-align: center;
+        padding: 24px;
+        color: #64748b;
+        font-size: 12px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .footer a {
+        color: #3b82f6;
+        text-decoration: none;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+        padding: 32px 24px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .welcome-banner {
+        background: #f0fdfa;
+        border: 2px solid #14b8a6;
+        border-radius: 8px;
+        padding: 24px;
+        text-align: center;
+        margin: 24px 0;
+      }
+      .feature-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin: 24px 0;
+      }
+      .feature-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 16px;
+        text-align: center;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      }
+      @media (max-width: 600px) {
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>🎉 Welcome to {{companyName}}!</h1>
+      </div>
+      <div class='content'>
+        <div class='welcome-banner'>
+          <h2>Welcome aboard, {{user.name}}!</h2>
+          <p>Your support portal account has been created successfully.</p>
+        </div>
+
+        <p>We're excited to have you join our community! Your support portal gives you access to:</p>
+
+        <div class='feature-grid'>
+          <div class='feature-item'>
+            <h4>🎫 Submit Tickets</h4>
+            <p>Get help quickly by submitting support requests</p>
+          </div>
+          <div class='feature-item'>
+            <h4>📊 Track Progress</h4>
+            <p>Monitor your tickets and see real-time updates</p>
+          </div>
+          <div class='feature-item'>
+            <h4>💬 Live Chat</h4>
+            <p>Connect with our support team instantly</p>
+          </div>
+          <div class='feature-item'>
+            <h4>📚 Knowledge Base</h4>
+            <p>Find answers in our comprehensive help center</p>
+          </div>
+        </div>
+
+        <div style='text-align: center; margin: 32px 0;'>
+          <a href='{{baseUrl}}/portal' class='btn-primary'>Access Your Portal</a>
+        </div>
+
+        <p><strong>📋 Your Account Details:</strong></p>
+        <ul>
+          <li><strong>Email:</strong> {{user.email}}</li>
+          <li><strong>Portal URL:</strong> <a href='{{baseUrl}}/portal'>{{baseUrl}}/portal</a></li>
+          <li><strong>Support Email:</strong>
+            <a href='mailto:{{supportEmail}}'>{{supportEmail}}</a></li>
+        </ul>
+
+        <p><strong>🚀 Getting Started:</strong></p>
+        <ol>
+          <li>Log in to your portal using the link above</li>
+          <li>Complete your profile information</li>
+          <li>Explore our help center for quick answers</li>
+          <li>Submit your first ticket if you need assistance</li>
+        </ol>
+      </div>
+      <div class='footer'>
+        <p>Welcome to {{companyName}}!</p>
+        <p>Need help getting started? Contact us at
+          <a href='mailto:{{supportEmail}}'>{{supportEmail}}</a></p>
+      </div>
+    </div>
+  </body>
+</html>

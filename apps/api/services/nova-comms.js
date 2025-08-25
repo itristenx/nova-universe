@@ -155,7 +155,7 @@ export function initializeSlackApp() {
 
   try {
     const config = validateSlackEnv();
-    
+
     slackApp = new App({
       signingSecret: process.env.SLACK_SIGNING_SECRET,
       token: process.env.SLACK_BOT_TOKEN,
@@ -326,7 +326,9 @@ export function initializeSlackApp() {
         const metrics = res.data?.metrics || [];
         const top = metrics
           .slice(0, 5)
-          .map((q) => `• ${q.queue_name || q.queueName}: ${q.open_tickets || q.openTickets || 0} open`)
+          .map(
+            (q) => `• ${q.queue_name || q.queueName}: ${q.open_tickets || q.openTickets || 0} open`,
+          )
           .join('\n');
         await client.chat.postEphemeral({
           channel: body.channel_id,
@@ -431,7 +433,11 @@ export function initializeSlackApp() {
           { headers: { Authorization: `Bearer ${token}` } },
         );
         const message = start.data?.message || 'How can I help?';
-        await client.chat.postMessage({ channel: event.channel, thread_ts: event.ts, text: message });
+        await client.chat.postMessage({
+          channel: event.channel,
+          thread_ts: event.ts,
+          text: message,
+        });
       } catch (e) {
         logger.error('Failed to handle app mention:', e.message);
         await client.chat.postMessage({
@@ -458,7 +464,7 @@ export async function startSlackApp(port) {
   if (!slackApp) {
     initializeSlackApp();
   }
-  
+
   if (slackApp) {
     try {
       const config = validateSlackEnv();

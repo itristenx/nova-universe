@@ -1,9 +1,10 @@
 # 🚀 Nova Universe - GoAlert & Uptime Kuma Integration Plan
+
 ## Comprehensive Integration Strategy for Unified Monitoring & Alerting
 
 **Version**: 1.0  
 **Date**: August 20, 2025  
-**Status**: Implementation Planning Complete  
+**Status**: Implementation Planning Complete
 
 ---
 
@@ -26,12 +27,14 @@ This document outlines the comprehensive integration plan for incorporating GoAl
 ### Existing Infrastructure
 
 **GoAlert Integration Status**:
+
 - ✅ Docker container configured in `docker-compose.monitoring.yml`
 - ✅ API proxy layer implemented in `apps/api/routes/goalert-proxy.js`
 - ✅ Integration service in `apps/api/lib/goalert-integration.ts`
 - ✅ Existing database schema for alerts and escalation
 
 **Uptime Kuma Integration Status**:
+
 - ✅ Docker container configured in `docker-compose.monitoring.yml`
 - ✅ API proxy layer in `apps/api/routes/uptime-kuma-proxy.js`
 - ✅ Sentinel integration service in `apps/api/lib/sentinel-integration.ts`
@@ -39,6 +42,7 @@ This document outlines the comprehensive integration plan for incorporating GoAl
 - ✅ WebSocket integration for real-time updates
 
 **Nova Ecosystem Integration Points**:
+
 - ✅ Nova Helix (Identity & Access Management)
 - ✅ Nova Comms (Communication Integration)
 - ✅ Nova Synth (AI & Automation Engine)
@@ -203,24 +207,24 @@ interface NovaMonitoringAPI {
   'POST /api/v2/monitoring/monitors': CreateMonitor;
   'PUT /api/v2/monitoring/monitors/:id': UpdateMonitor;
   'DELETE /api/v2/monitoring/monitors/:id': DeleteMonitor;
-  
-  // Unified Alert Management  
+
+  // Unified Alert Management
   'GET /api/v2/alerts': AlertList;
   'POST /api/v2/alerts': CreateAlert;
   'PUT /api/v2/alerts/:id/acknowledge': AcknowledgeAlert;
   'PUT /api/v2/alerts/:id/resolve': ResolveAlert;
-  
+
   // On-Call Management
   'GET /api/v2/oncall/schedules': ScheduleList;
   'POST /api/v2/oncall/schedules': CreateSchedule;
   'GET /api/v2/oncall/current': CurrentOnCall;
   'POST /api/v2/oncall/override': CreateOverride;
-  
+
   // Status Pages
   'GET /api/v2/status/public/:tenantId': PublicStatusPage;
   'GET /api/v2/status/internal/dashboard': InternalDashboard;
   'POST /api/v2/status/incidents': CreateIncident;
-  
+
   // Integration Management
   'GET /api/v2/integration/health': ServiceHealthStatus;
   'POST /api/v2/integration/sync': TriggerSync;
@@ -236,34 +240,34 @@ export class NovaMonitoringProxy {
   private goalertClient: GoAlertAPIClient;
   private uptimeKumaClient: UptimeKumaAPIClient;
   private eventBridge: EventBridge;
-  
+
   async createMonitor(request: CreateMonitorRequest): Promise<Monitor> {
     // 1. Validate request with Nova RBAC
     await this.validateAccess(request.user, 'monitor.create');
-    
+
     // 2. Create in Uptime Kuma
     const kumaMonitor = await this.uptimeKumaClient.createMonitor({
       name: request.name,
       type: request.type,
       url: request.url,
-      interval: request.interval
+      interval: request.interval,
     });
-    
+
     // 3. Store in Nova database with correlation ID
     const novaMonitor = await this.storeNovaMonitor({
       ...request,
       uptime_kuma_id: kumaMonitor.id,
-      created_by: request.user.id
+      created_by: request.user.id,
     });
-    
+
     // 4. Set up alerting in GoAlert if enabled
     if (request.alerting_enabled) {
       await this.setupGoAlertService(novaMonitor);
     }
-    
+
     // 5. Emit event for real-time updates
     this.eventBridge.emit('monitor.created', novaMonitor);
-    
+
     return novaMonitor;
   }
 }
@@ -283,26 +287,26 @@ export class MonitoringAuthService {
   async authenticateUser(token: string): Promise<AuthenticatedUser> {
     // 1. Validate Nova token
     const novaUser = await helixClient.validateToken(token);
-    
+
     // 2. Get or create service-specific credentials
     const serviceCredentials = await this.getServiceCredentials(novaUser.id);
-    
+
     // 3. Ensure user exists in monitoring services
     if (!serviceCredentials.goalert_user_id) {
       const goalertUser = await this.createGoAlertUser(novaUser);
       serviceCredentials.goalert_user_id = goalertUser.id;
     }
-    
+
     if (!serviceCredentials.uptime_kuma_token) {
       const kumaToken = await this.createUptimeKumaToken(novaUser);
       serviceCredentials.uptime_kuma_token = kumaToken;
     }
-    
+
     await this.updateServiceCredentials(novaUser.id, serviceCredentials);
-    
+
     return {
       ...novaUser,
-      serviceCredentials
+      serviceCredentials,
     };
   }
 }
@@ -329,7 +333,7 @@ interface MonitoringPermissions {
 
 // Role mapping
 const ROLE_PERMISSIONS: Record<UserRole, MonitoringPermissions> = {
-  'admin': {
+  admin: {
     // All permissions
     'monitor.view': true,
     'monitor.create': true,
@@ -342,9 +346,9 @@ const ROLE_PERMISSIONS: Record<UserRole, MonitoringPermissions> = {
     'oncall.manage': true,
     'status.public.view': true,
     'status.admin.manage': true,
-    'integration.admin': true
+    'integration.admin': true,
   },
-  'technician': {
+  technician: {
     // Operational permissions
     'monitor.view': true,
     'monitor.create': true,
@@ -357,9 +361,9 @@ const ROLE_PERMISSIONS: Record<UserRole, MonitoringPermissions> = {
     'oncall.manage': false,
     'status.public.view': true,
     'status.admin.manage': false,
-    'integration.admin': false
+    'integration.admin': false,
   },
-  'user': {
+  user: {
     // Read-only permissions
     'monitor.view': true,
     'monitor.create': false,
@@ -372,8 +376,8 @@ const ROLE_PERMISSIONS: Record<UserRole, MonitoringPermissions> = {
     'oncall.manage': false,
     'status.public.view': true,
     'status.admin.manage': false,
-    'integration.admin': false
-  }
+    'integration.admin': false,
+  },
 };
 ```
 
@@ -390,11 +394,11 @@ const ROLE_PERMISSIONS: Record<UserRole, MonitoringPermissions> = {
 export class UnifiedNotificationService {
   private novaCommsClient: NovaCommsClient;
   private goalertClient: GoAlertAPIClient;
-  
+
   async sendAlert(alert: Alert, recipients: NotificationRecipient[]): Promise<void> {
     // 1. Determine notification preferences
     const notifications = await this.buildNotificationPlan(alert, recipients);
-    
+
     // 2. Send via Nova Comms (primary channel)
     for (const notification of notifications) {
       try {
@@ -406,48 +410,47 @@ export class UnifiedNotificationService {
             alert,
             severity: alert.severity,
             monitor: alert.monitor,
-            actions: this.generateActionLinks(alert)
-          }
+            actions: this.generateActionLinks(alert),
+          },
         });
-        
+
         // 3. Log notification for audit
         await this.logNotification(alert.id, notification);
-        
       } catch (error) {
         // 4. Fallback to GoAlert if Nova Comms fails
         await this.fallbackToGoAlert(alert, notification);
       }
     }
   }
-  
+
   private async buildNotificationPlan(
-    alert: Alert, 
-    recipients: NotificationRecipient[]
+    alert: Alert,
+    recipients: NotificationRecipient[],
   ): Promise<NotificationPlan[]> {
     const plan: NotificationPlan[] = [];
-    
+
     for (const recipient of recipients) {
       // Get user notification preferences
       const preferences = await this.getUserNotificationPreferences(recipient.userId);
-      
+
       // Apply quiet hours and DND settings
       if (this.shouldSkipDueToQuietHours(preferences, alert)) {
         continue;
       }
-      
+
       // Determine channels based on severity and preferences
       const channels = this.selectChannelsForSeverity(alert.severity, preferences);
-      
+
       for (const channel of channels) {
         plan.push({
           type: channel.type,
           recipient: recipient,
           delay: channel.delay || 0,
-          priority: this.calculatePriority(alert.severity, channel.type)
+          priority: this.calculatePriority(alert.severity, channel.type),
         });
       }
     }
-    
+
     return plan.sort((a, b) => a.priority - b.priority);
   }
 }
@@ -476,7 +479,7 @@ export const MONITORING_NOTIFICATION_TEMPLATES = {
         <a href="{{actions.acknowledge}}">Acknowledge Alert</a> |
         <a href="{{actions.view}}">View Details</a> |
         <a href="{{actions.escalate}}">Escalate</a>
-      `
+      `,
     },
     slack: {
       blocks: [
@@ -484,8 +487,8 @@ export const MONITORING_NOTIFICATION_TEMPLATES = {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: '*🚨 {{severity}} Alert*\n*{{monitor.name}}* is *{{status}}*'
-          }
+            text: '*🚨 {{severity}} Alert*\n*{{monitor.name}}* is *{{status}}*',
+          },
         },
         {
           type: 'section',
@@ -493,8 +496,8 @@ export const MONITORING_NOTIFICATION_TEMPLATES = {
             { type: 'mrkdwn', text: '*Monitor:*\n{{monitor.name}}' },
             { type: 'mrkdwn', text: '*Status:*\n{{status}}' },
             { type: 'mrkdwn', text: '*Severity:*\n{{severity}}' },
-            { type: 'mrkdwn', text: '*Time:*\n{{alert.created_at}}' }
-          ]
+            { type: 'mrkdwn', text: '*Time:*\n{{alert.created_at}}' },
+          ],
         },
         {
           type: 'actions',
@@ -503,18 +506,18 @@ export const MONITORING_NOTIFICATION_TEMPLATES = {
               type: 'button',
               text: { type: 'plain_text', text: 'Acknowledge' },
               action_id: 'acknowledge_alert',
-              value: '{{alert.id}}'
+              value: '{{alert.id}}',
             },
             {
               type: 'button',
               text: { type: 'plain_text', text: 'View Details' },
-              url: '{{actions.view}}'
-            }
-          ]
-        }
-      ]
-    }
-  }
+              url: '{{actions.view}}',
+            },
+          ],
+        },
+      ],
+    },
+  },
 };
 ```
 
@@ -597,36 +600,36 @@ export const MONITORING_NOTIFICATION_TEMPLATES = {
 export class MonitoringEventBridge extends EventEmitter {
   private redisClient: Redis;
   private eventProcessors: Map<string, EventProcessor>;
-  
+
   constructor() {
     super();
     this.setupEventProcessors();
   }
-  
+
   private setupEventProcessors(): void {
     // User synchronization
     this.eventProcessors.set('user.created', new UserSyncProcessor());
     this.eventProcessors.set('user.updated', new UserSyncProcessor());
     this.eventProcessors.set('user.deleted', new UserSyncProcessor());
-    
+
     // Monitor synchronization
     this.eventProcessors.set('monitor.created', new MonitorSyncProcessor());
     this.eventProcessors.set('monitor.updated', new MonitorSyncProcessor());
     this.eventProcessors.set('monitor.deleted', new MonitorSyncProcessor());
-    
+
     // Alert synchronization
     this.eventProcessors.set('alert.triggered', new AlertSyncProcessor());
     this.eventProcessors.set('alert.acknowledged', new AlertSyncProcessor());
     this.eventProcessors.set('alert.resolved', new AlertSyncProcessor());
   }
-  
+
   async processEvent(event: IntegrationEvent): Promise<void> {
     const processor = this.eventProcessors.get(event.event_type);
     if (!processor) {
       logger.warn(`No processor found for event type: ${event.event_type}`);
       return;
     }
-    
+
     try {
       await processor.process(event);
       await this.markEventCompleted(event.id);
@@ -657,47 +660,47 @@ export class MonitoringEventBridge extends EventEmitter {
 // Comprehensive integration tests
 describe('Nova Monitoring Integration', () => {
   let testEnvironment: TestEnvironment;
-  
+
   beforeAll(async () => {
     testEnvironment = await setupTestEnvironment({
       services: ['goalert', 'uptime-kuma', 'nova-api'],
       databases: ['nova-test', 'goalert-test'],
-      redis: true
+      redis: true,
     });
   });
-  
+
   describe('User Management Integration', () => {
     it('should create users in all services when created in Nova', async () => {
       // Create user in Nova
       const novaUser = await testEnvironment.nova.createUser({
         email: 'test@nova.local',
-        role: 'technician'
+        role: 'technician',
       });
-      
+
       // Verify user created in GoAlert
       const goalertUser = await testEnvironment.goalert.getUser(novaUser.email);
       expect(goalertUser).toBeDefined();
       expect(goalertUser.email).toBe(novaUser.email);
-      
+
       // Verify Uptime Kuma token created
       const credentials = await testEnvironment.nova.getServiceCredentials(novaUser.id);
       expect(credentials.uptime_kuma_token).toBeDefined();
     });
   });
-  
+
   describe('Monitor Synchronization', () => {
     it('should create monitors in both Nova and Uptime Kuma', async () => {
       const monitor = await testEnvironment.nova.createMonitor({
         name: 'Test Monitor',
         type: 'http',
         url: 'https://example.com',
-        interval: 60
+        interval: 60,
       });
-      
+
       // Verify in Nova database
       const novaMonitor = await testEnvironment.nova.getMonitor(monitor.id);
       expect(novaMonitor).toBeDefined();
-      
+
       // Verify in Uptime Kuma
       const kumaMonitor = await testEnvironment.uptimeKuma.getMonitor(monitor.uptime_kuma_id);
       expect(kumaMonitor).toBeDefined();
@@ -719,30 +722,35 @@ describe('Nova Monitoring Integration', () => {
 ## 📋 Implementation Phases
 
 ### Phase 1: Foundation (Weeks 1-2)
+
 - ✅ Enhanced database schema design
 - ✅ API gateway proxy enhancements
 - ✅ Basic event bridge implementation
 - ✅ User authentication integration
 
 ### Phase 2: Core Integration (Weeks 3-4)
+
 - ✅ Monitor management unification
 - ✅ Alert correlation system
 - ✅ Notification system integration
 - ✅ Real-time synchronization
 
 ### Phase 3: UI Development (Weeks 5-6)
+
 - ✅ Nova Pulse monitoring components
 - ✅ Nova Orbit status pages
 - ✅ Nova Core admin interface
 - ✅ Mobile-responsive design
 
 ### Phase 4: Advanced Features (Weeks 7-8)
+
 - ✅ Advanced analytics and reporting
 - ✅ Automated incident response
 - ✅ Configuration management
 - ✅ Performance optimization
 
 ### Phase 5: Testing & Deployment (Weeks 9-10)
+
 - ✅ Comprehensive testing suite
 - ✅ Migration tools and scripts
 - ✅ Documentation and training
@@ -753,18 +761,21 @@ describe('Nova Monitoring Integration', () => {
 ## 🎯 Success Metrics
 
 ### Technical Metrics
+
 - **API Response Time**: <200ms for 95% of requests
 - **Sync Latency**: <5 seconds for critical events
 - **Uptime**: 99.9% availability for monitoring services
 - **Data Consistency**: >99.99% sync accuracy
 
 ### User Experience Metrics
+
 - **Feature Parity**: 100% functionality preservation
 - **User Adoption**: >95% user migration within 30 days
 - **Support Tickets**: <5% increase during transition
 - **User Satisfaction**: >4.5/5 rating
 
 ### Business Metrics
+
 - **Operational Efficiency**: 40% reduction in tool-switching time
 - **Alert Response Time**: 30% improvement in MTTR
 - **Configuration Time**: 60% reduction in setup time
@@ -775,12 +786,14 @@ describe('Nova Monitoring Integration', () => {
 ## 🚀 Deployment Strategy
 
 ### Blue-Green Deployment
+
 1. **Blue Environment**: Current separate tools
 2. **Green Environment**: Integrated Nova ecosystem
 3. **Gradual Migration**: Department-by-department rollout
 4. **Rollback Plan**: Immediate fallback capability
 
 ### Migration Tools
+
 - **Data Migration Scripts**: Automated user/config migration
 - **Compatibility Layer**: Temporary API bridging
 - **Validation Tools**: Data integrity verification
@@ -791,6 +804,7 @@ describe('Nova Monitoring Integration', () => {
 ## 🔮 Future Enhancements
 
 ### Planned Improvements
+
 1. **AI-Powered Alerting**: Machine learning for alert prioritization
 2. **Predictive Monitoring**: Proactive issue detection
 3. **Advanced Analytics**: Deep insights and optimization
@@ -798,6 +812,7 @@ describe('Nova Monitoring Integration', () => {
 5. **Mobile Applications**: Native iOS/Android apps
 
 ### Scalability Considerations
+
 - **Microservice Architecture**: Independent scaling
 - **Event Sourcing**: Scalable data synchronization
 - **Caching Strategy**: Redis-based performance optimization

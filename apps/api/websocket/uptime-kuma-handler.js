@@ -18,18 +18,18 @@ class UptimeKumaWebSocketHandler {
   async initialize() {
     try {
       const kumaUrl = process.env.UPTIME_KUMA_URL || 'http://localhost:3001';
-      
+
       this.kumaSocket = Client(kumaUrl, {
         transports: ['websocket', 'polling'],
         timeout: 10000,
-        forceNew: true
+        forceNew: true,
       });
 
       this.setupKumaEventHandlers();
-      
+
       // Attempt to authenticate with Uptime Kuma
       await this.authenticateWithKuma();
-      
+
       logger.info('Uptime Kuma WebSocket handler initialized', { kumaUrl });
     } catch (error) {
       logger.error('Failed to initialize Uptime Kuma WebSocket handler', { error: error.message });
@@ -48,25 +48,29 @@ class UptimeKumaWebSocketHandler {
       // Check if authentication is required
       this.kumaSocket.on('loginRequired', () => {
         logger.info('Uptime Kuma login required, attempting authentication...');
-        
+
         // Use environment variables for Kuma authentication
         const username = process.env.UPTIME_KUMA_USERNAME || 'admin';
         const password = process.env.UPTIME_KUMA_PASSWORD || 'nova-admin';
-        
-        this.kumaSocket.emit('login', {
-          username,
-          password
-        }, (response) => {
-          if (response.ok) {
-            logger.info('Successfully authenticated with Uptime Kuma');
-            this.isConnected = true;
-            this.reconnectAttempts = 0;
-            resolve(response);
-          } else {
-            logger.error('Failed to authenticate with Uptime Kuma', { error: response.msg });
-            reject(new Error(response.msg || 'Authentication failed'));
-          }
-        });
+
+        this.kumaSocket.emit(
+          'login',
+          {
+            username,
+            password,
+          },
+          (response) => {
+            if (response.ok) {
+              logger.info('Successfully authenticated with Uptime Kuma');
+              this.isConnected = true;
+              this.reconnectAttempts = 0;
+              resolve(response);
+            } else {
+              logger.error('Failed to authenticate with Uptime Kuma', { error: response.msg });
+              reject(new Error(response.msg || 'Authentication failed'));
+            }
+          },
+        );
       });
 
       // Handle direct connection without auth requirement
@@ -99,8 +103,8 @@ class UptimeKumaWebSocketHandler {
           responseTime: heartbeat.ping || 0,
           message: heartbeat.msg,
           timestamp: heartbeat.time,
-          important: heartbeat.important
-        }
+          important: heartbeat.important,
+        },
       };
 
       logger.debug('Received Uptime Kuma heartbeat', transformedEvent);
@@ -111,17 +115,19 @@ class UptimeKumaWebSocketHandler {
     this.kumaSocket.on('monitorList', (monitors) => {
       const transformedEvent = {
         type: 'monitors_updated',
-        data: Object.values(monitors).map(monitor => ({
+        data: Object.values(monitors).map((monitor) => ({
           id: monitor.id.toString(),
           name: monitor.name,
           type: monitor.type,
           status: monitor.active ? 'up' : 'down',
           url: monitor.url,
-          isActive: monitor.active
-        }))
+          isActive: monitor.active,
+        })),
       };
 
-      logger.debug('Received Uptime Kuma monitor list update', { count: Object.keys(monitors).length });
+      logger.debug('Received Uptime Kuma monitor list update', {
+        count: Object.keys(monitors).length,
+      });
       this.broadcastToNovaClients(transformedEvent);
     });
 
@@ -129,14 +135,14 @@ class UptimeKumaWebSocketHandler {
     this.kumaSocket.on('updateMonitorIntoList', (monitors) => {
       const transformedEvent = {
         type: 'monitor_updated',
-        data: Object.values(monitors).map(monitor => ({
+        data: Object.values(monitors).map((monitor) => ({
           id: monitor.id.toString(),
           name: monitor.name,
           type: monitor.type,
           status: monitor.active ? 'up' : 'down',
           url: monitor.url,
-          isActive: monitor.active
-        }))
+          isActive: monitor.active,
+        })),
       };
 
       logger.debug('Received Uptime Kuma monitor update');
@@ -148,8 +154,8 @@ class UptimeKumaWebSocketHandler {
       const transformedEvent = {
         type: 'monitor_deleted',
         data: {
-          monitorId: monitorId.toString()
-        }
+          monitorId: monitorId.toString(),
+        },
       };
 
       logger.debug('Received Uptime Kuma monitor deletion', { monitorId });
@@ -163,8 +169,8 @@ class UptimeKumaWebSocketHandler {
         data: {
           monitorId: data.monitorID.toString(),
           period: data.periodKey,
-          uptime: data.percentage
-        }
+          uptime: data.percentage,
+        },
       };
 
       logger.debug('Received Uptime Kuma uptime update');
@@ -177,8 +183,8 @@ class UptimeKumaWebSocketHandler {
         type: 'avg_ping_updated',
         data: {
           monitorId: data.monitorID.toString(),
-          avgPing: data.avgPing
-        }
+          avgPing: data.avgPing,
+        },
       };
 
       this.broadcastToNovaClients(transformedEvent);
@@ -190,8 +196,8 @@ class UptimeKumaWebSocketHandler {
         type: 'cert_info_updated',
         data: {
           monitorId: data.monitorID.toString(),
-          certInfo: JSON.parse(data.tlsInfoJSON || '{}')
-        }
+          certInfo: JSON.parse(data.tlsInfoJSON || '{}'),
+        },
       };
 
       this.broadcastToNovaClients(transformedEvent);
@@ -213,10 +219,11 @@ class UptimeKumaWebSocketHandler {
   // Broadcast events to all connected Nova clients
   broadcastToNovaClients(event) {
     const message = JSON.stringify(event);
-    
-    this.novaClients.forEach(client => {
+
+    this.novaClients.forEach((client) => {
       try {
-        if (client.readyState === 1) { // WebSocket.OPEN
+        if (client.readyState === 1) {
+          // WebSocket.OPEN
           client.send(message);
         } else {
           // Remove disconnected clients
@@ -228,33 +235,35 @@ class UptimeKumaWebSocketHandler {
       }
     });
 
-    logger.debug('Broadcasted event to Nova clients', { 
-      event: event.type, 
-      clientCount: this.novaClients.size 
+    logger.debug('Broadcasted event to Nova clients', {
+      event: event.type,
+      clientCount: this.novaClients.size,
     });
   }
 
   // Add a Nova WebSocket client
   addNovaClient(ws) {
     this.novaClients.add(ws);
-    logger.debug('Nova client connected to Uptime Kuma events', { 
-      clientCount: this.novaClients.size 
+    logger.debug('Nova client connected to Uptime Kuma events', {
+      clientCount: this.novaClients.size,
     });
 
     // Send connection status
-    ws.send(JSON.stringify({
-      type: 'connection_status',
-      data: {
-        connected: this.isConnected,
-        kumaConnected: this.kumaSocket?.connected || false
-      }
-    }));
+    ws.send(
+      JSON.stringify({
+        type: 'connection_status',
+        data: {
+          connected: this.isConnected,
+          kumaConnected: this.kumaSocket?.connected || false,
+        },
+      }),
+    );
 
     // Handle client disconnect
     ws.on('close', () => {
       this.novaClients.delete(ws);
-      logger.debug('Nova client disconnected from Uptime Kuma events', { 
-        clientCount: this.novaClients.size 
+      logger.debug('Nova client disconnected from Uptime Kuma events', {
+        clientCount: this.novaClients.size,
       });
     });
 
@@ -273,10 +282,10 @@ class UptimeKumaWebSocketHandler {
 
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
-    
-    logger.info('Scheduling Uptime Kuma WebSocket reconnection', { 
+
+    logger.info('Scheduling Uptime Kuma WebSocket reconnection', {
       attempt: this.reconnectAttempts,
-      delay: delay / 1000 + 's'
+      delay: delay / 1000 + 's',
     });
 
     setTimeout(() => {
@@ -287,13 +296,13 @@ class UptimeKumaWebSocketHandler {
   // Clean shutdown
   shutdown() {
     logger.info('Shutting down Uptime Kuma WebSocket handler');
-    
+
     if (this.kumaSocket) {
       this.kumaSocket.disconnect();
       this.kumaSocket = null;
     }
 
-    this.novaClients.forEach(client => {
+    this.novaClients.forEach((client) => {
       try {
         client.close();
       } catch {
@@ -311,7 +320,7 @@ class UptimeKumaWebSocketHandler {
       connected: this.isConnected,
       kumaConnected: this.kumaSocket?.connected || false,
       clientCount: this.novaClients.size,
-      reconnectAttempts: this.reconnectAttempts
+      reconnectAttempts: this.reconnectAttempts,
     };
   }
 }
@@ -323,7 +332,7 @@ const uptimeKumaWsHandler = new UptimeKumaWebSocketHandler();
 export function handleUptimeKumaWebSocket(ws, _req) {
   // Add authentication middleware for WebSocket connections
   // In a real implementation, you'd validate the JWT token from the WebSocket connection
-  
+
   logger.info('New WebSocket connection for Uptime Kuma events');
   uptimeKumaWsHandler.addNovaClient(ws);
 }

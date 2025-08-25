@@ -45,7 +45,7 @@ global.ResizeObserver = class ResizeObserver {
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -79,18 +79,18 @@ global.getComputedStyle = jest.fn((element) => ({
   getPropertyValue: jest.fn((prop) => {
     // Return sensible defaults for CSS properties
     const defaults = {
-      'visibility': 'visible',
-      'display': 'block',
-      'opacity': '1',
-      'position': 'static',
-      'overflow': 'visible',
-      'clip': 'auto',
+      visibility: 'visible',
+      display: 'block',
+      opacity: '1',
+      position: 'static',
+      overflow: 'visible',
+      clip: 'auto',
       'clip-path': 'none',
-      'width': '100px',
-      'height': '100px',
+      width: '100px',
+      height: '100px',
       'pointer-events': 'auto',
-      'transform': 'none',
-      'transition': 'none',
+      transform: 'none',
+      transition: 'none',
     };
     return defaults[prop] || '';
   }),

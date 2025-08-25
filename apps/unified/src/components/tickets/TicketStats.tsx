@@ -1,24 +1,24 @@
 interface TicketStatsProps {
   stats: {
-    total: number
-    open: number
-    inProgress: number
-    resolved: number
-    closed: number
-    averageResolutionTime: number
-    slaBreaches: number
-    byPriority: Record<string, number>
-    byType: Record<string, number>
-    byStatus: Record<string, number>
-    trends: Array<{ date: string; count: number }>
-  }
+    total: number;
+    open: number;
+    inProgress: number;
+    resolved: number;
+    closed: number;
+    averageResolutionTime: number;
+    slaBreaches: number;
+    byPriority: Record<string, number>;
+    byType: Record<string, number>;
+    byStatus: Record<string, number>;
+    trends: Array<{ date: string; count: number }>;
+  };
 }
 
 export function TicketStats({ stats }: TicketStatsProps) {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
       <div className="card p-4 text-center">
-        <div className="text-2xl font-bold text-nova-600">{stats.total}</div>
+        <div className="text-nova-600 text-2xl font-bold">{stats.total}</div>
         <div className="text-sm text-gray-600">Total</div>
       </div>
       <div className="card p-4 text-center">
@@ -42,5 +42,5 @@ export function TicketStats({ stats }: TicketStatsProps) {
         <div className="text-sm text-gray-600">SLA Breaches</div>
       </div>
     </div>
-  )
+  );
 }

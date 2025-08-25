@@ -1,18 +1,18 @@
-import { ReactNode, useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Header } from './Header'
-import { Sidebar } from './Sidebar'
-import { Breadcrumb } from '../navigation/Breadcrumb'
-import { cn } from '@utils/index'
+import { ReactNode, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Header } from './Header';
+import { Sidebar } from './Sidebar';
+import { Breadcrumb } from '../navigation/Breadcrumb';
+import { cn } from '@utils/index';
 
 interface AppLayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const navigate = useNavigate()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -21,24 +21,24 @@ export function AppLayout({ children }: AppLayoutProps) {
       if (e.metaKey || e.ctrlKey) {
         switch (e.key) {
           case 'a':
-            e.preventDefault()
-            navigate('/ai')
-            break
+            e.preventDefault();
+            navigate('/ai');
+            break;
           case 'c':
             if (e.shiftKey) {
-              e.preventDefault()
-              navigate('/ai/chatbot')
+              e.preventDefault();
+              navigate('/ai/chatbot');
             }
-            break
+            break;
           default:
-            break
+            break;
         }
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [navigate])
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
@@ -53,7 +53,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Sidebar overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
+          className="bg-opacity-50 fixed inset-0 z-20 bg-black lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -62,7 +62,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div
         className={cn(
           'flex flex-1 flex-col overflow-hidden transition-all duration-300',
-          sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+          sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64',
         )}
       >
         {/* Header */}
@@ -81,5 +81,5 @@ export function AppLayout({ children }: AppLayoutProps) {
         </main>
       </div>
     </div>
-  )
+  );
 }

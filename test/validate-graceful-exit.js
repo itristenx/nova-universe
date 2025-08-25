@@ -19,7 +19,7 @@ const TEST_FILES = [
   'performance-testing.test.js',
   'load-testing.test.js',
   'security-testing.test.js',
-  'user-acceptance-testing.test.js'
+  'user-acceptance-testing.test.js',
 ];
 
 class TestValidator {
@@ -30,22 +30,22 @@ class TestValidator {
 
   async validateTestFile(testFile) {
     console.log(`🧪 Validating ${testFile}...`);
-    
+
     return new Promise((resolve) => {
       const startTime = Date.now();
       const testPath = path.join(TEST_DIR, testFile);
-      
+
       const child = spawn('node', ['--test', testPath], {
         env: {
           ...process.env,
           NODE_OPTIONS: '--experimental-vm-modules',
-          TEST_API_URL: 'http://localhost:3000'
+          TEST_API_URL: 'http://localhost:3000',
         },
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
 
       this.activeProcesses.add(child);
-      
+
       let output = '';
       let error = '';
       let timedOut = false;
@@ -62,10 +62,10 @@ class TestValidator {
       const timeout = setTimeout(() => {
         timedOut = true;
         console.log(`   ⏱️  ${testFile} timed out - attempting graceful termination`);
-        
+
         // Try SIGTERM first
         child.kill('SIGTERM');
-        
+
         // Force kill after 5 seconds if still running
         setTimeout(() => {
           if (!child.killed) {
@@ -78,7 +78,7 @@ class TestValidator {
       child.on('close', (code, signal) => {
         clearTimeout(timeout);
         this.activeProcesses.delete(child);
-        
+
         const duration = Date.now() - startTime;
         const result = {
           file: testFile,
@@ -106,13 +106,13 @@ class TestValidator {
       child.on('error', (err) => {
         clearTimeout(timeout);
         this.activeProcesses.delete(child);
-        
+
         const result = {
           file: testFile,
           error: err.message,
           duration: Date.now() - startTime,
           graceful: false,
-          timedOut: false
+          timedOut: false,
         };
 
         console.log(`   ❌ ${testFile} failed to start: ${err.message}`);
@@ -128,7 +128,7 @@ class TestValidator {
 
     for (const testFile of TEST_FILES) {
       const testPath = path.join(TEST_DIR, testFile);
-      
+
       try {
         await fs.access(testPath);
         await this.validateTestFile(testFile);
@@ -137,7 +137,7 @@ class TestValidator {
         this.results.push({
           file: testFile,
           skipped: true,
-          reason: 'File not found'
+          reason: 'File not found',
         });
       }
     }
@@ -151,10 +151,10 @@ class TestValidator {
     console.log('='.repeat(60));
 
     const totalTests = this.results.length;
-    const gracefulTests = this.results.filter(r => r.graceful).length;
-    const timedOutTests = this.results.filter(r => r.timedOut).length;
-    const skippedTests = this.results.filter(r => r.skipped).length;
-    const errorTests = this.results.filter(r => r.error && !r.timedOut).length;
+    const gracefulTests = this.results.filter((r) => r.graceful).length;
+    const timedOutTests = this.results.filter((r) => r.timedOut).length;
+    const skippedTests = this.results.filter((r) => r.skipped).length;
+    const errorTests = this.results.filter((r) => r.error && !r.timedOut).length;
 
     console.log(`\n📈 Summary:`);
     console.log(`   Total Tests: ${totalTests}`);
@@ -207,8 +207,8 @@ class TestValidator {
 
   async cleanup() {
     console.log('\n🧹 Cleaning up validation processes...');
-    
-    const cleanupPromises = Array.from(this.activeProcesses).map(process => {
+
+    const cleanupPromises = Array.from(this.activeProcesses).map((process) => {
       return new Promise((resolve) => {
         if (process.killed) {
           resolve();
@@ -238,7 +238,7 @@ class TestValidator {
 // Main execution
 async function main() {
   const validator = new TestValidator();
-  
+
   // Handle cleanup on exit
   process.on('SIGINT', async () => {
     await validator.cleanup();
@@ -253,7 +253,7 @@ async function main() {
   try {
     const successRate = await validator.validateAllTests();
     await validator.cleanup();
-    
+
     // Exit with appropriate code
     process.exit(successRate >= 80 ? 0 : 1);
   } catch (error) {

@@ -1823,22 +1823,22 @@ async function processMessageWithAI(message, conversation, context) {
     const response = await aiFabric.processRequest({
       type: 'chat',
       input: message,
-      context: { 
+      context: {
         module: 'cosmo-synth',
         conversationId: conversation.id,
         userId: conversation.userId,
         tenantId: conversation.tenantId,
         messageHistory: conversation.messages.slice(-5), // Last 5 messages for context
-        ...context 
+        ...context,
       },
       preferences: {
         enableMCPTools: true,
         maxTokens: 500,
-        temperature: 0.7
+        temperature: 0.7,
       },
-      metadata: { 
+      metadata: {
         source: 'synth_conversation',
-        tools: ['nova.tickets.create', 'nova.lore.search', 'nova.system.status']
+        tools: ['nova.tickets.create', 'nova.lore.search', 'nova.system.status'],
       },
       timestamp: new Date(),
     });

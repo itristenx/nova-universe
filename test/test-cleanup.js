@@ -102,12 +102,12 @@ export async function performCleanup() {
   // Clean up worker threads
   if (globalCleanupRegistry.workers.size > 0) {
     console.log(`   Terminating ${globalCleanupRegistry.workers.size} workers...`);
-    const workerTerminations = Array.from(globalCleanupRegistry.workers).map(worker => {
+    const workerTerminations = Array.from(globalCleanupRegistry.workers).map((worker) => {
       return new Promise((resolve) => {
         const timeout = setTimeout(() => {
           try {
             worker.terminate();
-          } catch (error) {
+          } catch (_error) {
             console.warn('Warning: Error terminating worker:', error.message);
           }
           resolve();
@@ -120,7 +120,7 @@ export async function performCleanup() {
 
         try {
           worker.postMessage({ type: 'shutdown' });
-        } catch (error) {
+        } catch (_error) {
           worker.terminate();
           clearTimeout(timeout);
           resolve();
@@ -141,13 +141,13 @@ export async function performCleanup() {
         if (process && !process.killed) {
           process.kill('SIGTERM');
           // Give process time to terminate gracefully
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           if (!process.killed) {
             process.kill('SIGKILL');
           }
         }
         cleanupTasks++;
-      } catch (error) {
+      } catch (_error) {
         console.warn('Warning: Error terminating process:', error.message);
       }
     }
@@ -165,7 +165,7 @@ export async function performCleanup() {
           await connection.end();
         }
         cleanupTasks++;
-      } catch (error) {
+      } catch (_error) {
         console.warn('Warning: Error closing connection:', error.message);
       }
     }
@@ -181,7 +181,7 @@ export async function performCleanup() {
           await handle.close();
         }
         cleanupTasks++;
-      } catch (error) {
+      } catch (_error) {
         console.warn('Warning: Error closing file handle:', error.message);
       }
     }
@@ -199,7 +199,7 @@ export async function performCleanup() {
           await resource.cleanup();
         }
         cleanupTasks++;
-      } catch (error) {
+      } catch (_error) {
         console.warn('Warning: Error disposing resource:', error.message);
       }
     }
@@ -214,7 +214,7 @@ export async function performCleanup() {
         try {
           target.removeListener(event, listener);
           cleanupTasks++;
-        } catch (error) {
+        } catch (_error) {
           console.warn('Warning: Error removing event listener:', error.message);
         }
       }

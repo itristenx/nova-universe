@@ -1,29 +1,35 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { 
-  PaperClipIcon, 
-  XMarkIcon, 
-  SparklesIcon
-} from '@heroicons/react/24/outline'
-import { useTicketStore } from '@stores/tickets'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { RichTextEditor } from '@components/forms/RichTextEditor'
-import { EnhancedFileUpload } from '@components/files'
-import type { UploadedFile } from '@services/fileStorage'
-import { UserSelect } from '@components/forms/UserSelect'
-import { TagInput } from '@components/forms/TagInput'
-import { cn } from '@utils/index'
-import toast from 'react-hot-toast'
-import type { CreateTicketData } from '@services/tickets'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { PaperClipIcon, XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { useTicketStore } from '@stores/tickets';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { RichTextEditor } from '@components/forms/RichTextEditor';
+import { EnhancedFileUpload } from '@components/files';
+import type { UploadedFile } from '@services/fileStorage';
+import { UserSelect } from '@components/forms/UserSelect';
+import { TagInput } from '@components/forms/TagInput';
+import { cn } from '@utils/index';
+import toast from 'react-hot-toast';
+import type { CreateTicketData } from '@services/tickets';
 
 // Form validation schema
 const createTicketSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
   description: z.string().min(1, 'Description is required'),
-  type: z.enum(['incident', 'request', 'problem', 'change', 'task', 'hr', 'ops', 'isac', 'feedback']),
+  type: z.enum([
+    'incident',
+    'request',
+    'problem',
+    'change',
+    'task',
+    'hr',
+    'ops',
+    'isac',
+    'feedback',
+  ]),
   priority: z.enum(['low', 'normal', 'high', 'urgent', 'critical']),
   category: z.string().optional(),
   subcategory: z.string().optional(),
@@ -31,36 +37,73 @@ const createTicketSchema = z.object({
   assignedGroupId: z.string().optional(),
   tags: z.array(z.string()).optional(),
   customFields: z.record(z.unknown()).optional(),
-})
+});
 
-type CreateTicketFormData = z.infer<typeof createTicketSchema>
+type CreateTicketFormData = z.infer<typeof createTicketSchema>;
 
 const ticketTypes = [
-  { value: 'incident', label: 'Incident', description: 'Unplanned interruption or reduction in service quality' },
-  { value: 'request', label: 'Service Request', description: 'Request for information, advice, or standard service' },
+  {
+    value: 'incident',
+    label: 'Incident',
+    description: 'Unplanned interruption or reduction in service quality',
+  },
+  {
+    value: 'request',
+    label: 'Service Request',
+    description: 'Request for information, advice, or standard service',
+  },
   { value: 'problem', label: 'Problem', description: 'Root cause of one or more incidents' },
-  { value: 'change', label: 'Change Request', description: 'Request to modify IT infrastructure or services' },
+  {
+    value: 'change',
+    label: 'Change Request',
+    description: 'Request to modify IT infrastructure or services',
+  },
   { value: 'task', label: 'Task', description: 'Work item or activity to be completed' },
   { value: 'hr', label: 'HR Request', description: 'Human resources related request' },
   { value: 'ops', label: 'Operations', description: 'Operational task or request' },
   { value: 'isac', label: 'Security', description: 'Information security related issue' },
   { value: 'feedback', label: 'Feedback', description: 'User feedback or suggestion' },
-]
+];
 
 const priorities = [
-  { value: 'low', label: 'Low', color: 'text-gray-600 bg-gray-100', description: 'Minor issues with workarounds' },
-  { value: 'normal', label: 'Normal', color: 'text-blue-600 bg-blue-100', description: 'Standard business impact' },
-  { value: 'high', label: 'High', color: 'text-orange-600 bg-orange-100', description: 'Significant business impact' },
-  { value: 'urgent', label: 'Urgent', color: 'text-red-600 bg-red-100', description: 'Critical business functions affected' },
-  { value: 'critical', label: 'Critical', color: 'text-red-800 bg-red-200', description: 'Business operations stopped' },
-]
+  {
+    value: 'low',
+    label: 'Low',
+    color: 'text-gray-600 bg-gray-100',
+    description: 'Minor issues with workarounds',
+  },
+  {
+    value: 'normal',
+    label: 'Normal',
+    color: 'text-blue-600 bg-blue-100',
+    description: 'Standard business impact',
+  },
+  {
+    value: 'high',
+    label: 'High',
+    color: 'text-orange-600 bg-orange-100',
+    description: 'Significant business impact',
+  },
+  {
+    value: 'urgent',
+    label: 'Urgent',
+    color: 'text-red-600 bg-red-100',
+    description: 'Critical business functions affected',
+  },
+  {
+    value: 'critical',
+    label: 'Critical',
+    color: 'text-red-800 bg-red-200',
+    description: 'Business operations stopped',
+  },
+];
 
 export default function CreateTicketPage() {
-  const navigate = useNavigate()
-  const { createTicket, isLoading } = useTicketStore()
-  const [attachments, setAttachments] = useState<File[]>([])
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
-  const [showSuggestions, setShowSuggestions] = useState(false)
+  const navigate = useNavigate();
+  const { createTicket, isLoading } = useTicketStore();
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const {
     register,
@@ -77,11 +120,11 @@ export default function CreateTicketPage() {
       tags: [],
       customFields: {},
     },
-  })
+  });
 
-  const watchedTitle = watch('title')
-  const watchedDescription = watch('description')
-  const watchedType = watch('type')
+  const watchedTitle = watch('title');
+  const watchedDescription = watch('description');
+  const watchedType = watch('type');
 
   const onSubmit = async (data: CreateTicketFormData) => {
     try {
@@ -97,43 +140,41 @@ export default function CreateTicketPage() {
         ...(data.tags && { tags: data.tags }),
         ...(data.customFields && { customFields: data.customFields }),
         attachments,
-      }
+      };
 
-      const ticket = await createTicket(ticketData)
-      toast.success('Ticket created successfully!')
-      navigate(`/tickets/${ticket.id}`)
-    } catch (error) {
-      toast.error('Failed to create ticket')
+      const ticket = await createTicket(ticketData);
+      toast.success('Ticket created successfully!');
+      navigate(`/tickets/${ticket.id}`);
+    } catch (_error) {
+      toast.error('Failed to create ticket');
     }
-  }
+  };
 
   const handleTemplateSelect = (templateId: string) => {
     // In a real app, this would load template data from API
-    setSelectedTemplate(templateId)
-    toast('Template loaded')
-  }
+    setSelectedTemplate(templateId);
+    toast('Template loaded');
+  };
 
   const handleFilesUploaded = (files: UploadedFile[]) => {
     // Convert to File objects for form submission compatibility if needed
-    const fileObjects = files.map(f => new File([], f.originalName, { type: f.contentType }))
-    setAttachments(prev => [...prev, ...fileObjects])
-  }
+    const fileObjects = files.map((f) => new File([], f.originalName, { type: f.contentType }));
+    setAttachments((prev) => [...prev, ...fileObjects]);
+  };
 
   const handleFileRemove = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index))
-  }
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
 
-  const selectedTypeInfo = ticketTypes.find(type => type.value === watchedType)
-  const selectedPriorityInfo = priorities.find(priority => priority.value === watch('priority'))
+  const selectedTypeInfo = ticketTypes.find((type) => type.value === watchedType);
+  const selectedPriorityInfo = priorities.find((priority) => priority.value === watch('priority'));
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Create New Ticket
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Create New Ticket</h1>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
             Submit a service request or report an incident
           </p>
@@ -174,7 +215,10 @@ export default function CreateTicketPage() {
             {/* Title and Type Row */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Title *
                 </label>
                 <input
@@ -192,14 +236,17 @@ export default function CreateTicketPage() {
               </div>
 
               <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="type"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Type *
                 </label>
                 <select
                   {...register('type')}
                   className={cn('input mt-1', errors.type && 'input-error')}
                 >
-                  {ticketTypes.map(type => (
+                  {ticketTypes.map((type) => (
                     <option key={type.value} value={type.value}>
                       {type.label}
                     </option>
@@ -216,14 +263,17 @@ export default function CreateTicketPage() {
             {/* Priority and Assignment Row */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <div>
-                <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="priority"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Priority *
                 </label>
                 <select
                   {...register('priority')}
                   className={cn('input mt-1', errors.priority && 'input-error')}
                 >
-                  {priorities.map(priority => (
+                  {priorities.map((priority) => (
                     <option key={priority.value} value={priority.value}>
                       {priority.label}
                     </option>
@@ -242,7 +292,10 @@ export default function CreateTicketPage() {
               </div>
 
               <div>
-                <label htmlFor="assigneeId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="assigneeId"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Assign to User
                 </label>
                 <Controller
@@ -260,13 +313,13 @@ export default function CreateTicketPage() {
               </div>
 
               <div>
-                <label htmlFor="assignedGroupId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="assignedGroupId"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Assign to Group
                 </label>
-                <select
-                  {...register('assignedGroupId')}
-                  className="input mt-1"
-                >
+                <select {...register('assignedGroupId')} className="input mt-1">
                   <option value="">Select group...</option>
                   <option value="it-support">IT Support</option>
                   <option value="network-team">Network Team</option>
@@ -279,13 +332,13 @@ export default function CreateTicketPage() {
             {/* Category Row */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Category
                 </label>
-                <select
-                  {...register('category')}
-                  className="input mt-1"
-                >
+                <select {...register('category')} className="input mt-1">
                   <option value="">Select category...</option>
                   <option value="hardware">Hardware</option>
                   <option value="software">Software</option>
@@ -298,13 +351,13 @@ export default function CreateTicketPage() {
               </div>
 
               <div>
-                <label htmlFor="subcategory" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="subcategory"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Subcategory
                 </label>
-                <select
-                  {...register('subcategory')}
-                  className="input mt-1"
-                >
+                <select {...register('subcategory')} className="input mt-1">
                   <option value="">Select subcategory...</option>
                   <option value="laptop">Laptop</option>
                   <option value="desktop">Desktop</option>
@@ -316,7 +369,10 @@ export default function CreateTicketPage() {
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Description *
               </label>
               <Controller
@@ -340,7 +396,10 @@ export default function CreateTicketPage() {
 
             {/* Tags */}
             <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="tags"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Tags
               </label>
               <Controller
@@ -364,10 +423,8 @@ export default function CreateTicketPage() {
 
         {/* Attachments */}
         <div className="card p-6">
-          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">
-            Attachments
-          </h3>
-          
+          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Attachments</h3>
+
           <EnhancedFileUpload
             onFilesUploaded={handleFilesUploaded}
             context="ticketAttachments"
@@ -379,7 +436,7 @@ export default function CreateTicketPage() {
               'application/msword': [],
               'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [],
               'text/plain': [],
-              'application/zip': []
+              'application/zip': [],
             }}
           />
 
@@ -401,7 +458,7 @@ export default function CreateTicketPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <button
                     type="button"
                     onClick={() => handleFileRemove(index)}
@@ -420,19 +477,19 @@ export default function CreateTicketPage() {
         {showSuggestions && (watchedTitle || watchedDescription) && (
           <div className="card p-6">
             <h3 className="mb-4 flex items-center gap-2 text-lg font-medium text-gray-900 dark:text-gray-100">
-              <SparklesIcon className="h-5 w-5 text-nova-600" />
+              <SparklesIcon className="text-nova-600 h-5 w-5" />
               AI Suggestions
             </h3>
-            
+
             <div className="space-y-4">
-              <div className="rounded-lg bg-nova-50 p-4 dark:bg-nova-900/20">
-                <h4 className="font-medium text-nova-900 dark:text-nova-100">
+              <div className="bg-nova-50 dark:bg-nova-900/20 rounded-lg p-4">
+                <h4 className="text-nova-900 dark:text-nova-100 font-medium">
                   Similar Tickets Found
                 </h4>
-                <p className="mt-1 text-sm text-nova-700 dark:text-nova-300">
+                <p className="text-nova-700 dark:text-nova-300 mt-1 text-sm">
                   We found 3 similar tickets. Consider checking these solutions first.
                 </p>
-                <button className="mt-2 text-sm text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300">
+                <button className="text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300 mt-2 text-sm">
                   View Similar Tickets →
                 </button>
               </div>
@@ -468,19 +525,11 @@ export default function CreateTicketPage() {
           </button>
 
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              disabled={isSubmitting}
-            >
+            <button type="button" className="btn btn-secondary" disabled={isSubmitting}>
               Save as Draft
             </button>
-            
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={isSubmitting || isLoading}
-            >
+
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting || isLoading}>
               {isSubmitting || isLoading ? (
                 <>
                   <LoadingSpinner size="sm" />
@@ -494,5 +543,5 @@ export default function CreateTicketPage() {
         </div>
       </form>
     </div>
-  )
+  );
 }

@@ -1,10 +1,10 @@
-import { cn } from '@utils/index'
+import { cn } from '@utils/index';
 
 interface UserSelectProps {
-  value?: string | undefined
-  onChange: (value: string) => void
-  placeholder?: string
-  className?: string
+  value?: string | undefined;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
 }
 
 export function UserSelect({ value, onChange, placeholder, className }: UserSelectProps) {
@@ -20,5 +20,5 @@ export function UserSelect({ value, onChange, placeholder, className }: UserSele
       <option value="user3">Bob Johnson</option>
       <option value="user4">Alice Wilson</option>
     </select>
-  )
+  );
 }

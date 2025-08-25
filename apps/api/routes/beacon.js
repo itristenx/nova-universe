@@ -674,31 +674,27 @@ router.post('/activation-codes', createRateLimit(5 * 60 * 1000, 20), async (req,
         const activationUrl = `${process.env.ADMIN_URL || ''}/activate?kioskId=${encodeURIComponent(kioskId)}&code=${code}`;
         QRCode.toDataURL(activationUrl)
           .then((qr) => {
-            res
-              .status(201)
-              .json({
-                success: true,
-                code,
-                kioskId,
-                kioskName,
-                location,
-                expiresAt,
-                activationUrl,
-                qr,
-              });
+            res.status(201).json({
+              success: true,
+              code,
+              kioskId,
+              kioskName,
+              location,
+              expiresAt,
+              activationUrl,
+              qr,
+            });
           })
           .catch(() =>
-            res
-              .status(201)
-              .json({
-                success: true,
-                code,
-                kioskId,
-                kioskName,
-                location,
-                expiresAt,
-                activationUrl,
-              }),
+            res.status(201).json({
+              success: true,
+              code,
+              kioskId,
+              kioskName,
+              location,
+              expiresAt,
+              activationUrl,
+            }),
           );
       },
     );

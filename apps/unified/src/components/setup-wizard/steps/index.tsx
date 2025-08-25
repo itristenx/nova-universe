@@ -13,7 +13,7 @@ export interface MonitoringStepProps {
 export const MonitoringStep: React.FC<MonitoringStepProps> = () => {
   return (
     <div className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
         Monitoring Configuration
       </h3>
       <p className="text-gray-600 dark:text-gray-400">
@@ -36,7 +36,7 @@ export interface StorageStepProps {
 export const StorageStep: React.FC<StorageStepProps> = () => {
   return (
     <div className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
         Storage Configuration
       </h3>
       <p className="text-gray-600 dark:text-gray-400">
@@ -59,9 +59,7 @@ export interface AIStepProps {
 export const AIStep: React.FC<AIStepProps> = () => {
   return (
     <div className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        AI Features
-      </h3>
+      <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">AI Features</h3>
       <p className="text-gray-600 dark:text-gray-400">
         This step will configure AI-powered capabilities.
       </p>
@@ -82,7 +80,7 @@ export interface SecurityStepProps {
 export const SecurityStep: React.FC<SecurityStepProps> = () => {
   return (
     <div className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
         Security Configuration
       </h3>
       <p className="text-gray-600 dark:text-gray-400">
@@ -105,9 +103,7 @@ export interface FinalStepProps {
 export const FinalStep: React.FC<FinalStepProps> = () => {
   return (
     <div className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Setup Complete
-      </h3>
+      <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Setup Complete</h3>
       <p className="text-gray-600 dark:text-gray-400">
         Review your configuration and complete the setup process.
       </p>

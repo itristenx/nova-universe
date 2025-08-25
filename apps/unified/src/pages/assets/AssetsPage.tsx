@@ -1,23 +1,23 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { 
-  PlusIcon, 
-  FunnelIcon, 
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  PlusIcon,
+  FunnelIcon,
   ArrowsUpDownIcon,
   MagnifyingGlassIcon,
   DocumentArrowDownIcon,
   XMarkIcon,
   WrenchScrewdriverIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline'
-import { useAssetStore } from '@stores/assets'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { AssetTable } from '@components/assets/AssetTable'
-import { AssetFilters } from '@components/assets/AssetFilters'
-import { AssetStats } from '@components/assets/AssetStats'
-import { BulkAssetActions } from '@components/assets/BulkAssetActions'
-import { cn, formatNumber } from '@utils/index'
-import toast from 'react-hot-toast'
+  ExclamationTriangleIcon,
+} from '@heroicons/react/24/outline';
+import { useAssetStore } from '@stores/assets';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { AssetTable } from '@components/assets/AssetTable';
+import { AssetFilters } from '@components/assets/AssetFilters';
+import { AssetStats } from '@components/assets/AssetStats';
+import { BulkAssetActions } from '@components/assets/BulkAssetActions';
+import { cn, formatNumber } from '@utils/index';
+import toast from 'react-hot-toast';
 
 export default function AssetsPage() {
   const {
@@ -39,157 +39,163 @@ export default function AssetsPage() {
     bulkUpdateAssets,
     refreshAssets,
     clearError,
-  } = useAssetStore()
+  } = useAssetStore();
 
-  const [showFilters, setShowFilters] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isSearching, setIsSearching] = useState(false)
-  const [showMaintenanceAlert, setShowMaintenanceAlert] = useState(true)
-  const [showWarrantyAlert, setShowWarrantyAlert] = useState(true)
+  const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [showMaintenanceAlert, setShowMaintenanceAlert] = useState(true);
+  const [showWarrantyAlert, setShowWarrantyAlert] = useState(true);
 
   // Load assets and related data on component mount
   useEffect(() => {
-    loadAssets()
-    loadStats()
-    loadCategories()
-    loadTypes()
-    loadLocations()
-  }, [loadAssets, loadStats, loadCategories, loadTypes, loadLocations])
+    loadAssets();
+    loadStats();
+    loadCategories();
+    loadTypes();
+    loadLocations();
+  }, [loadAssets, loadStats, loadCategories, loadTypes, loadLocations]);
 
   // Handle search with debouncing
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
-      await loadAssets()
-      setIsSearching(false)
-      return
+      await loadAssets();
+      setIsSearching(false);
+      return;
     }
 
-    setIsSearching(true)
+    setIsSearching(true);
     try {
-      await searchAssets(query)
-    } catch (error) {
-      toast.error('Search failed')
+      await searchAssets(query);
+    } catch (_error) {
+      toast.error('Search failed');
     } finally {
-      setIsSearching(false)
+      setIsSearching(false);
     }
-  }
+  };
 
   // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      handleSearch(searchQuery)
-    }, 300)
+      handleSearch(searchQuery);
+    }, 300);
 
-    return () => clearTimeout(timeoutId)
-  }, [searchQuery])
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   // Handle bulk actions
   const handleBulkAssign = async (userId: string) => {
     if (selectedAssets.length === 0) {
-      toast.error('Please select assets to assign')
-      return
+      toast.error('Please select assets to assign');
+      return;
     }
 
     try {
       await bulkUpdateAssets({
         assetIds: selectedAssets,
         action: 'assign',
-        data: { userId }
-      })
-      toast.success(`Assigned ${selectedAssets.length} assets`)
-      clearSelectedAssets()
-    } catch (error) {
-      toast.error('Failed to assign assets')
+        data: { userId },
+      });
+      toast.success(`Assigned ${selectedAssets.length} assets`);
+      clearSelectedAssets();
+    } catch (_error) {
+      toast.error('Failed to assign assets');
     }
-  }
+  };
 
   const handleBulkRelocate = async (locationId: string) => {
     if (selectedAssets.length === 0) {
-      toast.error('Please select assets to relocate')
-      return
+      toast.error('Please select assets to relocate');
+      return;
     }
 
     try {
       await bulkUpdateAssets({
         assetIds: selectedAssets,
         action: 'relocate',
-        data: { locationId }
-      })
-      toast.success(`Relocated ${selectedAssets.length} assets`)
-      clearSelectedAssets()
-    } catch (error) {
-      toast.error('Failed to relocate assets')
+        data: { locationId },
+      });
+      toast.success(`Relocated ${selectedAssets.length} assets`);
+      clearSelectedAssets();
+    } catch (_error) {
+      toast.error('Failed to relocate assets');
     }
-  }
+  };
 
-  const handleBulkStatusChange = async (status: 'maintenance' | 'retired' | 'active' | 'inactive') => {
+  const handleBulkStatusChange = async (
+    status: 'maintenance' | 'retired' | 'active' | 'inactive',
+  ) => {
     if (selectedAssets.length === 0) {
-      toast.error('Please select assets to update')
-      return
+      toast.error('Please select assets to update');
+      return;
     }
 
     // Map UI status to API actions
     const actionMap: Record<string, string> = {
-      'active': 'activate',
-      'retired': 'retire',
-      'maintenance': 'maintenance'
-    }
+      active: 'activate',
+      retired: 'retire',
+      maintenance: 'maintenance',
+    };
 
-    const action = actionMap[status] || status
+    const action = actionMap[status] || status;
 
     try {
       await bulkUpdateAssets({
         assetIds: selectedAssets,
-        action: action as 'assign' | 'unassign' | 'relocate' | 'retire' | 'activate' | 'maintenance',
-        data: {}
-      })
-      toast.success(`Updated ${selectedAssets.length} assets`)
-      clearSelectedAssets()
-    } catch (error) {
-      toast.error(`Failed to update assets`)
+        action: action as
+          | 'assign'
+          | 'unassign'
+          | 'relocate'
+          | 'retire'
+          | 'activate'
+          | 'maintenance',
+        data: {},
+      });
+      toast.success(`Updated ${selectedAssets.length} assets`);
+      clearSelectedAssets();
+    } catch (_error) {
+      toast.error(`Failed to update assets`);
     }
-  }
+  };
 
   // Handle export
   const handleExport = async (format: 'csv' | 'excel' | 'pdf') => {
     try {
-      toast.success(`Exporting assets as ${format.toUpperCase()}`)
+      toast.success(`Exporting assets as ${format.toUpperCase()}`);
       // Export functionality would be implemented here
-    } catch (error) {
-      toast.error('Export failed')
+    } catch (_error) {
+      toast.error('Export failed');
     }
-  }
+  };
 
   // Handle QR code generation
   const handleGenerateQRCodes = async () => {
     if (selectedAssets.length === 0) {
-      toast.error('Please select assets for QR code generation')
-      return
+      toast.error('Please select assets for QR code generation');
+      return;
     }
 
     try {
-      toast.success(`Generating QR codes for ${selectedAssets.length} assets`)
+      toast.success(`Generating QR codes for ${selectedAssets.length} assets`);
       // QR code generation would be implemented here
-    } catch (error) {
-      toast.error('Failed to generate QR codes')
+    } catch (_error) {
+      toast.error('Failed to generate QR codes');
     }
-  }
+  };
 
   // Clear error when component unmounts
   useEffect(() => {
     return () => {
-      if (error) clearError()
-    }
-  }, [error, clearError])
+      if (error) clearError();
+    };
+  }, [error, clearError]);
 
   return (
     <div className="space-y-6">
       {/* Page header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Asset Management
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Asset Management</h1>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
             Manage and track all organizational assets and inventory
           </p>
@@ -213,14 +219,16 @@ export default function AssetsPage() {
             <select
               onChange={(e) => {
                 if (e.target.value) {
-                  handleExport(e.target.value as 'csv' | 'excel' | 'pdf')
-                  e.target.value = ''
+                  handleExport(e.target.value as 'csv' | 'excel' | 'pdf');
+                  e.target.value = '';
                 }
               }}
               className="btn btn-secondary"
               defaultValue=""
             >
-              <option value="" disabled>Export</option>
+              <option value="" disabled>
+                Export
+              </option>
               <option value="csv">Export as CSV</option>
               <option value="excel">Export as Excel</option>
               <option value="pdf">Export as PDF</option>
@@ -248,7 +256,8 @@ export default function AssetsPage() {
               </h3>
               <div className="mt-2 text-sm text-orange-700 dark:text-orange-300">
                 <p>
-                  {stats.maintenanceDue} asset{stats.maintenanceDue !== 1 ? 's' : ''} require maintenance.
+                  {stats.maintenanceDue} asset{stats.maintenanceDue !== 1 ? 's' : ''} require
+                  maintenance.
                 </p>
               </div>
               <div className="mt-4">
@@ -285,7 +294,8 @@ export default function AssetsPage() {
               </h3>
               <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                 <p>
-                  {stats.warrantyExpiring} asset{stats.warrantyExpiring !== 1 ? 's have' : ' has'} expiring warranties.
+                  {stats.warrantyExpiring} asset{stats.warrantyExpiring !== 1 ? 's have' : ' has'}{' '}
+                  expiring warranties.
                 </p>
               </div>
               <div className="mt-4">
@@ -341,23 +351,19 @@ export default function AssetsPage() {
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
                 'btn btn-secondary',
-                showFilters && 'bg-nova-100 text-nova-700 dark:bg-nova-900 dark:text-nova-300'
+                showFilters && 'bg-nova-100 text-nova-700 dark:bg-nova-900 dark:text-nova-300',
               )}
             >
               <FunnelIcon className="h-4 w-4" />
               Filters
               {Object.keys(filters).length > 0 && (
-                <span className="ml-1 rounded-full bg-nova-600 px-2 py-0.5 text-xs text-white">
+                <span className="bg-nova-600 ml-1 rounded-full px-2 py-0.5 text-xs text-white">
                   {Object.keys(filters).length}
                 </span>
               )}
             </button>
 
-            <button
-              onClick={refreshAssets}
-              disabled={isLoading}
-              className="btn btn-secondary"
-            >
+            <button onClick={refreshAssets} disabled={isLoading} className="btn btn-secondary">
               <ArrowsUpDownIcon className="h-4 w-4" />
               Sort
             </button>
@@ -382,9 +388,10 @@ export default function AssetsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {formatNumber(selectedAssets.length)} asset{selectedAssets.length !== 1 ? 's' : ''} selected
+                {formatNumber(selectedAssets.length)} asset{selectedAssets.length !== 1 ? 's' : ''}{' '}
+                selected
               </span>
-              
+
               <BulkAssetActions
                 selectedCount={selectedAssets.length}
                 onAssign={handleBulkAssign}
@@ -394,10 +401,7 @@ export default function AssetsPage() {
               />
             </div>
 
-            <button
-              onClick={clearSelectedAssets}
-              className="btn btn-ghost btn-sm"
-            >
+            <button onClick={clearSelectedAssets} className="btn btn-ghost btn-sm">
               <XMarkIcon className="h-4 w-4" />
               Clear
             </button>
@@ -422,8 +426,8 @@ export default function AssetsPage() {
               <div className="mt-4">
                 <button
                   onClick={() => {
-                    clearError()
-                    refreshAssets()
+                    clearError();
+                    refreshAssets();
                   }}
                   className="btn btn-sm btn-secondary"
                 >
@@ -468,7 +472,7 @@ export default function AssetsPage() {
             )}
           </div>
         ) : (
-          <AssetTable 
+          <AssetTable
             assets={assets}
             selectedAssets={selectedAssets}
             isLoading={isLoading}
@@ -478,5 +482,5 @@ export default function AssetsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -40,7 +40,7 @@ export interface UseSetupWizardReturn {
   suggestions: string[];
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   nextStep: () => void;
   previousStep: () => void;
@@ -52,8 +52,13 @@ export interface UseSetupWizardReturn {
   retryConnection: () => void;
 }
 
-const WEBSOCKET_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:3001';
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const WEBSOCKET_URL =
+  process.env.REACT_APP_WS_URL || process.env.VITE_WS_URL || 'ws://localhost:3001';
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL ||
+  process.env.VITE_API_URL ||
+  process.env.VITE_API_BASE_URL ||
+  'http://localhost:3001';
 
 const setupSteps: StepData[] = [
   {
@@ -167,7 +172,7 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
   const [error, setError] = useState<string | null>(null);
   const [_completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [_skippedSteps, setSkippedSteps] = useState<Set<string>>(new Set());
-  
+
   // WebSocket connection
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -192,9 +197,9 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
       const data = await response.json();
       setSessionId(data.sessionId);
       setConfig(data.config || {});
-      
+
       if (data.currentStep) {
-        const stepIndex = setupSteps.findIndex(step => step.id === data.currentStep);
+        const stepIndex = setupSteps.findIndex((step) => step.id === data.currentStep);
         if (stepIndex !== -1) {
           setCurrentStepIndex(stepIndex);
         }
@@ -220,19 +225,21 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
 
     try {
       const ws = new WebSocket(`${WEBSOCKET_URL}/setup?sessionId=${sessionId}`);
-      
+
       ws.onopen = () => {
         console.log('WebSocket connected');
         setIsConnected(true);
         setError(null);
         reconnectAttempts.current = 0;
-        
+
         // Send initial message to confirm connection
-        ws.send(JSON.stringify({
-          type: 'ping',
-          sessionId,
-          timestamp: Date.now(),
-        }));
+        ws.send(
+          JSON.stringify({
+            type: 'ping',
+            sessionId,
+            timestamp: Date.now(),
+          }),
+        );
       };
 
       ws.onmessage = (event) => {
@@ -247,7 +254,7 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
       ws.onclose = (event) => {
         console.log('WebSocket disconnected:', event.code, event.reason);
         setIsConnected(false);
-        
+
         // Attempt to reconnect if not intentionally closed
         if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
@@ -276,54 +283,59 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
       case 'pong':
         // Connection confirmation
         break;
-        
+
       case 'progress':
         if (message.data?.progress !== undefined) {
           // Progress updates will be calculated locally for now
         }
         break;
-        
+
       case 'validation':
         setValidation(message.data);
         break;
-        
+
       case 'suggestions':
         setSuggestions(message.data?.suggestions || []);
         break;
-        
+
       case 'error':
         setError(message.data?.message || 'An error occurred');
         toast.error(message.data?.message || 'An error occurred');
         break;
-        
+
       case 'step_completed':
         if (message.data?.stepId) {
-          setCompletedSteps(prev => new Set([...prev, message.data.stepId]));
+          setCompletedSteps((prev) => new Set([...prev, message.data.stepId]));
           toast.success(`${message.data.stepTitle || 'Step'} completed successfully`);
         }
         break;
-        
+
       case 'config_updated':
         if (message.data?.config) {
-          setConfig(prev => ({ ...prev, ...message.data.config }));
+          setConfig((prev) => ({ ...prev, ...message.data.config }));
         }
         break;
-        
+
       default:
         console.log('Unknown WebSocket message type:', message.type);
     }
   }, []);
 
   // Send WebSocket message
-  const sendWebSocketMessage = useCallback((message: any) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
-        ...message,
-        sessionId,
-        timestamp: Date.now(),
-      }));
-    }
-  }, [sessionId]);
+  const sendWebSocketMessage = useCallback(
+    (message: any) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(
+          JSON.stringify({
+            ...message,
+            sessionId,
+            timestamp: Date.now(),
+          }),
+        );
+      }
+    },
+    [sessionId],
+  );
 
   // Initialize on mount
   useEffect(() => {
@@ -359,11 +371,11 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
       const newIndex = currentStepIndex + 1;
       const fromStep = setupSteps[currentStepIndex];
       const toStep = setupSteps[newIndex];
-      
+
       setCurrentStepIndex(newIndex);
       setValidation(null);
       setError(null);
-      
+
       if (fromStep && toStep) {
         sendWebSocketMessage({
           type: 'step_changed',
@@ -382,11 +394,11 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
       const newIndex = currentStepIndex - 1;
       const fromStep = setupSteps[currentStepIndex];
       const toStep = setupSteps[newIndex];
-      
+
       setCurrentStepIndex(newIndex);
       setValidation(null);
       setError(null);
-      
+
       if (fromStep && toStep) {
         sendWebSocketMessage({
           type: 'step_changed',
@@ -400,106 +412,118 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
     }
   }, [currentStepIndex, sendWebSocketMessage]);
 
-  const goToStep = useCallback((stepIndex: number) => {
-    if (stepIndex >= 0 && stepIndex < setupSteps.length) {
-      const oldIndex = currentStepIndex;
-      const fromStep = setupSteps[oldIndex];
-      const toStep = setupSteps[stepIndex];
-      
-      setCurrentStepIndex(stepIndex);
-      setValidation(null);
-      setError(null);
-      
-      if (fromStep && toStep) {
+  const goToStep = useCallback(
+    (stepIndex: number) => {
+      if (stepIndex >= 0 && stepIndex < setupSteps.length) {
+        const oldIndex = currentStepIndex;
+        const fromStep = setupSteps[oldIndex];
+        const toStep = setupSteps[stepIndex];
+
+        setCurrentStepIndex(stepIndex);
+        setValidation(null);
+        setError(null);
+
+        if (fromStep && toStep) {
+          sendWebSocketMessage({
+            type: 'step_changed',
+            data: {
+              from: fromStep.id,
+              to: toStep.id,
+              direction: stepIndex > oldIndex ? 'next' : 'previous',
+            },
+          });
+        }
+      }
+    },
+    [currentStepIndex, sendWebSocketMessage],
+  );
+
+  const updateConfig = useCallback(
+    (updates: Partial<SetupConfig>) => {
+      setConfig((prev) => {
+        const newConfig = { ...prev, ...updates };
+
+        // Send update to server
         sendWebSocketMessage({
-          type: 'step_changed',
+          type: 'config_update',
           data: {
-            from: fromStep.id,
-            to: toStep.id,
-            direction: stepIndex > oldIndex ? 'next' : 'previous',
+            stepId: currentStep?.id || 'unknown',
+            updates,
+            fullConfig: newConfig,
           },
         });
-      }
-    }
-  }, [currentStepIndex, sendWebSocketMessage]);
 
-  const updateConfig = useCallback((updates: Partial<SetupConfig>) => {
-    setConfig(prev => {
-      const newConfig = { ...prev, ...updates };
-      
-      // Send update to server
+        return newConfig;
+      });
+    },
+    [currentStep, sendWebSocketMessage],
+  );
+
+  const validateStep = useCallback(
+    async (stepId: string): Promise<boolean> => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(`${API_BASE_URL}/api/setup/validate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sessionId,
+            stepId,
+            config,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Validation failed: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        setValidation(result.validation);
+        setSuggestions(result.suggestions || []);
+
+        if (result.validation?.valid) {
+          setCompletedSteps((prev) => new Set([...prev, stepId]));
+          toast.success('Step validation successful');
+        } else {
+          toast.error('Please fix the validation errors before continuing');
+        }
+
+        return result.validation?.valid || false;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Validation failed';
+        setError(message);
+        toast.error(message);
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [sessionId, config],
+  );
+
+  const skipStep = useCallback(
+    (stepId: string) => {
+      setSkippedSteps((prev) => new Set([...prev, stepId]));
+
       sendWebSocketMessage({
-        type: 'config_update',
-        data: {
-          stepId: currentStep?.id || 'unknown',
-          updates,
-          fullConfig: newConfig,
-        },
-      });
-      
-      return newConfig;
-    });
-  }, [currentStep, sendWebSocketMessage]);
-
-  const validateStep = useCallback(async (stepId: string): Promise<boolean> => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await fetch(`${API_BASE_URL}/api/setup/validate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sessionId,
-          stepId,
-          config,
-        }),
+        type: 'step_skipped',
+        data: { stepId },
       });
 
-      if (!response.ok) {
-        throw new Error(`Validation failed: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      setValidation(result.validation);
-      setSuggestions(result.suggestions || []);
-
-      if (result.validation?.valid) {
-        setCompletedSteps(prev => new Set([...prev, stepId]));
-        toast.success('Step validation successful');
-      } else {
-        toast.error('Please fix the validation errors before continuing');
-      }
-
-      return result.validation?.valid || false;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Validation failed';
-      setError(message);
-      toast.error(message);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [sessionId, config]);
-
-  const skipStep = useCallback((stepId: string) => {
-    setSkippedSteps(prev => new Set([...prev, stepId]));
-    
-    sendWebSocketMessage({
-      type: 'step_skipped',
-      data: { stepId },
-    });
-    
-    toast.info(`${currentStep?.title || 'Step'} skipped`);
-    nextStep();
-  }, [currentStep, nextStep, sendWebSocketMessage]);
+      toast.info(`${currentStep?.title || 'Step'} skipped`);
+      nextStep();
+    },
+    [currentStep, nextStep, sendWebSocketMessage],
+  );
 
   const resetWizard = useCallback(async () => {
     try {
       setIsLoading(true);
-      
+
       const response = await fetch(`${API_BASE_URL}/api/setup/reset`, {
         method: 'POST',
         headers: {
@@ -520,7 +544,7 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
       setCompletedSteps(new Set());
       setSkippedSteps(new Set());
       setSuggestions([]);
-      
+
       toast.success('Setup wizard reset successfully');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Reset failed';
@@ -537,7 +561,7 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
       reconnectAttempts.current = 0;
       connectWebSocket(sessionId);
     } else {
-      initializeSession().then(sessionId => {
+      initializeSession().then((sessionId) => {
         if (sessionId) {
           connectWebSocket(sessionId);
         }
@@ -557,7 +581,7 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
     suggestions,
     isLoading,
     error,
-    
+
     // Actions
     nextStep,
     previousStep,

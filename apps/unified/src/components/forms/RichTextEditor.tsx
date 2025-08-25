@@ -1,10 +1,10 @@
-import { cn } from '@utils/index'
+import { cn } from '@utils/index';
 
 interface RichTextEditorProps {
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
-  className?: string
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
 }
 
 export function RichTextEditor({ value, onChange, placeholder, className }: RichTextEditorProps) {
@@ -16,5 +16,5 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Rich
       rows={6}
       className={cn('input resize-none', className)}
     />
-  )
+  );
 }

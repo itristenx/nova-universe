@@ -185,7 +185,7 @@ async function runHealthCheck(options) {
 }
 
 // Check system resources
-async function checkSystemResources(verbose = false) {
+async function checkSystemResources(_verbose = false) {
   const result = {
     status: 'healthy',
     details: [],
@@ -261,7 +261,7 @@ async function checkSystemResources(verbose = false) {
 }
 
 // Check services status
-async function checkServices(verbose = false) {
+async function checkServices(_verbose = false) {
   const result = {
     status: 'healthy',
     details: [],
@@ -270,7 +270,7 @@ async function checkServices(verbose = false) {
   try {
     const serviceStatus = await checkServiceStatus();
 
-    for (const [key, service] of Object.entries(serviceStatus)) {
+    for (const [_key, service] of Object.entries(serviceStatus)) {
       const isRunning = service.status === 'running';
 
       result.details.push({
@@ -308,7 +308,7 @@ async function checkServices(verbose = false) {
 }
 
 // Check database connection
-async function checkDatabase(verbose = false) {
+async function checkDatabase(_verbose = false) {
   const result = {
     status: 'healthy',
     details: [],
@@ -368,7 +368,7 @@ async function checkDatabase(verbose = false) {
 }
 
 // Check file system
-async function checkFileSystem(verbose = false) {
+async function checkFileSystem(_verbose = false) {
   const result = {
     status: 'healthy',
     details: [],
@@ -420,7 +420,7 @@ async function checkFileSystem(verbose = false) {
 }
 
 // Check dependencies
-async function checkDependencies(verbose = false) {
+async function checkDependencies(_verbose = false) {
   const result = {
     status: 'healthy',
     details: [],
@@ -437,7 +437,7 @@ async function checkDependencies(verbose = false) {
     const nodeModulesPath = path.join(servicePath, 'node_modules');
 
     if (existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(require('fs').readFileSync(packageJsonPath, 'utf8'));
+      const _packageJson = JSON.parse(require('fs').readFileSync(packageJsonPath, 'utf8'));
       const hasNodeModules = existsSync(nodeModulesPath);
 
       result.details.push({
@@ -476,7 +476,7 @@ async function checkDependencies(verbose = false) {
 }
 
 // Check configuration
-async function checkConfiguration(verbose = false) {
+async function checkConfiguration(_verbose = false) {
   const result = {
     status: 'healthy',
     details: [],
@@ -596,7 +596,7 @@ async function startMonitoring(options) {
             const icon = service.status === 'running' ? '🟢' : '🔴';
             console.log(
               chalk.yellow(
-                `\n🚨 ALERT: ${service.name} status changed: ${previous.status} → ${service.status}`,
+                `\n🚨 ALERT: ${service.name} status changed: ${previous.status} → ${service.status} ${icon}`,
               ),
             );
           }
@@ -842,7 +842,7 @@ function displayServiceStatus(status) {
     colWidths: [15, 15, 10],
   });
 
-  for (const [key, service] of Object.entries(status)) {
+  for (const [_key, service] of Object.entries(status)) {
     const statusColor = service.status === 'running' ? chalk.green : chalk.red;
     const statusIcon = service.status === 'running' ? '🟢' : '🔴';
 

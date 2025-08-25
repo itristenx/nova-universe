@@ -1,42 +1,39 @@
-import { type ClassValue, clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-import { format, formatDistance, formatRelative, isValid, parseISO } from 'date-fns'
-import type { TicketPriority, TicketStatus, TicketType } from '@/types'
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { format, formatDistance, formatRelative, isValid, parseISO } from 'date-fns';
+import type { TicketPriority, TicketStatus, TicketType } from '@/types';
 
 /**
  * Utility function to merge Tailwind CSS classes with clsx
  */
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 /**
  * Utility function to format bytes to human readable format
  */
 export function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0) return '0 Bytes'
+  if (bytes === 0) return '0 Bytes';
 
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
 /**
  * Utility function to format dates consistently
  */
-export function formatDate(
-  date: string | Date,
-  formatStr = 'MMM dd, yyyy'
-): string {
+export function formatDate(date: string | Date, formatStr = 'MMM dd, yyyy'): string {
   try {
-    const dateObj = typeof date === 'string' ? parseISO(date) : date
-    return isValid(dateObj) ? format(dateObj, formatStr) : 'Invalid date'
+    const dateObj = typeof date === 'string' ? parseISO(date) : date;
+    return isValid(dateObj) ? format(dateObj, formatStr) : 'Invalid date';
   } catch {
-    return 'Invalid date'
+    return 'Invalid date';
   }
 }
 
@@ -45,10 +42,12 @@ export function formatDate(
  */
 export function formatRelativeTime(date: string | Date): string {
   try {
-    const dateObj = typeof date === 'string' ? parseISO(date) : date
-    return isValid(dateObj) ? formatDistance(dateObj, new Date(), { addSuffix: true }) : 'Invalid date'
+    const dateObj = typeof date === 'string' ? parseISO(date) : date;
+    return isValid(dateObj)
+      ? formatDistance(dateObj, new Date(), { addSuffix: true })
+      : 'Invalid date';
   } catch {
-    return 'Invalid date'
+    return 'Invalid date';
   }
 }
 
@@ -57,10 +56,10 @@ export function formatRelativeTime(date: string | Date): string {
  */
 export function formatRelativeDate(date: string | Date): string {
   try {
-    const dateObj = typeof date === 'string' ? parseISO(date) : date
-    return isValid(dateObj) ? formatRelative(dateObj, new Date()) : 'Invalid date'
+    const dateObj = typeof date === 'string' ? parseISO(date) : date;
+    return isValid(dateObj) ? formatRelative(dateObj, new Date()) : 'Invalid date';
   } catch {
-    return 'Invalid date'
+    return 'Invalid date';
   }
 }
 
@@ -68,15 +67,15 @@ export function formatRelativeDate(date: string | Date): string {
  * Utility function to capitalize first letter
  */
 export function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**
  * Utility function to truncate text
  */
 export function truncate(str: string, maxLength: number): string {
-  if (str.length <= maxLength) return str
-  return str.slice(0, maxLength) + '...'
+  if (str.length <= maxLength) return str;
+  return str.slice(0, maxLength) + '...';
 }
 
 /**
@@ -93,7 +92,7 @@ export function slugify(text: string): string {
     .replace(/[^\w-]+/g, '')
     .replace(/--+/g, '-')
     .replace(/^-+/, '')
-    .replace(/-+$/, '')
+    .replace(/-+$/, '');
 }
 
 /**
@@ -102,59 +101,67 @@ export function slugify(text: string): string {
 export function getInitials(name: string): string {
   return name
     .split(' ')
-    .map(word => word.charAt(0))
+    .map((word) => word.charAt(0))
     .join('')
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 }
 
 /**
  * Utility function to generate avatar URL or return initials
  */
-export function getAvatarUrl(user: { firstName: string; lastName: string; avatar?: string }): string | null {
-  if (user.avatar) return user.avatar
-  return null
+export function getAvatarUrl(user: {
+  firstName: string;
+  lastName: string;
+  avatar?: string;
+}): string | null {
+  if (user.avatar) return user.avatar;
+  return null;
 }
 
 /**
  * Utility function to get user display name
  */
-export function getUserDisplayName(user: { firstName: string; lastName: string; displayName?: string }): string {
-  if (user.displayName) return user.displayName
-  return `${user.firstName} ${user.lastName}`.trim()
+export function getUserDisplayName(user: {
+  firstName: string;
+  lastName: string;
+  displayName?: string;
+}): string {
+  if (user.displayName) return user.displayName;
+  return `${user.firstName} ${user.lastName}`.trim();
 }
 
 /**
  * Utility function to validate email
  */
 export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 /**
  * Utility function to validate phone number
  */
 export function isValidPhone(phone: string): boolean {
-  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/
-  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))
+  const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+  return phoneRegex.test(phone.replace(/[\s\-()]/g, ''));
 }
 
 /**
  * Utility function to format phone number
  */
 export function formatPhoneNumber(phone: string): string {
-  const cleaned = phone.replace(/\D/g, '')
-  
+  const cleaned = phone.replace(/\D/g, '');
+
   if (cleaned.length === 10) {
-    return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3')
+    return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
   }
-  
+
   if (cleaned.length === 11 && cleaned.startsWith('1')) {
-    return cleaned.replace(/(\d{1})(\d{3})(\d{3})(\d{4})/, '+$1 ($2) $3-$4')
+    return cleaned.replace(/(\d{1})(\d{3})(\d{3})(\d{4})/, '+$1 ($2) $3-$4');
   }
-  
-  return phone
+
+  return phone;
 }
 
 /**
@@ -162,19 +169,19 @@ export function formatPhoneNumber(phone: string): string {
  */
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null
-  
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
   return (...args: Parameters<T>) => {
     if (timeout) {
-      clearTimeout(timeout)
+      clearTimeout(timeout);
     }
-    
+
     timeout = setTimeout(() => {
-      func(...args)
-    }, wait)
-  }
+      func(...args);
+    }, wait);
+  };
 }
 
 /**
@@ -182,36 +189,36 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
  */
 export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
-  let inThrottle = false
-  
+  let inThrottle = false;
+
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
-      func(...args)
-      inThrottle = true
-      setTimeout(() => (inThrottle = false), limit)
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
     }
-  }
+  };
 }
 
 /**
  * Utility function to deep clone objects
  */
 export function deepClone<T>(obj: T): T {
-  if (obj === null || typeof obj !== 'object') return obj
-  if (obj instanceof Date) return new Date(obj.getTime()) as T
-  if (obj instanceof Array) return obj.map(item => deepClone(item)) as T
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (obj instanceof Date) return new Date(obj.getTime()) as T;
+  if (obj instanceof Array) return obj.map((item) => deepClone(item)) as T;
   if (typeof obj === 'object') {
-    const clonedObj = {} as T
+    const clonedObj = {} as T;
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        clonedObj[key] = deepClone(obj[key])
+        clonedObj[key] = deepClone(obj[key]);
       }
     }
-    return clonedObj
+    return clonedObj;
   }
-  return obj
+  return obj;
 }
 
 /**
@@ -219,15 +226,15 @@ export function deepClone<T>(obj: T): T {
  */
 export function pick<T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
-  keys: K[]
+  keys: K[],
 ): Pick<T, K> {
-  const result = {} as Pick<T, K>
+  const result = {} as Pick<T, K>;
   for (const key of keys) {
     if (key in obj) {
-      result[key] = obj[key]
+      result[key] = obj[key];
     }
   }
-  return result
+  return result;
 }
 
 /**
@@ -235,118 +242,114 @@ export function pick<T extends Record<string, unknown>, K extends keyof T>(
  */
 export function omit<T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
-  keys: K[]
+  keys: K[],
 ): Omit<T, K> {
-  const result = { ...obj }
+  const result = { ...obj };
   for (const key of keys) {
-    delete result[key]
+    delete result[key];
   }
-  return result
+  return result;
 }
 
 /**
  * Utility function to check if object is empty
  */
 export function isEmpty(value: unknown): boolean {
-  if (value === null || value === undefined) return true
-  if (typeof value === 'string' || Array.isArray(value)) return value.length === 0
-  if (typeof value === 'object') return Object.keys(value).length === 0
-  return false
+  if (value === null || value === undefined) return true;
+  if (typeof value === 'string' || Array.isArray(value)) return value.length === 0;
+  if (typeof value === 'object') return Object.keys(value).length === 0;
+  return false;
 }
 
 /**
  * Utility function to generate random ID
  */
 export function generateId(prefix = ''): string {
-  const timestamp = Date.now().toString(36)
-  const randomPart = Math.random().toString(36).substring(2, 8)
-  return `${prefix}${timestamp}${randomPart}`
+  const timestamp = Date.now().toString(36);
+  const randomPart = Math.random().toString(36).substring(2, 8);
+  return `${prefix}${timestamp}${randomPart}`;
 }
 
 /**
  * Utility function to sleep/delay execution
  */
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
  * Utility function to create a range of numbers
  */
 export function range(start: number, end: number, step = 1): number[] {
-  const result: number[] = []
+  const result: number[] = [];
   for (let i = start; i < end; i += step) {
-    result.push(i)
+    result.push(i);
   }
-  return result
+  return result;
 }
 
 /**
  * Utility function to group array items by key
  */
-export function groupBy<T, K extends keyof T>(
-  array: T[],
-  key: K
-): Record<string, T[]> {
-  return array.reduce((groups, item) => {
-    const groupKey = String(item[key])
-    if (!groups[groupKey]) {
-      groups[groupKey] = []
-    }
-    groups[groupKey].push(item)
-    return groups
-  }, {} as Record<string, T[]>)
+export function groupBy<T, K extends keyof T>(array: T[], key: K): Record<string, T[]> {
+  return array.reduce(
+    (groups, item) => {
+      const groupKey = String(item[key]);
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(item);
+      return groups;
+    },
+    {} as Record<string, T[]>,
+  );
 }
 
 /**
  * Utility function to sort array of objects
  */
-export function sortBy<T>(
-  array: T[],
-  key: keyof T,
-  direction: 'asc' | 'desc' = 'asc'
-): T[] {
+export function sortBy<T>(array: T[], key: keyof T, direction: 'asc' | 'desc' = 'asc'): T[] {
   return [...array].sort((a, b) => {
-    const aValue = a[key]
-    const bValue = b[key]
-    
-    if (aValue < bValue) return direction === 'asc' ? -1 : 1
-    if (aValue > bValue) return direction === 'asc' ? 1 : -1
-    return 0
-  })
+    const aValue = a[key];
+    const bValue = b[key];
+
+    if (aValue < bValue) return direction === 'asc' ? -1 : 1;
+    if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+    return 0;
+  });
 }
 
 /**
  * Utility function to get unique items from array
  */
 export function unique<T>(array: T[]): T[] {
-  return [...new Set(array)]
+  return [...new Set(array)];
 }
 
 /**
  * Utility function to get unique items by key
  */
 export function uniqueBy<T, K extends keyof T>(array: T[], key: K): T[] {
-  const seen = new Set()
-  return array.filter(item => {
-    const keyValue = item[key]
+  const seen = new Set();
+  return array.filter((item) => {
+    const keyValue = item[key];
     if (seen.has(keyValue)) {
-      return false
+      return false;
     }
-    seen.add(keyValue)
-    return true
-  })
+    seen.add(keyValue);
+    return true;
+  });
 }
 
 /**
  * Utility function to create chunks from array
  */
 export function chunk<T>(array: T[], size: number): T[][] {
-  const chunks: T[][] = []
+  const chunks: T[][] = [];
   for (let i = 0; i < array.length; i += size) {
-    chunks.push(array.slice(i, i + size))
+    chunks.push(array.slice(i, i + size));
   }
-  return chunks
+  return chunks;
 }
 
 /**
@@ -355,12 +358,12 @@ export function chunk<T>(array: T[], size: number): T[][] {
 export function flatten<T>(array: (T | T[])[]): T[] {
   return array.reduce<T[]>((acc, item) => {
     if (Array.isArray(item)) {
-      acc.push(...item)
+      acc.push(...item);
     } else {
-      acc.push(item)
+      acc.push(item);
     }
-    return acc
-  }, [])
+    return acc;
+  }, []);
 }
 
 /**
@@ -373,8 +376,8 @@ export function getTicketPriorityColor(priority: TicketPriority): string {
     high: 'text-orange-600 bg-orange-100 dark:bg-orange-900 dark:text-orange-300',
     urgent: 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300',
     critical: 'text-red-800 bg-red-200 dark:bg-red-800 dark:text-red-200',
-  }
-  return colors[priority] || colors.normal
+  };
+  return colors[priority] || colors.normal;
 }
 
 /**
@@ -388,8 +391,8 @@ export function getTicketStatusColor(status: TicketStatus): string {
     resolved: 'text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300',
     closed: 'text-gray-600 bg-gray-100 dark:bg-gray-800 dark:text-gray-300',
     canceled: 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300',
-  }
-  return colors[status] || colors.new
+  };
+  return colors[status] || colors.new;
 }
 
 /**
@@ -403,8 +406,8 @@ export function getAssetStatusColor(status: string): string {
     retired: 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300',
     lost: 'text-orange-600 bg-orange-100 dark:bg-orange-900 dark:text-orange-300',
     stolen: 'text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300',
-  }
-  return colors[status] || colors.active || 'text-gray-600 bg-gray-100'
+  };
+  return colors[status] || colors.active || 'text-gray-600 bg-gray-100';
 }
 
 /**
@@ -421,8 +424,8 @@ export function getTicketTypeIcon(type: TicketType): string {
     ops: 'CogIcon',
     isac: 'ShieldCheckIcon',
     feedback: 'ChatBubbleLeftRightIcon',
-  }
-  return icons[type] || icons.request
+  };
+  return icons[type] || icons.request;
 }
 
 /**
@@ -439,65 +442,65 @@ export function formatTicketNumber(number: string, type?: TicketType): string {
     ops: 'OPS',
     isac: 'SEC',
     feedback: 'FB',
-  }
-  
+  };
+
   if (type && prefixes[type]) {
-    return `${prefixes[type]}-${number}`
+    return `${prefixes[type]}-${number}`;
   }
-  
-  return number
+
+  return number;
 }
 
 /**
  * Utility function to parse search query
  */
 export function parseSearchQuery(query: string): {
-  terms: string[]
-  filters: Record<string, string[]>
+  terms: string[];
+  filters: Record<string, string[]>;
 } {
-  const terms: string[] = []
-  const filters: Record<string, string[]> = {}
-  
-  const parts = query.split(/\s+/)
-  
+  const terms: string[] = [];
+  const filters: Record<string, string[]> = {};
+
+  const parts = query.split(/\s+/);
+
   for (const part of parts) {
     if (part.includes(':')) {
-      const [key, value] = part.split(':', 2)
+      const [key, value] = part.split(':', 2);
       if (key && value) {
         if (!filters[key]) {
-          filters[key] = []
+          filters[key] = [];
         }
-        filters[key].push(value)
+        filters[key].push(value);
       }
     } else if (part.trim()) {
-      terms.push(part.trim())
+      terms.push(part.trim());
     }
   }
-  
-  return { terms, filters }
+
+  return { terms, filters };
 }
 
 /**
  * Utility function to build search query
  */
 export function buildSearchQuery(terms: string[], filters: Record<string, string[]>): string {
-  const parts: string[] = [...terms]
-  
+  const parts: string[] = [...terms];
+
   for (const [key, values] of Object.entries(filters)) {
     for (const value of values) {
-      parts.push(`${key}:${value}`)
+      parts.push(`${key}:${value}`);
     }
   }
-  
-  return parts.join(' ')
+
+  return parts.join(' ');
 }
 
 /**
  * Utility function to calculate percentage
  */
 export function calculatePercentage(value: number, total: number): number {
-  if (total === 0) return 0
-  return Math.round((value / total) * 100)
+  if (total === 0) return 0;
+  return Math.round((value / total) * 100);
 }
 
 /**
@@ -505,10 +508,10 @@ export function calculatePercentage(value: number, total: number): number {
  */
 export function formatPercentage(value: number, total?: number): string {
   if (total !== undefined) {
-    const percentage = calculatePercentage(value, total)
-    return `${percentage}%`
+    const percentage = calculatePercentage(value, total);
+    return `${percentage}%`;
   }
-  return `${value}%`
+  return `${value}%`;
 }
 
 /**
@@ -517,29 +520,29 @@ export function formatPercentage(value: number, total?: number): string {
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text)
-      return true
+      await navigator.clipboard.writeText(text);
+      return true;
     } else {
       // Fallback for older browsers or non-secure contexts
-      const textArea = document.createElement('textarea')
-      textArea.value = text
-      textArea.style.position = 'absolute'
-      textArea.style.left = '-999999px'
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-      
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'absolute';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
       try {
-        document.execCommand('copy')
-        return true
+        document.execCommand('copy');
+        return true;
       } catch {
-        return false
+        return false;
       } finally {
-        document.body.removeChild(textArea)
+        document.body.removeChild(textArea);
       }
     }
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -547,58 +550,57 @@ export async function copyToClipboard(text: string): Promise<boolean> {
  * Utility function to download file
  */
 export function downloadFile(data: Blob | string, filename: string, mimeType?: string): void {
-  const blob = typeof data === 'string' 
-    ? new Blob([data], { type: mimeType || 'text/plain' })
-    : data
-  
-  const url = window.URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  window.URL.revokeObjectURL(url)
+  const blob =
+    typeof data === 'string' ? new Blob([data], { type: mimeType || 'text/plain' }) : data;
+
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
 }
 
 /**
  * Utility function to detect mobile device
  */
 export function isMobile(): boolean {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 /**
  * Utility function to detect touch device
  */
 export function isTouchDevice(): boolean {
-  return 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
 /**
  * Utility function to get device type
  */
 export function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
-  const width = window.innerWidth
-  
-  if (width < 768) return 'mobile'
-  if (width < 1024) return 'tablet'
-  return 'desktop'
+  const width = window.innerWidth;
+
+  if (width < 768) return 'mobile';
+  if (width < 1024) return 'tablet';
+  return 'desktop';
 }
 
 /**
  * Utility function to scroll to element
  */
 export function scrollToElement(elementId: string, offset = 0): void {
-  const element = document.getElementById(elementId)
+  const element = document.getElementById(elementId);
   if (element) {
-    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
-    const offsetPosition = elementPosition - offset
-    
+    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+    const offsetPosition = elementPosition - offset;
+
     window.scrollTo({
       top: offsetPosition,
-      behavior: 'smooth'
-    })
+      behavior: 'smooth',
+    });
   }
 }
 
@@ -609,14 +611,14 @@ export function formatCurrency(amount: number, currency = 'USD', locale = 'en-US
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
-  }).format(amount)
+  }).format(amount);
 }
 
 /**
  * Utility function to format number
  */
 export function formatNumber(value: number, locale = 'en-US'): string {
-  return new Intl.NumberFormat(locale).format(value)
+  return new Intl.NumberFormat(locale).format(value);
 }
 
 /**
@@ -629,14 +631,14 @@ export const env = {
   useMockData: import.meta.env.VITE_USE_MOCK_DATA === 'true',
   profileUpdatesEnabled: import.meta.env.VITE_PROFILE_UPDATES_ENABLED === 'true',
   enabledFeatures: import.meta.env.VITE_ENABLED_FEATURES?.split(',') || [],
-}
+};
 
 /**
  * Check if a specific feature is enabled
  */
 export const isFeatureEnabled = (feature: string): boolean => {
-  return env.enabledFeatures.includes(feature)
-}
+  return env.enabledFeatures.includes(feature);
+};
 
 /**
  * Handle API operations with graceful fallback to mock data
@@ -644,17 +646,17 @@ export const isFeatureEnabled = (feature: string): boolean => {
 export const withMockFallback = async <T>(
   apiCall: () => Promise<T>,
   mockData: T,
-  fallbackMessage?: string
+  fallbackMessage?: string,
 ): Promise<T> => {
   if (env.useMockData) {
-    console.info(fallbackMessage || 'Using mock data (development mode)')
-    return Promise.resolve(mockData)
+    console.info(fallbackMessage || 'Using mock data (development mode)');
+    return Promise.resolve(mockData);
   }
-  
+
   try {
-    return await apiCall()
-  } catch (error) {
-    console.warn('API call failed, falling back to mock data:', error)
-    return mockData
+    return await apiCall();
+  } catch (_error) {
+    console.warn('API call failed, falling back to mock data:', error);
+    return mockData;
   }
-}
+};

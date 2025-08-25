@@ -160,7 +160,7 @@ router.get(
       const hasMore = parseInt(offset) + parseInt(limit) < total;
 
       res.json({ success: true, tickets, total, hasMore });
-    } catch (error) {
+    } catch (_error) {
       logger.error('Error in user tickets endpoint:', error);
       res
         .status(500)
@@ -263,14 +263,12 @@ router.post(
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            error: 'Invalid input',
-            details: errors.array(),
-            errorCode: 'VALIDATION_ERROR',
-          });
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid input',
+          details: errors.array(),
+          errorCode: 'VALIDATION_ERROR',
+        });
       }
 
       const {
@@ -436,15 +434,13 @@ router.post(
       };
 
       res.status(201).json({ success: true, ticket });
-    } catch (error) {
+    } catch (_error) {
       logger.error('Error creating ticket:', error);
-      res
-        .status(500)
-        .json({
-          success: false,
-          error: 'Failed to create ticket',
-          errorCode: 'TICKET_CREATE_ERROR',
-        });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create ticket',
+        errorCode: 'TICKET_CREATE_ERROR',
+      });
     }
   },
 );
@@ -590,7 +586,7 @@ router.get(
           );
         },
       );
-    } catch (error) {
+    } catch (_error) {
       logger.error('Error in ticket detail endpoint:', error);
       res.status(500).json({
         success: false,
@@ -716,7 +712,7 @@ router.get(
         success: true,
         categories,
       });
-    } catch (error) {
+    } catch (_error) {
       logger.error('Error in categories endpoint:', error);
       res.status(500).json({
         success: false,
@@ -736,7 +732,7 @@ router.get('/catalog', authenticateJWT, async (req, res) => {
       'SELECT id, name, form_schema, workflow_id FROM request_catalog_items',
     );
     res.json({ success: true, items: result.rows });
-  } catch (error) {
+  } catch (_error) {
     logger.error('Error fetching catalog items:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch catalog items' });
   }
@@ -769,7 +765,7 @@ router.post('/catalog/:id', authenticateJWT, async (req, res) => {
       triggerWorkflow(String(workflowId));
     }
     res.status(201).json({ success: true, ritmId });
-  } catch (error) {
+  } catch (_error) {
     logger.error('Error submitting catalog item:', error);
     res.status(500).json({ success: false, error: 'Failed to submit request item' });
   }
@@ -862,7 +858,7 @@ router.post(
           });
         },
       );
-    } catch (error) {
+    } catch (_error) {
       logger.error('Error in feedback endpoint:', error);
       res.status(500).json({
         success: false,
@@ -903,7 +899,7 @@ router.get('/forms/:id', async (req, res) => {
     };
 
     res.json({ success: true, form });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, error: 'Failed to fetch form' });
   }
 });

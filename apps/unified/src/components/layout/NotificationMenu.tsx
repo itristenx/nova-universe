@@ -1,9 +1,9 @@
-import { ReactNode } from 'react'
+import { ReactNode } from 'react';
 
 interface NotificationMenuProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function NotificationMenu({ children }: NotificationMenuProps) {
-  return <div>{children}</div>
+  return <div>{children}</div>;
 }

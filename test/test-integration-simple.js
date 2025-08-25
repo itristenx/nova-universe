@@ -16,8 +16,12 @@ async function testConnectorClasses() {
 
   try {
     // Test importing connector classes
-    const { OktaConnector } = await import('../packages/integrations/integration/connectors/okta-connector.js');
-    const { JamfConnector } = await import('../packages/integrations/integration/connectors/jamf-connector.js');
+    const { OktaConnector } = await import(
+      '../packages/integrations/integration/connectors/okta-connector.js'
+    );
+    const { JamfConnector } = await import(
+      '../packages/integrations/integration/connectors/jamf-connector.js'
+    );
     const { CrowdStrikeConnector } = await import(
       '../packages/integrations/integration/connectors/crowdstrike-connector.js'
     );
@@ -27,7 +31,9 @@ async function testConnectorClasses() {
     const { SlackConnector } = await import(
       '../packages/integrations/integration/connectors/slack-connector.js'
     );
-    const { ZoomConnector } = await import('../packages/integrations/integration/connectors/zoom-connector.js');
+    const { ZoomConnector } = await import(
+      '../packages/integrations/integration/connectors/zoom-connector.js'
+    );
 
     console.log('  ✅ OktaConnector imported successfully');
     console.log('  ✅ JamfConnector imported successfully');

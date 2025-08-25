@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import { userService, type User, type Role, type UpdateUserData } from '@services/users'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import toast from 'react-hot-toast'
+import { useState, useEffect } from 'react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import { userService, type User, type Role, type UpdateUserData } from '@services/users';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import toast from 'react-hot-toast';
 
 interface UserEditModalProps {
-  isOpen: boolean
-  user: User | null
-  onClose: () => void
-  onSuccess: () => void
+  isOpen: boolean;
+  user: User | null;
+  onClose: () => void;
+  onSuccess: () => void;
 }
 
 export function UserEditModal({ isOpen, user, onClose, onSuccess }: UserEditModalProps) {
@@ -19,10 +19,10 @@ export function UserEditModal({ isOpen, user, onClose, onSuccess }: UserEditModa
     isActive: true,
     phone: '',
     department: '',
-    title: ''
-  })
-  
-  const [roles, setRoles] = useState<Role[]>([])
+    title: '',
+  });
+
+  const [roles, setRoles] = useState<Role[]>([]);
   const [departments] = useState<string[]>([
     'Engineering',
     'Sales',
@@ -33,75 +33,75 @@ export function UserEditModal({ isOpen, user, onClose, onSuccess }: UserEditModa
     'HR',
     'Legal',
     'Product',
-    'Design'
-  ])
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+    'Design',
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (isOpen && user) {
-      loadFormData()
+      loadFormData();
       setFormData({
         firstName: user.firstName,
         lastName: user.lastName,
-        roleIds: user.roles.map(role => role.id),
+        roleIds: user.roles.map((role) => role.id),
         isActive: user.isActive,
         phone: user.phone || '',
         department: user.department || '',
-        title: user.title || ''
-      })
+        title: user.title || '',
+      });
     }
-  }, [isOpen, user])
+  }, [isOpen, user]);
 
   const loadFormData = async () => {
     try {
-      const rolesData = await userService.getRoles()
-      setRoles(rolesData)
-    } catch (error) {
-      console.error('Failed to load form data:', error)
-      toast.error('Failed to load form data')
+      const rolesData = await userService.getRoles();
+      setRoles(rolesData);
+    } catch (_error) {
+      console.error('Failed to load form data:', error);
+      toast.error('Failed to load form data');
     }
-  }
+  };
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!formData.firstName?.trim()) {
-      newErrors.firstName = 'First name is required'
+      newErrors.firstName = 'First name is required';
     }
 
     if (!formData.lastName?.trim()) {
-      newErrors.lastName = 'Last name is required'
+      newErrors.lastName = 'Last name is required';
     }
 
     if (!formData.roleIds || formData.roleIds.length === 0) {
-      newErrors.roleIds = 'At least one role is required'
+      newErrors.roleIds = 'At least one role is required';
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!user || !validateForm()) {
-      return
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await userService.updateUser(user.id, formData)
-      toast.success('User updated successfully')
-      onSuccess()
-      handleClose()
+      await userService.updateUser(user.id, formData);
+      toast.success('User updated successfully');
+      onSuccess();
+      handleClose();
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Failed to update user'
-      toast.error(errorMessage)
+      const errorMessage = error.response?.data?.message || 'Failed to update user';
+      toast.error(errorMessage);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleClose = () => {
     setFormData({
@@ -111,37 +111,37 @@ export function UserEditModal({ isOpen, user, onClose, onSuccess }: UserEditModa
       isActive: true,
       phone: '',
       department: '',
-      title: ''
-    })
-    setErrors({})
-    onClose()
-  }
+      title: '',
+    });
+    setErrors({});
+    onClose();
+  };
 
   const handleInputChange = (field: keyof UpdateUserData, value: any) => {
-    setFormData((prev: UpdateUserData) => ({ ...prev, [field]: value }))
+    setFormData((prev: UpdateUserData) => ({ ...prev, [field]: value }));
     if (errors[field as string]) {
-      setErrors(prev => ({ ...prev, [field as string]: '' }))
+      setErrors((prev) => ({ ...prev, [field as string]: '' }));
     }
-  }
+  };
 
   const handleRoleToggle = (roleId: string) => {
     setFormData((prev: UpdateUserData) => ({
       ...prev,
       roleIds: prev.roleIds?.includes(roleId)
         ? prev.roleIds.filter((id: string) => id !== roleId)
-        : [...(prev.roleIds || []), roleId]
-    }))
+        : [...(prev.roleIds || []), roleId],
+    }));
     if (errors.roleIds) {
-      setErrors(prev => ({ ...prev, roleIds: '' }))
+      setErrors((prev) => ({ ...prev, roleIds: '' }));
     }
-  }
+  };
 
-  if (!isOpen || !user) return null
+  if (!isOpen || !user) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-lg bg-white dark:bg-gray-800">
+        <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Edit User: {user.firstName} {user.lastName}
           </h3>
@@ -154,19 +154,19 @@ export function UserEditModal({ isOpen, user, onClose, onSuccess }: UserEditModa
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[calc(90vh-120px)]">
-          <div className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="max-h-[calc(90vh-120px)] overflow-y-auto">
+          <div className="space-y-6 p-6">
             {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   First Name *
                 </label>
                 <input
                   type="text"
                   value={formData.firstName || ''}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  className={`w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full rounded-md border px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                     errors.firstName ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Enter first name"
@@ -177,80 +177,78 @@ export function UserEditModal({ isOpen, user, onClose, onSuccess }: UserEditModa
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Last Name *
                 </label>
                 <input
                   type="text"
                   value={formData.lastName || ''}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  className={`w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full rounded-md border px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
                     errors.lastName ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Enter last name"
                 />
-                {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
-                )}
+                {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>}
               </div>
             </div>
 
             {/* Email (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email Address
               </label>
               <input
                 type="email"
                 value={user.email}
                 readOnly
-                className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 bg-gray-50 text-gray-500"
+                className="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-500 shadow-sm"
                 placeholder="Email cannot be changed"
               />
               <p className="mt-1 text-xs text-gray-500">Email addresses cannot be modified</p>
             </div>
 
             {/* Contact Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Phone Number
                 </label>
                 <input
                   type="tel"
                   value={formData.phone || ''}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   placeholder="Enter phone number"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Job Title
                 </label>
                 <input
                   type="text"
                   value={formData.title || ''}
                   onChange={(e) => handleInputChange('title', e.target.value)}
-                  className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   placeholder="Enter job title"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Department
               </label>
               <select
                 value={formData.department || ''}
                 onChange={(e) => handleInputChange('department', e.target.value)}
-                className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 title="Select department"
               >
                 <option value="">Select department</option>
-                {departments.map(dept => (
+                {departments.map((dept) => (
                   <option key={dept} value={dept}>
                     {dept}
                   </option>
@@ -260,11 +258,11 @@ export function UserEditModal({ isOpen, user, onClose, onSuccess }: UserEditModa
 
             {/* Roles */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Roles *
               </label>
-              <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-200 rounded-md p-3">
-                {roles.map(role => (
+              <div className="max-h-32 space-y-2 overflow-y-auto rounded-md border border-gray-200 p-3">
+                {roles.map((role) => (
                   <label key={role.id} className="flex items-center">
                     <input
                       type="checkbox"
@@ -275,17 +273,13 @@ export function UserEditModal({ isOpen, user, onClose, onSuccess }: UserEditModa
                     <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
                       {role.name}
                       {role.description && (
-                        <span className="text-xs text-gray-500 block">
-                          {role.description}
-                        </span>
+                        <span className="block text-xs text-gray-500">{role.description}</span>
                       )}
                     </span>
                   </label>
                 ))}
               </div>
-              {errors.roleIds && (
-                <p className="mt-1 text-sm text-red-600">{errors.roleIds}</p>
-              )}
+              {errors.roleIds && <p className="mt-1 text-sm text-red-600">{errors.roleIds}</p>}
             </div>
 
             {/* Status */}
@@ -304,18 +298,18 @@ export function UserEditModal({ isOpen, user, onClose, onSuccess }: UserEditModa
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <div className="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-900">
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
               disabled={isLoading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -331,5 +325,5 @@ export function UserEditModal({ isOpen, user, onClose, onSuccess }: UserEditModa
         </form>
       </div>
     </div>
-  )
+  );
 }

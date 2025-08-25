@@ -1,7 +1,7 @@
 interface TicketFiltersProps {
-  filters: Record<string, any>
-  onFiltersChange: (filters: any) => void
-  onClearFilters: () => void
+  filters: Record<string, any>;
+  onFiltersChange: (filters: any) => void;
+  onClearFilters: () => void;
 }
 
 export function TicketFilters({ onClearFilters }: TicketFiltersProps) {
@@ -9,7 +9,9 @@ export function TicketFilters({ onClearFilters }: TicketFiltersProps) {
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Status
+          </label>
           <select className="input mt-1">
             <option value="">All Statuses</option>
             <option value="new">New</option>
@@ -20,7 +22,9 @@ export function TicketFilters({ onClearFilters }: TicketFiltersProps) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Priority</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Priority
+          </label>
           <select className="input mt-1">
             <option value="">All Priorities</option>
             <option value="low">Low</option>
@@ -41,7 +45,9 @@ export function TicketFilters({ onClearFilters }: TicketFiltersProps) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Assignee</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Assignee
+          </label>
           <select className="input mt-1">
             <option value="">All Assignees</option>
             <option value="unassigned">Unassigned</option>
@@ -54,5 +60,5 @@ export function TicketFilters({ onClearFilters }: TicketFiltersProps) {
         </button>
       </div>
     </div>
-  )
+  );
 }

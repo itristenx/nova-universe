@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  CheckCircle, 
-  AlertCircle, 
-  ArrowLeft, 
-  ArrowRight, 
+import {
+  CheckCircle,
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
   RefreshCw,
   Wifi,
-  WifiOff
+  WifiOff,
 } from 'lucide-react';
 import { useSetupWizard } from './hooks/useSetupWizard';
 import { WelcomeStep } from './steps/WelcomeStep';
@@ -22,11 +22,11 @@ const cn = (...classes: (string | undefined | null | false)[]): string => {
 };
 
 // Simple UI components
-const Badge: React.FC<{ 
-  children: React.ReactNode; 
-  variant?: 'default' | 'success' | 'destructive' | 'secondary' | 'outline'; 
+const Badge: React.FC<{
+  children: React.ReactNode;
+  variant?: 'default' | 'success' | 'destructive' | 'secondary' | 'outline';
   size?: 'sm' | 'default';
-  className?: string; 
+  className?: string;
 }> = ({ children, variant = 'default', size = 'default', className = '' }) => {
   const variantClasses = {
     default: 'bg-gray-100 text-gray-800',
@@ -35,14 +35,21 @@ const Badge: React.FC<{
     secondary: 'bg-blue-100 text-blue-800',
     outline: 'border border-gray-300 text-gray-700 bg-transparent',
   };
-  
+
   const sizeClasses = {
     default: 'px-2 py-1 text-xs',
     sm: 'px-1.5 py-0.5 text-xs',
   };
-  
+
   return (
-    <span className={cn('inline-flex items-center rounded-full font-medium', variantClasses[variant], sizeClasses[size], className)}>
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full font-medium',
+        variantClasses[variant],
+        sizeClasses[size],
+        className,
+      )}
+    >
       {children}
     </span>
   );
@@ -55,28 +62,35 @@ const Button: React.FC<{
   variant?: 'default' | 'outline' | 'ghost' | 'destructive';
   size?: 'default' | 'sm';
   className?: string;
-}> = ({ children, onClick, disabled = false, variant = 'default', size = 'default', className = '' }) => {
+}> = ({
+  children,
+  onClick,
+  disabled = false,
+  variant = 'default',
+  size = 'default',
+  className = '',
+}) => {
   const variantClasses = {
     default: 'bg-blue-600 text-white hover:bg-blue-700',
     outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50',
     ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100',
     destructive: 'bg-red-600 text-white hover:bg-red-700',
   };
-  
+
   const sizeClasses = {
     default: 'px-4 py-2',
     sm: 'px-3 py-1.5 text-sm',
   };
-  
+
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'inline-flex items-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed',
+        'inline-flex items-center rounded-md font-medium transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
         variantClasses[variant],
         sizeClasses[size],
-        className
+        className,
       )}
     >
       {children}
@@ -87,50 +101,53 @@ const Button: React.FC<{
 const Progress: React.FC<{ value: number; className?: string }> = ({ value, className = '' }) => {
   const width = Math.min(100, Math.max(0, value));
   return (
-    <div className={cn('w-full bg-gray-200 rounded-full h-2', className)}>
+    <div className={cn('h-2 w-full rounded-full bg-gray-200', className)}>
       <div
-        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+        className="h-2 rounded-full bg-blue-600 transition-all duration-300"
         style={{ width: `${width}%` }}
       />
     </div>
   );
 };
 
-const Alert: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={cn('p-4 rounded-md border', className)}>
+const Alert: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className = '',
+}) => <div className={cn('rounded-md border p-4', className)}>{children}</div>;
+
+const AlertDescription: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className = '',
+}) => <div className={cn('text-sm', className)}>{children}</div>;
+
+const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className = '',
+}) => (
+  <div
+    className={cn(
+      'rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800',
+      className,
+    )}
+  >
     {children}
   </div>
 );
 
-const AlertDescription: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={cn('text-sm', className)}>
-    {children}
-  </div>
-);
+const CardHeader: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className = '',
+}) => <div className={cn('p-6 pb-0', className)}>{children}</div>;
 
-const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={cn('bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm', className)}>
-    {children}
-  </div>
-);
+const CardTitle: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className = '',
+}) => <h3 className={cn('text-lg font-semibold', className)}>{children}</h3>;
 
-const CardHeader: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={cn('p-6 pb-0', className)}>
-    {children}
-  </div>
-);
-
-const CardTitle: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <h3 className={cn('font-semibold text-lg', className)}>
-    {children}
-  </h3>
-);
-
-const CardContent: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={cn('p-6', className)}>
-    {children}
-  </div>
-);
+const CardContent: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className = '',
+}) => <div className={cn('p-6', className)}>{children}</div>;
 
 export interface SetupWizardProps {
   onComplete?: (config: any) => void;
@@ -249,11 +266,7 @@ const setupSteps: StepConfig[] = [
   },
 ];
 
-export const SetupWizard: React.FC<SetupWizardProps> = ({ 
-  onComplete, 
-  onCancel, 
-  className 
-}) => {
+export const SetupWizard: React.FC<SetupWizardProps> = ({ onComplete, onCancel, className }) => {
   const {
     currentStep,
     currentStepIndex,
@@ -319,7 +332,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
   }, [skipStep, currentStep.id]);
 
   const toggleSection = useCallback((sectionId: string) => {
-    setCollapsedSections(prev => {
+    setCollapsedSections((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(sectionId)) {
         newSet.delete(sectionId);
@@ -336,37 +349,33 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
     .reduce((total, step) => total + step.estimatedTime, 0);
 
   return (
-    <div 
+    <div
       ref={wizardRef}
       className={cn(
-        "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100",
-        "dark:from-gray-900 dark:to-gray-800",
-        className
+        'min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100',
+        'dark:from-gray-900 dark:to-gray-800',
+        className,
       )}
       role="main"
       aria-label="Setup Wizard"
     >
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+      <div className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-sm dark:bg-gray-900/80">
+        <div className="mx-auto max-w-6xl px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Nova Universe Setup
               </h1>
-              <Badge 
-                variant={isConnected ? "success" : "destructive"}
+              <Badge
+                variant={isConnected ? 'success' : 'destructive'}
                 className="flex items-center space-x-1"
               >
-                {isConnected ? (
-                  <Wifi className="w-3 h-3" />
-                ) : (
-                  <WifiOff className="w-3 h-3" />
-                )}
+                {isConnected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
                 <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
               </Badge>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {estimatedTimeRemaining > 0 && (
                 <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -374,8 +383,8 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
                 </div>
               )}
               {onCancel && (
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   onClick={onCancel}
                   className="text-gray-600 hover:text-gray-900"
                 >
@@ -387,12 +396,14 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
 
           {/* Progress Bar */}
           <div className="mt-4">
-            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-              <span>Step {currentStepIndex + 1} of {setupSteps.length}</span>
+            <div className="mb-2 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+              <span>
+                Step {currentStepIndex + 1} of {setupSteps.length}
+              </span>
               <span>{Math.round(progress)}% Complete</span>
             </div>
-            <Progress 
-              value={progress} 
+            <Progress
+              value={progress}
               className="h-2"
               aria-label={`Setup progress: ${Math.round(progress)}% complete`}
             />
@@ -406,14 +417,14 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
             <span>Connection lost. Some features may not work properly.</span>
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               onClick={retryConnection}
               disabled={isLoading}
               className="ml-4"
             >
-              <RefreshCw className={cn("w-3 h-3 mr-1", isLoading && "animate-spin")} />
+              <RefreshCw className={cn('mr-1 h-3 w-3', isLoading && 'animate-spin')} />
               Retry
             </Button>
           </AlertDescription>
@@ -421,8 +432,8 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
       )}
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <div className="grid gap-8 lg:grid-cols-4">
           {/* Steps Sidebar */}
           <div className="lg:col-span-1">
             <Card className="sticky top-32">
@@ -434,34 +445,39 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
                   const isCompleted = index < currentStepIndex;
                   const isCurrent = index === currentStepIndex;
                   const isAccessible = index <= currentStepIndex;
-                  
+
                   return (
                     <div
                       key={step.id}
                       className={cn(
-                        "flex items-center space-x-3 p-2 rounded-lg transition-colors",
-                        isCurrent && "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800",
-                        isCompleted && "text-green-600 dark:text-green-400",
-                        !isAccessible && "opacity-50"
+                        'flex items-center space-x-3 rounded-lg p-2 transition-colors',
+                        isCurrent &&
+                          'border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20',
+                        isCompleted && 'text-green-600 dark:text-green-400',
+                        !isAccessible && 'opacity-50',
                       )}
                     >
                       {isCompleted ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <CheckCircle className="h-5 w-5 text-green-500" />
                       ) : (
-                        <div className={cn(
-                          "w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold",
-                          isCurrent 
-                            ? "border-blue-500 bg-blue-500 text-white" 
-                            : "border-gray-300 text-gray-500"
-                        )}>
+                        <div
+                          className={cn(
+                            'flex h-5 w-5 items-center justify-center rounded-full border-2 text-xs font-bold',
+                            isCurrent
+                              ? 'border-blue-500 bg-blue-500 text-white'
+                              : 'border-gray-300 text-gray-500',
+                          )}
+                        >
                           {index + 1}
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
-                        <div className={cn(
-                          "font-medium truncate",
-                          isCurrent && "text-blue-900 dark:text-blue-100"
-                        )}>
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className={cn(
+                            'truncate font-medium',
+                            isCurrent && 'text-blue-900 dark:text-blue-100',
+                          )}
+                        >
                           {step.title}
                         </div>
                         {step.required && (
@@ -476,21 +492,19 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
               </CardContent>
             </Card>
 
-          {/* Step Content */}
-          <div className="lg:col-span-3">
-            <div key={currentStep.id}>
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
+            {/* Step Content */}
+            <div className="lg:col-span-3">
+              <div key={currentStep.id}>
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
                         <CardTitle className="text-xl">{currentStep.title}</CardTitle>
-                        <p className="text-gray-600 dark:text-gray-400 mt-1">
+                        <p className="mt-1 text-gray-600 dark:text-gray-400">
                           {currentStep.description}
                         </p>
                       </div>
-                      <Badge variant="outline">
-                        ≈ {currentStep.estimatedTime} min
-                      </Badge>
+                      <Badge variant="outline">≈ {currentStep.estimatedTime} min</Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -524,7 +538,9 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
                           <div className="space-y-1">
                             <div className="font-medium">Suggestions:</div>
                             {suggestions.map((suggestion: string, index: number) => (
-                              <div key={index} className="text-sm">• {suggestion}</div>
+                              <div key={index} className="text-sm">
+                                • {suggestion}
+                              </div>
                             ))}
                           </div>
                         </AlertDescription>
@@ -547,14 +563,14 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between mt-8">
+            <div className="mt-8 flex items-center justify-between">
               <Button
                 variant="outline"
                 onClick={previousStep}
                 disabled={currentStepIndex === 0 || isLoading}
                 className="flex items-center space-x-2"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-4 w-4" />
                 <span>Previous</span>
               </Button>
 
@@ -569,19 +585,17 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({
                     Skip Step
                   </Button>
                 )}
-                
+
                 <Button
                   onClick={handleNext}
                   disabled={isLoading}
                   className="flex items-center space-x-2"
                 >
-                  {isLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
+                  {isLoading && <RefreshCw className="h-4 w-4 animate-spin" />}
                   <span>
                     {currentStepIndex === setupSteps.length - 1 ? 'Complete Setup' : 'Next'}
                   </span>
-                  {currentStepIndex < setupSteps.length - 1 && (
-                    <ArrowRight className="w-4 h-4" />
-                  )}
+                  {currentStepIndex < setupSteps.length - 1 && <ArrowRight className="h-4 w-4" />}
                 </Button>
               </div>
             </div>

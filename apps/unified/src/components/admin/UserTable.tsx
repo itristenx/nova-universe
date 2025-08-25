@@ -1,44 +1,44 @@
-import { formatRelativeTime, getUserDisplayName, getInitials, cn } from '@utils/index'
-import { PencilIcon, LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/outline'
-import type { User } from '@/types'
+import { formatRelativeTime, getUserDisplayName, getInitials, cn } from '@utils/index';
+import { PencilIcon, LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/outline';
+import type { User } from '@/types';
 
 interface UserTableProps {
-  users: User[]
-  selectedUsers: string[]
-  onSelectionChange: (userIds: string[]) => void
-  onEditUser: (user: User) => void
-  onUserUpdate: (user: User) => void
+  users: User[];
+  selectedUsers: string[];
+  onSelectionChange: (userIds: string[]) => void;
+  onEditUser: (user: User) => void;
+  onUserUpdate: (user: User) => void;
 }
 
-export function UserTable({ 
-  users, 
-  selectedUsers, 
-  onSelectionChange, 
-  onEditUser, 
-  onUserUpdate 
+export function UserTable({
+  users,
+  selectedUsers,
+  onSelectionChange,
+  onEditUser,
+  onUserUpdate,
 }: UserTableProps) {
-  const allSelected = users.length > 0 && users.every(user => selectedUsers.includes(user.id))
-  const someSelected = selectedUsers.length > 0 && !allSelected
+  const allSelected = users.length > 0 && users.every((user) => selectedUsers.includes(user.id));
+  const someSelected = selectedUsers.length > 0 && !allSelected;
 
   const handleSelectAll = () => {
     if (allSelected) {
-      onSelectionChange([])
+      onSelectionChange([]);
     } else {
-      onSelectionChange(users.map(user => user.id))
+      onSelectionChange(users.map((user) => user.id));
     }
-  }
+  };
 
   const handleUserSelect = (userId: string, checked: boolean) => {
     if (checked) {
-      onSelectionChange([...selectedUsers, userId])
+      onSelectionChange([...selectedUsers, userId]);
     } else {
-      onSelectionChange(selectedUsers.filter(id => id !== userId))
+      onSelectionChange(selectedUsers.filter((id) => id !== userId));
     }
-  }
+  };
 
   const handleToggleActive = (user: User) => {
-    onUserUpdate({ ...user, isActive: !user.isActive })
-  }
+    onUserUpdate({ ...user, isActive: !user.isActive });
+  };
 
   return (
     <div className="overflow-x-auto">
@@ -49,37 +49,37 @@ export function UserTable({
               <input
                 type="checkbox"
                 checked={allSelected}
-                ref={input => {
-                  if (input) input.indeterminate = someSelected
+                ref={(input) => {
+                  if (input) input.indeterminate = someSelected;
                 }}
                 onChange={handleSelectAll}
-                className="h-4 w-4 rounded border-gray-300 text-nova-600 focus:ring-nova-500"
+                className="text-nova-600 focus:ring-nova-500 h-4 w-4 rounded border-gray-300"
               />
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
               User
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
               Role
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
               Status
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
               Last Login
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
               Actions
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-          {users.map(user => (
+          {users.map((user) => (
             <tr
               key={user.id}
               className={cn(
                 'transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
-                selectedUsers.includes(user.id) && 'bg-nova-50 dark:bg-nova-900/20'
+                selectedUsers.includes(user.id) && 'bg-nova-50 dark:bg-nova-900/20',
               )}
             >
               <td className="px-4 py-4">
@@ -87,10 +87,10 @@ export function UserTable({
                   type="checkbox"
                   checked={selectedUsers.includes(user.id)}
                   onChange={(e) => handleUserSelect(user.id, e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-nova-600 focus:ring-nova-500"
+                  className="text-nova-600 focus:ring-nova-500 h-4 w-4 rounded border-gray-300"
                 />
               </td>
-              
+
               <td className="px-4 py-4">
                 <div className="flex items-center gap-3">
                   {user.avatar ? (
@@ -108,16 +108,14 @@ export function UserTable({
                     <div className="font-medium text-gray-900 dark:text-gray-100">
                       {getUserDisplayName(user)}
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {user.email}
-                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
                   </div>
                 </div>
               </td>
-              
+
               <td className="px-4 py-4">
                 <div className="flex flex-wrap gap-1">
-                  {user.roles?.map(role => (
+                  {user.roles?.map((role) => (
                     <span
                       key={role.id}
                       className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-200"
@@ -127,22 +125,24 @@ export function UserTable({
                   ))}
                 </div>
               </td>
-              
+
               <td className="px-4 py-4">
-                <span className={cn(
-                  'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                  user.isActive
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                    : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                )}>
+                <span
+                  className={cn(
+                    'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                    user.isActive
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+                  )}
+                >
                   {user.isActive ? 'Active' : 'Inactive'}
                 </span>
               </td>
-              
+
               <td className="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
                 {user.lastLoginAt ? formatRelativeTime(user.lastLoginAt) : 'Never'}
               </td>
-              
+
               <td className="px-4 py-4">
                 <div className="flex items-center gap-2">
                   <button
@@ -152,12 +152,12 @@ export function UserTable({
                   >
                     <PencilIcon className="h-4 w-4" />
                   </button>
-                  
+
                   <button
                     onClick={() => handleToggleActive(user)}
                     className={cn(
                       'btn btn-sm',
-                      user.isActive ? 'btn-ghost text-red-600' : 'btn-ghost text-green-600'
+                      user.isActive ? 'btn-ghost text-red-600' : 'btn-ghost text-green-600',
                     )}
                     title={user.isActive ? 'Deactivate user' : 'Activate user'}
                   >
@@ -174,5 +174,5 @@ export function UserTable({
         </tbody>
       </table>
     </div>
-  )
+  );
 }

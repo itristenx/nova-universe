@@ -17,7 +17,7 @@ const NovaTVDashboard: React.FC = () => {
       const filters = selectedDepartment !== 'all' ? { department: selectedDepartment } : {};
       const data = await novaTVService.getDashboards(filters);
       setDashboards(data);
-    } catch (error) {
+    } catch (_error) {
       // Handle error silently, show user-friendly message
     } finally {
       setLoading(false);
@@ -28,7 +28,7 @@ const NovaTVDashboard: React.FC = () => {
     try {
       await novaTVService.updateDashboard(id, { isActive: !isActive });
       loadDashboards();
-    } catch (error) {
+    } catch (_error) {
       // Handle error silently
     }
   };
@@ -40,7 +40,7 @@ const NovaTVDashboard: React.FC = () => {
         await novaTVService.duplicateDashboard(id, newName);
         loadDashboards();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error duplicating dashboard:', error);
     }
   };
@@ -50,7 +50,7 @@ const NovaTVDashboard: React.FC = () => {
       try {
         await novaTVService.deleteDashboard(id);
         loadDashboards();
-      } catch (error) {
+      } catch (_error) {
         console.error('Error deleting dashboard:', error);
       }
     }
@@ -59,73 +59,75 @@ const NovaTVDashboard: React.FC = () => {
   const departments = ['all', 'IT', 'HR', 'Finance', 'Operations', 'Marketing'];
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="min-h-screen bg-gray-50 p-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Nova TV Digital Signage</h1>
-            <p className="text-gray-600 mt-1">Manage and monitor your digital displays</p>
+            <p className="mt-1 text-gray-600">Manage and monitor your digital displays</p>
           </div>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-            <Plus className="w-4 h-4" />
+          <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
+            <Plus className="h-4 w-4" />
             Create Dashboard
           </button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+      <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-4">
+        <div className="rounded-lg border bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Dashboards</p>
               <p className="text-2xl font-bold text-gray-900">{dashboards.length}</p>
             </div>
-            <Monitor className="w-8 h-8 text-blue-600" />
+            <Monitor className="h-8 w-8 text-blue-600" />
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="rounded-lg border bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Active Displays</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboards.filter(d => d.isActive).length}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {dashboards.filter((d) => d.isActive).length}
+              </p>
             </div>
-            <Play className="w-8 h-8 text-green-600" />
+            <Play className="h-8 w-8 text-green-600" />
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="rounded-lg border bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Connected Devices</p>
               <p className="text-2xl font-bold text-gray-900">12</p>
             </div>
-            <Monitor className="w-8 h-8 text-purple-600" />
+            <Monitor className="h-8 w-8 text-purple-600" />
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="rounded-lg border bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Analytics</p>
               <p className="text-2xl font-bold text-gray-900">245</p>
               <p className="text-xs text-gray-500">Views today</p>
             </div>
-            <BarChart3 className="w-8 h-8 text-orange-600" />
+            <BarChart3 className="h-8 w-8 text-orange-600" />
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+      <div className="mb-6 rounded-lg border bg-white p-4 shadow-sm">
         <div className="flex items-center gap-4">
           <label className="text-sm font-medium text-gray-700">Department:</label>
           <select
             value={selectedDepartment}
             onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="rounded-md border border-gray-300 px-3 py-1 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             aria-label="Filter by department"
           >
-            {departments.map(dept => (
+            {departments.map((dept) => (
               <option key={dept} value={dept}>
                 {dept === 'all' ? 'All Departments' : dept}
               </option>
@@ -136,42 +138,47 @@ const NovaTVDashboard: React.FC = () => {
 
       {/* Dashboard Grid */}
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="flex h-64 items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {dashboards.map((dashboard) => (
-            <div key={dashboard.id} className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
+            <div
+              key={dashboard.id}
+              className="overflow-hidden rounded-lg border bg-white shadow-sm transition-shadow hover:shadow-md"
+            >
               {/* Dashboard Preview */}
-              <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+              <div className="flex h-48 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
                 <div className="text-center">
-                  <Monitor className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <Monitor className="mx-auto mb-2 h-12 w-12 text-gray-400" />
                   <p className="text-sm text-gray-500">Dashboard Preview</p>
                 </div>
               </div>
 
               {/* Dashboard Info */}
               <div className="p-4">
-                <div className="flex items-start justify-between mb-2">
+                <div className="mb-2 flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{dashboard.name}</h3>
                     <p className="text-sm text-gray-600">{dashboard.department}</p>
                   </div>
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    dashboard.isActive 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
+                  <div
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${
+                      dashboard.isActive
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
                     {dashboard.isActive ? 'Active' : 'Inactive'}
                   </div>
                 </div>
 
                 {dashboard.description && (
-                  <p className="text-sm text-gray-600 mb-3">{dashboard.description}</p>
+                  <p className="mb-3 text-sm text-gray-600">{dashboard.description}</p>
                 )}
 
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                <div className="mb-3 flex items-center justify-between text-xs text-gray-500">
                   <span>Created: {new Date(dashboard.createdAt).toLocaleDateString()}</span>
                   <span>By: {dashboard.creator?.name || 'Unknown'}</span>
                 </div>
@@ -180,7 +187,7 @@ const NovaTVDashboard: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => toggleDashboard(dashboard.id, dashboard.isActive)}
-                    className={`flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors ${
+                    className={`flex-1 rounded-md px-3 py-2 text-xs font-medium transition-colors ${
                       dashboard.isActive
                         ? 'bg-orange-100 text-orange-800 hover:bg-orange-200'
                         : 'bg-green-100 text-green-800 hover:bg-green-200'
@@ -188,49 +195,49 @@ const NovaTVDashboard: React.FC = () => {
                   >
                     {dashboard.isActive ? (
                       <>
-                        <Pause className="w-3 h-3 inline mr-1" />
+                        <Pause className="mr-1 inline h-3 w-3" />
                         Pause
                       </>
                     ) : (
                       <>
-                        <Play className="w-3 h-3 inline mr-1" />
+                        <Play className="mr-1 inline h-3 w-3" />
                         Activate
                       </>
                     )}
                   </button>
-                  
-                  <button 
-                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+
+                  <button
+                    className="rounded-md p-2 text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
                     title="Edit dashboard"
                     aria-label="Edit dashboard"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="h-4 w-4" />
                   </button>
-                  
-                  <button 
+
+                  <button
                     onClick={() => duplicateDashboard(dashboard.id, dashboard.name)}
-                    className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors"
+                    className="rounded-md p-2 text-gray-600 transition-colors hover:bg-purple-50 hover:text-purple-600"
                     title="Duplicate dashboard"
                     aria-label="Duplicate dashboard"
                   >
-                    <Copy className="w-4 h-4" />
+                    <Copy className="h-4 w-4" />
                   </button>
-                  
-                  <button 
-                    className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-colors"
+
+                  <button
+                    className="rounded-md p-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
                     title="Dashboard settings"
                     aria-label="Dashboard settings"
                   >
-                    <Settings className="w-4 h-4" />
+                    <Settings className="h-4 w-4" />
                   </button>
-                  
-                  <button 
+
+                  <button
                     onClick={() => deleteDashboard(dashboard.id, dashboard.name)}
-                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    className="rounded-md p-2 text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600"
                     title="Delete dashboard"
                     aria-label="Delete dashboard"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -238,33 +245,32 @@ const NovaTVDashboard: React.FC = () => {
           ))}
 
           {/* Create New Dashboard Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-dashed border-gray-300 overflow-hidden hover:border-blue-400 transition-colors cursor-pointer">
-            <div className="h-48 flex items-center justify-center">
+          <div className="cursor-pointer overflow-hidden rounded-lg border border-dashed border-gray-300 bg-white shadow-sm transition-colors hover:border-blue-400">
+            <div className="flex h-48 items-center justify-center">
               <div className="text-center">
-                <Plus className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                <Plus className="mx-auto mb-2 h-12 w-12 text-gray-400" />
                 <p className="text-sm text-gray-500">Create New Dashboard</p>
               </div>
             </div>
             <div className="p-4">
-              <h3 className="text-lg font-medium text-gray-700 text-center">New Dashboard</h3>
-              <p className="text-sm text-gray-500 text-center mt-1">Click to start building</p>
+              <h3 className="text-center text-lg font-medium text-gray-700">New Dashboard</h3>
+              <p className="mt-1 text-center text-sm text-gray-500">Click to start building</p>
             </div>
           </div>
         </div>
       )}
 
       {dashboards.length === 0 && !loading && (
-        <div className="text-center py-12">
-          <Monitor className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No dashboards found</h3>
-          <p className="text-gray-600 mb-4">
-            {selectedDepartment !== 'all' 
+        <div className="py-12 text-center">
+          <Monitor className="mx-auto mb-4 h-16 w-16 text-gray-400" />
+          <h3 className="mb-2 text-lg font-medium text-gray-900">No dashboards found</h3>
+          <p className="mb-4 text-gray-600">
+            {selectedDepartment !== 'all'
               ? `No dashboards found for ${selectedDepartment} department.`
-              : 'Get started by creating your first digital signage dashboard.'
-            }
+              : 'Get started by creating your first digital signage dashboard.'}
           </p>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 mx-auto transition-colors">
-            <Plus className="w-4 h-4" />
+          <button className="mx-auto flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
+            <Plus className="h-4 w-4" />
             Create Your First Dashboard
           </button>
         </div>

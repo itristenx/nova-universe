@@ -11,10 +11,10 @@ import db from '../db.js';
 
 /**
  * Nova MCP Server - Official MCP Implementation
- * 
+ *
  * Implements the Model Context Protocol to make Nova's AI capabilities
  * accessible to external clients like ChatGPT, Claude, and other MCP clients.
- * 
+ *
  * Features:
  * - Tools: AI processing, ticket management, knowledge retrieval
  * - Resources: Dynamic Nova data access
@@ -41,7 +41,7 @@ class NovaMCPServer {
       this.mcpServer = new McpServer({
         name: 'nova-universe-mcp',
         version: '1.0.0',
-        description: 'Nova Universe Model Context Protocol Server'
+        description: 'Nova Universe Model Context Protocol Server',
       });
 
       // Register Nova tools
@@ -69,32 +69,32 @@ class NovaMCPServer {
       'nova-ai-process',
       {
         title: 'Nova AI Processing',
-        description: 'Process requests through Nova\'s AI Fabric system',
+        description: "Process requests through Nova's AI Fabric system",
         inputSchema: {
           type: 'object',
           properties: {
             input: {
               type: 'string',
-              description: 'The input text to process'
+              description: 'The input text to process',
             },
             type: {
               type: 'string',
               enum: ['classification', 'sentiment', 'summarization', 'general'],
-              description: 'Type of AI processing to perform'
+              description: 'Type of AI processing to perform',
             },
             model: {
               type: 'string',
               description: 'Specific Nova AI model to use (optional)',
-              default: 'nova-ai-general'
+              default: 'nova-ai-general',
             },
             context: {
               type: 'object',
               description: 'Additional context for processing',
-              additionalProperties: true
-            }
+              additionalProperties: true,
+            },
           },
-          required: ['input']
-        }
+          required: ['input'],
+        },
       },
       async ({ input, type = 'general', model = 'nova-ai-general', context = {} }) => {
         try {
@@ -111,33 +111,41 @@ class NovaMCPServer {
             context: {
               ...context,
               source: 'mcp',
-              timestamp: new Date().toISOString()
-            }
+              timestamp: new Date().toISOString(),
+            },
           });
 
           return {
-            content: [{
-              type: 'text',
-              text: JSON.stringify({
-                result: response.result || response.data,
-                confidence: response.confidence || 0.85,
-                model: response.provider || model,
-                processingTime: response.processingTime,
-                metadata: response.metadata || {}
-              }, null, 2)
-            }]
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    result: response.result || response.data,
+                    confidence: response.confidence || 0.85,
+                    model: response.provider || model,
+                    processingTime: response.processingTime,
+                    metadata: response.metadata || {},
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
           };
         } catch (error) {
           logger.error('Nova AI processing failed:', error);
           return {
-            content: [{
-              type: 'text',
-              text: `Error: ${error.message}`
-            }],
-            isError: true
+            content: [
+              {
+                type: 'text',
+                text: `Error: ${error.message}`,
+              },
+            ],
+            isError: true,
           };
         }
-      }
+      },
     );
 
     // Ticket Management Tool
@@ -145,37 +153,37 @@ class NovaMCPServer {
       'nova-ticket-create',
       {
         title: 'Create Nova Ticket',
-        description: 'Create a new ticket in Nova\'s ITSM system',
+        description: "Create a new ticket in Nova's ITSM system",
         inputSchema: {
           type: 'object',
           properties: {
             title: {
               type: 'string',
-              description: 'Ticket title'
+              description: 'Ticket title',
             },
             description: {
               type: 'string',
-              description: 'Ticket description'
+              description: 'Ticket description',
             },
             priority: {
               type: 'string',
               enum: ['low', 'medium', 'high', 'critical'],
               description: 'Ticket priority',
-              default: 'medium'
+              default: 'medium',
             },
             category: {
               type: 'string',
               enum: ['incident', 'request', 'change', 'problem'],
               description: 'Ticket category',
-              default: 'incident'
+              default: 'incident',
             },
             assignee: {
               type: 'string',
-              description: 'User ID to assign the ticket to (optional)'
-            }
+              description: 'User ID to assign the ticket to (optional)',
+            },
           },
-          required: ['title', 'description']
-        }
+          required: ['title', 'description'],
+        },
       },
       async ({ title, description, priority = 'medium', category = 'incident', assignee }) => {
         try {
@@ -188,45 +196,62 @@ class NovaMCPServer {
             status: 'new',
             assignee_id: assignee || null,
             created_at: new Date(),
-            updated_at: new Date()
+            updated_at: new Date(),
           };
 
           const result = await db.query(
             'INSERT INTO tickets (title, description, priority, category, status, assignee_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-            [ticketData.title, ticketData.description, ticketData.priority, ticketData.category, ticketData.status, ticketData.assignee_id, ticketData.created_at, ticketData.updated_at]
+            [
+              ticketData.title,
+              ticketData.description,
+              ticketData.priority,
+              ticketData.category,
+              ticketData.status,
+              ticketData.assignee_id,
+              ticketData.created_at,
+              ticketData.updated_at,
+            ],
           );
 
           const ticket = result.rows[0];
 
           return {
-            content: [{
-              type: 'text',
-              text: JSON.stringify({
-                success: true,
-                ticket: {
-                  id: ticket.id,
-                  title: ticket.title,
-                  description: ticket.description,
-                  priority: ticket.priority,
-                  category: ticket.category,
-                  status: ticket.status,
-                  createdAt: ticket.created_at
-                },
-                message: `Ticket ${ticket.id} created successfully`
-              }, null, 2)
-            }]
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    success: true,
+                    ticket: {
+                      id: ticket.id,
+                      title: ticket.title,
+                      description: ticket.description,
+                      priority: ticket.priority,
+                      category: ticket.category,
+                      status: ticket.status,
+                      createdAt: ticket.created_at,
+                    },
+                    message: `Ticket ${ticket.id} created successfully`,
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
           };
         } catch (error) {
           logger.error('Ticket creation failed:', error);
           return {
-            content: [{
-              type: 'text',
-              text: `Error creating ticket: ${error.message}`
-            }],
-            isError: true
+            content: [
+              {
+                type: 'text',
+                text: `Error creating ticket: ${error.message}`,
+              },
+            ],
+            isError: true,
           };
         }
-      }
+      },
     );
 
     // Knowledge Search Tool
@@ -234,30 +259,30 @@ class NovaMCPServer {
       'nova-knowledge-search',
       {
         title: 'Nova Knowledge Search',
-        description: 'Search Nova\'s knowledge base using RAG',
+        description: "Search Nova's knowledge base using RAG",
         inputSchema: {
           type: 'object',
           properties: {
             query: {
               type: 'string',
-              description: 'Search query'
+              description: 'Search query',
             },
             category: {
               type: 'string',
               enum: ['procedures', 'troubleshooting', 'documentation', 'all'],
               description: 'Knowledge category to search',
-              default: 'all'
+              default: 'all',
             },
             limit: {
               type: 'number',
               description: 'Maximum number of results',
               default: 5,
               minimum: 1,
-              maximum: 20
-            }
+              maximum: 20,
+            },
           },
-          required: ['query']
-        }
+          required: ['query'],
+        },
       },
       async ({ query, category = 'all', limit = 5 }) => {
         try {
@@ -269,34 +294,42 @@ class NovaMCPServer {
             context: {
               category,
               limit,
-              source: 'mcp'
-            }
+              source: 'mcp',
+            },
           });
 
           return {
-            content: [{
-              type: 'text',
-              text: JSON.stringify({
-                results: response.result || response.data,
-                query: query,
-                category: category,
-                totalFound: limit,
-                sources: response.sources || [],
-                confidence: response.confidence || 0.8
-              }, null, 2)
-            }]
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    results: response.result || response.data,
+                    query: query,
+                    category: category,
+                    totalFound: limit,
+                    sources: response.sources || [],
+                    confidence: response.confidence || 0.8,
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
           };
         } catch (error) {
           logger.error('Knowledge search failed:', error);
           return {
-            content: [{
-              type: 'text',
-              text: `Error searching knowledge base: ${error.message}`
-            }],
-            isError: true
+            content: [
+              {
+                type: 'text',
+                text: `Error searching knowledge base: ${error.message}`,
+              },
+            ],
+            isError: true,
           };
         }
-      }
+      },
     );
 
     // System Status Tool
@@ -312,17 +345,17 @@ class NovaMCPServer {
               type: 'string',
               enum: ['all', 'ai-fabric', 'database', 'api', 'services'],
               description: 'System component to check',
-              default: 'all'
-            }
-          }
-        }
+              default: 'all',
+            },
+          },
+        },
       },
       async ({ component = 'all' }) => {
         try {
           const status = {
             timestamp: new Date().toISOString(),
             overall: 'healthy',
-            components: {}
+            components: {},
           };
 
           if (component === 'all' || component === 'ai-fabric') {
@@ -340,30 +373,34 @@ class NovaMCPServer {
           }
 
           if (component === 'all' || component === 'api') {
-            status.components.api = { 
-              status: 'healthy', 
+            status.components.api = {
+              status: 'healthy',
               uptime: process.uptime(),
-              memory: process.memoryUsage()
+              memory: process.memoryUsage(),
             };
           }
 
           return {
-            content: [{
-              type: 'text',
-              text: JSON.stringify(status, null, 2)
-            }]
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(status, null, 2),
+              },
+            ],
           };
         } catch (error) {
           logger.error('System status check failed:', error);
           return {
-            content: [{
-              type: 'text',
-              text: `Error checking system status: ${error.message}`
-            }],
-            isError: true
+            content: [
+              {
+                type: 'text',
+                text: `Error checking system status: ${error.message}`,
+              },
+            ],
+            isError: true,
           };
         }
-      }
+      },
     );
   }
 
@@ -378,7 +415,7 @@ class NovaMCPServer {
       {
         title: 'Nova Tickets',
         description: 'Access Nova ticket data',
-        mimeType: 'application/json'
+        mimeType: 'application/json',
       },
       async (uri, { status }) => {
         try {
@@ -395,27 +432,35 @@ class NovaMCPServer {
           const result = await db.query(query, params);
 
           return {
-            contents: [{
-              uri: uri.href,
-              mimeType: 'application/json',
-              text: JSON.stringify({
-                tickets: result.rows,
-                count: result.rows.length,
-                filter: status || 'all'
-              }, null, 2)
-            }]
+            contents: [
+              {
+                uri: uri.href,
+                mimeType: 'application/json',
+                text: JSON.stringify(
+                  {
+                    tickets: result.rows,
+                    count: result.rows.length,
+                    filter: status || 'all',
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
           };
         } catch (error) {
           logger.error('Failed to fetch tickets resource:', error);
           return {
-            contents: [{
-              uri: uri.href,
-              mimeType: 'application/json',
-              text: JSON.stringify({ error: error.message }, null, 2)
-            }]
+            contents: [
+              {
+                uri: uri.href,
+                mimeType: 'application/json',
+                text: JSON.stringify({ error: error.message }, null, 2),
+              },
+            ],
           };
         }
-      }
+      },
     );
 
     // AI Models Resource
@@ -425,7 +470,7 @@ class NovaMCPServer {
       {
         title: 'Nova AI Models',
         description: 'Available AI models in Nova',
-        mimeType: 'application/json'
+        mimeType: 'application/json',
       },
       async (uri) => {
         try {
@@ -433,27 +478,35 @@ class NovaMCPServer {
           const providers = aiFabric.getProviders();
 
           return {
-            contents: [{
-              uri: uri.href,
-              mimeType: 'application/json',
-              text: JSON.stringify({
-                models,
-                providers,
-                status: aiFabric.getStatus()
-              }, null, 2)
-            }]
+            contents: [
+              {
+                uri: uri.href,
+                mimeType: 'application/json',
+                text: JSON.stringify(
+                  {
+                    models,
+                    providers,
+                    status: aiFabric.getStatus(),
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
           };
         } catch (error) {
           logger.error('Failed to fetch AI models resource:', error);
           return {
-            contents: [{
-              uri: uri.href,
-              mimeType: 'application/json',
-              text: JSON.stringify({ error: error.message }, null, 2)
-            }]
+            contents: [
+              {
+                uri: uri.href,
+                mimeType: 'application/json',
+                text: JSON.stringify({ error: error.message }, null, 2),
+              },
+            ],
           };
         }
-      }
+      },
     );
   }
 
@@ -469,16 +522,20 @@ class NovaMCPServer {
         description: 'Analyze IT service management scenarios using Nova AI',
         argsSchema: {
           issue: z.string().describe('The IT issue or request to analyze'),
-          urgency: z.enum(['low', 'medium', 'high', 'critical']).optional().describe('Issue urgency level'),
-          context: z.string().optional().describe('Additional context about the issue')
-        }
+          urgency: z
+            .enum(['low', 'medium', 'high', 'critical'])
+            .optional()
+            .describe('Issue urgency level'),
+          context: z.string().optional().describe('Additional context about the issue'),
+        },
       },
       ({ issue, urgency, context }) => ({
-        messages: [{
-          role: 'user',
-          content: {
-            type: 'text',
-            text: `As Nova's AI ITSM specialist, analyze this issue and provide recommendations:
+        messages: [
+          {
+            role: 'user',
+            content: {
+              type: 'text',
+              text: `As Nova's AI ITSM specialist, analyze this issue and provide recommendations:
 
 Issue: ${issue}
 ${urgency ? `Urgency: ${urgency}` : ''}
@@ -491,10 +548,11 @@ Please provide:
 4. Similar known issues
 5. Estimated resolution time
 
-Use Nova's knowledge base and ITSM best practices for your analysis.`
-          }
-        }]
-      })
+Use Nova's knowledge base and ITSM best practices for your analysis.`,
+            },
+          },
+        ],
+      }),
     );
 
     // Knowledge Synthesis Prompt
@@ -502,19 +560,26 @@ Use Nova's knowledge base and ITSM best practices for your analysis.`
       'nova-knowledge-synthesis',
       {
         title: 'Nova Knowledge Synthesis',
-        description: 'Synthesize information from Nova\'s knowledge base',
+        description: "Synthesize information from Nova's knowledge base",
         argsSchema: {
           topic: z.string().describe('The topic to research and synthesize'),
-          scope: z.enum(['procedures', 'technical', 'general', 'all']).optional().describe('Knowledge scope'),
-          depth: z.enum(['summary', 'detailed', 'comprehensive']).optional().describe('Analysis depth')
-        }
+          scope: z
+            .enum(['procedures', 'technical', 'general', 'all'])
+            .optional()
+            .describe('Knowledge scope'),
+          depth: z
+            .enum(['summary', 'detailed', 'comprehensive'])
+            .optional()
+            .describe('Analysis depth'),
+        },
       },
       ({ topic, scope = 'all', depth = 'detailed' }) => ({
-        messages: [{
-          role: 'user',
-          content: {
-            type: 'text',
-            text: `Using Nova's knowledge base, provide a ${depth} analysis of: ${topic}
+        messages: [
+          {
+            role: 'user',
+            content: {
+              type: 'text',
+              text: `Using Nova's knowledge base, provide a ${depth} analysis of: ${topic}
 
 Scope: ${scope}
 
@@ -525,10 +590,11 @@ Please include:
 4. Common issues and solutions
 5. Related resources and documentation
 
-Structure your response clearly and cite specific Nova knowledge base sources where applicable.`
-          }
-        }]
-      })
+Structure your response clearly and cite specific Nova knowledge base sources where applicable.`,
+            },
+          },
+        ],
+      }),
     );
   }
 
@@ -547,16 +613,16 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
         case 'stdio':
           transport = new StdioServerTransport();
           break;
-          
+
         case 'http':
           transport = new StreamableHTTPServerTransport({
             sessionIdGenerator: () => crypto.randomUUID(),
             enableDnsRebindingProtection: options.enableDnsProtection || false,
             allowedHosts: options.allowedHosts || ['127.0.0.1', 'localhost'],
-            allowedOrigins: options.allowedOrigins || []
+            allowedOrigins: options.allowedOrigins || [],
           });
           break;
-          
+
         default:
           throw new Error(`Unsupported transport type: ${transportType}`);
       }
@@ -566,7 +632,7 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
       this.isRunning = true;
 
       logger.info(`Nova MCP Server started with ${transportType} transport`);
-      
+
       return this;
     } catch (error) {
       logger.error('Failed to start Nova MCP Server:', error);
@@ -583,11 +649,11 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
         await this.transport.close();
         this.transport = null;
       }
-      
+
       this.isRunning = false;
       this.sessions.clear();
       this.clients.clear();
-      
+
       logger.info('Nova MCP Server stopped');
     } catch (error) {
       logger.error('Error stopping Nova MCP Server:', error);
@@ -605,7 +671,7 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
       connectedClients: this.clients.size,
       aiFabricStatus: aiFabric.getStatus(),
       uptime: process.uptime(),
-      memory: process.memoryUsage()
+      memory: process.memoryUsage(),
     };
   }
 }

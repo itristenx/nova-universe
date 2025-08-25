@@ -19,7 +19,9 @@ export const databaseConfig = {
     password: (() => {
       const password = process.env.CORE_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
-        logger.error('CRITICAL: CORE_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment');
+        logger.error(
+          'CRITICAL: CORE_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment',
+        );
         if (process.env.NODE_ENV === 'production') {
           throw new Error('Database password is required in production environment');
         }
@@ -66,7 +68,9 @@ export const databaseConfig = {
     password: (() => {
       const password = process.env.AUTH_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
-        logger.error('CRITICAL: AUTH_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment');
+        logger.error(
+          'CRITICAL: AUTH_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment',
+        );
         if (process.env.NODE_ENV === 'production') {
           throw new Error('Auth database password is required in production environment');
         }
@@ -160,7 +164,9 @@ function generateSecurePassword() {
   }
 
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('CRITICAL: Database passwords must be explicitly set in production via environment variables');
+    throw new Error(
+      'CRITICAL: Database passwords must be explicitly set in production via environment variables',
+    );
   }
 
   // In non-production environments, generate a random password

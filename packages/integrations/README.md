@@ -7,7 +7,7 @@ This package contains the Nova Integration Layer (NIL) and related connectors fo
 The Nova Integration Layer is an enterprise-grade integration framework that provides:
 
 - **Universal Connectors**: Pre-built connectors for popular enterprise systems
-- **Notification Platform**: Multi-channel notification delivery system  
+- **Notification Platform**: Multi-channel notification delivery system
 - **Standard Integration Patterns**: Following Enterprise Integration Patterns (EIP)
 - **Circuit Breaker**: Resilience patterns for external system calls
 - **Rate Limiting**: Built-in protection against API abuse
@@ -33,18 +33,22 @@ packages/integrations/
 ## Available Connectors
 
 ### Identity & Access Management
+
 - **Okta Connector**: User provisioning, authentication, and group management
 - **Intune Connector**: Device management and compliance policies
 - **Jamf Connector**: Apple device management and security
 
-### Security & Compliance  
+### Security & Compliance
+
 - **CrowdStrike Connector**: Endpoint protection and threat intelligence
 
 ### Communication & Collaboration
+
 - **Slack Connector**: Team communication and workflow integration
 - **Zoom Connector**: Meeting management and user provisioning
 
 ### AI & Automation
+
 - **Nova Synth Connector**: AI-powered automation and workflow intelligence
 
 ## Usage
@@ -59,8 +63,8 @@ const integration = new NovaIntegrationLayer({
   enableAudit: true,
   rateLimit: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000 // requests per window
-  }
+    max: 1000, // requests per window
+  },
 });
 
 await integration.initialize();
@@ -74,13 +78,13 @@ import { SlackConnector } from '@nova-universe/integrations/connectors/slack-con
 const slackConnector = new SlackConnector();
 await slackConnector.initialize({
   botToken: process.env.SLACK_BOT_TOKEN,
-  userToken: process.env.SLACK_USER_TOKEN
+  userToken: process.env.SLACK_USER_TOKEN,
 });
 
 // Send a message
 await slackConnector.sendMessage({
   channel: '#general',
-  text: 'Hello from Nova Universe!'
+  text: 'Hello from Nova Universe!',
 });
 ```
 
@@ -96,8 +100,8 @@ await novaNotificationPlatform.sendNotification({
   channels: [
     { type: 'email', recipients: ['admin@company.com'] },
     { type: 'slack', channel: '#alerts' },
-    { type: 'in_app', users: ['user123'] }
-  ]
+    { type: 'in_app', users: ['user123'] },
+  ],
 });
 ```
 

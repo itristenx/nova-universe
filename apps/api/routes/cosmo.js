@@ -39,7 +39,7 @@ router.post('/query', kioskOrAuth, async (req, res) => {
       metadata: response.metadata,
       provider: response.provider,
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, error: 'AI query failed' });
   }
 });

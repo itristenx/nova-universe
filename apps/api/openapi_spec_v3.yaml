@@ -3,34 +3,34 @@ info:
   title: Nova Universe Platform API
   description: |
     Comprehensive API documentation for the Nova Universe IT Service Management platform.
-    
+
     ## Authentication
-    
+
     The API uses Bearer token authentication. Include your API key in the Authorization header:
     ```
     Authorization: Bearer your-api-key-here
     ```
-    
+
     ## Versioning Strategy
-    
+
     This API follows semantic versioning with URI-based versioning:
     - **v2**: Current stable version with latest features
     - **v1**: Legacy version (deprecated, maintained for backward compatibility)
-    
+
     Breaking changes will increment the major version. Non-breaking changes (new endpoints, 
     optional parameters) may be added to existing versions.
-    
+
     ## Rate Limiting
-    
+
     API requests are rate limited:
     - **Authenticated requests**: 1000 requests per hour
     - **Unauthenticated requests**: 100 requests per hour
-    
+
     Rate limit headers are included in all responses:
     - `X-RateLimit-Limit`: Request limit per window
     - `X-RateLimit-Remaining`: Requests remaining in current window
     - `X-RateLimit-Reset`: Unix timestamp when the window resets
-    
+
   version: 2.0.0
   contact:
     name: Nova Universe API Support
@@ -111,16 +111,16 @@ paths:
                 username:
                   type: string
                   description: User's email address or username
-                  example: "admin@example.com"
+                  example: 'admin@example.com'
                 password:
                   type: string
                   format: password
                   description: User's password
-                  example: "securePassword123"
+                  example: 'securePassword123'
                 mfaCode:
                   type: string
                   description: Multi-factor authentication code (if MFA is enabled)
-                  example: "123456"
+                  example: '123456'
                 rememberMe:
                   type: boolean
                   description: Whether to extend session duration
@@ -139,7 +139,7 @@ paths:
                   token:
                     type: string
                     description: JWT authentication token
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
                   refreshToken:
                     type: string
                     description: Refresh token for token renewal
@@ -220,7 +220,7 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: "Logged out successfully"
+                    example: 'Logged out successfully'
 
   # Ticket Management (Nova Pulse)
   /pulse/tickets:
@@ -357,7 +357,7 @@ paths:
           description: Unique ticket identifier
           schema:
             type: string
-            example: "TKT-2024-001"
+            example: 'TKT-2024-001'
       responses:
         '200':
           description: Ticket details
@@ -564,7 +564,7 @@ paths:
                 message:
                   type: string
                   description: User message
-                  example: "How do I reset my password?"
+                  example: 'How do I reset my password?'
                 context:
                   type: object
                   description: Additional context for the AI
@@ -669,21 +669,21 @@ components:
       properties:
         id:
           type: string
-          example: "user_123"
+          example: 'user_123'
         email:
           type: string
           format: email
-          example: "admin@example.com"
+          example: 'admin@example.com'
         name:
           type: string
-          example: "Admin User"
+          example: 'Admin User'
         role:
           type: string
           enum: [admin, agent, user]
-          example: "admin"
+          example: 'admin'
         department:
           type: string
-          example: "IT"
+          example: 'IT'
         isActive:
           type: boolean
           example: true
@@ -702,24 +702,24 @@ components:
       properties:
         id:
           type: string
-          example: "TKT-2024-001"
+          example: 'TKT-2024-001'
         title:
           type: string
-          example: "Password reset request"
+          example: 'Password reset request'
         description:
           type: string
-          example: "User unable to access email account"
+          example: 'User unable to access email account'
         status:
           type: string
           enum: [open, in_progress, resolved, closed, pending]
-          example: "open"
+          example: 'open'
         priority:
           type: string
           enum: [low, medium, high, critical]
-          example: "medium"
+          example: 'medium'
         category:
           type: string
-          example: "Account Access"
+          example: 'Account Access'
         assignee:
           $ref: '#/components/schemas/User'
         requester:
@@ -804,13 +804,13 @@ components:
         title:
           type: string
           maxLength: 255
-          example: "Password reset request"
+          example: 'Password reset request'
         description:
           type: string
-          example: "User unable to access email account after password change"
+          example: 'User unable to access email account after password change'
         category:
           type: string
-          example: "Account Access"
+          example: 'Account Access'
         priority:
           type: string
           enum: [low, medium, high, critical]
@@ -854,19 +854,19 @@ components:
       properties:
         id:
           type: string
-          example: "kb_001"
+          example: 'kb_001'
         title:
           type: string
-          example: "How to Reset Your Password"
+          example: 'How to Reset Your Password'
         summary:
           type: string
-          example: "Step-by-step guide for password reset"
+          example: 'Step-by-step guide for password reset'
         content:
           type: string
           description: Full article content in markdown
         category:
           type: string
-          example: "Account Management"
+          example: 'Account Management'
         tags:
           type: array
           items:
@@ -919,32 +919,32 @@ components:
       properties:
         id:
           type: string
-          example: "asset_001"
+          example: 'asset_001'
         name:
           type: string
-          example: "MacBook Pro 2023"
+          example: 'MacBook Pro 2023'
         type:
           type: string
           enum: [hardware, software, network, mobile]
-          example: "hardware"
+          example: 'hardware'
         status:
           type: string
           enum: [active, inactive, maintenance, retired]
-          example: "active"
+          example: 'active'
         serialNumber:
           type: string
-          example: "MB-2023-001"
+          example: 'MB-2023-001'
         model:
           type: string
-          example: "MacBook Pro 14-inch"
+          example: 'MacBook Pro 14-inch'
         manufacturer:
           type: string
-          example: "Apple"
+          example: 'Apple'
         assignee:
           $ref: '#/components/schemas/User'
         location:
           type: string
-          example: "Office Floor 2"
+          example: 'Office Floor 2'
         purchaseDate:
           type: string
           format: date
@@ -1067,10 +1067,10 @@ components:
           properties:
             code:
               type: string
-              example: "VALIDATION_ERROR"
+              example: 'VALIDATION_ERROR'
             message:
               type: string
-              example: "Invalid input data"
+              example: 'Invalid input data'
             details:
               type: array
               items:
@@ -1085,7 +1085,7 @@ components:
               format: date-time
             requestId:
               type: string
-              example: "req_123456"
+              example: 'req_123456'
 
   responses:
     BadRequestError:
@@ -1097,10 +1097,10 @@ components:
           example:
             success: false
             error:
-              code: "BAD_REQUEST"
-              message: "Invalid request parameters"
-              timestamp: "2024-01-15T10:30:00Z"
-              requestId: "req_123456"
+              code: 'BAD_REQUEST'
+              message: 'Invalid request parameters'
+              timestamp: '2024-01-15T10:30:00Z'
+              requestId: 'req_123456'
 
     UnauthorizedError:
       description: Unauthorized - Authentication required
@@ -1111,10 +1111,10 @@ components:
           example:
             success: false
             error:
-              code: "UNAUTHORIZED"
-              message: "Authentication token required"
-              timestamp: "2024-01-15T10:30:00Z"
-              requestId: "req_123456"
+              code: 'UNAUTHORIZED'
+              message: 'Authentication token required'
+              timestamp: '2024-01-15T10:30:00Z'
+              requestId: 'req_123456'
 
     ForbiddenError:
       description: Forbidden - Insufficient permissions
@@ -1125,10 +1125,10 @@ components:
           example:
             success: false
             error:
-              code: "FORBIDDEN"
-              message: "Insufficient permissions to access this resource"
-              timestamp: "2024-01-15T10:30:00Z"
-              requestId: "req_123456"
+              code: 'FORBIDDEN'
+              message: 'Insufficient permissions to access this resource'
+              timestamp: '2024-01-15T10:30:00Z'
+              requestId: 'req_123456'
 
     NotFoundError:
       description: Resource not found
@@ -1139,10 +1139,10 @@ components:
           example:
             success: false
             error:
-              code: "NOT_FOUND"
-              message: "The requested resource was not found"
-              timestamp: "2024-01-15T10:30:00Z"
-              requestId: "req_123456"
+              code: 'NOT_FOUND'
+              message: 'The requested resource was not found'
+              timestamp: '2024-01-15T10:30:00Z'
+              requestId: 'req_123456'
 
     ValidationError:
       description: Validation error - Invalid input data
@@ -1153,15 +1153,15 @@ components:
           example:
             success: false
             error:
-              code: "VALIDATION_ERROR"
-              message: "Input validation failed"
+              code: 'VALIDATION_ERROR'
+              message: 'Input validation failed'
               details:
-                - field: "email"
-                  message: "Invalid email format"
-                - field: "password"
-                  message: "Password must be at least 8 characters"
-              timestamp: "2024-01-15T10:30:00Z"
-              requestId: "req_123456"
+                - field: 'email'
+                  message: 'Invalid email format'
+                - field: 'password'
+                  message: 'Password must be at least 8 characters'
+              timestamp: '2024-01-15T10:30:00Z'
+              requestId: 'req_123456'
 
     RateLimitError:
       description: Rate limit exceeded
@@ -1193,10 +1193,10 @@ components:
           example:
             success: false
             error:
-              code: "RATE_LIMIT_EXCEEDED"
-              message: "Rate limit exceeded. Please wait before making another request."
-              timestamp: "2024-01-15T10:30:00Z"
-              requestId: "req_123456"
+              code: 'RATE_LIMIT_EXCEEDED'
+              message: 'Rate limit exceeded. Please wait before making another request.'
+              timestamp: '2024-01-15T10:30:00Z'
+              requestId: 'req_123456'
 
     InternalServerError:
       description: Internal server error
@@ -1207,32 +1207,32 @@ components:
           example:
             success: false
             error:
-              code: "INTERNAL_SERVER_ERROR"
-              message: "An internal server error occurred"
-              timestamp: "2024-01-15T10:30:00Z"
-              requestId: "req_123456"
+              code: 'INTERNAL_SERVER_ERROR'
+              message: 'An internal server error occurred'
+              timestamp: '2024-01-15T10:30:00Z'
+              requestId: 'req_123456'
 
   examples:
     TicketExample:
       summary: Sample support ticket
       value:
-        id: "TKT-2024-001"
-        title: "Password reset request"
-        description: "User unable to access email account after password change"
-        status: "open"
-        priority: "medium"
-        category: "Account Access"
+        id: 'TKT-2024-001'
+        title: 'Password reset request'
+        description: 'User unable to access email account after password change'
+        status: 'open'
+        priority: 'medium'
+        category: 'Account Access'
         assignee:
-          id: "user_456"
-          name: "John Agent"
-          email: "john@example.com"
+          id: 'user_456'
+          name: 'John Agent'
+          email: 'john@example.com'
         requester:
-          id: "user_789"
-          name: "Jane User"
-          email: "jane@example.com"
-        createdAt: "2024-01-15T10:30:00Z"
-        updatedAt: "2024-01-15T10:30:00Z"
-        tags: ["password", "account", "urgent"]
+          id: 'user_789'
+          name: 'Jane User'
+          email: 'jane@example.com'
+        createdAt: '2024-01-15T10:30:00Z'
+        updatedAt: '2024-01-15T10:30:00Z'
+        tags: ['password', 'account', 'urgent']
 
   headers:
     X-RateLimit-Limit:
@@ -1240,7 +1240,7 @@ components:
       schema:
         type: integer
     X-RateLimit-Remaining:
-      description: Requests remaining in current window  
+      description: Requests remaining in current window
       schema:
         type: integer
     X-RateLimit-Reset:

@@ -37,24 +37,25 @@ export default function LanguageSwitcher({
   const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentLanguage = (languages.find(lang => lang.code === i18n.language) ?? languages[0]) as Language;
+  const currentLanguage = (languages.find((lang) => lang.code === i18n.language) ??
+    languages[0]) as Language;
 
   const handleLanguageChange = async (languageCode: string) => {
-    const selectedLanguage = languages.find(lang => lang.code === languageCode);
+    const selectedLanguage = languages.find((lang) => lang.code === languageCode);
     if (selectedLanguage) {
       // Change language
       await i18n.changeLanguage(languageCode);
-      
+
       // Update document direction
       document.documentElement.dir = selectedLanguage.dir;
       document.documentElement.lang = languageCode;
-      
+
       // Store preference in localStorage
       localStorage.setItem('i18nextLng', languageCode);
-      
+
       // Close dropdown
       setIsOpen(false);
-      
+
       // Reload page to apply RTL/LTR styles properly
       window.location.reload();
     }
@@ -88,13 +89,7 @@ export default function LanguageSwitcher({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`
-            inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white 
-            shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 
-            focus:ring-blue-500 focus:ring-offset-2 dark:bg-gray-800 
-            dark:border-gray-600 dark:hover:bg-gray-700 dark:text-white
-            ${getSizeClasses()}
-          `}
+          className={`inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 ${getSizeClasses()} `}
           aria-label={t('language.switcher.title')}
           aria-expanded={isOpen ? 'true' : 'false'}
         >
@@ -103,41 +98,38 @@ export default function LanguageSwitcher({
           <span className="font-medium">
             {showNativeName ? currentLanguage.nativeName : currentLanguage.name}
           </span>
-          <ChevronDownIcon 
+          <ChevronDownIcon
             className={`${getIconSize()} transition-transform duration-200 ${
               isOpen ? 'rotate-180' : ''
-            }`} 
+            }`}
           />
         </button>
 
         {isOpen && (
           <>
             {/* Backdrop */}
-            <div 
-              className="fixed inset-0 z-10" 
+            <div
+              className="fixed inset-0 z-10"
               onClick={() => setIsOpen(false)}
               aria-hidden="true"
             />
-            
+
             {/* Dropdown */}
-            <div className="absolute right-0 z-20 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg dark:bg-gray-800 dark:border-gray-600">
+            <div className="absolute right-0 z-20 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
               <div className="py-1" role="menu">
                 {languages.map((language) => (
                   <button
                     key={language.code}
                     onClick={() => handleLanguageChange(language.code)}
-                    className={`
-                      w-full px-4 py-2 text-left text-sm hover:bg-gray-100 
-                      dark:hover:bg-gray-700 dark:text-white flex items-center gap-3
-                      ${language.code === currentLanguage.code 
-                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
+                    className={`flex w-full items-center gap-3 px-4 py-2 text-left text-sm hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700 ${
+                      language.code === currentLanguage.code
+                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                         : 'text-gray-700'
-                      }
-                    `}
+                    } `}
                     role="menuitem"
                     dir={language.dir}
                   >
-                    <span className="text-lg mr-2">{language.flag}</span>
+                    <span className="mr-2 text-lg">{language.flag}</span>
                     <div className="flex flex-col">
                       <span className="font-medium">{language.nativeName}</span>
                       {language.name !== language.nativeName && (
@@ -160,12 +152,7 @@ export default function LanguageSwitcher({
         <select
           value={currentLanguage.code}
           onChange={(e) => handleLanguageChange(e.target.value)}
-          className={`
-            appearance-none bg-transparent border-none focus:outline-none 
-            focus:ring-2 focus:ring-blue-500 rounded cursor-pointer
-            dark:text-white pr-6
-            ${getSizeClasses()}
-          `}
+          className={`cursor-pointer appearance-none rounded border-none bg-transparent pr-6 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white ${getSizeClasses()} `}
           aria-label={t('language.switcher.title')}
         >
           {languages.map((language) => (
@@ -174,8 +161,8 @@ export default function LanguageSwitcher({
             </option>
           ))}
         </select>
-        <ChevronDownIcon 
-          className={`absolute right-0 top-1/2 transform -translate-y-1/2 ${getIconSize()} pointer-events-none`}
+        <ChevronDownIcon
+          className={`absolute top-1/2 right-0 -translate-y-1/2 transform ${getIconSize()} pointer-events-none`}
         />
       </div>
     );
@@ -188,53 +175,40 @@ export default function LanguageSwitcher({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`
-          inline-flex items-center gap-2 rounded-md bg-white border border-gray-300 
-          shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 
-          focus:ring-blue-500 focus:ring-offset-2 dark:bg-gray-800 
-          dark:border-gray-600 dark:hover:bg-gray-700 dark:text-white
-          ${getSizeClasses()}
-        `}
+        className={`inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 ${getSizeClasses()} `}
         aria-label={t('language.switcher.title')}
         aria-expanded={isOpen ? 'true' : 'false'}
       >
         {showIcon && <LanguageIcon className={getIconSize()} />}
         {showFlag && <span className="text-lg">{currentLanguage.flag}</span>}
         <span>{showNativeName ? currentLanguage.nativeName : currentLanguage.name}</span>
-        <ChevronDownIcon 
+        <ChevronDownIcon
           className={`${getIconSize()} transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
-          }`} 
+          }`}
         />
       </button>
 
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-10" 
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
-          
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} aria-hidden="true" />
+
           {/* Dropdown */}
-          <div className="absolute right-0 z-20 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg dark:bg-gray-800 dark:border-gray-600">
+          <div className="absolute right-0 z-20 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
             <div className="p-1" role="menu">
-              <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
+              <div className="px-3 py-2 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                 {t('language.switcher.title')}
               </div>
               {languages.map((language) => (
                 <button
                   key={language.code}
                   onClick={() => handleLanguageChange(language.code)}
-                  className={`
-                    w-full px-3 py-2 text-left text-sm rounded-md hover:bg-gray-100 
-                    dark:hover:bg-gray-700 dark:text-white flex items-center justify-between
-                    ${language.code === currentLanguage.code 
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700 ${
+                    language.code === currentLanguage.code
+                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                       : 'text-gray-700'
-                    }
-                  `}
+                  } `}
                   role="menuitem"
                   dir={language.dir}
                 >
@@ -267,8 +241,9 @@ export default function LanguageSwitcher({
 // Hook for RTL support
 export function useRTL() {
   const { i18n } = useTranslation();
-  const currentLanguage = (languages.find(lang => lang.code === i18n.language) ?? languages[0]) as Language;
-  
+  const currentLanguage = (languages.find((lang) => lang.code === i18n.language) ??
+    languages[0]) as Language;
+
   return {
     isRTL: currentLanguage.dir === 'rtl',
     direction: currentLanguage.dir,

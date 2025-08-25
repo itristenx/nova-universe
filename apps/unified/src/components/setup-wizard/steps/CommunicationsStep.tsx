@@ -13,7 +13,7 @@ export interface CommunicationsStepProps {
 export const CommunicationsStep: React.FC<CommunicationsStepProps> = () => {
   return (
     <div className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
         Communications Setup
       </h3>
       <p className="text-gray-600 dark:text-gray-400">

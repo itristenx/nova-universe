@@ -2,11 +2,11 @@
  * Enhanced Button Component - Phase 1 Implementation
  * Apple-inspired design with comprehensive accessibility
  */
-import React, { forwardRef, useRef } from 'react'
+import React, { forwardRef, useRef } from 'react';
 
 // Utility function for classnames
 function cn(...classes: (string | undefined | null | false)[]): string {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(' ');
 }
 
 // Simplified variant system without external dependencies
@@ -14,7 +14,7 @@ const getButtonClasses = (
   variant: string = 'primary',
   size: string = 'md',
   loading: boolean = false,
-  fullWidth: boolean = false
+  fullWidth: boolean = false,
 ) => {
   const baseClasses = [
     'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium',
@@ -24,7 +24,7 @@ const getButtonClasses = (
     'active:scale-[0.98] active:transition-transform active:duration-75',
     'font-system leading-none tracking-tight',
     'touch-manipulation select-none',
-  ]
+  ];
 
   const variantClasses = {
     primary: [
@@ -59,7 +59,7 @@ const getButtonClasses = (
       'dark:border-gray-700 dark:text-gray-300',
       'dark:hover:bg-gray-800 dark:hover:border-gray-600',
     ],
-  }
+  };
 
   const sizeClasses = {
     sm: 'h-8 px-3 text-xs gap-1.5',
@@ -69,29 +69,29 @@ const getButtonClasses = (
     'icon-sm': 'h-8 w-8 p-0',
     'icon-md': 'h-10 w-10 p-0',
     'icon-lg': 'h-12 w-12 p-0',
-  }
+  };
 
-  const loadingClasses = loading ? ['cursor-not-allowed opacity-70'] : []
-  const widthClasses = fullWidth ? ['w-full'] : []
+  const loadingClasses = loading ? ['cursor-not-allowed opacity-70'] : [];
+  const widthClasses = fullWidth ? ['w-full'] : [];
 
   return cn(
     ...baseClasses,
-    ...variantClasses[variant as keyof typeof variantClasses] || variantClasses.primary,
+    ...(variantClasses[variant as keyof typeof variantClasses] || variantClasses.primary),
     sizeClasses[size as keyof typeof sizeClasses] || sizeClasses.md,
     ...loadingClasses,
-    ...widthClasses
-  )
-}
+    ...widthClasses,
+  );
+};
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'destructive' | 'ghost' | 'outline'
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'icon-sm' | 'icon-md' | 'icon-lg'
-  loading?: boolean
-  loadingText?: string
-  leftIcon?: React.ReactNode
-  rightIcon?: React.ReactNode
-  fullWidth?: boolean
-  'aria-label'?: string
+  variant?: 'primary' | 'secondary' | 'destructive' | 'ghost' | 'outline';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'icon-sm' | 'icon-md' | 'icon-lg';
+  loading?: boolean;
+  loadingText?: string;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  fullWidth?: boolean;
+  'aria-label'?: string;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -111,33 +111,33 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       'aria-label': ariaLabel,
       ...props
     },
-    ref
+    ref,
   ) => {
-    const buttonRef = useRef<HTMLButtonElement>(null)
-    
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
     // Merge refs
     const mergedRef = (node: HTMLButtonElement) => {
-      if (buttonRef) buttonRef.current = node
-      if (typeof ref === 'function') ref(node)
-      else if (ref) ref.current = node
-    }
+      if (buttonRef) buttonRef.current = node;
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    };
 
-    const isDisabled = disabled || loading
+    const isDisabled = disabled || loading;
 
     // Handle click with loading state
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (isDisabled) {
-        e.preventDefault()
-        return
+        e.preventDefault();
+        return;
       }
 
-      onClick?.(e)
-    }
+      onClick?.(e);
+    };
 
     // Loading spinner component
     const LoadingSpinner = () => (
       <svg
-        className="animate-spin h-4 w-4"
+        className="h-4 w-4 animate-spin"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -157,15 +157,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
         />
       </svg>
-    )
+    );
 
     return (
       <button
         ref={mergedRef}
-        className={cn(
-          getButtonClasses(variant, size, loading, fullWidth),
-          className
-        )}
+        className={cn(getButtonClasses(variant, size, loading, fullWidth), className)}
         disabled={isDisabled}
         onClick={handleClick}
         aria-label={ariaLabel || (typeof children === 'string' ? children : undefined)}
@@ -183,11 +180,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ) : null}
 
         {/* Button content */}
-        {loading && loadingText ? (
-          <span>{loadingText}</span>
-        ) : (
-          children
-        )}
+        {loading && loadingText ? <span>{loadingText}</span> : children}
 
         {/* Right icon */}
         {!loading && rightIcon && (
@@ -197,25 +190,21 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
 
         {/* Screen reader loading announcement */}
-        {loading && loadingText && (
-          <span className="sr-only">
-            {loadingText}
-          </span>
-        )}
+        {loading && loadingText && <span className="sr-only">{loadingText}</span>}
       </button>
-    )
-  }
-)
+    );
+  },
+);
 
-Button.displayName = 'Button'
+Button.displayName = 'Button';
 
 // Button group component for related actions
 interface ButtonGroupProps {
-  children: React.ReactNode
-  className?: string
-  orientation?: 'horizontal' | 'vertical'
-  size?: 'sm' | 'md' | 'lg'
-  variant?: 'primary' | 'secondary' | 'outline'
+  children: React.ReactNode;
+  className?: string;
+  orientation?: 'horizontal' | 'vertical';
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary' | 'outline';
 }
 
 const ButtonGroup = forwardRef<HTMLDivElement, ButtonGroupProps>(
@@ -226,23 +215,25 @@ const ButtonGroup = forwardRef<HTMLDivElement, ButtonGroupProps>(
         className={cn(
           'flex',
           orientation === 'horizontal' ? 'flex-row' : 'flex-col',
-          'shadow-sm rounded-lg overflow-hidden',
+          'overflow-hidden rounded-lg shadow-sm',
           '[&>button]:rounded-none [&>button:first-child]:rounded-l-lg [&>button:last-child]:rounded-r-lg',
-          orientation === 'vertical' && '[&>button:first-child]:rounded-t-lg [&>button:first-child]:rounded-l-none [&>button:last-child]:rounded-b-lg [&>button:last-child]:rounded-r-none',
+          orientation === 'vertical' &&
+            '[&>button:first-child]:rounded-t-lg [&>button:first-child]:rounded-l-none [&>button:last-child]:rounded-r-none [&>button:last-child]:rounded-b-lg',
           '[&>button:not(:last-child)]:border-r-0',
-          orientation === 'vertical' && '[&>button:not(:last-child)]:border-r [&>button:not(:last-child)]:border-b-0',
-          className
+          orientation === 'vertical' &&
+            '[&>button:not(:last-child)]:border-r [&>button:not(:last-child)]:border-b-0',
+          className,
         )}
         role="group"
         {...props}
       >
         {children}
       </div>
-    )
-  }
-)
+    );
+  },
+);
 
-ButtonGroup.displayName = 'ButtonGroup'
+ButtonGroup.displayName = 'ButtonGroup';
 
-export { Button, ButtonGroup, getButtonClasses }
-export type { ButtonProps }
+export { Button, ButtonGroup, getButtonClasses };
+export type { ButtonProps };

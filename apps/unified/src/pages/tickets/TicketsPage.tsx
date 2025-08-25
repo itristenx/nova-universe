@@ -1,21 +1,21 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { 
-  PlusIcon, 
-  FunnelIcon, 
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  PlusIcon,
+  FunnelIcon,
   ArrowsUpDownIcon,
   MagnifyingGlassIcon,
   DocumentArrowDownIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline'
-import { useTicketStore } from '@stores/tickets'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { TicketTable } from '@components/tickets/TicketTable'
-import { TicketFilters } from '@components/tickets/TicketFilters'
-import { BulkActions } from '@components/tickets/BulkActions'
-import { TicketStats } from '@components/tickets/TicketStats'
-import { cn, formatNumber } from '@utils/index'
-import toast from 'react-hot-toast'
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
+import { useTicketStore } from '@stores/tickets';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { TicketTable } from '@components/tickets/TicketTable';
+import { TicketFilters } from '@components/tickets/TicketFilters';
+import { BulkActions } from '@components/tickets/BulkActions';
+import { TicketStats } from '@components/tickets/TicketStats';
+import { cn, formatNumber } from '@utils/index';
+import toast from 'react-hot-toast';
 
 export default function TicketsPage() {
   const {
@@ -35,120 +35,122 @@ export default function TicketsPage() {
     bulkDeleteTickets,
     refreshTickets,
     clearError,
-  } = useTicketStore()
+  } = useTicketStore();
 
-  const [showFilters, setShowFilters] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isSearching, setIsSearching] = useState(false)
+  const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   // Load tickets and stats on component mount
   useEffect(() => {
-    loadTickets()
-    loadStats()
-  }, [loadTickets, loadStats])
+    loadTickets();
+    loadStats();
+  }, [loadTickets, loadStats]);
 
   // Handle search
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
-      await loadTickets()
-      setIsSearching(false)
-      return
+      await loadTickets();
+      setIsSearching(false);
+      return;
     }
 
-    setIsSearching(true)
+    setIsSearching(true);
     try {
-      await searchTickets(query)
-    } catch (error) {
-      toast.error('Search failed')
+      await searchTickets(query);
+    } catch (_error) {
+      toast.error('Search failed');
     } finally {
-      setIsSearching(false)
+      setIsSearching(false);
     }
-  }
+  };
 
   // Handle search input change with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      handleSearch(searchQuery)
-    }, 300)
+      handleSearch(searchQuery);
+    }, 300);
 
-    return () => clearTimeout(timeoutId)
-  }, [searchQuery])
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   // Handle bulk actions
   const handleBulkStatusUpdate = async (status: string) => {
     if (selectedTickets.length === 0) {
-      toast.error('Please select tickets to update')
-      return
+      toast.error('Please select tickets to update');
+      return;
     }
 
     try {
-      await bulkUpdateTickets(selectedTickets, { status })
-      toast.success(`Updated ${selectedTickets.length} tickets`)
-      clearSelectedTickets()
-    } catch (error) {
-      toast.error('Failed to update tickets')
+      await bulkUpdateTickets(selectedTickets, { status });
+      toast.success(`Updated ${selectedTickets.length} tickets`);
+      clearSelectedTickets();
+    } catch (_error) {
+      toast.error('Failed to update tickets');
     }
-  }
+  };
 
   const handleBulkAssign = async (assigneeId: string) => {
     if (selectedTickets.length === 0) {
-      toast.error('Please select tickets to assign')
-      return
+      toast.error('Please select tickets to assign');
+      return;
     }
 
     try {
-      await bulkUpdateTickets(selectedTickets, { assigneeId })
-      toast.success(`Assigned ${selectedTickets.length} tickets`)
-      clearSelectedTickets()
-    } catch (error) {
-      toast.error('Failed to assign tickets')
+      await bulkUpdateTickets(selectedTickets, { assigneeId });
+      toast.success(`Assigned ${selectedTickets.length} tickets`);
+      clearSelectedTickets();
+    } catch (_error) {
+      toast.error('Failed to assign tickets');
     }
-  }
+  };
 
   const handleBulkDelete = async () => {
     if (selectedTickets.length === 0) {
-      toast.error('Please select tickets to delete')
-      return
+      toast.error('Please select tickets to delete');
+      return;
     }
 
-    if (!confirm(`Are you sure you want to delete ${selectedTickets.length} tickets? This action cannot be undone.`)) {
-      return
+    if (
+      !confirm(
+        `Are you sure you want to delete ${selectedTickets.length} tickets? This action cannot be undone.`,
+      )
+    ) {
+      return;
     }
 
     try {
-      await bulkDeleteTickets(selectedTickets)
-      toast.success(`Deleted ${selectedTickets.length} tickets`)
-    } catch (error) {
-      toast.error('Failed to delete tickets')
+      await bulkDeleteTickets(selectedTickets);
+      toast.success(`Deleted ${selectedTickets.length} tickets`);
+    } catch (_error) {
+      toast.error('Failed to delete tickets');
     }
-  }
+  };
 
   // Handle export
   const handleExport = async (format: 'csv' | 'excel' | 'pdf') => {
     try {
       // Export with current filters
       // await ticketService.exportTickets(format, filters)
-      toast.success(`Exporting tickets as ${format.toUpperCase()}`)
-    } catch (error) {
-      toast.error('Export failed')
+      toast.success(`Exporting tickets as ${format.toUpperCase()}`);
+    } catch (_error) {
+      toast.error('Export failed');
     }
-  }
+  };
 
   // Clear error when component unmounts
   useEffect(() => {
     return () => {
-      if (error) clearError()
-    }
-  }, [error, clearError])
+      if (error) clearError();
+    };
+  }, [error, clearError]);
 
   return (
     <div className="space-y-6">
       {/* Page header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Tickets
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tickets</h1>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
             Manage and track all service requests and incidents
           </p>
@@ -160,8 +162,8 @@ export default function TicketsPage() {
             <select
               onChange={(e) => {
                 if (e.target.value) {
-                  handleExport(e.target.value as 'csv' | 'excel' | 'pdf')
-                  e.target.value = ''
+                  handleExport(e.target.value as 'csv' | 'excel' | 'pdf');
+                  e.target.value = '';
                 }
               }}
               className="btn btn-secondary"
@@ -216,23 +218,19 @@ export default function TicketsPage() {
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
                 'btn btn-secondary',
-                showFilters && 'bg-nova-100 text-nova-700 dark:bg-nova-900 dark:text-nova-300'
+                showFilters && 'bg-nova-100 text-nova-700 dark:bg-nova-900 dark:text-nova-300',
               )}
             >
               <FunnelIcon className="h-4 w-4" />
               Filters
               {Object.keys(filters).length > 0 && (
-                <span className="ml-1 rounded-full bg-nova-600 px-2 py-0.5 text-xs text-white">
+                <span className="bg-nova-600 ml-1 rounded-full px-2 py-0.5 text-xs text-white">
                   {Object.keys(filters).length}
                 </span>
               )}
             </button>
 
-            <button
-              onClick={refreshTickets}
-              disabled={isLoading}
-              className="btn btn-secondary"
-            >
+            <button onClick={refreshTickets} disabled={isLoading} className="btn btn-secondary">
               <ArrowsUpDownIcon className="h-4 w-4" />
               Sort
             </button>
@@ -257,9 +255,10 @@ export default function TicketsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {formatNumber(selectedTickets.length)} ticket{selectedTickets.length !== 1 ? 's' : ''} selected
+                {formatNumber(selectedTickets.length)} ticket
+                {selectedTickets.length !== 1 ? 's' : ''} selected
               </span>
-              
+
               <BulkActions
                 selectedCount={selectedTickets.length}
                 onStatusUpdate={handleBulkStatusUpdate}
@@ -268,10 +267,7 @@ export default function TicketsPage() {
               />
             </div>
 
-            <button
-              onClick={clearSelectedTickets}
-              className="btn btn-ghost btn-sm"
-            >
+            <button onClick={clearSelectedTickets} className="btn btn-ghost btn-sm">
               <XMarkIcon className="h-4 w-4" />
               Clear
             </button>
@@ -296,8 +292,8 @@ export default function TicketsPage() {
               <div className="mt-4">
                 <button
                   onClick={() => {
-                    clearError()
-                    refreshTickets()
+                    clearError();
+                    refreshTickets();
                   }}
                   className="btn btn-sm btn-secondary"
                 >
@@ -336,7 +332,7 @@ export default function TicketsPage() {
             )}
           </div>
         ) : (
-          <TicketTable 
+          <TicketTable
             tickets={tickets}
             selectedTickets={selectedTickets}
             isLoading={isLoading}
@@ -346,5 +342,5 @@ export default function TicketsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

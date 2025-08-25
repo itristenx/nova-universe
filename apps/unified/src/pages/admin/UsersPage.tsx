@@ -1,26 +1,26 @@
-import { useEffect, useState } from 'react'
-import { 
-  PlusIcon, 
-  FunnelIcon, 
+import { useEffect, useState } from 'react';
+import {
+  PlusIcon,
+  FunnelIcon,
   MagnifyingGlassIcon,
   UserPlusIcon,
   LockClosedIcon,
   LockOpenIcon,
-  TrashIcon
-} from '@heroicons/react/24/outline'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { UserCreateModal } from '@components/admin/UserCreateModal'
-import { UserEditModal } from '@components/admin/UserEditModal'
-import { cn, formatNumber } from '@utils/index'
-import { useUserStore } from '@stores/users'
-import toast from 'react-hot-toast'
+  TrashIcon,
+} from '@heroicons/react/24/outline';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { UserCreateModal } from '@components/admin/UserCreateModal';
+import { UserEditModal } from '@components/admin/UserEditModal';
+import { cn, formatNumber } from '@utils/index';
+import { useUserStore } from '@stores/users';
+import toast from 'react-hot-toast';
 
 export default function UsersPage() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [editingUser, setEditingUser] = useState<any>(null)
-  const [localFilters, setLocalFilters] = useState<Record<string, any>>({})
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [localFilters, setLocalFilters] = useState<Record<string, any>>({});
 
   const {
     users,
@@ -43,118 +43,115 @@ export default function UsersPage() {
     toggleUserSelection,
     setFilters,
     setPage,
-    refreshUsers
-  } = useUserStore()
+    refreshUsers,
+  } = useUserStore();
 
   // Load initial data
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([
-        getUsers(),
-        getUserStats()
-      ])
-    }
-    loadData()
-  }, [getUsers, getUserStats])
+      await Promise.all([getUsers(), getUserStats()]);
+    };
+    loadData();
+  }, [getUsers, getUserStats]);
 
   // Handle search with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      const filters: any = { ...localFilters }
-      
-      if (searchQuery.trim()) {
-        filters.search = searchQuery.trim()
-      }
-      
-      setFilters(filters)
-    }, 300)
+      const filters: any = { ...localFilters };
 
-    return () => clearTimeout(timeoutId)
-  }, [searchQuery, localFilters, setFilters])
+      if (searchQuery.trim()) {
+        filters.search = searchQuery.trim();
+      }
+
+      setFilters(filters);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, localFilters, setFilters]);
 
   const handleBulkAction = async (action: string) => {
-    const userIds = Array.from(selectedUsers)
+    const userIds = Array.from(selectedUsers);
     if (userIds.length === 0) {
-      toast.error('Please select users first')
-      return
+      toast.error('Please select users first');
+      return;
     }
 
     try {
       switch (action) {
         case 'activate':
           for (const userId of userIds) {
-            await activateUser(userId)
+            await activateUser(userId);
           }
-          break
+          break;
         case 'deactivate':
           for (const userId of userIds) {
-            await deactivateUser(userId)
+            await deactivateUser(userId);
           }
-          break
+          break;
         case 'delete':
           if (confirm(`Delete ${userIds.length} users? This cannot be undone.`)) {
             for (const userId of userIds) {
-              await deleteUser(userId)
+              await deleteUser(userId);
             }
           }
-          break
+          break;
       }
-      clearSelection()
-    } catch (error) {
-      console.error('Bulk action failed:', error)
+      clearSelection();
+    } catch (_error) {
+      console.error('Bulk action failed:', error);
     }
-  }
+  };
 
   const handleUserAction = async (action: string, userId: string) => {
     try {
       switch (action) {
         case 'activate':
-          await activateUser(userId)
-          break
+          await activateUser(userId);
+          break;
         case 'deactivate':
-          await deactivateUser(userId)
-          break
+          await deactivateUser(userId);
+          break;
         case 'delete':
           if (confirm('Delete this user? This cannot be undone.')) {
-            await deleteUser(userId)
+            await deleteUser(userId);
           }
-          break
+          break;
         case 'reset-password':
-          const tempPassword = await resetUserPassword(userId)
+          const tempPassword = await resetUserPassword(userId);
           if (tempPassword) {
-            toast.success(`Temporary password: ${tempPassword}`)
+            toast.success(`Temporary password: ${tempPassword}`);
           }
-          break
+          break;
         case 'edit':
-          const user = users.find(u => u.id === userId)
+          const user = users.find((u) => u.id === userId);
           if (user) {
-            setEditingUser(user)
+            setEditingUser(user);
           }
-          break
+          break;
       }
-    } catch (error) {
-      console.error('User action failed:', error)
+    } catch (_error) {
+      console.error('User action failed:', error);
     }
-  }
+  };
 
   const handleUserUpdate = async () => {
-    setEditingUser(null)
-    await refreshUsers()
-  }
+    setEditingUser(null);
+    await refreshUsers();
+  };
 
   const handleUserCreate = async () => {
-    setShowCreateModal(false)
-    await refreshUsers()
-  }
+    setShowCreateModal(false);
+    await refreshUsers();
+  };
 
   const handleFiltersChange = (newFilters: Record<string, any>) => {
-    setLocalFilters(newFilters)
-  }
+    setLocalFilters(newFilters);
+  };
 
   const handleClearFilters = () => {
-    setLocalFilters({})
-    setSearchQuery('')
-  }
+    setLocalFilters({});
+    setSearchQuery('');
+  };
 
   // Show error if there's an issue loading data
   if (error && users.length === 0) {
@@ -162,28 +159,21 @@ export default function UsersPage() {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              User Management
-            </h1>
-            <p className="mt-1 text-red-600 dark:text-red-400">
-              Error loading users: {error}
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">User Management</h1>
+            <p className="mt-1 text-red-600 dark:text-red-400">Error loading users: {error}</p>
           </div>
         </div>
-        
+
         <div className="card p-12 text-center">
           <div className="text-red-600 dark:text-red-400">
             Failed to load user data. Please try again.
           </div>
-          <button
-            onClick={() => refreshUsers()}
-            className="btn btn-primary mt-4"
-          >
+          <button onClick={() => refreshUsers()} className="btn btn-primary mt-4">
             Retry
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -191,9 +181,7 @@ export default function UsersPage() {
       {/* Page header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            User Management
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">User Management</h1>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
             Manage user accounts, roles, and permissions
           </p>
@@ -206,11 +194,8 @@ export default function UsersPage() {
           >
             Import Users
           </button>
-          
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="btn btn-primary"
-          >
+
+          <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">
             <PlusIcon className="h-4 w-4" />
             Add User
           </button>
@@ -220,32 +205,42 @@ export default function UsersPage() {
       {/* Stats cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-nova-600">{formatNumber(stats?.total || 0)}</div>
+          <div className="text-nova-600 text-2xl font-bold">{formatNumber(stats?.total || 0)}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Total Users</div>
         </div>
-        
+
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">{formatNumber(stats?.active || 0)}</div>
+          <div className="text-2xl font-bold text-green-600">
+            {formatNumber(stats?.active || 0)}
+          </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Active</div>
         </div>
-        
+
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-red-600">{formatNumber(stats?.inactive || 0)}</div>
+          <div className="text-2xl font-bold text-red-600">
+            {formatNumber(stats?.inactive || 0)}
+          </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Inactive</div>
         </div>
-        
+
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600">{formatNumber(stats?.byRole?.admin || 0)}</div>
+          <div className="text-2xl font-bold text-purple-600">
+            {formatNumber(stats?.byRole?.admin || 0)}
+          </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Admins</div>
         </div>
-        
+
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">{formatNumber(stats?.byRole?.agent || 0)}</div>
+          <div className="text-2xl font-bold text-blue-600">
+            {formatNumber(stats?.byRole?.agent || 0)}
+          </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Agents</div>
         </div>
-        
+
         <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-gray-600">{formatNumber(stats?.byRole?.user || 0)}</div>
+          <div className="text-2xl font-bold text-gray-600">
+            {formatNumber(stats?.byRole?.user || 0)}
+          </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">End Users</div>
         </div>
       </div>
@@ -271,28 +266,24 @@ export default function UsersPage() {
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
                 'btn btn-secondary',
-                showFilters && 'bg-nova-100 text-nova-700 dark:bg-nova-900 dark:text-nova-300'
+                showFilters && 'bg-nova-100 text-nova-700 dark:bg-nova-900 dark:text-nova-300',
               )}
             >
               <FunnelIcon className="h-4 w-4" />
               Filters
               {Object.keys(localFilters).length > 0 && (
-                <span className="ml-1 rounded-full bg-nova-600 px-2 py-0.5 text-xs text-white">
+                <span className="bg-nova-600 ml-1 rounded-full px-2 py-0.5 text-xs text-white">
                   {Object.keys(localFilters).length}
                 </span>
               )}
             </button>
-            
+
             <button
               onClick={() => refreshUsers()}
               className="btn btn-secondary"
               disabled={isLoading}
             >
-              {isLoading ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                'Refresh'
-              )}
+              {isLoading ? <LoadingSpinner size="sm" /> : 'Refresh'}
             </button>
           </div>
         </div>
@@ -301,12 +292,14 @@ export default function UsersPage() {
           <div className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Role
                 </label>
                 <select
                   value={localFilters.role || ''}
-                  onChange={(e) => handleFiltersChange({...localFilters, role: e.target.value || undefined})}
+                  onChange={(e) =>
+                    handleFiltersChange({ ...localFilters, role: e.target.value || undefined })
+                  }
                   className="input"
                   aria-label="Filter by role"
                 >
@@ -316,19 +309,25 @@ export default function UsersPage() {
                   <option value="user">User</option>
                 </select>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Status
                 </label>
                 <select
-                  value={localFilters.isActive !== undefined ? (localFilters.isActive ? 'active' : 'inactive') : ''}
+                  value={
+                    localFilters.isActive !== undefined
+                      ? localFilters.isActive
+                        ? 'active'
+                        : 'inactive'
+                      : ''
+                  }
                   onChange={(e) => {
-                    const value = e.target.value
+                    const value = e.target.value;
                     handleFiltersChange({
-                      ...localFilters, 
-                      isActive: value === '' ? undefined : value === 'active'
-                    })
+                      ...localFilters,
+                      isActive: value === '' ? undefined : value === 'active',
+                    });
                   }}
                   className="input"
                   aria-label="Filter by status"
@@ -338,12 +337,9 @@ export default function UsersPage() {
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
-              
+
               <div className="flex items-end">
-                <button
-                  onClick={handleClearFilters}
-                  className="btn btn-secondary w-full"
-                >
+                <button onClick={handleClearFilters} className="btn btn-secondary w-full">
                   Clear Filters
                 </button>
               </div>
@@ -358,9 +354,10 @@ export default function UsersPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {formatNumber(selectedUsers.size)} user{selectedUsers.size !== 1 ? 's' : ''} selected
+                {formatNumber(selectedUsers.size)} user{selectedUsers.size !== 1 ? 's' : ''}{' '}
+                selected
               </span>
-              
+
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleBulkAction('activate')}
@@ -369,7 +366,7 @@ export default function UsersPage() {
                   <LockOpenIcon className="h-4 w-4" />
                   Activate
                 </button>
-                
+
                 <button
                   onClick={() => handleBulkAction('deactivate')}
                   className="btn btn-secondary btn-sm"
@@ -377,21 +374,15 @@ export default function UsersPage() {
                   <LockClosedIcon className="h-4 w-4" />
                   Deactivate
                 </button>
-                
-                <button
-                  onClick={() => handleBulkAction('delete')}
-                  className="btn btn-error btn-sm"
-                >
+
+                <button onClick={() => handleBulkAction('delete')} className="btn btn-error btn-sm">
                   <TrashIcon className="h-4 w-4" />
                   Delete
                 </button>
               </div>
             </div>
 
-            <button
-              onClick={() => clearSelection()}
-              className="btn btn-ghost btn-sm"
-            >
+            <button onClick={() => clearSelection()} className="btn btn-ghost btn-sm">
               Clear Selection
             </button>
           </div>
@@ -413,10 +404,7 @@ export default function UsersPage() {
             <p className="mt-2 text-gray-600 dark:text-gray-400">
               Get started by adding your first user
             </p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="btn btn-primary mt-4"
-            >
+            <button onClick={() => setShowCreateModal(true)} className="btn btn-primary mt-4">
               <PlusIcon className="h-4 w-4" />
               Add User
             </button>
@@ -432,33 +420,33 @@ export default function UsersPage() {
                       checked={selectedUsers.size > 0 && selectedUsers.size === users.length}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          selectAllUsers()
+                          selectAllUsers();
                         } else {
-                          clearSelection()
+                          clearSelection();
                         }
                       }}
                       className="checkbox"
                       aria-label="Select all users"
                     />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                     User
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                     Role
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                     Last Login
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
                 {users.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                     <td className="px-6 py-4">
@@ -472,10 +460,11 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-nova-100 dark:bg-nova-900 flex items-center justify-center">
-                            <span className="text-sm font-medium text-nova-700 dark:text-nova-300">
-                              {user.firstName?.[0]}{user.lastName?.[0]}
+                        <div className="h-10 w-10 flex-shrink-0">
+                          <div className="bg-nova-100 dark:bg-nova-900 flex h-10 w-10 items-center justify-center rounded-full">
+                            <span className="text-nova-700 dark:text-nova-300 text-sm font-medium">
+                              {user.firstName?.[0]}
+                              {user.lastName?.[0]}
                             </span>
                           </div>
                         </div>
@@ -495,10 +484,13 @@ export default function UsersPage() {
                           <span
                             key={role.id}
                             className={cn(
-                              'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                              role.name === 'admin' && 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                              role.name === 'agent' && 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-                              role.name === 'user' && 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                              'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                              role.name === 'admin' &&
+                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                              role.name === 'agent' &&
+                                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                              role.name === 'user' &&
+                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
                             )}
                           >
                             {role.name}
@@ -509,10 +501,10 @@ export default function UsersPage() {
                     <td className="px-6 py-4">
                       <span
                         className={cn(
-                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                          user.isActive 
+                          'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                          user.isActive
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
                         )}
                       >
                         {user.isActive ? 'Active' : 'Inactive'}
@@ -530,11 +522,13 @@ export default function UsersPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleUserAction(user.isActive ? 'deactivate' : 'activate', user.id)}
+                          onClick={() =>
+                            handleUserAction(user.isActive ? 'deactivate' : 'activate', user.id)
+                          }
                           className={cn(
-                            user.isActive 
+                            user.isActive
                               ? 'text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300'
-                              : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300'
+                              : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300',
                           )}
                         >
                           {user.isActive ? 'Deactivate' : 'Activate'}
@@ -557,11 +551,11 @@ export default function UsersPage() {
                 ))}
               </tbody>
             </table>
-            
+
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="bg-white dark:bg-gray-900 px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <div className="flex-1 flex justify-between sm:hidden">
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+                <div className="flex flex-1 justify-between sm:hidden">
                   <button
                     onClick={() => setPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage <= 1}
@@ -577,20 +571,22 @@ export default function UsersPage() {
                     Next
                   </button>
                 </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       Showing{' '}
-                      <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, totalUsers)}</span>{' '}
+                      <span className="font-medium">
+                        {Math.min((currentPage - 1) * pageSize + 1, totalUsers)}
+                      </span>{' '}
                       to{' '}
-                      <span className="font-medium">{Math.min(currentPage * pageSize, totalUsers)}</span>{' '}
-                      of{' '}
-                      <span className="font-medium">{totalUsers}</span>{' '}
-                      results
+                      <span className="font-medium">
+                        {Math.min(currentPage * pageSize, totalUsers)}
+                      </span>{' '}
+                      of <span className="font-medium">{totalUsers}</span> results
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <nav className="relative z-0 inline-flex -space-x-px rounded-md shadow-sm">
                       <button
                         onClick={() => setPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage <= 1}
@@ -599,19 +595,19 @@ export default function UsersPage() {
                         Previous
                       </button>
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        const page = i + 1
+                        const page = i + 1;
                         return (
                           <button
                             key={page}
                             onClick={() => setPage(page)}
                             className={cn(
                               'btn btn-sm rounded-none',
-                              page === currentPage ? 'btn-primary' : 'btn-secondary'
+                              page === currentPage ? 'btn-primary' : 'btn-secondary',
                             )}
                           >
                             {page}
                           </button>
-                        )
+                        );
                       })}
                       <button
                         onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
@@ -644,5 +640,5 @@ export default function UsersPage() {
         onSuccess={handleUserUpdate}
       />
     </div>
-  )
+  );
 }

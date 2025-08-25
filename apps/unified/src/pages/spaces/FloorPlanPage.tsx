@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { spaceService, type SpaceStatus } from '@services/spaces'
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { spaceService, type SpaceStatus } from '@services/spaces';
 import {
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -12,8 +12,8 @@ import {
   ExclamationTriangleIcon,
   ClockIcon,
   BuildingOfficeIcon,
-  MapIcon
-} from '@heroicons/react/24/outline'
+  MapIcon,
+} from '@heroicons/react/24/outline';
 
 // CSS for the SVG floor plan
 const svgStyles = `
@@ -21,112 +21,114 @@ const svgStyles = `
     min-height: 400px;
     max-height: 600px;
   }
-`
+`;
 
 // Simple loading spinner component
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-nova-600"></div>
+    <div className="border-nova-600 h-8 w-8 animate-spin rounded-full border-b-2"></div>
   </div>
-)
+);
 
 // Convert API status to local status format
-const convertSpaceStatus = (apiStatus: SpaceStatus): 'available' | 'occupied' | 'maintenance' | 'reserved' => {
+const convertSpaceStatus = (
+  apiStatus: SpaceStatus,
+): 'available' | 'occupied' | 'maintenance' | 'reserved' => {
   switch (apiStatus) {
     case 'available':
-      return 'available'
+      return 'available';
     case 'occupied':
-      return 'occupied'
+      return 'occupied';
     case 'maintenance':
     case 'out_of_service':
-      return 'maintenance'
+      return 'maintenance';
     case 'reserved':
-      return 'reserved'
+      return 'reserved';
     default:
-      return 'available'
+      return 'available';
   }
-}
+};
 
 interface FloorSpace {
-  id: string
-  name: string
-  type: string
-  capacity: number
-  status: 'available' | 'occupied' | 'maintenance' | 'reserved'
-  x: number
-  y: number
-  width: number
-  height: number
-  rotation?: number
+  id: string;
+  name: string;
+  type: string;
+  capacity: number;
+  status: 'available' | 'occupied' | 'maintenance' | 'reserved';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation?: number;
 }
 
 interface FloorPlan {
-  id: string
-  name: string
-  building: string
-  floor: number
-  spaces: FloorSpace[]
+  id: string;
+  name: string;
+  building: string;
+  floor: number;
+  spaces: FloorSpace[];
   dimensions: {
-    width: number
-    height: number
-  }
+    width: number;
+    height: number;
+  };
 }
 
 const getStatusColor = (status: FloorSpace['status']) => {
   switch (status) {
     case 'available':
-      return 'fill-green-200 stroke-green-500 dark:fill-green-800 dark:stroke-green-400'
+      return 'fill-green-200 stroke-green-500 dark:fill-green-800 dark:stroke-green-400';
     case 'occupied':
-      return 'fill-red-200 stroke-red-500 dark:fill-red-800 dark:stroke-red-400'
+      return 'fill-red-200 stroke-red-500 dark:fill-red-800 dark:stroke-red-400';
     case 'maintenance':
-      return 'fill-yellow-200 stroke-yellow-500 dark:fill-yellow-800 dark:stroke-yellow-400'
+      return 'fill-yellow-200 stroke-yellow-500 dark:fill-yellow-800 dark:stroke-yellow-400';
     case 'reserved':
-      return 'fill-blue-200 stroke-blue-500 dark:fill-blue-800 dark:stroke-blue-400'
+      return 'fill-blue-200 stroke-blue-500 dark:fill-blue-800 dark:stroke-blue-400';
     default:
-      return 'fill-gray-200 stroke-gray-500 dark:fill-gray-800 dark:stroke-gray-400'
+      return 'fill-gray-200 stroke-gray-500 dark:fill-gray-800 dark:stroke-gray-400';
   }
-}
+};
 
 const getStatusIcon = (status: FloorSpace['status']) => {
   switch (status) {
     case 'available':
-      return CheckCircleIcon
+      return CheckCircleIcon;
     case 'occupied':
-      return XCircleIcon
+      return XCircleIcon;
     case 'maintenance':
-      return ExclamationTriangleIcon
+      return ExclamationTriangleIcon;
     case 'reserved':
-      return ClockIcon
+      return ClockIcon;
     default:
-      return CheckCircleIcon
+      return CheckCircleIcon;
   }
-}
+};
 
 export default function FloorPlanPage() {
-  const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [floorPlans, setFloorPlans] = useState<FloorPlan[]>([])
-  const [selectedFloor, setSelectedFloor] = useState<FloorPlan | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedSpace, setSelectedSpace] = useState<FloorSpace | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [floorPlans, setFloorPlans] = useState<FloorPlan[]>([]);
+  const [selectedFloor, setSelectedFloor] = useState<FloorPlan | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedSpace, setSelectedSpace] = useState<FloorSpace | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     const fetchFloorPlans = async () => {
       try {
-        setIsLoading(true)
-        
+        setIsLoading(true);
+
         // Get all spaces from the API
-        const spacesResponse = await spaceService.getSpaces()
-        const spaces = spacesResponse.data
-        
+        const spacesResponse = await spaceService.getSpaces();
+        const spaces = spacesResponse.data;
+
         // Group spaces by building and floor to create floor plans
-        const floorPlanMap = new Map<string, FloorPlan>()
-        
-        spaces.forEach(space => {
-          const key = `${space.building}-${space.floor}`
-          
+        const floorPlanMap = new Map<string, FloorPlan>();
+
+        spaces.forEach((space) => {
+          const key = `${space.building}-${space.floor}`;
+
           if (!floorPlanMap.has(key)) {
             floorPlanMap.set(key, {
               id: key,
@@ -134,11 +136,11 @@ export default function FloorPlanPage() {
               building: space.building,
               floor: parseInt(space.floor),
               dimensions: { width: 800, height: 600 }, // Default dimensions
-              spaces: []
-            })
+              spaces: [],
+            });
           }
-          
-          const floorPlan = floorPlanMap.get(key)!
+
+          const floorPlan = floorPlanMap.get(key)!;
           floorPlan.spaces.push({
             id: space.id,
             name: space.name,
@@ -149,89 +151,88 @@ export default function FloorPlanPage() {
             x: (floorPlan.spaces.length % 4) * 200 + 50,
             y: Math.floor(floorPlan.spaces.length / 4) * 150 + 50,
             width: space.type === 'phone_booth' ? 40 : space.type === 'office' ? 80 : 120,
-            height: space.type === 'phone_booth' ? 40 : 80
-          })
-        })
-        
-        const floorPlansArray = Array.from(floorPlanMap.values())
-        setFloorPlans(floorPlansArray)
-        
+            height: space.type === 'phone_booth' ? 40 : 80,
+          });
+        });
+
+        const floorPlansArray = Array.from(floorPlanMap.values());
+        setFloorPlans(floorPlansArray);
+
         // Set initial floor based on URL params or default to first floor
-        const floorParam = searchParams.get('floor')
-        let initialFloor: FloorPlan | null = null
+        const floorParam = searchParams.get('floor');
+        let initialFloor: FloorPlan | null = null;
         if (floorParam) {
-          initialFloor = floorPlansArray.find(f => f.id === floorParam) || null
+          initialFloor = floorPlansArray.find((f) => f.id === floorParam) || null;
         }
         if (!initialFloor && floorPlansArray.length > 0) {
-          initialFloor = floorPlansArray[0] || null
+          initialFloor = floorPlansArray[0] || null;
         }
-        setSelectedFloor(initialFloor)
-        
-      } catch (error) {
-        console.error('Failed to fetch floor plans:', error)
+        setSelectedFloor(initialFloor);
+      } catch (_error) {
+        console.error('Failed to fetch floor plans:', error);
         // Keep empty array instead of falling back to mock data
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchFloorPlans()
-  }, [searchParams])
+    fetchFloorPlans();
+  }, [searchParams]);
 
   const handleFloorChange = (floorId: string) => {
-    const floor = floorPlans.find(f => f.id === floorId)
+    const floor = floorPlans.find((f) => f.id === floorId);
     if (floor) {
-      setSelectedFloor(floor)
-      setSearchParams({ floor: floorId })
-      setSelectedSpace(null)
+      setSelectedFloor(floor);
+      setSearchParams({ floor: floorId });
+      setSelectedSpace(null);
     }
-  }
+  };
 
   const handleSpaceClick = (space: FloorSpace) => {
-    setSelectedSpace(space)
-  }
+    setSelectedSpace(space);
+  };
 
   const handleSpaceDetail = (space: FloorSpace) => {
-    navigate(`/spaces/${space.id}`)
-  }
+    navigate(`/spaces/${space.id}`);
+  };
 
   const handleBookSpace = (space: FloorSpace) => {
-    navigate(`/spaces/${space.id}/book`)
-  }
+    navigate(`/spaces/${space.id}/book`);
+  };
 
-  const filteredSpaces = selectedFloor?.spaces.filter(space => {
-    const matchesSearch = searchTerm === '' || 
-      space.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      space.type.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesStatus = statusFilter === 'all' || space.status === statusFilter
-    
-    return matchesSearch && matchesStatus
-  }) || []
+  const filteredSpaces =
+    selectedFloor?.spaces.filter((space) => {
+      const matchesSearch =
+        searchTerm === '' ||
+        space.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        space.type.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus = statusFilter === 'all' || space.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    }) || [];
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <LoadingSpinner />
       </div>
-    )
+    );
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Add CSS styles */}
       <style>{svgStyles}</style>
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-nova-100 dark:bg-nova-900 rounded-lg">
-            <MapIcon className="h-6 w-6 text-nova-600 dark:text-nova-400" />
+          <div className="bg-nova-100 dark:bg-nova-900 rounded-lg p-2">
+            <MapIcon className="text-nova-600 dark:text-nova-400 h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Floor Plans
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Floor Plans</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Interactive space management and booking system
             </p>
@@ -240,16 +241,14 @@ export default function FloorPlanPage() {
 
         {/* Floor Selector */}
         <div className="flex items-center space-x-3">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Floor:
-          </label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Floor:</label>
           <select
             value={selectedFloor?.id || ''}
             onChange={(e) => handleFloorChange(e.target.value)}
             title="Select Floor"
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-nova-500 focus:border-transparent"
+            className="focus:ring-nova-500 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           >
-            {floorPlans.map(floor => (
+            {floorPlans.map((floor) => (
               <option key={floor.id} value={floor.id}>
                 {floor.name}
               </option>
@@ -259,16 +258,16 @@ export default function FloorPlanPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center space-x-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <div className="flex items-center space-x-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
         <div className="flex-1">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <input
               type="text"
               placeholder="Search spaces..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-nova-500 focus:border-transparent"
+              className="focus:ring-nova-500 w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-10 text-gray-900 focus:border-transparent focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
@@ -279,7 +278,7 @@ export default function FloorPlanPage() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             title="Filter by Status"
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-nova-500 focus:border-transparent"
+            className="focus:ring-nova-500 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           >
             <option value="all">All Status</option>
             <option value="Available">Available</option>
@@ -290,10 +289,10 @@ export default function FloorPlanPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Floor Plan Visualization */}
         <div className="lg:col-span-3">
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
             {selectedFloor && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -302,7 +301,7 @@ export default function FloorPlanPage() {
                   </h3>
                   <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                     <span className="flex items-center">
-                      <BuildingOfficeIcon className="h-4 w-4 mr-1" />
+                      <BuildingOfficeIcon className="mr-1 h-4 w-4" />
                       {selectedFloor.building}
                     </span>
                     <span>Floor {selectedFloor.floor}</span>
@@ -310,23 +309,29 @@ export default function FloorPlanPage() {
                 </div>
 
                 {/* SVG Floor Plan */}
-                <div className="border rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-900">
+                <div className="overflow-hidden rounded-lg border bg-gray-50 dark:bg-gray-900">
                   <svg
                     viewBox={`0 0 ${selectedFloor.dimensions.width} ${selectedFloor.dimensions.height}`}
-                    className="w-full h-auto svg-floorplan"
+                    className="svg-floorplan h-auto w-full"
                   >
                     {/* Background grid */}
                     <defs>
                       <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-                        <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#e5e7eb" strokeWidth="1" opacity="0.3"/>
+                        <path
+                          d="M 50 0 L 0 0 0 50"
+                          fill="none"
+                          stroke="#e5e7eb"
+                          strokeWidth="1"
+                          opacity="0.3"
+                        />
                       </pattern>
                     </defs>
                     <rect width="100%" height="100%" fill="url(#grid)" />
 
                     {/* Spaces */}
                     {filteredSpaces.map((space) => {
-                      const isSelected = selectedSpace?.id === space.id
-                      
+                      const isSelected = selectedSpace?.id === space.id;
+
                       return (
                         <g key={space.id}>
                           {/* Space rectangle */}
@@ -337,31 +342,31 @@ export default function FloorPlanPage() {
                             height={space.height}
                             className={`${getStatusColor(space.status)} cursor-pointer transition-all duration-200 ${
                               isSelected ? 'stroke-[3] opacity-100' : 'stroke-[2] opacity-90'
-                            } hover:opacity-100 hover:stroke-[3]`}
+                            } hover:stroke-[3] hover:opacity-100`}
                             onClick={() => handleSpaceClick(space)}
                           />
-                          
+
                           {/* Space label */}
                           <text
                             x={space.x + space.width / 2}
                             y={space.y + space.height / 2 - 8}
                             textAnchor="middle"
-                            className="fill-gray-800 dark:fill-gray-200 text-xs font-medium pointer-events-none"
+                            className="pointer-events-none fill-gray-800 text-xs font-medium dark:fill-gray-200"
                           >
                             {space.name}
                           </text>
-                          
+
                           {/* Capacity info */}
                           <text
                             x={space.x + space.width / 2}
                             y={space.y + space.height / 2 + 6}
                             textAnchor="middle"
-                            className="fill-gray-600 dark:fill-gray-400 text-xs pointer-events-none"
+                            className="pointer-events-none fill-gray-600 text-xs dark:fill-gray-400"
                           >
                             {space.capacity} people
                           </text>
                         </g>
-                      )
+                      );
                     })}
                   </svg>
                 </div>
@@ -372,10 +377,10 @@ export default function FloorPlanPage() {
                     { status: 'Available', color: 'bg-green-200 border-green-500' },
                     { status: 'Occupied', color: 'bg-red-200 border-red-500' },
                     { status: 'Reserved', color: 'bg-blue-200 border-blue-500' },
-                    { status: 'Maintenance', color: 'bg-yellow-200 border-yellow-500' }
+                    { status: 'Maintenance', color: 'bg-yellow-200 border-yellow-500' },
                   ].map(({ status, color }) => (
                     <div key={status} className="flex items-center space-x-2">
-                      <div className={`w-4 h-4 rounded border-2 ${color}`}></div>
+                      <div className={`h-4 w-4 rounded border-2 ${color}`}></div>
                       <span className="text-gray-600 dark:text-gray-400">{status}</span>
                     </div>
                   ))}
@@ -388,19 +393,17 @@ export default function FloorPlanPage() {
         {/* Space Details Sidebar */}
         <div className="space-y-6">
           {selectedSpace ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
                 Space Details
               </h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-gray-900 dark:text-white">
                     {selectedSpace.name}
                   </h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {selectedSpace.type}
-                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{selectedSpace.type}</p>
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -412,8 +415,8 @@ export default function FloorPlanPage() {
 
                 <div className="flex items-center space-x-2">
                   {(() => {
-                    const StatusIcon = getStatusIcon(selectedSpace.status)
-                    return <StatusIcon className="h-4 w-4 text-gray-400" />
+                    const StatusIcon = getStatusIcon(selectedSpace.status);
+                    return <StatusIcon className="h-4 w-4 text-gray-400" />;
                   })()}
                   <span className="text-sm text-gray-600 dark:text-gray-300">
                     Status: {selectedSpace.status}
@@ -423,18 +426,18 @@ export default function FloorPlanPage() {
                 <div className="flex flex-col space-y-2 pt-4">
                   <button
                     onClick={() => handleSpaceDetail(selectedSpace)}
-                    className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
+                    className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                   >
-                    <EyeIcon className="h-4 w-4 mr-2" />
+                    <EyeIcon className="mr-2 h-4 w-4" />
                     View Details
                   </button>
-                  
+
                   {selectedSpace.status === 'available' && (
                     <button
                       onClick={() => handleBookSpace(selectedSpace)}
-                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-nova-600 border border-transparent rounded-lg hover:bg-nova-700"
+                      className="bg-nova-600 hover:bg-nova-700 inline-flex items-center rounded-lg border border-transparent px-3 py-2 text-sm font-medium text-white"
                     >
-                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      <CalendarIcon className="mr-2 h-4 w-4" />
                       Book Space
                     </button>
                   )}
@@ -442,8 +445,8 @@ export default function FloorPlanPage() {
               </div>
             </div>
           ) : (
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
                 Space Details
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -453,11 +456,11 @@ export default function FloorPlanPage() {
           )}
 
           {/* Quick Stats */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+            <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
               Floor Statistics
             </h3>
-            
+
             {selectedFloor && (
               <div className="space-y-3">
                 <div className="flex justify-between">
@@ -466,21 +469,21 @@ export default function FloorPlanPage() {
                     {selectedFloor.spaces.length}
                   </span>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Available</span>
                   <span className="text-sm font-medium text-green-600">
-                    {selectedFloor.spaces.filter(s => s.status === 'available').length}
+                    {selectedFloor.spaces.filter((s) => s.status === 'available').length}
                   </span>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Occupied</span>
                   <span className="text-sm font-medium text-red-600">
-                    {selectedFloor.spaces.filter(s => s.status === 'occupied').length}
+                    {selectedFloor.spaces.filter((s) => s.status === 'occupied').length}
                   </span>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Total Capacity</span>
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -493,5 +496,5 @@ export default function FloorPlanPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

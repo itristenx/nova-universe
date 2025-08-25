@@ -231,7 +231,7 @@
           "placeholder": "Search tickets by ID, title, or description..."
         },
         "assets": {
-          "name": "Assets", 
+          "name": "Assets",
           "placeholder": "Search assets by name, serial, or tag..."
         },
         "knowledge": {
@@ -280,7 +280,7 @@
           "description": "AI-powered insights and predictions for proactive IT service management"
         },
         "aiChatbot": {
-          "title": "AI Assistant", 
+          "title": "AI Assistant",
           "description": "Conversational AI support with natural language processing"
         },
         "aiClassification": {
@@ -555,7 +555,7 @@
       },
       "systemStatus": {
         "healthy": "Healthy",
-        "warning": "Warning", 
+        "warning": "Warning",
         "critical": "Critical"
       }
     },
@@ -1033,7 +1033,7 @@
     "quickActions": {
       "analyzeTicket": "Analyze Ticket",
       "analyzeTicketDesc": "Get insights and resolution suggestions for a support ticket",
-      "systemHealth": "System Health Check", 
+      "systemHealth": "System Health Check",
       "systemHealthDesc": "Review current system status and performance metrics",
       "knowledgeSearch": "Knowledge Search",
       "knowledgeSearchDesc": "Find relevant documentation and best practices",
@@ -1046,7 +1046,7 @@
     },
     "categories": {
       "support": "Support",
-      "monitoring": "Monitoring", 
+      "monitoring": "Monitoring",
       "knowledge": "Knowledge",
       "analytics": "Analytics",
       "optimization": "Optimization",
@@ -1071,7 +1071,7 @@
     },
     "status": {
       "active": "Active",
-      "inactive": "Inactive", 
+      "inactive": "Inactive",
       "draft": "Draft"
     },
     "difficulty": {
@@ -1231,7 +1231,7 @@
     },
     "impacts": {
       "low": "Low Impact",
-      "medium": "Medium Impact", 
+      "medium": "Medium Impact",
       "high": "High Impact",
       "critical": "Critical Impact"
     },
@@ -1252,7 +1252,7 @@
       "progress": "Analysis in progress..."
     },
     "waiting": {
-      "title": "Ready for AI Classification", 
+      "title": "Ready for AI Classification",
       "description": "Let our AI analyze this ticket to suggest optimal categorization, priority, and routing."
     },
     "results": {
@@ -1262,20 +1262,20 @@
     "fields": {
       "category": "Category",
       "priority": "Priority",
-      "urgency": "Urgency", 
+      "urgency": "Urgency",
       "assignment": "Suggested Assignment",
       "tags": "Smart Tags"
     },
     "priorities": {
       "low": "Low Priority",
-      "medium": "Medium Priority", 
+      "medium": "Medium Priority",
       "high": "High Priority",
       "critical": "Critical Priority"
     },
     "urgency": {
       "low": "Low",
       "medium": "Medium",
-      "high": "High", 
+      "high": "High",
       "critical": "Critical"
     },
     "stats": {
@@ -1310,7 +1310,7 @@
     "sort": {
       "label": "Sort by",
       "relevance": "Most Relevant",
-      "recent": "Most Recent", 
+      "recent": "Most Recent",
       "popular": "Most Popular"
     },
     "insights": {
@@ -1393,7 +1393,7 @@
       "subtitle": "AI-powered automated categorization and routing",
       "confidence": {
         "high": "High Confidence",
-        "medium": "Medium Confidence", 
+        "medium": "Medium Confidence",
         "low": "Low Confidence",
         "score": "{{score}}% confidence"
       },
@@ -1573,7 +1573,7 @@
       "capabilities": {
         "title": "I can help you with:",
         "tickets": "Ticket management and status updates",
-        "knowledge": "Knowledge base search and recommendations", 
+        "knowledge": "Knowledge base search and recommendations",
         "reports": "Generate reports and analytics",
         "automation": "Workflow automation and suggestions"
       }

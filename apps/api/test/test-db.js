@@ -5,7 +5,7 @@ import db from './db.js';
 async function testDatabase() {
   try {
     console.log('🔍 Testing database connectivity and admin user...\n');
-    
+
     // Check if tenants table exists
     console.log('1. Checking tenants table...');
     try {
@@ -17,11 +17,14 @@ async function testDatabase() {
     } catch (error) {
       console.log('❌ Tenants table error:', error.message);
     }
-    
+
     // Check if users table exists and has admin user
     console.log('\n2. Checking users table...');
     try {
-      const usersResult = await db.query('SELECT id, name, email, "is_default", "tenant_id" FROM users WHERE email = $1', ['admin@example.com']);
+      const usersResult = await db.query(
+        'SELECT id, name, email, "is_default", "tenant_id" FROM users WHERE email = $1',
+        ['admin@example.com'],
+      );
       console.log('✅ Users table exists');
       if (usersResult.rows.length > 0) {
         const adminUser = usersResult.rows[0];
@@ -30,7 +33,7 @@ async function testDatabase() {
           name: adminUser.name,
           email: adminUser.email,
           is_default: adminUser.is_default,
-          tenant_id: adminUser.tenant_id
+          tenant_id: adminUser.tenant_id,
         });
       } else {
         console.log('❌ Admin user not found');
@@ -38,27 +41,33 @@ async function testDatabase() {
     } catch (error) {
       console.log('❌ Users table error:', error.message);
     }
-    
+
     // Check if user_roles table exists and admin role is assigned
     console.log('\n3. Checking user roles...');
     try {
-      const rolesResult = await db.query(`
+      const rolesResult = await db.query(
+        `
         SELECT u.email, r.name as role_name 
         FROM users u 
         JOIN user_roles ur ON u.id = ur.user_id 
         JOIN roles r ON ur.role_id = r.id 
         WHERE u.email = $1
-      `, ['admin@example.com']);
-      
+      `,
+        ['admin@example.com'],
+      );
+
       if (rolesResult.rows.length > 0) {
-        console.log('✅ Admin roles found:', rolesResult.rows.map(r => r.role_name));
+        console.log(
+          '✅ Admin roles found:',
+          rolesResult.rows.map((r) => r.role_name),
+        );
       } else {
         console.log('❌ No roles assigned to admin user');
       }
     } catch (error) {
       console.log('❌ User roles error:', error.message);
     }
-    
+
     // Check if auth_audit_logs table exists (for Helix universal login)
     console.log('\n4. Checking auth audit logs table...');
     try {
@@ -67,9 +76,8 @@ async function testDatabase() {
     } catch (error) {
       console.log('❌ Auth audit logs table error:', error.message);
     }
-    
+
     console.log('\n🔍 Database test complete');
-    
   } catch (error) {
     console.error('❌ Test failed:', error);
   } finally {

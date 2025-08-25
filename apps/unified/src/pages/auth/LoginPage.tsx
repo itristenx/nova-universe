@@ -1,56 +1,89 @@
-import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { EyeIcon, EyeSlashIcon, BuildingOfficeIcon, KeyIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
-import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@stores/auth'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { cn } from '@utils/index'
-import { helixAuthService } from '@services/helixAuth'
-import type { TenantDiscoveryResponse } from '@services/helixAuth'
-import toast from 'react-hot-toast'
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  BuildingOfficeIcon,
+  KeyIcon,
+  ShieldCheckIcon,
+} from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '@stores/auth';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { cn } from '@utils/index';
+import { helixAuthService } from '@services/helixAuth';
+import type { TenantDiscoveryResponse } from '@services/helixAuth';
+import { connectionService, type ConnectionStatus } from '@services/connectionService';
+import { OfflineScreen } from '@components/connection/ConnectionStatus';
+import toast from 'react-hot-toast';
 
 // Type definitions
 interface LoginStep {
-  step: 'email' | 'auth' | 'mfa'
-  tenantData?: TenantDiscoveryResponse
-  mfaToken?: string
+  step: 'email' | 'auth' | 'mfa';
+  tenantData?: TenantDiscoveryResponse;
+  mfaToken?: string;
 }
 
 export default function LoginPage() {
-  const { t } = useTranslation(['auth', 'common'])
-  const [showPassword, setShowPassword] = useState(false)
-  const [loginStep, setLoginStep] = useState<LoginStep>({ step: 'email' })
-  const [isDiscovering, setIsDiscovering] = useState(false)
-  const [mfaCode, setMfaCode] = useState('')
-  
-  const { loginWithHelix, isLoading, error, clearError } = useAuthStore()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const { t } = useTranslation(['auth', 'common']);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginStep, setLoginStep] = useState<LoginStep>({ step: 'email' });
+  const [isDiscovering, setIsDiscovering] = useState(false);
+  const [mfaCode, setMfaCode] = useState('');
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(
+    connectionService.getStatus(),
+  );
+  const [isRetrying, setIsRetrying] = useState(false);
 
-  const from = location.state?.from?.pathname || '/dashboard'
+  const { loginWithHelix, isLoading, error, clearError } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || '/dashboard';
+
+  // Monitor connection status
+  useEffect(() => {
+    const unsubscribe = connectionService.subscribe(setConnectionStatus);
+    return unsubscribe;
+  }, []);
+
+  // Handle connection retry
+  const handleConnectionRetry = async () => {
+    setIsRetrying(true);
+    try {
+      await connectionService.forceCheck();
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
+  // Show offline screen if not connected
+  if (!connectionStatus.isOnline || !connectionStatus.isAPIConnected) {
+    return <OfflineScreen onRetry={handleConnectionRetry} isRetrying={isRetrying} />;
+  }
 
   // Validation schemas with translated messages
   const emailSchema = z.object({
     email: z.string().email(t('auth:validation.emailInvalid')),
-  })
+  });
 
   const loginSchema = z.object({
     email: z.string().email(t('auth:validation.emailInvalid')),
     password: z.string().min(1, t('auth:validation.passwordRequired')),
     rememberMe: z.boolean().default(false),
-  })
+  });
 
-  type EmailFormData = z.infer<typeof emailSchema>
-  type LoginFormData = z.infer<typeof loginSchema>
+  type EmailFormData = z.infer<typeof emailSchema>;
+  type LoginFormData = z.infer<typeof loginSchema>;
 
   // Email discovery form
   const emailForm = useForm<EmailFormData>({
     resolver: zodResolver(emailSchema),
     defaultValues: { email: '' },
-  })
+  });
 
   // Login form
   const loginForm = useForm<LoginFormData>({
@@ -60,50 +93,50 @@ export default function LoginPage() {
       password: '',
       rememberMe: false,
     },
-  })
+  });
 
   // Handle tenant discovery
   const handleEmailSubmit = async (data: EmailFormData) => {
-    setIsDiscovering(true)
-    clearError()
-    
+    setIsDiscovering(true);
+    clearError();
+
     try {
-      const tenantData = await helixAuthService.discoverTenant(data.email)
-      
+      const tenantData = await helixAuthService.discoverTenant(data.email);
+
       // Set the email in the login form
-      loginForm.setValue('email', data.email)
-      
+      loginForm.setValue('email', data.email);
+
       // Move to auth step with tenant data
       setLoginStep({
         step: 'auth',
         tenantData,
-      })
-      
-      toast.success(t('auth:login.organizationFound', { organization: tenantData.tenant.name }))
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('auth:login.discoveryFailed'))
+      });
+
+      toast.success(t('auth:login.organizationFound', { organization: tenantData.tenant.name }));
+    } catch (_error) {
+      toast.error(error instanceof Error ? error.message : t('auth:login.discoveryFailed'));
     } finally {
-      setIsDiscovering(false)
+      setIsDiscovering(false);
     }
-  }
+  };
 
   // Handle authentication
   const handleLoginSubmit = async (data: LoginFormData) => {
     if (!loginStep.tenantData) {
-      toast.error(t('auth:login.tenantDiscoveryRequired'))
-      return
+      toast.error(t('auth:login.tenantDiscoveryRequired'));
+      return;
     }
 
     try {
-      clearError()
-      
+      clearError();
+
       const response = await helixAuthService.authenticate({
         discoveryToken: loginStep.tenantData.discoveryToken,
         email: data.email,
         password: data.password,
         authMethod: 'password',
         rememberMe: data.rememberMe,
-      })
+      });
 
       if (response.requiresMFA && response.tempSessionId) {
         // Move to MFA step
@@ -111,7 +144,7 @@ export default function LoginPage() {
           step: 'mfa',
           tenantData: loginStep.tenantData,
           mfaToken: response.tempSessionId,
-        })
+        });
       } else if (response.user) {
         // Complete login via auth store
         await loginWithHelix({
@@ -119,83 +152,83 @@ export default function LoginPage() {
           email: data.email,
           password: data.password,
           rememberMe: data.rememberMe,
-        })
-        
-        toast.success(t('auth:login.welcomeBack'))
-        navigate(from, { replace: true })
+        });
+
+        toast.success(t('auth:login.welcomeBack'));
+        navigate(from, { replace: true });
       }
-    } catch (error) {
-      toast.error(t('auth:login.loginFailed'))
+    } catch (_error) {
+      toast.error(t('auth:login.loginFailed'));
     }
-  }
+  };
 
   // Handle MFA verification
   const handleMfaSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!loginStep.mfaToken || !mfaCode.trim()) {
-      toast.error(t('auth:mfa.enterCodeRequired'))
-      return
+      toast.error(t('auth:mfa.enterCodeRequired'));
+      return;
     }
 
     try {
-      clearError()
-      
+      clearError();
+
       const response = await helixAuthService.verifyMfa({
         tempSessionId: loginStep.mfaToken,
         mfaMethod: 'totp', // Default to TOTP for now
         code: mfaCode.trim(),
         rememberDevice: false,
-      })
+      });
 
       if (response.user) {
         // Complete login via auth store
-        const email = loginForm.getValues('email')
-        const rememberMe = loginForm.getValues('rememberMe')
-        
+        const email = loginForm.getValues('email');
+        const rememberMe = loginForm.getValues('rememberMe');
+
         await loginWithHelix({
           discoveryToken: loginStep.tenantData!.discoveryToken,
           email,
           password: '', // Password already verified
           rememberMe,
-        })
-        
-        toast.success(t('auth:login.welcomeBack'))
-        navigate(from, { replace: true })
+        });
+
+        toast.success(t('auth:login.welcomeBack'));
+        navigate(from, { replace: true });
       }
-    } catch (error) {
-      toast.error(t('auth:mfa.invalidCode'))
-      setMfaCode('')
+    } catch (_error) {
+      toast.error(t('auth:mfa.invalidCode'));
+      setMfaCode('');
     }
-  }
+  };
 
   // Handle SSO login
   const handleSSOLogin = async (provider: string) => {
-    if (!loginStep.tenantData) return
-    
+    if (!loginStep.tenantData) return;
+
     try {
-      const ssoData = await helixAuthService.initiateSSOLogin(provider)
-      window.location.href = ssoData.redirectUrl
-    } catch (error) {
-      toast.error(t('auth:login.ssoInitiateFailed'))
+      const ssoData = await helixAuthService.initiateSSOLogin(provider);
+      window.location.href = ssoData.redirectUrl;
+    } catch (_error) {
+      toast.error(t('auth:login.ssoInitiateFailed'));
     }
-  }
+  };
 
   // Reset to email step
   const resetToEmailStep = () => {
-    setLoginStep({ step: 'email' })
-    emailForm.reset()
-    loginForm.reset()
-    setMfaCode('')
-    clearError()
-  }
+    setLoginStep({ step: 'email' });
+    emailForm.reset();
+    loginForm.reset();
+    setMfaCode('');
+    clearError();
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md space-y-8">
         {/* Logo and header */}
         <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-nova shadow-apple">
+          <div className="bg-gradient-nova shadow-apple mx-auto flex h-16 w-16 items-center justify-center rounded-2xl">
             <span className="text-2xl font-bold text-white">N</span>
           </div>
           <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
@@ -203,7 +236,8 @@ export default function LoginPage() {
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             {loginStep.step === 'email' && t('auth:login.enterEmailToContinue')}
-            {loginStep.step === 'auth' && t('auth:login.signInTo', { organization: loginStep.tenantData?.tenant.name })}
+            {loginStep.step === 'auth' &&
+              t('auth:login.signInTo', { organization: loginStep.tenantData?.tenant.name })}
             {loginStep.step === 'mfa' && t('auth:login.enterVerificationCode')}
           </p>
         </div>
@@ -214,7 +248,10 @@ export default function LoginPage() {
           {loginStep.step === 'email' && (
             <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)} className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   {t('auth:login.workEmail')}
                 </label>
                 <div className="mt-1">
@@ -222,10 +259,7 @@ export default function LoginPage() {
                     {...emailForm.register('email')}
                     type="email"
                     autoComplete="email"
-                    className={cn(
-                      'input',
-                      emailForm.formState.errors.email && 'input-error'
-                    )}
+                    className={cn('input', emailForm.formState.errors.email && 'input-error')}
                     placeholder={t('auth:login.emailPlaceholder')}
                   />
                   {emailForm.formState.errors.email && (
@@ -236,11 +270,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={isDiscovering}
-                className="btn btn-primary w-full"
-              >
+              <button type="submit" disabled={isDiscovering} className="btn btn-primary w-full">
                 {isDiscovering ? (
                   <>
                     <LoadingSpinner size="sm" />
@@ -248,7 +278,7 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    <BuildingOfficeIcon className="h-5 w-5 mr-2" />
+                    <BuildingOfficeIcon className="mr-2 h-5 w-5" />
                     {t('common:continue')}
                   </>
                 )}
@@ -266,8 +296,8 @@ export default function LoginPage() {
           {loginStep.step === 'auth' && loginStep.tenantData && (
             <div className="space-y-6">
               {/* Tenant info */}
-              <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <BuildingOfficeIcon className="h-8 w-8 text-gray-400 mr-3" />
+              <div className="flex items-center rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+                <BuildingOfficeIcon className="mr-3 h-8 w-8 text-gray-400" />
                 <div>
                   <p className="font-medium text-gray-900 dark:text-gray-100">
                     {loginStep.tenantData.tenant.name}
@@ -278,28 +308,29 @@ export default function LoginPage() {
                 </div>
                 <button
                   onClick={resetToEmailStep}
-                  className="ml-auto text-sm text-nova-600 hover:text-nova-500"
+                  className="text-nova-600 hover:text-nova-500 ml-auto text-sm"
                 >
                   {t('common:change')}
                 </button>
               </div>
 
               {/* SSO Options */}
-              {loginStep.tenantData.authMethods.filter(method => method.type === 'sso').length > 0 && (
+              {loginStep.tenantData.authMethods.filter((method) => method.type === 'sso').length >
+                0 && (
                 <div className="space-y-3">
                   {loginStep.tenantData.authMethods
-                    .filter(method => method.type === 'sso')
+                    .filter((method) => method.type === 'sso')
                     .map((method) => (
                       <button
                         key={method.provider}
                         onClick={() => handleSSOLogin(method.provider!)}
-                        className="btn btn-outline w-full flex items-center justify-center"
+                        className="btn btn-outline flex w-full items-center justify-center"
                       >
-                        <ShieldCheckIcon className="h-5 w-5 mr-2" />
+                        <ShieldCheckIcon className="mr-2 h-5 w-5" />
                         {t('auth:login.signInWith', { provider: method.name })}
                       </button>
                     ))}
-                  
+
                   {/* Divider */}
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
@@ -315,10 +346,13 @@ export default function LoginPage() {
               )}
 
               {/* Password Authentication */}
-              {loginStep.tenantData.authMethods.some(method => method.type === 'password') && (
+              {loginStep.tenantData.authMethods.some((method) => method.type === 'password') && (
                 <form onSubmit={loginForm.handleSubmit(handleLoginSubmit)} className="space-y-6">
                   <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
                       {t('auth:login.password')}
                     </label>
                     <div className="relative mt-1">
@@ -328,7 +362,7 @@ export default function LoginPage() {
                         autoComplete="current-password"
                         className={cn(
                           'input pr-10',
-                          loginForm.formState.errors.password && 'input-error'
+                          loginForm.formState.errors.password && 'input-error',
                         )}
                         placeholder={t('auth:login.passwordPlaceholder')}
                       />
@@ -357,9 +391,12 @@ export default function LoginPage() {
                         {...loginForm.register('rememberMe')}
                         id="rememberMe"
                         type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-nova-600 focus:ring-nova-500"
+                        className="text-nova-600 focus:ring-nova-500 h-4 w-4 rounded border-gray-300"
                       />
-                      <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                      <label
+                        htmlFor="rememberMe"
+                        className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                      >
                         {t('auth:login.rememberMe')}
                       </label>
                     </div>
@@ -367,23 +404,19 @@ export default function LoginPage() {
                     <div className="text-sm">
                       <Link
                         to="/auth/forgot-password"
-                        className="font-medium text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300"
+                        className="text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300 font-medium"
                       >
                         {t('auth:login.forgotPassword')}
                       </Link>
                     </div>
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="btn btn-primary w-full"
-                  >
+                  <button type="submit" disabled={isLoading} className="btn btn-primary w-full">
                     {isLoading ? (
                       <LoadingSpinner size="sm" />
                     ) : (
                       <>
-                        <KeyIcon className="h-5 w-5 mr-2" />
+                        <KeyIcon className="mr-2 h-5 w-5" />
                         {t('auth:login.signIn')}
                       </>
                     )}
@@ -394,8 +427,8 @@ export default function LoginPage() {
               {/* MFA Required Notice */}
               {loginStep.tenantData.mfaRequired && (
                 <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-                  <p className="text-sm text-blue-600 dark:text-blue-400 flex items-center">
-                    <ShieldCheckIcon className="h-4 w-4 mr-2" />
+                  <p className="flex items-center text-sm text-blue-600 dark:text-blue-400">
+                    <ShieldCheckIcon className="mr-2 h-4 w-4" />
                     {t('auth:login.mfaRequired')}
                   </p>
                 </div>
@@ -407,7 +440,7 @@ export default function LoginPage() {
           {loginStep.step === 'mfa' && (
             <form onSubmit={handleMfaSubmit} className="space-y-6">
               <div className="text-center">
-                <ShieldCheckIcon className="mx-auto h-12 w-12 text-nova-600" />
+                <ShieldCheckIcon className="text-nova-600 mx-auto h-12 w-12" />
                 <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">
                   {t('auth:mfa.verificationRequired')}
                 </h3>
@@ -417,7 +450,10 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="mfaCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="mfaCode"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   {t('auth:mfa.verificationCode')}
                 </label>
                 <div className="mt-1">
@@ -434,11 +470,7 @@ export default function LoginPage() {
               </div>
 
               <div className="flex space-x-4">
-                <button
-                  type="button"
-                  onClick={resetToEmailStep}
-                  className="btn btn-outline flex-1"
-                >
+                <button type="button" onClick={resetToEmailStep} className="btn btn-outline flex-1">
                   {t('auth:mfa.startOver')}
                 </button>
                 <button
@@ -446,11 +478,7 @@ export default function LoginPage() {
                   disabled={isLoading || !mfaCode.trim()}
                   className="btn btn-primary flex-1"
                 >
-                  {isLoading ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    t('auth:mfa.verify')
-                  )}
+                  {isLoading ? <LoadingSpinner size="sm" /> : t('auth:mfa.verify')}
                 </button>
               </div>
             </form>
@@ -459,9 +487,7 @@ export default function LoginPage() {
           {/* Error message */}
           {error && (
             <div className="rounded-lg bg-red-50 p-3 dark:bg-red-900/20">
-              <p className="text-sm text-red-600 dark:text-red-400">
-                {error}
-              </p>
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
         </div>
@@ -472,7 +498,7 @@ export default function LoginPage() {
             {loginStep.step === 'email' ? (
               <>
                 {t('auth:login.poweredBy')}{' '}
-                <span className="font-medium text-nova-600 dark:text-nova-400">
+                <span className="text-nova-600 dark:text-nova-400 font-medium">
                   {t('auth:login.helixBrand')}
                 </span>
               </>
@@ -481,7 +507,7 @@ export default function LoginPage() {
                 {t('auth:login.needHelp')}{' '}
                 <a
                   href="mailto:support@nova-universe.com"
-                  className="font-medium text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300"
+                  className="text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300 font-medium"
                 >
                   {t('auth:login.contactSupport')}
                 </a>
@@ -491,5 +517,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

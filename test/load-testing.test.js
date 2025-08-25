@@ -52,7 +52,7 @@ class LoadTestEngine extends EventEmitter {
         concurrentUsers: 0,
       },
     };
-    
+
     // Handle graceful shutdown
     this.cleanup = this.cleanup.bind(this);
     process.on('SIGINT', this.cleanup);
@@ -63,7 +63,7 @@ class LoadTestEngine extends EventEmitter {
   async cleanup() {
     if (this.isShuttingDown) return;
     this.isShuttingDown = true;
-    
+
     console.log('🧹 Cleaning up load test workers...');
     await this.stopLoadTest();
   }
@@ -141,11 +141,11 @@ class LoadTestEngine extends EventEmitter {
 
   async stopLoadTest() {
     if (this.isShuttingDown) return;
-    
+
     this.results.metrics.endTime = performance.now();
 
     // Gracefully terminate all workers
-    const terminationPromises = this.workers.map(worker => {
+    const terminationPromises = this.workers.map((worker) => {
       return new Promise((resolve) => {
         // Set a timeout for graceful termination
         const timeout = setTimeout(() => {
@@ -240,7 +240,7 @@ if (!isMainThread) {
       this.isRunning = false;
       this.timeouts = new Set();
       this.intervals = new Set();
-      
+
       // Handle shutdown messages from parent
       parentPort.on('message', (message) => {
         if (message.type === 'shutdown') {
@@ -272,7 +272,7 @@ if (!isMainThread) {
 
     stop() {
       this.isRunning = false;
-      
+
       // Clear all timeouts and intervals
       for (const timeoutId of this.timeouts) {
         clearTimeout(timeoutId);
@@ -280,16 +280,16 @@ if (!isMainThread) {
       for (const intervalId of this.intervals) {
         clearInterval(intervalId);
       }
-      
+
       this.timeouts.clear();
       this.intervals.clear();
-      
+
       // Send final message and exit
       parentPort.postMessage({
         type: 'worker-stopped',
-        payload: { workerId: this.workerId, activeUsers: this.activeUsers }
+        payload: { workerId: this.workerId, activeUsers: this.activeUsers },
       });
-      
+
       // Graceful exit
       process.exit(0);
     }

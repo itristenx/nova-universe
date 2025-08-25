@@ -1,11 +1,11 @@
-export { EnhancedFileUpload } from './EnhancedFileUpload'
-export { FileManager } from './FileManager'
-export { FilePreview } from './FilePreview'
+export { EnhancedFileUpload } from './EnhancedFileUpload';
+export { FileManager } from './FileManager';
+export { FilePreview } from './FilePreview';
 
 // Re-export types for convenience
-export type { 
-  UploadedFile, 
+export type {
+  UploadedFile,
   FileUploadOptions,
   FileUploadProgress,
-  FileMetadata 
-} from '@/services/fileStorage'
+  FileMetadata,
+} from '@/services/fileStorage';

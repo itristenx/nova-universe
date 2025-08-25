@@ -1,14 +1,14 @@
-import type { Ticket } from '@/types'
+import type { Ticket } from '@/types';
 
 interface UpdateTicketModalProps {
-  ticket: Ticket
-  onClose: () => void
-  onUpdate: () => void
+  ticket: Ticket;
+  onClose: () => void;
+  onUpdate: () => void;
 }
 
 export function UpdateTicketModal({ onClose, onUpdate }: UpdateTicketModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
       <div className="w-full max-w-2xl rounded-xl bg-white p-6 dark:bg-gray-800">
         <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
           Update Ticket
@@ -26,5 +26,5 @@ export function UpdateTicketModal({ onClose, onUpdate }: UpdateTicketModalProps)
         </div>
       </div>
     </div>
-  )
+  );
 }

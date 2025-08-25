@@ -26,7 +26,7 @@ async function seed() {
   const adminPassword = process.env.UAT_ADMIN_PASSWORD || generateSecurePassword();
   const agentPassword = process.env.UAT_AGENT_PASSWORD || generateSecurePassword();
   const userPassword = process.env.UAT_USER_PASSWORD || generateSecurePassword();
-  
+
   const users = [
     { name: 'UAT Admin', email: 'uat-admin@novauniverse.com', password: adminPassword, roleId: 1 },
     { name: 'UAT Agent', email: 'uat-agent@novauniverse.com', password: agentPassword, roleId: 2 },

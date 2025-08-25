@@ -27,13 +27,13 @@ const activeTimeouts = new Set();
 // Graceful cleanup handler
 function gracefulCleanup() {
   console.log('🧹 Cleaning up integration test resources...');
-  
+
   // Clear all timeouts
   for (const timeoutId of activeTimeouts) {
     clearTimeout(timeoutId);
   }
   activeTimeouts.clear();
-  
+
   // Close any active connections
   for (const connection of activeConnections) {
     if (connection && typeof connection.close === 'function') {
@@ -45,7 +45,7 @@ function gracefulCleanup() {
     }
   }
   activeConnections.clear();
-  
+
   console.log('✅ Integration test cleanup completed');
 }
 

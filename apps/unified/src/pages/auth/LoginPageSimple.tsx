@@ -1,32 +1,32 @@
-import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
-import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@stores/auth'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { cn } from '@utils/index'
-import toast from 'react-hot-toast'
+import { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '@stores/auth';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { cn } from '@utils/index';
+import toast from 'react-hot-toast';
 
 export default function LoginPage() {
-  const { t } = useTranslation()
-  const [showPassword, setShowPassword] = useState(false)
-  const { login, isLoading, error, clearError } = useAuthStore()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const { t } = useTranslation();
+  const [showPassword, setShowPassword] = useState(false);
+  const { login, isLoading, error, clearError } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/dashboard'
+  const from = location.state?.from?.pathname || '/dashboard';
 
   // Validation schema with translations
   const loginSchema = z.object({
     email: z.string().email(t('forms.email', 'Please enter a valid email address')),
     password: z.string().min(1, t('forms.required', 'This field is required')),
     rememberMe: z.boolean().default(false),
-  })
+  });
 
-  type LoginFormData = z.infer<typeof loginSchema>
+  type LoginFormData = z.infer<typeof loginSchema>;
 
   const {
     register,
@@ -39,33 +39,31 @@ export default function LoginPage() {
       password: '',
       rememberMe: false,
     },
-  })
+  });
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      clearError()
-      await login(data.email, data.password, data.rememberMe)
-      toast.success('Welcome back!')
-      navigate(from, { replace: true })
-    } catch (error) {
-      toast.error('Login failed. Please check your credentials.')
+      clearError();
+      await login(data.email, data.password, data.rememberMe);
+      toast.success('Welcome back!');
+      navigate(from, { replace: true });
+    } catch (_error) {
+      toast.error('Login failed. Please check your credentials.');
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md space-y-8">
         {/* Logo and header */}
         <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-nova shadow-apple">
+          <div className="bg-gradient-nova shadow-apple mx-auto flex h-16 w-16 items-center justify-center rounded-2xl">
             <span className="text-2xl font-bold text-white">N</span>
           </div>
           <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Welcome to Nova Universe
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Sign in to your account
-          </p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Sign in to your account</p>
         </div>
 
         {/* Login form */}
@@ -73,7 +71,10 @@ export default function LoginPage() {
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {/* Email field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {t('auth.email', 'Email')}
               </label>
               <div className="mt-1">
@@ -81,10 +82,7 @@ export default function LoginPage() {
                   {...register('email')}
                   type="email"
                   autoComplete="email"
-                  className={cn(
-                    'input',
-                    errors.email && 'input-error'
-                  )}
+                  className={cn('input', errors.email && 'input-error')}
                   placeholder={t('auth.emailPlaceholder', 'Enter your email')}
                 />
                 {errors.email && (
@@ -97,7 +95,10 @@ export default function LoginPage() {
 
             {/* Password field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {t('auth.password', 'Password')}
               </label>
               <div className="relative mt-1">
@@ -105,10 +106,7 @@ export default function LoginPage() {
                   {...register('password')}
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  className={cn(
-                    'input pr-10',
-                    errors.password && 'input-error'
-                  )}
+                  className={cn('input pr-10', errors.password && 'input-error')}
                   placeholder={t('auth.login.passwordPlaceholder', 'Enter your password')}
                 />
                 <button
@@ -137,9 +135,12 @@ export default function LoginPage() {
                   {...register('rememberMe')}
                   id="rememberMe"
                   type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-nova-600 focus:ring-nova-500"
+                  className="text-nova-600 focus:ring-nova-500 h-4 w-4 rounded border-gray-300"
                 />
-                <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="rememberMe"
+                  className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                >
                   {t('auth.login.rememberMe', 'Remember me')}
                 </label>
               </div>
@@ -147,7 +148,7 @@ export default function LoginPage() {
               <div className="text-sm">
                 <Link
                   to="/auth/forgot-password"
-                  className="font-medium text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300"
+                  className="text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300 font-medium"
                 >
                   {t('auth.login.forgotPassword', 'Forgot your password?')}
                 </Link>
@@ -157,23 +158,13 @@ export default function LoginPage() {
             {/* Error message */}
             {error && (
               <div className="rounded-lg bg-red-50 p-3 dark:bg-red-900/20">
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  {error}
-                </p>
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
               </div>
             )}
 
             {/* Submit button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn btn-primary w-full"
-            >
-              {isLoading ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                t('auth.login.signIn', 'Sign In')
-              )}
+            <button type="submit" disabled={isLoading} className="btn btn-primary w-full">
+              {isLoading ? <LoadingSpinner size="sm" /> : t('auth.login.signIn', 'Sign In')}
             </button>
 
             {/* Divider */}
@@ -193,7 +184,7 @@ export default function LoginPage() {
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 🏢 SSO, Tenant Discovery, and MFA available
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
                 Nova Helix Universal Login System
               </p>
             </div>
@@ -205,7 +196,7 @@ export default function LoginPage() {
               Need access?{' '}
               <Link
                 to="/auth/register"
-                className="font-medium text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300"
+                className="text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300 font-medium"
               >
                 Contact your administrator
               </Link>
@@ -214,5 +205,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

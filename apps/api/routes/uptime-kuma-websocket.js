@@ -11,18 +11,18 @@ const router = express.Router();
 router.get('/status', async (req, res) => {
   try {
     const status = getUptimeKumaWebSocketStatus();
-    
+
     res.json({
       success: true,
       data: status,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Failed to get Uptime Kuma WebSocket status', { error: error.message });
     res.status(500).json({
       success: false,
       error: 'Failed to get WebSocket status',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -31,9 +31,9 @@ router.get('/status', async (req, res) => {
 router.get('/health', async (req, res) => {
   try {
     const status = getUptimeKumaWebSocketStatus();
-    
+
     const isHealthy = status.connected && status.kumaConnected;
-    
+
     res.status(isHealthy ? 200 : 503).json({
       success: isHealthy,
       healthy: isHealthy,
@@ -41,10 +41,10 @@ router.get('/health', async (req, res) => {
         connected: status.connected,
         kumaConnected: status.kumaConnected,
         clientCount: status.clientCount,
-        reconnectAttempts: status.reconnectAttempts
+        reconnectAttempts: status.reconnectAttempts,
       },
       message: isHealthy ? 'WebSocket connection healthy' : 'WebSocket connection issues detected',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Failed to check Uptime Kuma WebSocket health', { error: error.message });
@@ -52,7 +52,7 @@ router.get('/health', async (req, res) => {
       success: false,
       healthy: false,
       error: 'Failed to check WebSocket health',
-      message: error.message
+      message: error.message,
     });
   }
 });

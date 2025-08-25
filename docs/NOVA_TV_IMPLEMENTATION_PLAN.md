@@ -6,9 +6,10 @@
 
 ```markdown
 #### Database & Backend Infrastructure
+
 - [ ] Create Nova TV database schema extensions
   - [ ] nova_tv_dashboards table
-  - [ ] nova_tv_devices table  
+  - [ ] nova_tv_devices table
   - [ ] nova_tv_templates table
   - [ ] nova_tv_content table
   - [ ] nova_tv_analytics table
@@ -22,6 +23,7 @@
 - [ ] Implement QR code generation service
 
 #### Frontend Foundation
+
 - [ ] Create Nova TV route structure in unified app
   - [ ] `/nova-tv/dashboard` - Dashboard management
   - [ ] `/nova-tv/devices` - Device management
@@ -33,6 +35,7 @@
 - [ ] Implement template selection interface
 
 #### Core Authentication System
+
 - [ ] Integrate with existing Helix Auth system
 - [ ] Implement role-based access for Nova TV
 - [ ] Create department-based permissions
@@ -44,6 +47,7 @@
 
 ```markdown
 #### Template Framework
+
 - [ ] Build template engine infrastructure
 - [ ] Implement Summary Template
   - [ ] Multi-widget grid layout
@@ -59,6 +63,7 @@
   - [ ] Touch interaction support
 
 #### Department-Specific Templates
+
 - [ ] HR Dashboard Template
   - [ ] Employee metrics widgets
   - [ ] Announcement feed
@@ -73,6 +78,7 @@
   - [ ] Safety and compliance metrics
 
 #### Content Management System
+
 - [ ] Build content creation interface
 - [ ] Implement content scheduling system
 - [ ] Create approval workflow for sensitive content
@@ -84,6 +90,7 @@
 
 ```markdown
 #### Real-Time Features
+
 - [ ] Implement live dashboard updates via WebSocket
 - [ ] Build collaborative editing system
 - [ ] Create real-time device status monitoring
@@ -91,6 +98,7 @@
 - [ ] Build emergency alert broadcast system
 
 #### Analytics & Intelligence
+
 - [ ] Create dashboard performance analytics
 - [ ] Implement viewing engagement tracking
 - [ ] Build content effectiveness reporting
@@ -98,6 +106,7 @@
 - [ ] Implement predictive analytics for optimal content timing
 
 #### Nova Universe Integration
+
 - [ ] Connect to existing ticket system for IT dashboards
 - [ ] Integrate with asset management for operations displays
 - [ ] Connect to learning platform for training announcements
@@ -105,6 +114,7 @@
 - [ ] Link to monitoring system for real-time alerts
 
 #### Advanced Device Management
+
 - [ ] Implement remote device configuration
 - [ ] Build device health monitoring
 - [ ] Create automated device setup process
@@ -116,6 +126,7 @@
 
 ```markdown
 #### User Experience Optimization
+
 - [ ] Implement accessibility features (WCAG 2.1 AA)
 - [ ] Optimize for large display viewing distances
 - [ ] Create responsive layouts for different screen sizes
@@ -123,6 +134,7 @@
 - [ ] Build error handling and fallback systems
 
 #### Security & Compliance
+
 - [ ] Implement content security policies
 - [ ] Add sensitive data detection and filtering
 - [ ] Create audit logging for all administrative actions
@@ -130,6 +142,7 @@
 - [ ] Add penetration testing and security hardening
 
 #### Documentation & Training
+
 - [ ] Create user documentation and guides
 - [ ] Build administrator training materials
 - [ ] Create video tutorials for common tasks
@@ -137,6 +150,7 @@
 - [ ] Create troubleshooting and support documentation
 
 #### Performance & Scalability
+
 - [ ] Optimize database queries and indexing
 - [ ] Implement caching strategies for content delivery
 - [ ] Add CDN integration for media assets
@@ -161,14 +175,14 @@ model NovaTVDashboard {
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   // Relations
   creator       User     @relation(fields: [createdBy], references: [id])
   template      NovaTVTemplate? @relation(fields: [templateId], references: [id])
   devices       NovaTVDevice[]
   content       NovaTVContent[]
   analytics     NovaTVAnalytics[]
-  
+
   @@map("nova_tv_dashboards")
 }
 
@@ -185,11 +199,11 @@ model NovaTVDevice {
   connectionStatus  String   @default("disconnected")
   settings          Json     @default("{}")
   createdAt         DateTime @default(now())
-  
+
   // Relations
   dashboard         NovaTVDashboard? @relation(fields: [dashboardId], references: [id])
   analytics         NovaTVAnalytics[]
-  
+
   @@map("nova_tv_devices")
 }
 
@@ -202,11 +216,11 @@ model NovaTVTemplate {
   isSystemTemplate Boolean @default(false)
   createdBy       String?
   createdAt       DateTime @default(now())
-  
+
   // Relations
   creator         User?    @relation(fields: [createdBy], references: [id])
   dashboards      NovaTVDashboard[]
-  
+
   @@map("nova_tv_templates")
 }
 
@@ -219,10 +233,10 @@ model NovaTVContent {
   isActive     Boolean  @default(true)
   expiresAt    DateTime?
   createdAt    DateTime @default(now())
-  
+
   // Relations
   dashboard    NovaTVDashboard @relation(fields: [dashboardId], references: [id])
-  
+
   @@map("nova_tv_content")
 }
 
@@ -233,11 +247,11 @@ model NovaTVAnalytics {
   eventType   String
   eventData   Json?
   timestamp   DateTime @default(now())
-  
+
   // Relations
   dashboard   NovaTVDashboard? @relation(fields: [dashboardId], references: [id])
   device      NovaTVDevice? @relation(fields: [deviceId], references: [id])
-  
+
   @@map("nova_tv_analytics")
 }
 ```
@@ -247,46 +261,71 @@ model NovaTVAnalytics {
 ```typescript
 // File: /apps/api/src/routes/nova-tv.ts
 
-import { Router } from 'express'
-import { authMiddleware } from '../middleware/auth'
-import { validateSchema } from '../middleware/validation'
-import { NovaTVController } from '../controllers/nova-tv'
+import { Router } from 'express';
+import { authMiddleware } from '../middleware/auth';
+import { validateSchema } from '../middleware/validation';
+import { NovaTVController } from '../controllers/nova-tv';
 
-const router = Router()
-const novaTVController = new NovaTVController()
+const router = Router();
+const novaTVController = new NovaTVController();
 
 // Dashboard Management
-router.get('/dashboards', authMiddleware, novaTVController.getDashboards)
-router.post('/dashboards', authMiddleware, validateSchema('createDashboard'), novaTVController.createDashboard)
-router.put('/dashboards/:id', authMiddleware, validateSchema('updateDashboard'), novaTVController.updateDashboard)
-router.delete('/dashboards/:id', authMiddleware, novaTVController.deleteDashboard)
+router.get('/dashboards', authMiddleware, novaTVController.getDashboards);
+router.post(
+  '/dashboards',
+  authMiddleware,
+  validateSchema('createDashboard'),
+  novaTVController.createDashboard,
+);
+router.put(
+  '/dashboards/:id',
+  authMiddleware,
+  validateSchema('updateDashboard'),
+  novaTVController.updateDashboard,
+);
+router.delete('/dashboards/:id', authMiddleware, novaTVController.deleteDashboard);
 
 // Device Management
-router.get('/devices', authMiddleware, novaTVController.getDevices)
-router.post('/devices/register', validateSchema('registerDevice'), novaTVController.registerDevice)
-router.put('/devices/:id', authMiddleware, novaTVController.updateDevice)
-router.delete('/devices/:id/revoke', authMiddleware, novaTVController.revokeDevice)
+router.get('/devices', authMiddleware, novaTVController.getDevices);
+router.post('/devices/register', validateSchema('registerDevice'), novaTVController.registerDevice);
+router.put('/devices/:id', authMiddleware, novaTVController.updateDevice);
+router.delete('/devices/:id/revoke', authMiddleware, novaTVController.revokeDevice);
 
 // Authentication
-router.post('/auth/generate-code', authMiddleware, novaTVController.generateAuthCode)
-router.post('/auth/verify-code', validateSchema('verifyCode'), novaTVController.verifyAuthCode)
-router.post('/auth/refresh', validateSchema('refreshToken'), novaTVController.refreshToken)
+router.post('/auth/generate-code', authMiddleware, novaTVController.generateAuthCode);
+router.post('/auth/verify-code', validateSchema('verifyCode'), novaTVController.verifyAuthCode);
+router.post('/auth/refresh', validateSchema('refreshToken'), novaTVController.refreshToken);
 
 // Templates
-router.get('/templates', authMiddleware, novaTVController.getTemplates)
-router.post('/templates', authMiddleware, validateSchema('createTemplate'), novaTVController.createTemplate)
-router.get('/templates/:id/preview', authMiddleware, novaTVController.previewTemplate)
+router.get('/templates', authMiddleware, novaTVController.getTemplates);
+router.post(
+  '/templates',
+  authMiddleware,
+  validateSchema('createTemplate'),
+  novaTVController.createTemplate,
+);
+router.get('/templates/:id/preview', authMiddleware, novaTVController.previewTemplate);
 
 // Content Management
-router.post('/content', authMiddleware, validateSchema('createContent'), novaTVController.createContent)
-router.put('/content/:id', authMiddleware, validateSchema('updateContent'), novaTVController.updateContent)
-router.delete('/content/:id', authMiddleware, novaTVController.deleteContent)
+router.post(
+  '/content',
+  authMiddleware,
+  validateSchema('createContent'),
+  novaTVController.createContent,
+);
+router.put(
+  '/content/:id',
+  authMiddleware,
+  validateSchema('updateContent'),
+  novaTVController.updateContent,
+);
+router.delete('/content/:id', authMiddleware, novaTVController.deleteContent);
 
 // Analytics
-router.get('/analytics/dashboard/:id', authMiddleware, novaTVController.getDashboardAnalytics)
-router.post('/analytics/events', validateSchema('trackEvent'), novaTVController.trackEvent)
+router.get('/analytics/dashboard/:id', authMiddleware, novaTVController.getDashboardAnalytics);
+router.post('/analytics/events', validateSchema('trackEvent'), novaTVController.trackEvent);
 
-export { router as novaTVRouter }
+export { router as novaTVRouter };
 ```
 
 ### 3. Frontend Component Structure
@@ -311,20 +350,20 @@ export default function DashboardBuilder({ dashboardId }: DashboardBuilderProps)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [widgets, setWidgets] = useState([])
   const [isPreviewMode, setIsPreviewMode] = useState(false)
-  
+
   // Load dashboard data if editing existing
   const { data: dashboard } = useQuery({
     queryKey: ['nova-tv-dashboard', dashboardId],
     queryFn: () => novaTVService.getDashboard(dashboardId!),
     enabled: !!dashboardId
   })
-  
+
   // Load available templates
   const { data: templates } = useQuery({
     queryKey: ['nova-tv-templates'],
     queryFn: () => novaTVService.getTemplates()
   })
-  
+
   // Save dashboard mutation
   const saveDashboard = useMutation({
     mutationFn: novaTVService.saveDashboard,
@@ -332,20 +371,20 @@ export default function DashboardBuilder({ dashboardId }: DashboardBuilderProps)
       // Handle success
     }
   })
-  
+
   const handleDragEnd = useCallback((result) => {
     // Handle widget reordering
   }, [])
-  
+
   const handleWidgetAdd = useCallback((widgetType: string) => {
     // Add widget to dashboard
   }, [])
-  
+
   const handleTemplateSelect = useCallback((templateId: string) => {
     setSelectedTemplate(templateId)
     // Load template configuration
   }, [])
-  
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Left Sidebar - Template & Widget Library */}
@@ -354,20 +393,20 @@ export default function DashboardBuilder({ dashboardId }: DashboardBuilderProps)
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Dashboard Builder
           </h2>
-          
+
           <TemplateSelector
             templates={templates}
             selectedTemplate={selectedTemplate}
             onTemplateSelect={handleTemplateSelect}
           />
-          
+
           <WidgetLibrary
             onWidgetAdd={handleWidgetAdd}
             departmentType={dashboard?.department}
           />
         </div>
       </div>
-      
+
       {/* Main Content - Dashboard Canvas */}
       <div className="flex-1 flex flex-col">
         <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -375,7 +414,7 @@ export default function DashboardBuilder({ dashboardId }: DashboardBuilderProps)
             <h1 className="text-xl font-semibold text-gray-900">
               {dashboard?.name || 'New Dashboard'}
             </h1>
-            
+
             <div className="flex space-x-4">
               <button
                 onClick={() => setIsPreviewMode(!isPreviewMode)}
@@ -383,7 +422,7 @@ export default function DashboardBuilder({ dashboardId }: DashboardBuilderProps)
               >
                 {isPreviewMode ? 'Edit' : 'Preview'}
               </button>
-              
+
               <button
                 onClick={() => saveDashboard.mutate()}
                 className="btn btn-primary"
@@ -393,7 +432,7 @@ export default function DashboardBuilder({ dashboardId }: DashboardBuilderProps)
             </div>
           </div>
         </div>
-        
+
         <div className="flex-1 p-6">
           {isPreviewMode ? (
             <PreviewPane dashboard={dashboard} widgets={widgets} />
@@ -442,77 +481,84 @@ export default function DashboardBuilder({ dashboardId }: DashboardBuilderProps)
 ```typescript
 // File: /apps/unified/src/services/nova-tv-auth.ts
 
-import QRCode from 'qrcode'
-import { nanoid } from 'nanoid'
+import QRCode from 'qrcode';
+import { nanoid } from 'nanoid';
 
 export class NovaTVAuthService {
-  private activeAuthSessions = new Map<string, AuthSession>()
-  
+  private activeAuthSessions = new Map<string, AuthSession>();
+
   async generateAuthCode(): Promise<AuthCodeResponse> {
-    const sessionId = nanoid(10)
-    const sixDigitCode = Math.random().toString().slice(2, 8)
+    const sessionId = nanoid(10);
+    const sixDigitCode = Math.random().toString().slice(2, 8);
     const qrData = JSON.stringify({
       sessionId,
       code: sixDigitCode,
       timestamp: Date.now(),
-      type: 'nova-tv-auth'
-    })
-    
-    const qrCodeImage = await QRCode.toDataURL(qrData)
-    
+      type: 'nova-tv-auth',
+    });
+
+    const qrCodeImage = await QRCode.toDataURL(qrData);
+
     const session: AuthSession = {
       sessionId,
       sixDigitCode,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
-      isUsed: false
-    }
-    
-    this.activeAuthSessions.set(sessionId, session)
-    
+      isUsed: false,
+    };
+
+    this.activeAuthSessions.set(sessionId, session);
+
     // Auto-cleanup expired sessions
-    setTimeout(() => {
-      this.activeAuthSessions.delete(sessionId)
-    }, 5 * 60 * 1000)
-    
+    setTimeout(
+      () => {
+        this.activeAuthSessions.delete(sessionId);
+      },
+      5 * 60 * 1000,
+    );
+
     return {
       sessionId,
       qrCode: qrCodeImage,
       sixDigitCode,
-      expiresAt: session.expiresAt
-    }
+      expiresAt: session.expiresAt,
+    };
   }
-  
-  async verifyAuthCode(sessionId: string, code: string, userToken: string): Promise<AuthVerificationResponse> {
-    const session = this.activeAuthSessions.get(sessionId)
-    
+
+  async verifyAuthCode(
+    sessionId: string,
+    code: string,
+    userToken: string,
+  ): Promise<AuthVerificationResponse> {
+    const session = this.activeAuthSessions.get(sessionId);
+
     if (!session || session.isUsed || session.expiresAt < new Date()) {
-      throw new Error('Invalid or expired authentication code')
+      throw new Error('Invalid or expired authentication code');
     }
-    
+
     if (session.sixDigitCode !== code) {
-      throw new Error('Incorrect authentication code')
+      throw new Error('Incorrect authentication code');
     }
-    
+
     // Mark session as used
-    session.isUsed = true
-    
+    session.isUsed = true;
+
     // Get user permissions and available dashboards
-    const user = await this.getUserFromToken(userToken)
-    const availableDashboards = await this.getUserDashboards(user.id, user.department)
-    
+    const user = await this.getUserFromToken(userToken);
+    const availableDashboards = await this.getUserDashboards(user.id, user.department);
+
     return {
       success: true,
       user,
       availableDashboards,
-      sessionToken: this.generateSessionToken(sessionId, user.id)
-    }
+      sessionToken: this.generateSessionToken(sessionId, user.id),
+    };
   }
-  
+
   private generateSessionToken(sessionId: string, userId: string): string {
     // Generate secure session token for device
     return jwt.sign({ sessionId, userId, type: 'nova-tv-device' }, process.env.JWT_SECRET, {
-      expiresIn: '7d'
-    })
+      expiresIn: '7d',
+    });
   }
 }
 ```

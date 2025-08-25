@@ -1,6 +1,6 @@
 /**
  * Nova Monitoring Event Bridge
- * 
+ *
  * Provides real-time bidirectional synchronization between Nova and
  * external monitoring services (GoAlert, Uptime Kuma). Handles:
  * - Event routing and transformation
@@ -8,7 +8,7 @@
  * - Conflict resolution
  * - Real-time WebSocket updates
  * - Audit logging
- * 
+ *
  * Part of the Nova Monitoring & Alerting Integration
  */
 
@@ -26,7 +26,7 @@ class MonitoringEventBridge extends EventEmitter {
     this.conflictHandlers = new Map();
     this.eventFilters = new Map();
     this.isStarted = false;
-    
+
     this.setupEventHandlers();
     this.setupConflictHandlers();
     this.setupEventFilters();
@@ -59,7 +59,6 @@ class MonitoringEventBridge extends EventEmitter {
 
       this.isStarted = true;
       logger.info('Nova Monitoring Event Bridge started successfully');
-
     } catch (error) {
       logger.error('Failed to start Monitoring Event Bridge:', error);
       throw error;
@@ -79,7 +78,7 @@ class MonitoringEventBridge extends EventEmitter {
 
       // Close all WebSocket connections
       for (const connections of this.wsConnections.values()) {
-        connections.forEach(ws => {
+        connections.forEach((ws) => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.close();
           }
@@ -97,7 +96,6 @@ class MonitoringEventBridge extends EventEmitter {
 
       this.isStarted = false;
       logger.info('Nova Monitoring Event Bridge stopped');
-
     } catch (error) {
       logger.error('Error stopping Monitoring Event Bridge:', error);
     }
@@ -160,7 +158,7 @@ class MonitoringEventBridge extends EventEmitter {
         last_check: externalData.last_check,
         response_time: externalData.response_time,
         resolution: 'merge',
-        source: 'bridge_merge'
+        source: 'bridge_merge',
       };
     });
 
@@ -173,13 +171,13 @@ class MonitoringEventBridge extends EventEmitter {
         return {
           ...novaData,
           resolution: 'nova_wins',
-          source: 'nova'
+          source: 'nova',
         };
       } else {
         return {
           ...externalData,
           resolution: 'external_wins',
-          source: source
+          source: source,
         };
       }
     });
@@ -190,7 +188,7 @@ class MonitoringEventBridge extends EventEmitter {
         ...novaData,
         external_id: externalData.id,
         resolution: 'nova_wins',
-        source: 'nova'
+        source: 'nova',
       };
     });
   }
@@ -238,16 +236,15 @@ class MonitoringEventBridge extends EventEmitter {
       // Broadcast to WebSocket clients
       this.broadcastToClients(monitor.tenant_id, 'monitor.created', {
         monitor,
-        timestamp
+        timestamp,
       });
 
       // Log event
       await this.logIntegrationEvent('monitor.created', monitor.id, {
         user_id: user.id,
         action: 'create',
-        timestamp
+        timestamp,
       });
-
     } catch (error) {
       logger.error('Error handling monitor created event:', error);
       this.emit('sync.error', { event: 'monitor.created', error, data });
@@ -276,16 +273,15 @@ class MonitoringEventBridge extends EventEmitter {
       this.broadcastToClients(monitor.tenant_id, 'monitor.updated', {
         monitor,
         previous,
-        timestamp
+        timestamp,
       });
 
       await this.logIntegrationEvent('monitor.updated', monitor.id, {
         user_id: user.id,
         action: 'update',
         changes: this.getFieldChanges(monitor, previous),
-        timestamp
+        timestamp,
       });
-
     } catch (error) {
       logger.error('Error handling monitor updated event:', error);
       this.emit('sync.error', { event: 'monitor.updated', error, data });
@@ -311,15 +307,14 @@ class MonitoringEventBridge extends EventEmitter {
       // Broadcast to clients
       this.broadcastToClients(monitor.tenant_id, 'monitor.deleted', {
         monitor_id: monitor.id,
-        timestamp
+        timestamp,
       });
 
       await this.logIntegrationEvent('monitor.deleted', monitor.id, {
         user_id: user.id,
         action: 'delete',
-        timestamp
+        timestamp,
       });
-
     } catch (error) {
       logger.error('Error handling monitor deleted event:', error);
       this.emit('sync.error', { event: 'monitor.deleted', error, data });
@@ -331,14 +326,18 @@ class MonitoringEventBridge extends EventEmitter {
       const { monitor_id, status, response_time, checked_at, details } = data;
 
       // Store check result in Nova
-      await database.query(`
+      await database.query(
+        `
         INSERT INTO monitor_checks (
           monitor_id, status, response_time, checked_at, details
         ) VALUES ($1, $2, $3, $4, $5)
-      `, [monitor_id, status, response_time, checked_at, JSON.stringify(details)]);
+      `,
+        [monitor_id, status, response_time, checked_at, JSON.stringify(details)],
+      );
 
       // Update monitor status
-      await database.query(`
+      await database.query(
+        `
         UPDATE monitors 
         SET 
           status = $1,
@@ -346,7 +345,9 @@ class MonitoringEventBridge extends EventEmitter {
           response_time = $3,
           updated_at = CURRENT_TIMESTAMP
         WHERE id = $4
-      `, [status, checked_at, response_time, monitor_id]);
+      `,
+        [status, checked_at, response_time, monitor_id],
+      );
 
       // Create alert if monitor is down
       if (status !== 'up') {
@@ -354,23 +355,21 @@ class MonitoringEventBridge extends EventEmitter {
       }
 
       // Get monitor for broadcasting
-      const monitorResult = await database.query(
-        'SELECT * FROM monitors WHERE id = $1',
-        [monitor_id]
-      );
+      const monitorResult = await database.query('SELECT * FROM monitors WHERE id = $1', [
+        monitor_id,
+      ]);
 
       if (monitorResult.rows.length > 0) {
         const monitor = monitorResult.rows[0];
-        
+
         this.broadcastToClients(monitor.tenant_id, 'monitor.check_result', {
           monitor_id,
           status,
           response_time,
           checked_at,
-          details
+          details,
         });
       }
-
     } catch (error) {
       logger.error('Error handling monitor check result:', error);
     }
@@ -398,17 +397,19 @@ class MonitoringEventBridge extends EventEmitter {
             service_id: alert.service_id,
             metadata: {
               nova_alert_id: alert.id,
-              created_via: 'nova_bridge'
-            }
+              created_via: 'nova_bridge',
+            },
           });
 
           // Update Nova alert with GoAlert ID
-          await database.query(`
+          await database.query(
+            `
             UPDATE nova_alerts 
             SET goalert_alert_id = $1
             WHERE id = $2
-          `, [goalertAlert.id, alert.id]);
-
+          `,
+            [goalertAlert.id, alert.id],
+          );
         } catch (goalertError) {
           logger.warn(`Failed to create GoAlert alert for ${alert.id}:`, goalertError);
         }
@@ -417,15 +418,14 @@ class MonitoringEventBridge extends EventEmitter {
       // Broadcast to clients
       this.broadcastToClients(alert.tenant_id || user.tenant_id, 'alert.created', {
         alert,
-        timestamp
+        timestamp,
       });
 
       await this.logIntegrationEvent('alert.created', alert.id, {
         user_id: user.id,
         severity: alert.severity,
-        timestamp
+        timestamp,
       });
-
     } catch (error) {
       logger.error('Error handling alert created event:', error);
       this.emit('sync.error', { event: 'alert.created', error, data });
@@ -443,15 +443,15 @@ class MonitoringEventBridge extends EventEmitter {
       // Acknowledge in GoAlert
       if (alert.goalert_alert_id) {
         try {
-          await monitoringIntegrationService.acknowledgeGoAlertAlert(
-            alert.goalert_alert_id,
-            {
-              user_id: user.goalert_user_id || user.email,
-              message: message || 'Acknowledged via Nova'
-            }
-          );
+          await monitoringIntegrationService.acknowledgeGoAlertAlert(alert.goalert_alert_id, {
+            user_id: user.goalert_user_id || user.email,
+            message: message || 'Acknowledged via Nova',
+          });
         } catch (goalertError) {
-          logger.warn(`Failed to acknowledge GoAlert alert ${alert.goalert_alert_id}:`, goalertError);
+          logger.warn(
+            `Failed to acknowledge GoAlert alert ${alert.goalert_alert_id}:`,
+            goalertError,
+          );
         }
       }
 
@@ -461,18 +461,17 @@ class MonitoringEventBridge extends EventEmitter {
         user: {
           id: user.id,
           name: user.first_name + ' ' + user.last_name,
-          email: user.email
+          email: user.email,
         },
         message,
-        timestamp
+        timestamp,
       });
 
       await this.logIntegrationEvent('alert.acknowledged', alert.id, {
         user_id: user.id,
         message,
-        timestamp
+        timestamp,
       });
-
     } catch (error) {
       logger.error('Error handling alert acknowledged event:', error);
       this.emit('sync.error', { event: 'alert.acknowledged', error, data });
@@ -490,13 +489,10 @@ class MonitoringEventBridge extends EventEmitter {
       // Resolve in GoAlert
       if (alert.goalert_alert_id) {
         try {
-          await monitoringIntegrationService.resolveGoAlertAlert(
-            alert.goalert_alert_id,
-            {
-              user_id: user.goalert_user_id || user.email,
-              message: resolution_notes || 'Resolved via Nova'
-            }
-          );
+          await monitoringIntegrationService.resolveGoAlertAlert(alert.goalert_alert_id, {
+            user_id: user.goalert_user_id || user.email,
+            message: resolution_notes || 'Resolved via Nova',
+          });
         } catch (goalertError) {
           logger.warn(`Failed to resolve GoAlert alert ${alert.goalert_alert_id}:`, goalertError);
         }
@@ -508,20 +504,19 @@ class MonitoringEventBridge extends EventEmitter {
         user: {
           id: user.id,
           name: user.first_name + ' ' + user.last_name,
-          email: user.email
+          email: user.email,
         },
         resolution_notes,
         root_cause,
-        timestamp
+        timestamp,
       });
 
       await this.logIntegrationEvent('alert.resolved', alert.id, {
         user_id: user.id,
         resolution_notes,
         root_cause,
-        timestamp
+        timestamp,
       });
-
     } catch (error) {
       logger.error('Error handling alert resolved event:', error);
       this.emit('sync.error', { event: 'alert.resolved', error, data });
@@ -537,10 +532,13 @@ class MonitoringEventBridge extends EventEmitter {
       const { alert, action, timestamp } = data;
 
       // Find corresponding Nova alert
-      const novaAlertResult = await database.query(`
+      const novaAlertResult = await database.query(
+        `
         SELECT * FROM nova_alerts 
         WHERE goalert_alert_id = $1
-      `, [alert.id]);
+      `,
+        [alert.id],
+      );
 
       if (novaAlertResult.rows.length === 0) {
         // Create new Nova alert from GoAlert
@@ -552,7 +550,8 @@ class MonitoringEventBridge extends EventEmitter {
 
       // Sync status changes
       if (action === 'acknowledged' && novaAlert.status === 'active') {
-        await database.query(`
+        await database.query(
+          `
           UPDATE nova_alerts 
           SET 
             status = 'acknowledged',
@@ -564,19 +563,22 @@ class MonitoringEventBridge extends EventEmitter {
             ),
             updated_at = CURRENT_TIMESTAMP
           WHERE id = $3
-        `, [timestamp, alert.acknowledged_by, novaAlert.id]);
+        `,
+          [timestamp, alert.acknowledged_by, novaAlert.id],
+        );
 
         // Broadcast acknowledgment
         this.broadcastToClients(novaAlert.tenant_id, 'alert.acknowledged', {
           alert_id: novaAlert.id,
           acknowledged_by: alert.acknowledged_by,
           timestamp,
-          source: 'goalert'
+          source: 'goalert',
         });
       }
 
       if (action === 'resolved' && novaAlert.status !== 'resolved') {
-        await database.query(`
+        await database.query(
+          `
           UPDATE nova_alerts 
           SET 
             status = 'resolved',
@@ -588,23 +590,24 @@ class MonitoringEventBridge extends EventEmitter {
             ),
             updated_at = CURRENT_TIMESTAMP
           WHERE id = $3
-        `, [timestamp, alert.resolved_by, novaAlert.id]);
+        `,
+          [timestamp, alert.resolved_by, novaAlert.id],
+        );
 
         // Broadcast resolution
         this.broadcastToClients(novaAlert.tenant_id, 'alert.resolved', {
           alert_id: novaAlert.id,
           resolved_by: alert.resolved_by,
           timestamp,
-          source: 'goalert'
+          source: 'goalert',
         });
       }
 
       await this.logIntegrationEvent('external.goalert.alert', novaAlert.id, {
         action,
         goalert_alert_id: alert.id,
-        timestamp
+        timestamp,
       });
-
     } catch (error) {
       logger.error('Error handling GoAlert event:', error);
       this.emit('sync.error', { event: 'external.goalert.alert', error, data });
@@ -616,10 +619,13 @@ class MonitoringEventBridge extends EventEmitter {
       const { monitor, status, response_time, timestamp } = data;
 
       // Find corresponding Nova monitor
-      const novaMonitorResult = await database.query(`
+      const novaMonitorResult = await database.query(
+        `
         SELECT * FROM monitors 
         WHERE uptime_kuma_id = $1
-      `, [monitor.id]);
+      `,
+        [monitor.id],
+      );
 
       if (novaMonitorResult.rows.length === 0) {
         logger.warn(`No Nova monitor found for Uptime Kuma monitor ${monitor.id}`);
@@ -636,17 +642,16 @@ class MonitoringEventBridge extends EventEmitter {
         checked_at: timestamp,
         details: {
           source: 'uptime_kuma',
-          uptime_kuma_id: monitor.id
-        }
+          uptime_kuma_id: monitor.id,
+        },
       });
 
       await this.logIntegrationEvent('external.uptime_kuma.check', novaMonitor.id, {
         status,
         response_time,
         uptime_kuma_id: monitor.id,
-        timestamp
+        timestamp,
       });
-
     } catch (error) {
       logger.error('Error handling Uptime Kuma event:', error);
       this.emit('sync.error', { event: 'external.uptime_kuma.check', error, data });
@@ -666,25 +671,26 @@ class MonitoringEventBridge extends EventEmitter {
           url: monitor.url,
           interval: monitor.interval,
           timeout: monitor.timeout,
-          tags: [`nova:${monitor.id}`, `tenant:${monitor.tenant_id}`]
+          tags: [`nova:${monitor.id}`, `tenant:${monitor.tenant_id}`],
         });
 
         // Update Nova monitor with Uptime Kuma ID
-        await database.query(`
+        await database.query(
+          `
           UPDATE monitors 
           SET uptime_kuma_id = $1
           WHERE id = $2
-        `, [uptimeKumaMonitor.id, monitor.id]);
-
+        `,
+          [uptimeKumaMonitor.id, monitor.id],
+        );
       } else if (action === 'update' && monitor.uptime_kuma_id) {
         await monitoringIntegrationService.updateUptimeKumaMonitor(monitor.uptime_kuma_id, {
           name: monitor.name,
           url: monitor.url,
           interval: monitor.interval,
-          timeout: monitor.timeout
+          timeout: monitor.timeout,
         });
       }
-
     } catch (error) {
       logger.error(`Failed to sync monitor ${monitor.id} to Uptime Kuma:`, error);
       throw error;
@@ -701,11 +707,10 @@ class MonitoringEventBridge extends EventEmitter {
           timeout: monitor.timeout,
           metadata: {
             nova_monitor_id: monitor.id,
-            monitor_url: monitor.url
-          }
+            monitor_url: monitor.url,
+          },
         });
       }
-
     } catch (error) {
       logger.error(`Failed to sync monitor ${monitor.id} to GoAlert:`, error);
       throw error;
@@ -714,10 +719,9 @@ class MonitoringEventBridge extends EventEmitter {
 
   async createMonitorAlert(monitorId, status, details) {
     try {
-      const monitorResult = await database.query(
-        'SELECT * FROM monitors WHERE id = $1',
-        [monitorId]
-      );
+      const monitorResult = await database.query('SELECT * FROM monitors WHERE id = $1', [
+        monitorId,
+      ]);
 
       if (monitorResult.rows.length === 0) {
         return;
@@ -726,12 +730,15 @@ class MonitoringEventBridge extends EventEmitter {
       const monitor = monitorResult.rows[0];
 
       // Check if there's already an active alert for this monitor
-      const existingAlertResult = await database.query(`
+      const existingAlertResult = await database.query(
+        `
         SELECT id FROM nova_alerts 
         WHERE monitor_id = $1 AND status IN ('active', 'acknowledged')
         ORDER BY created_at DESC
         LIMIT 1
-      `, [monitorId]);
+      `,
+        [monitorId],
+      );
 
       if (existingAlertResult.rows.length > 0) {
         // Update existing alert instead of creating new one
@@ -741,20 +748,23 @@ class MonitoringEventBridge extends EventEmitter {
       // Create new alert
       const severity = status === 'down' ? 'high' : 'medium';
       const summary = `Monitor ${monitor.name} is ${status}`;
-      
-      const alertResult = await database.query(`
+
+      const alertResult = await database.query(
+        `
         INSERT INTO nova_alerts (
           summary, description, severity, monitor_id, status, source
         ) VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
-      `, [
-        summary,
-        `Monitor check failed: ${JSON.stringify(details)}`,
-        severity,
-        monitorId,
-        'active',
-        'monitoring'
-      ]);
+      `,
+        [
+          summary,
+          `Monitor check failed: ${JSON.stringify(details)}`,
+          severity,
+          monitorId,
+          'active',
+          'monitoring',
+        ],
+      );
 
       const alert = alertResult.rows[0];
 
@@ -762,9 +772,8 @@ class MonitoringEventBridge extends EventEmitter {
       this.emit('alert.created', {
         alert,
         user: { id: null, tenant_id: monitor.tenant_id },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Error creating monitor alert:', error);
     }
@@ -806,10 +815,10 @@ class MonitoringEventBridge extends EventEmitter {
     const message = JSON.stringify({
       type: eventType,
       data: data,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
-    connections.forEach(ws => {
+    connections.forEach((ws) => {
       if (ws.readyState === WebSocket.OPEN) {
         try {
           ws.send(message);
@@ -827,13 +836,16 @@ class MonitoringEventBridge extends EventEmitter {
 
   startPeriodicSync() {
     // Run full sync every 5 minutes
-    this.syncInterval = setInterval(async () => {
-      try {
-        await this.performFullSync();
-      } catch (error) {
-        logger.error('Error in periodic sync:', error);
-      }
-    }, 5 * 60 * 1000); // 5 minutes
+    this.syncInterval = setInterval(
+      async () => {
+        try {
+          await this.performFullSync();
+        } catch (error) {
+          logger.error('Error in periodic sync:', error);
+        }
+      },
+      5 * 60 * 1000,
+    ); // 5 minutes
 
     logger.info('Periodic sync started (5 minute intervals)');
   }
@@ -855,7 +867,6 @@ class MonitoringEventBridge extends EventEmitter {
       await this.cleanupStaleData();
 
       logger.debug('Periodic full sync completed');
-
     } catch (error) {
       logger.error('Error in full sync:', error);
     }
@@ -873,11 +884,12 @@ class MonitoringEventBridge extends EventEmitter {
       for (const monitor of monitorsResult.rows) {
         try {
           const ukStatus = await monitoringIntegrationService.getUptimeKumaMonitorStatus(
-            monitor.uptime_kuma_id
+            monitor.uptime_kuma_id,
           );
 
           if (ukStatus) {
-            await database.query(`
+            await database.query(
+              `
               UPDATE monitors 
               SET 
                 status = $1,
@@ -886,20 +898,20 @@ class MonitoringEventBridge extends EventEmitter {
                 uptime_percentage = $4,
                 updated_at = CURRENT_TIMESTAMP
               WHERE id = $5
-            `, [
-              ukStatus.status,
-              ukStatus.last_check,
-              ukStatus.response_time,
-              ukStatus.uptime_percentage,
-              monitor.id
-            ]);
+            `,
+              [
+                ukStatus.status,
+                ukStatus.last_check,
+                ukStatus.response_time,
+                ukStatus.uptime_percentage,
+                monitor.id,
+              ],
+            );
           }
-
         } catch (error) {
           logger.warn(`Failed to sync status for monitor ${monitor.id}:`, error);
         }
       }
-
     } catch (error) {
       logger.error('Error syncing monitor statuses from Uptime Kuma:', error);
     }
@@ -917,11 +929,12 @@ class MonitoringEventBridge extends EventEmitter {
       for (const alert of alertsResult.rows) {
         try {
           const goalertAlert = await monitoringIntegrationService.getGoAlertAlert(
-            alert.goalert_alert_id
+            alert.goalert_alert_id,
           );
 
           if (goalertAlert && goalertAlert.status !== alert.status) {
-            await database.query(`
+            await database.query(
+              `
               UPDATE nova_alerts 
               SET 
                 status = $1,
@@ -929,14 +942,14 @@ class MonitoringEventBridge extends EventEmitter {
                 acknowledged_at = CASE WHEN $1 = 'acknowledged' THEN COALESCE(acknowledged_at, CURRENT_TIMESTAMP) ELSE acknowledged_at END,
                 resolved_at = CASE WHEN $1 = 'resolved' THEN COALESCE(resolved_at, CURRENT_TIMESTAMP) ELSE resolved_at END
               WHERE id = $2
-            `, [goalertAlert.status, alert.id]);
+            `,
+              [goalertAlert.status, alert.id],
+            );
           }
-
         } catch (error) {
           logger.warn(`Failed to sync status for alert ${alert.id}:`, error);
         }
       }
-
     } catch (error) {
       logger.error('Error syncing alert statuses from GoAlert:', error);
     }
@@ -954,19 +967,17 @@ class MonitoringEventBridge extends EventEmitter {
       for (const schedule of schedulesResult.rows) {
         try {
           const goalertSchedule = await monitoringIntegrationService.getGoAlertSchedule(
-            schedule.goalert_schedule_id
+            schedule.goalert_schedule_id,
           );
 
           if (goalertSchedule) {
             // Sync current on-call assignments
             await this.syncOnCallAssignments(schedule.id, goalertSchedule);
           }
-
         } catch (error) {
           logger.warn(`Failed to sync schedule ${schedule.id}:`, error);
         }
       }
-
     } catch (error) {
       logger.error('Error syncing on-call schedules from GoAlert:', error);
     }
@@ -993,7 +1004,6 @@ class MonitoringEventBridge extends EventEmitter {
       `);
 
       logger.debug('Stale data cleanup completed');
-
     } catch (error) {
       logger.error('Error cleaning up stale data:', error);
     }
@@ -1014,7 +1024,6 @@ class MonitoringEventBridge extends EventEmitter {
       await monitoringIntegrationService.registerUptimeKumaWebhook(uptimeKumaWebhookUrl);
 
       logger.info('External service webhooks registered successfully');
-
     } catch (error) {
       logger.error('Error registering webhooks:', error);
     }
@@ -1025,7 +1034,6 @@ class MonitoringEventBridge extends EventEmitter {
       await monitoringIntegrationService.unregisterGoAlertWebhook();
       await monitoringIntegrationService.unregisterUptimeKumaWebhook();
       logger.info('External service webhooks unregistered');
-
     } catch (error) {
       logger.error('Error unregistering webhooks:', error);
     }
@@ -1046,7 +1054,7 @@ class MonitoringEventBridge extends EventEmitter {
   }
 
   hasSignificantChanges(current, previous, fields) {
-    return fields.some(field => current[field] !== previous[field]);
+    return fields.some((field) => current[field] !== previous[field]);
   }
 
   getFieldChanges(current, previous) {
@@ -1055,7 +1063,7 @@ class MonitoringEventBridge extends EventEmitter {
       if (current[key] !== previous[key]) {
         changes[key] = {
           from: previous[key],
-          to: current[key]
+          to: current[key],
         };
       }
     }
@@ -1064,12 +1072,14 @@ class MonitoringEventBridge extends EventEmitter {
 
   async logIntegrationEvent(eventType, resourceId, metadata) {
     try {
-      await database.query(`
+      await database.query(
+        `
         INSERT INTO integration_events (
           event_type, resource_id, metadata, created_at
         ) VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-      `, [eventType, resourceId, JSON.stringify(metadata)]);
-
+      `,
+        [eventType, resourceId, JSON.stringify(metadata)],
+      );
     } catch (error) {
       logger.error('Error logging integration event:', error);
     }
@@ -1078,16 +1088,17 @@ class MonitoringEventBridge extends EventEmitter {
   // Conflict resolution methods
   async handleSyncConflict(data) {
     const { resource_type, nova_data, external_data, source } = data;
-    
+
     if (this.conflictHandlers.has(resource_type)) {
       try {
         const resolution = await this.conflictHandlers.get(resource_type)(
-          nova_data, external_data, source
+          nova_data,
+          external_data,
+          source,
         );
-        
+
         logger.info(`Conflict resolved for ${resource_type}:`, resolution);
         return resolution;
-        
       } catch (error) {
         logger.error(`Error resolving conflict for ${resource_type}:`, error);
         throw error;
@@ -1100,45 +1111,54 @@ class MonitoringEventBridge extends EventEmitter {
 
   async handleSyncError(data) {
     const { event, error, data: eventData } = data;
-    
+
     logger.error(`Sync error in event ${event}:`, error);
-    
+
     // Store error for later retry
-    await database.query(`
+    await database.query(
+      `
       INSERT INTO integration_sync_errors (
         event_type, error_message, event_data, created_at
       ) VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-    `, [event, error.message, JSON.stringify(eventData)]);
+    `,
+      [event, error.message, JSON.stringify(eventData)],
+    );
   }
 
   async createNovaAlertFromGoAlert(goalertAlert) {
     try {
       // Find the associated service/monitor
-      const monitorResult = await database.query(`
+      const monitorResult = await database.query(
+        `
         SELECT * FROM monitors 
         WHERE goalert_service_id = $1
         LIMIT 1
-      `, [goalertAlert.service_id]);
+      `,
+        [goalertAlert.service_id],
+      );
 
       const monitor = monitorResult.rows[0];
 
-      const alertResult = await database.query(`
+      const alertResult = await database.query(
+        `
         INSERT INTO nova_alerts (
           summary, description, severity, monitor_id, status,
           goalert_alert_id, service_id, source, created_at
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
-      `, [
-        goalertAlert.summary,
-        goalertAlert.details,
-        goalertAlert.severity || 'medium',
-        monitor?.id,
-        goalertAlert.status,
-        goalertAlert.id,
-        goalertAlert.service_id,
-        'goalert',
-        goalertAlert.created_at
-      ]);
+      `,
+        [
+          goalertAlert.summary,
+          goalertAlert.details,
+          goalertAlert.severity || 'medium',
+          monitor?.id,
+          goalertAlert.status,
+          goalertAlert.id,
+          goalertAlert.service_id,
+          'goalert',
+          goalertAlert.created_at,
+        ],
+      );
 
       const novaAlert = alertResult.rows[0];
 
@@ -1147,12 +1167,11 @@ class MonitoringEventBridge extends EventEmitter {
         this.broadcastToClients(monitor.tenant_id, 'alert.created', {
           alert: novaAlert,
           source: 'goalert',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
 
       return novaAlert;
-
     } catch (error) {
       logger.error('Error creating Nova alert from GoAlert:', error);
       throw error;

@@ -4,12 +4,14 @@
  */
 
 import { Router } from 'express';
-// import { prisma } from '../db.js';
+import { PrismaClient } from '../../../prisma/generated/core/index.js';
 import { logger } from '../logger.js';
 import { ensureAuth } from '../middleware/auth.js';
 import { validateConfigValue, getConfigValidationSchema } from '../utils/configValidation.js';
+import ConfigurationService from '../services/configuration.service.js';
 
 const router = Router();
+const prisma = new PrismaClient();
 
 /**
  * Hierarchical configuration resolution:
@@ -397,7 +399,177 @@ router.put('/:key', ensureAuth, async (req, res) => {
   }
 });
 
+// POST /api/v1/config/organization - Update organization configuration (admin only)
+router.post('/organization', ensureAuth, async (req, res) => {
+  try {
+    const {
+      organizationName,
+      logoUrl,
+      faviconUrl,
+      primaryColor,
+      secondaryColor,
+      welcomeMessage,
+      helpMessage,
+    } = req.body;
+    const userId = req.user.id;
+    const reason = 'Organization configuration update';
+
+    const updates = [];
+    const errors = [];
+
+    // Define organization config mappings
+    const organizationConfigs = [
+      { key: 'organization_name', value: organizationName, required: true },
+      { key: 'logo_url', value: logoUrl },
+      { key: 'favicon_url', value: faviconUrl },
+      { key: 'primary_color', value: primaryColor },
+      { key: 'secondary_color', value: secondaryColor },
+      { key: 'welcome_message', value: welcomeMessage },
+      { key: 'help_message', value: helpMessage },
+    ];
+
+    // Validate required fields
+    if (!organizationName || organizationName.trim().length === 0) {
+      return res.status(400).json({
+        error: 'Organization name is required',
+        field: 'organizationName',
+      });
+    }
+
+    // Update each configuration
+    for (const config of organizationConfigs) {
+      if (config.value !== undefined && config.value !== null) {
+        try {
+          const updated = await ConfigurationManager.setValue(
+            config.key,
+            config.value,
+            userId,
+            reason,
+          );
+          if (updated) {
+            const resolved = await ConfigurationManager.getValue(config.key);
+            updates.push({
+              key: config.key,
+              value: resolved.value,
+              success: true,
+            });
+          } else {
+            errors.push({
+              key: config.key,
+              error: 'Failed to update configuration',
+            });
+          }
+        } catch (error) {
+          logger.error(`Error updating ${config.key}:`, error);
+          errors.push({
+            key: config.key,
+            error: error.message,
+          });
+        }
+      }
+    }
+
+    // Clear configuration cache to ensure fresh values
+    ConfigurationManager.clearCache();
+
+    if (errors.length > 0 && updates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Failed to update organization configuration',
+        errors,
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Organization configuration updated successfully',
+      updates,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error) {
+    logger.error('Error updating organization configuration:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
+  }
+});
+
+// GET /api/v1/config/organization - Get organization configuration
+router.get('/organization', async (req, res) => {
+  try {
+    const organizationKeys = [
+      'organization_name',
+      'logo_url',
+      'favicon_url',
+      'primary_color',
+      'secondary_color',
+      'welcome_message',
+      'help_message',
+    ];
+
+    const result = {};
+    for (const key of organizationKeys) {
+      const resolved = await ConfigurationManager.getValue(key);
+      if (resolved) {
+        result[key] = resolved.value;
+      }
+    }
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    logger.error('Error getting organization configuration:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
+  }
+});
+
 // POST /api/v1/config/bulk - Bulk update configurations (admin only)
+router.post('/bulk', ensureAuth, async (req, res) => {
+  try {
+    const { configs, reason } = req.body;
+    const userId = req.user.id;
+
+    if (!Array.isArray(configs)) {
+      return res.status(400).json({ error: 'Configs must be an array' });
+    }
+
+    const results = [];
+    const errors = [];
+
+    for (const { key, value } of configs) {
+      try {
+        await ConfigurationManager.setValue(key, value, userId, reason);
+        const resolved = await ConfigurationManager.getValue(key);
+        results.push({
+          key,
+          value: resolved.value,
+          success: true,
+        });
+      } catch (error) {
+        logger.error(`Error updating config ${key}:`, error);
+        errors.push({
+          key,
+          error: error.message,
+        });
+      }
+    }
+
+    res.json({
+      success: errors.length === 0,
+      results,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error) {
+    logger.error('Error bulk updating configurations:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 router.post('/bulk', ensureAuth, async (req, res) => {
   try {
     const { configs, reason } = req.body;
@@ -565,6 +737,165 @@ router.post('/templates/:id/apply', ensureAuth, async (req, res) => {
   } catch (error) {
     logger.error('Error applying configuration template:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ====== NEW CONFIGURATION SERVICE CATEGORY ENDPOINTS ======
+
+/**
+ * Get all categorized configuration
+ */
+router.get('/categories/all', ensureAuth, async (req, res) => {
+  try {
+    const config = await ConfigurationService.getAllCategorizedConfig();
+    res.json({ success: true, data: config });
+  } catch (error) {
+    logger.error('Error getting all categorized configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Get messages configuration
+ */
+router.get('/categories/messages', async (req, res) => {
+  try {
+    const config = await ConfigurationService.getMessagesConfig();
+    res.json({ success: true, data: config });
+  } catch (error) {
+    logger.error('Error getting messages configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Update messages configuration
+ */
+router.post('/categories/messages', ensureAuth, async (req, res) => {
+  try {
+    const { config } = req.body;
+    const userId = req.user?.id || 'system';
+    const results = await ConfigurationService.setValues(config, userId, 'UI update');
+    res.json({ success: true, data: results });
+  } catch (error) {
+    logger.error('Error updating messages configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Get feature flags configuration
+ */
+router.get('/categories/features', ensureAuth, async (req, res) => {
+  try {
+    const config = await ConfigurationService.getFeatureFlagsConfig();
+    res.json({ success: true, data: config });
+  } catch (error) {
+    logger.error('Error getting feature flags configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Update feature flags configuration
+ */
+router.post('/categories/features', ensureAuth, async (req, res) => {
+  try {
+    const { config } = req.body;
+    const userId = req.user?.id || 'system';
+    const results = await ConfigurationService.setValues(config, userId, 'Feature flags update');
+    res.json({ success: true, data: results });
+  } catch (error) {
+    logger.error('Error updating feature flags configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Get security configuration
+ */
+router.get('/categories/security', ensureAuth, async (req, res) => {
+  try {
+    const config = await ConfigurationService.getSecurityConfig();
+    res.json({ success: true, data: config });
+  } catch (error) {
+    logger.error('Error getting security configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Update security configuration
+ */
+router.post('/categories/security', ensureAuth, async (req, res) => {
+  try {
+    const { config } = req.body;
+    const userId = req.user?.id || 'system';
+    const results = await ConfigurationService.setValues(
+      config,
+      userId,
+      'Security settings update',
+    );
+    res.json({ success: true, data: results });
+  } catch (error) {
+    logger.error('Error updating security configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Get upload configuration
+ */
+router.get('/categories/upload', ensureAuth, async (req, res) => {
+  try {
+    const config = await ConfigurationService.getUploadConfig();
+    res.json({ success: true, data: config });
+  } catch (error) {
+    logger.error('Error getting upload configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Update upload configuration
+ */
+router.post('/categories/upload', ensureAuth, async (req, res) => {
+  try {
+    const { config } = req.body;
+    const userId = req.user?.id || 'system';
+    const results = await ConfigurationService.setValues(config, userId, 'Upload settings update');
+    res.json({ success: true, data: results });
+  } catch (error) {
+    logger.error('Error updating upload configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Get system configuration
+ */
+router.get('/categories/system', ensureAuth, async (req, res) => {
+  try {
+    const config = await ConfigurationService.getSystemConfig();
+    res.json({ success: true, data: config });
+  } catch (error) {
+    logger.error('Error getting system configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Update system configuration
+ */
+router.post('/categories/system', ensureAuth, async (req, res) => {
+  try {
+    const { config } = req.body;
+    const userId = req.user?.id || 'system';
+    const results = await ConfigurationService.setValues(config, userId, 'System settings update');
+    res.json({ success: true, data: results });
+  } catch (error) {
+    logger.error('Error updating system configuration:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

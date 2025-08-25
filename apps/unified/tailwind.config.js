@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
     extend: {
@@ -88,30 +85,24 @@ export default {
           'Arial',
           'sans-serif',
         ],
-        mono: [
-          'SF Mono',
-          'Monaco',
-          'Inconsolata',
-          'Roboto Mono',
-          'monospace',
-        ],
+        mono: ['SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'monospace'],
       },
       // Apple-inspired spacing
       spacing: {
-        '4.5': '1.125rem',
-        '5.5': '1.375rem',
-        '13': '3.25rem',
-        '15': '3.75rem',
-        '17': '4.25rem',
-        '18': '4.5rem',
-        '19': '4.75rem',
-        '21': '5.25rem',
-        '22': '5.5rem',
-        '88': '22rem',
-        '100': '25rem',
-        '104': '26rem',
-        '112': '28rem',
-        '128': '32rem',
+        4.5: '1.125rem',
+        5.5: '1.375rem',
+        13: '3.25rem',
+        15: '3.75rem',
+        17: '4.25rem',
+        18: '4.5rem',
+        19: '4.75rem',
+        21: '5.25rem',
+        22: '5.5rem',
+        88: '22rem',
+        100: '25rem',
+        104: '26rem',
+        112: '28rem',
+        128: '32rem',
       },
       // Apple-inspired border radius
       borderRadius: {
@@ -121,7 +112,7 @@ export default {
       },
       // Apple-inspired shadows
       boxShadow: {
-        'apple': '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
+        apple: '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
         'apple-lg': '0 8px 32px 0 rgba(0, 0, 0, 0.12)',
         'apple-xl': '0 16px 64px 0 rgba(0, 0, 0, 0.16)',
         'inner-apple': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
@@ -175,7 +166,7 @@ export default {
       },
       // Apple-inspired backdrop blur
       backdropBlur: {
-        'apple': '20px',
+        apple: '20px',
       },
       // Apple-inspired gradients
       backgroundImage: {
@@ -193,36 +184,36 @@ export default {
       },
       // Apple-inspired transitions
       transitionDuration: {
-        '250': '250ms',
-        '350': '350ms',
+        250: '250ms',
+        350: '350ms',
       },
       transitionTimingFunction: {
-        'apple': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        apple: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         'apple-sharp': 'cubic-bezier(0.4, 0, 0.6, 1)',
       },
       // Apple-inspired z-index scale
       zIndex: {
-        '60': '60',
-        '70': '70',
-        '80': '80',
-        '90': '90',
-        '100': '100',
+        60: '60',
+        70: '70',
+        80: '80',
+        90: '90',
+        100: '100',
       },
     },
   },
   plugins: [
     // Custom utilities for Apple-inspired design
-    function({ addUtilities, theme }) {
+    function ({ addUtilities, theme }) {
       const newUtilities = {
         '.glass': {
-          'background': 'rgba(255, 255, 255, 0.1)',
+          background: 'rgba(255, 255, 255, 0.1)',
           'backdrop-filter': 'blur(20px)',
-          'border': '1px solid rgba(255, 255, 255, 0.2)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
         },
         '.glass-dark': {
-          'background': 'rgba(0, 0, 0, 0.1)',
+          background: 'rgba(0, 0, 0, 0.1)',
           'backdrop-filter': 'blur(20px)',
-          'border': '1px solid rgba(255, 255, 255, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
         },
         '.text-balance': {
           'text-wrap': 'balance',
@@ -258,8 +249,8 @@ export default {
             },
           },
         },
-      }
-      addUtilities(newUtilities)
+      };
+      addUtilities(newUtilities);
     },
   ],
-}
+};

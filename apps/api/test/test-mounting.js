@@ -23,20 +23,24 @@ app.use('/api/v1/nova-tv', router);
 // Start test server
 const server = app.listen(3001, () => {
   console.log('🧪 Test server running on port 3001');
-  
+
   // Test the endpoint
-  import('node-fetch').then(({ default: fetch }) => {
-    return fetch('http://localhost:3001/api/v1/nova-tv/digital-signage/formats');
-  }).then(response => {
-    console.log('Test endpoint status:', response.status);
-    return response.text();
-  }).then(text => {
-    console.log('Test endpoint response:', text.substring(0, 200));
-    server.close();
-    process.exit(0);
-  }).catch(error => {
-    console.error('Test endpoint error:', error.message);
-    server.close();
-    process.exit(1);
-  });
+  import('node-fetch')
+    .then(({ default: fetch }) => {
+      return fetch('http://localhost:3001/api/v1/nova-tv/digital-signage/formats');
+    })
+    .then((response) => {
+      console.log('Test endpoint status:', response.status);
+      return response.text();
+    })
+    .then((text) => {
+      console.log('Test endpoint response:', text.substring(0, 200));
+      server.close();
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('Test endpoint error:', error.message);
+      server.close();
+      process.exit(1);
+    });
 });

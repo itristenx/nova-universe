@@ -9,21 +9,16 @@ export const appleTypography = {
   fontFamily: {
     system: [
       '-apple-system',
-      'BlinkMacSystemFont', 
+      'BlinkMacSystemFont',
       'SF Pro Display',
       'SF Pro Text',
       'Inter',
       'system-ui',
-      'sans-serif'
+      'sans-serif',
     ].join(', '),
-    mono: [
-      'SF Mono',
-      'Monaco',
-      'Cascadia Code',
-      'Roboto Mono',
-      'Courier New',
-      'monospace'
-    ].join(', '),
+    mono: ['SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'Courier New', 'monospace'].join(
+      ', ',
+    ),
   },
 
   // Apple-inspired type scale
@@ -33,11 +28,11 @@ export const appleTypography = {
     title1: '28px',
     title2: '22px',
     title3: '20px',
-    
+
     // Headlines
     headline: '17px',
     subheadline: '15px',
-    
+
     // Body text
     body: '17px',
     callout: '16px',
@@ -73,7 +68,7 @@ export const appleTypography = {
     heavy: '800',
     black: '900',
   },
-} as const
+} as const;
 
 // Apple-inspired spacing system (4px base grid)
 export const appleSpacing = {
@@ -112,7 +107,7 @@ export const appleSpacing = {
   72: '288px',
   80: '320px',
   96: '384px',
-} as const
+} as const;
 
 // Apple-inspired semantic color system
 export const appleColors = {
@@ -206,7 +201,7 @@ export const appleColors = {
     opaque: '#38383A',
     nonOpaque: '#54545899',
   },
-} as const
+} as const;
 
 // Apple-inspired border radius
 export const appleBorderRadius = {
@@ -219,7 +214,7 @@ export const appleBorderRadius = {
   '2xl': '16px',
   '3xl': '24px',
   full: '9999px',
-} as const
+} as const;
 
 // Apple-inspired shadows
 export const appleShadows = {
@@ -229,14 +224,14 @@ export const appleShadows = {
   lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
   xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
   '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-  
+
   // Apple-style inner shadows
   inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-  
+
   // Focus shadows
   focus: '0 0 0 3px rgba(59, 130, 246, 0.5)',
   focusVisible: '0 0 0 2px #FFFFFF, 0 0 0 4px #007AFF',
-} as const
+} as const;
 
 // Apple-inspired motion/animation
 export const appleMotion = {
@@ -263,7 +258,7 @@ export const appleMotion = {
     wobbly: { tension: 180, friction: 12 },
     stiff: { tension: 210, friction: 20 },
   },
-} as const
+} as const;
 
 // Apple-inspired z-index scale
 export const appleZIndex = {
@@ -280,17 +275,17 @@ export const appleZIndex = {
   skipLink: 1070,
   toast: 1080,
   tooltip: 1090,
-} as const
+} as const;
 
 // Breakpoints for responsive design
 export const appleBreakpoints = {
-  xs: '375px',   // iPhone SE
-  sm: '768px',   // iPad Portrait
-  md: '1024px',  // iPad Landscape / Small Desktop
-  lg: '1280px',  // Desktop
-  xl: '1440px',  // Large Desktop
+  xs: '375px', // iPhone SE
+  sm: '768px', // iPad Portrait
+  md: '1024px', // iPad Landscape / Small Desktop
+  lg: '1280px', // Desktop
+  xl: '1440px', // Large Desktop
   '2xl': '1920px', // Extra Large Desktop
-} as const
+} as const;
 
 // Combined Apple design tokens
 export const appleDesignTokens = {
@@ -302,6 +297,6 @@ export const appleDesignTokens = {
   motion: appleMotion,
   zIndex: appleZIndex,
   breakpoints: appleBreakpoints,
-} as const
+} as const;
 
-export default appleDesignTokens
+export default appleDesignTokens;

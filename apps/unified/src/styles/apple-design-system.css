@@ -6,7 +6,8 @@
 /* CSS Custom Properties for Apple Design System */
 :root {
   /* Typography - Apple San Francisco fallbacks */
-  --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Inter, system-ui, sans-serif;
+  --font-system:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Inter, system-ui, sans-serif;
   --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', 'Courier New', monospace;
 
   /* Apple Typography Scale */
@@ -36,27 +37,27 @@
   --line-height-caption-2: 1.27;
 
   /* Apple System Colors */
-  --color-system-blue: #007AFF;
-  --color-system-green: #34C759;
-  --color-system-indigo: #5856D6;
-  --color-system-orange: #FF9500;
-  --color-system-pink: #FF2D92;
-  --color-system-purple: #AF52DE;
-  --color-system-red: #FF3B30;
-  --color-system-teal: #5AC8FA;
-  --color-system-yellow: #FFCC00;
+  --color-system-blue: #007aff;
+  --color-system-green: #34c759;
+  --color-system-indigo: #5856d6;
+  --color-system-orange: #ff9500;
+  --color-system-pink: #ff2d92;
+  --color-system-purple: #af52de;
+  --color-system-red: #ff3b30;
+  --color-system-teal: #5ac8fa;
+  --color-system-yellow: #ffcc00;
 
   /* Apple Gray Scale */
-  --color-system-gray: #8E8E93;
-  --color-system-gray-2: #AEAEB2;
-  --color-system-gray-3: #C7C7CC;
-  --color-system-gray-4: #D1D1D6;
-  --color-system-gray-5: #E5E5EA;
-  --color-system-gray-6: #F2F2F7;
+  --color-system-gray: #8e8e93;
+  --color-system-gray-2: #aeaeb2;
+  --color-system-gray-3: #c7c7cc;
+  --color-system-gray-4: #d1d1d6;
+  --color-system-gray-5: #e5e5ea;
+  --color-system-gray-6: #f2f2f7;
 
   /* Apple Semantic Colors - Light Mode */
   --color-label-primary: #000000;
-  --color-label-secondary: #3C3C43;
+  --color-label-secondary: #3c3c43;
   --color-label-tertiary: rgba(60, 60, 67, 0.6);
   --color-label-quaternary: rgba(60, 60, 67, 0.18);
 
@@ -65,15 +66,15 @@
   --color-fill-tertiary: rgba(118, 118, 128, 0.12);
   --color-fill-quaternary: rgba(116, 116, 128, 0.08);
 
-  --color-background-primary: #FFFFFF;
-  --color-background-secondary: #F2F2F7;
-  --color-background-tertiary: #FFFFFF;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f2f2f7;
+  --color-background-tertiary: #ffffff;
 
-  --color-grouped-background-primary: #F2F2F7;
-  --color-grouped-background-secondary: #FFFFFF;
-  --color-grouped-background-tertiary: #F2F2F7;
+  --color-grouped-background-primary: #f2f2f7;
+  --color-grouped-background-secondary: #ffffff;
+  --color-grouped-background-tertiary: #f2f2f7;
 
-  --color-separator-opaque: #C6C6C8;
+  --color-separator-opaque: #c6c6c8;
   --color-separator-non-opaque: rgba(60, 60, 67, 0.29);
 
   /* Apple Spacing System (4px base grid) */
@@ -116,10 +117,10 @@
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 
   /* Apple Motion */
-  --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
-  --ease-decelerated: cubic-bezier(0.0, 0.0, 0.2, 1);
-  --ease-accelerated: cubic-bezier(0.4, 0.0, 1, 1);
-  --ease-sharp: cubic-bezier(0.4, 0.0, 0.6, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerated: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerated: cubic-bezier(0.4, 0, 1, 1);
+  --ease-sharp: cubic-bezier(0.4, 0, 0.6, 1);
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   --duration-fast: 150ms;
@@ -145,8 +146,8 @@
 /* Dark Mode Color Overrides */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-label-primary: #FFFFFF;
-    --color-label-secondary: #EBEBF5;
+    --color-label-primary: #ffffff;
+    --color-label-secondary: #ebebf5;
     --color-label-tertiary: rgba(235, 235, 245, 0.6);
     --color-label-quaternary: rgba(235, 235, 245, 0.18);
 
@@ -156,22 +157,22 @@
     --color-fill-quaternary: rgba(116, 116, 128, 0.2);
 
     --color-background-primary: #000000;
-    --color-background-secondary: #1C1C1E;
-    --color-background-tertiary: #2C2C2E;
+    --color-background-secondary: #1c1c1e;
+    --color-background-tertiary: #2c2c2e;
 
     --color-grouped-background-primary: #000000;
-    --color-grouped-background-secondary: #1C1C1E;
-    --color-grouped-background-tertiary: #2C2C2E;
+    --color-grouped-background-secondary: #1c1c1e;
+    --color-grouped-background-tertiary: #2c2c2e;
 
-    --color-separator-opaque: #38383A;
+    --color-separator-opaque: #38383a;
     --color-separator-non-opaque: rgba(84, 84, 88, 0.6);
   }
 }
 
 /* Explicit Dark Mode Class Support */
 .dark {
-  --color-label-primary: #FFFFFF;
-  --color-label-secondary: #EBEBF5;
+  --color-label-primary: #ffffff;
+  --color-label-secondary: #ebebf5;
   --color-label-tertiary: rgba(235, 235, 245, 0.6);
   --color-label-quaternary: rgba(235, 235, 245, 0.18);
 
@@ -181,14 +182,14 @@
   --color-fill-quaternary: rgba(116, 116, 128, 0.2);
 
   --color-background-primary: #000000;
-  --color-background-secondary: #1C1C1E;
-  --color-background-tertiary: #2C2C2E;
+  --color-background-secondary: #1c1c1e;
+  --color-background-tertiary: #2c2c2e;
 
   --color-grouped-background-primary: #000000;
-  --color-grouped-background-secondary: #1C1C1E;
-  --color-grouped-background-tertiary: #2C2C2E;
+  --color-grouped-background-secondary: #1c1c1e;
+  --color-grouped-background-tertiary: #2c2c2e;
 
-  --color-separator-opaque: #38383A;
+  --color-separator-opaque: #38383a;
   --color-separator-non-opaque: rgba(84, 84, 88, 0.6);
 }
 
@@ -197,34 +198,34 @@
   :root {
     --color-label-primary: #000000;
     --color-label-secondary: #000000;
-    --color-background-primary: #FFFFFF;
-    --color-background-secondary: #FFFFFF;
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #ffffff;
     --color-separator-opaque: #000000;
   }
 
   .dark {
-    --color-label-primary: #FFFFFF;
-    --color-label-secondary: #FFFFFF;
+    --color-label-primary: #ffffff;
+    --color-label-secondary: #ffffff;
     --color-background-primary: #000000;
     --color-background-secondary: #000000;
-    --color-separator-opaque: #FFFFFF;
+    --color-separator-opaque: #ffffff;
   }
 }
 
 .high-contrast {
   --color-label-primary: #000000;
   --color-label-secondary: #000000;
-  --color-background-primary: #FFFFFF;
-  --color-background-secondary: #FFFFFF;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #ffffff;
   --color-separator-opaque: #000000;
 }
 
 .high-contrast.dark {
-  --color-label-primary: #FFFFFF;
-  --color-label-secondary: #FFFFFF;
+  --color-label-primary: #ffffff;
+  --color-label-secondary: #ffffff;
   --color-background-primary: #000000;
   --color-background-secondary: #000000;
-  --color-separator-opaque: #FFFFFF;
+  --color-separator-opaque: #ffffff;
 }
 
 /* Reduced Motion Support */
@@ -350,64 +351,148 @@
 }
 
 /* Apple Color Utility Classes */
-.text-system-blue { color: var(--color-system-blue); }
-.text-system-green { color: var(--color-system-green); }
-.text-system-red { color: var(--color-system-red); }
-.text-system-orange { color: var(--color-system-orange); }
-.text-system-yellow { color: var(--color-system-yellow); }
-.text-system-purple { color: var(--color-system-purple); }
-.text-system-pink { color: var(--color-system-pink); }
-.text-system-teal { color: var(--color-system-teal); }
-.text-system-indigo { color: var(--color-system-indigo); }
+.text-system-blue {
+  color: var(--color-system-blue);
+}
+.text-system-green {
+  color: var(--color-system-green);
+}
+.text-system-red {
+  color: var(--color-system-red);
+}
+.text-system-orange {
+  color: var(--color-system-orange);
+}
+.text-system-yellow {
+  color: var(--color-system-yellow);
+}
+.text-system-purple {
+  color: var(--color-system-purple);
+}
+.text-system-pink {
+  color: var(--color-system-pink);
+}
+.text-system-teal {
+  color: var(--color-system-teal);
+}
+.text-system-indigo {
+  color: var(--color-system-indigo);
+}
 
-.text-label-primary { color: var(--color-label-primary); }
-.text-label-secondary { color: var(--color-label-secondary); }
-.text-label-tertiary { color: var(--color-label-tertiary); }
-.text-label-quaternary { color: var(--color-label-quaternary); }
+.text-label-primary {
+  color: var(--color-label-primary);
+}
+.text-label-secondary {
+  color: var(--color-label-secondary);
+}
+.text-label-tertiary {
+  color: var(--color-label-tertiary);
+}
+.text-label-quaternary {
+  color: var(--color-label-quaternary);
+}
 
-.bg-background-primary { background-color: var(--color-background-primary); }
-.bg-background-secondary { background-color: var(--color-background-secondary); }
-.bg-background-tertiary { background-color: var(--color-background-tertiary); }
+.bg-background-primary {
+  background-color: var(--color-background-primary);
+}
+.bg-background-secondary {
+  background-color: var(--color-background-secondary);
+}
+.bg-background-tertiary {
+  background-color: var(--color-background-tertiary);
+}
 
-.bg-grouped-primary { background-color: var(--color-grouped-background-primary); }
-.bg-grouped-secondary { background-color: var(--color-grouped-background-secondary); }
-.bg-grouped-tertiary { background-color: var(--color-grouped-background-tertiary); }
+.bg-grouped-primary {
+  background-color: var(--color-grouped-background-primary);
+}
+.bg-grouped-secondary {
+  background-color: var(--color-grouped-background-secondary);
+}
+.bg-grouped-tertiary {
+  background-color: var(--color-grouped-background-tertiary);
+}
 
-.bg-fill-primary { background-color: var(--color-fill-primary); }
-.bg-fill-secondary { background-color: var(--color-fill-secondary); }
-.bg-fill-tertiary { background-color: var(--color-fill-tertiary); }
-.bg-fill-quaternary { background-color: var(--color-fill-quaternary); }
+.bg-fill-primary {
+  background-color: var(--color-fill-primary);
+}
+.bg-fill-secondary {
+  background-color: var(--color-fill-secondary);
+}
+.bg-fill-tertiary {
+  background-color: var(--color-fill-tertiary);
+}
+.bg-fill-quaternary {
+  background-color: var(--color-fill-quaternary);
+}
 
 /* Apple Border and Separator Classes */
-.border-separator { border-color: var(--color-separator-opaque); }
-.border-separator-non-opaque { border-color: var(--color-separator-non-opaque); }
+.border-separator {
+  border-color: var(--color-separator-opaque);
+}
+.border-separator-non-opaque {
+  border-color: var(--color-separator-non-opaque);
+}
 
-.divide-separator > * + * { border-color: var(--color-separator-opaque); }
+.divide-separator > * + * {
+  border-color: var(--color-separator-opaque);
+}
 
 /* Apple Shadow Classes */
-.shadow-apple-sm { box-shadow: var(--shadow-sm); }
-.shadow-apple-md { box-shadow: var(--shadow-md); }
-.shadow-apple-lg { box-shadow: var(--shadow-lg); }
-.shadow-apple-xl { box-shadow: var(--shadow-xl); }
-.shadow-apple-2xl { box-shadow: var(--shadow-2xl); }
-.shadow-apple-inner { box-shadow: var(--shadow-inner); }
+.shadow-apple-sm {
+  box-shadow: var(--shadow-sm);
+}
+.shadow-apple-md {
+  box-shadow: var(--shadow-md);
+}
+.shadow-apple-lg {
+  box-shadow: var(--shadow-lg);
+}
+.shadow-apple-xl {
+  box-shadow: var(--shadow-xl);
+}
+.shadow-apple-2xl {
+  box-shadow: var(--shadow-2xl);
+}
+.shadow-apple-inner {
+  box-shadow: var(--shadow-inner);
+}
 
 /* Apple Motion Classes */
-.ease-standard { transition-timing-function: var(--ease-standard); }
-.ease-decelerated { transition-timing-function: var(--ease-decelerated); }
-.ease-accelerated { transition-timing-function: var(--ease-accelerated); }
-.ease-sharp { transition-timing-function: var(--ease-sharp); }
-.ease-bounce { transition-timing-function: var(--ease-bounce); }
+.ease-standard {
+  transition-timing-function: var(--ease-standard);
+}
+.ease-decelerated {
+  transition-timing-function: var(--ease-decelerated);
+}
+.ease-accelerated {
+  transition-timing-function: var(--ease-accelerated);
+}
+.ease-sharp {
+  transition-timing-function: var(--ease-sharp);
+}
+.ease-bounce {
+  transition-timing-function: var(--ease-bounce);
+}
 
-.duration-fast { transition-duration: var(--duration-fast); }
-.duration-normal { transition-duration: var(--duration-normal); }
-.duration-slow { transition-duration: var(--duration-slow); }
-.duration-slower { transition-duration: var(--duration-slower); }
+.duration-fast {
+  transition-duration: var(--duration-fast);
+}
+.duration-normal {
+  transition-duration: var(--duration-normal);
+}
+.duration-slow {
+  transition-duration: var(--duration-slow);
+}
+.duration-slower {
+  transition-duration: var(--duration-slower);
+}
 
 /* Apple Focus Styles */
 .focus-apple:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--color-background-primary), 0 0 0 4px var(--color-system-blue);
+  box-shadow:
+    0 0 0 2px var(--color-background-primary),
+    0 0 0 4px var(--color-system-blue);
   border-radius: var(--radius-sm);
 }
 
@@ -472,11 +557,14 @@
 /* Touch Optimizations */
 @media (hover: none) and (pointer: coarse) {
   /* Increase touch targets on mobile */
-  button, [role="button"], input[type="submit"], input[type="button"] {
+  button,
+  [role='button'],
+  input[type='submit'],
+  input[type='button'] {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* Improve touch feedback */
   .touch-feedback:active {
     transform: scale(0.98);
@@ -489,11 +577,11 @@
   .no-print {
     display: none !important;
   }
-  
+
   .print-only {
     display: block !important;
   }
-  
+
   * {
     background: transparent !important;
     color: black !important;

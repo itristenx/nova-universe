@@ -35,11 +35,25 @@ import cmdbRouter from './routes/cmdb.js';
 import cmdbExtendedRouter from './routes/cmdbExtended.js';
 import notificationsRouter from './routes/notifications.js'; // Universal Notification Platform
 import user360Router from './routes/user360.js'; // User 360 API
+import appSwitcherRouter from './routes/app-switcher.js'; // Enhanced App Switcher API
+import aiControlTowerRouter from './routes/ai-control-tower.js'; // AI Control Tower API
 import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
+import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
 import novaTVRouter from './src/routes/nova-tv.js'; // Nova TV - Channel Management
+import customerActivityRouter from './routes/customer-activity.js'; // Customer Activity & Email Communication Tracking
+// Service Catalog API routes
+import serviceCatalogRouter from './routes/serviceCatalog.js';
+import serviceCatalogRequestsRouter from './routes/serviceCatalogRequests.js';
+import rbacRouter from './routes/rbac.js';
+import approvalsRouter from './routes/approvals.js';
+import featureFlagsRouter from './routes/featureFlags.js';
+import emailIntegrationRouter from './routes/email-integration.js';
+import emailTemplatesRouter from './routes/email-templates.js';
+import abTestingRouter from './routes/abTesting.js';
+import costCentersRouter from './routes/costCenters.js';
 // Nova module routes
 import { createUploadsMiddleware } from './middleware/uploads.js';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
@@ -64,10 +78,7 @@ import { sign, verify } from './jwt.js';
 import { authRateLimit } from './middleware/rateLimiter.js';
 import { requestLogger, securityHeaders } from './middleware/security.js';
 import { configureCORS, sanitizeInput } from './middleware/security.js';
-import {
-  validateEmail,
-  validateKioskRegistration,
-} from './middleware/validation.js';
+import { validateEmail, validateKioskRegistration } from './middleware/validation.js';
 import helixRouter from './routes/helix.js';
 import helixUniversalLoginRouter from './routes/helix-universal-login.js';
 import loreRouter from './routes/lore.js';
@@ -149,7 +160,7 @@ io.use(async (socket, next) => {
       // Auth disabled - allow connection
       next();
     }
-  } catch (error) {
+  } catch (_error) {
     next(new Error('Authentication failed'));
   }
 });
@@ -227,8 +238,11 @@ const wsManager = new WebSocketManager(io);
 app.wsManager = wsManager;
 
 // Initialize Uptime Kuma WebSocket handler
-import { initializeUptimeKumaWebSocket, shutdownUptimeKumaWebSocket } from './websocket/uptime-kuma-handler.js';
-initializeUptimeKumaWebSocket().catch(error => {
+import {
+  initializeUptimeKumaWebSocket,
+  shutdownUptimeKumaWebSocket,
+} from './websocket/uptime-kuma-handler.js';
+initializeUptimeKumaWebSocket().catch((error) => {
   logger.error('Failed to initialize Uptime Kuma WebSocket handler', { error: error.message });
 });
 
@@ -296,7 +310,7 @@ try {
     comprehensiveSpec = yaml.load(specContent);
     logger.info('📋 Loaded comprehensive OpenAPI v3 specification');
   }
-} catch (error) {
+} catch (_error) {
   logger.warn('Failed to load comprehensive OpenAPI spec:', error.message);
 }
 
@@ -391,17 +405,20 @@ Subscribe to specific data types for live updates on tickets, system status, and
     contact: {
       name: 'Nova Universe API Support',
       email: 'api-support@nova-universe.com',
-      url: 'https://docs.nova-universe.com'
+      url: 'https://docs.nova-universe.com',
     },
     license: {
       name: 'MIT',
-      url: 'https://opensource.org/licenses/MIT'
+      url: 'https://opensource.org/licenses/MIT',
     },
-    termsOfService: 'https://nova-universe.com/terms'
+    termsOfService: 'https://nova-universe.com/terms',
   },
   servers: [
     { url: '/api/v2', description: 'Current API (v2) - Latest features and improvements' },
-    { url: '/api/v1', description: 'Legacy API (v1) - Deprecated, maintained for backward compatibility' },
+    {
+      url: '/api/v1',
+      description: 'Legacy API (v1) - Deprecated, maintained for backward compatibility',
+    },
   ],
   components: {
     securitySchemes: {
@@ -409,40 +426,40 @@ Subscribe to specific data types for live updates on tickets, system status, and
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        description: 'JWT token obtained from /auth/login endpoint'
+        description: 'JWT token obtained from /auth/login endpoint',
       },
       ApiKeyAuth: {
         type: 'apiKey',
         in: 'header',
         name: 'X-API-Key',
-        description: 'API key for service-to-service authentication'
-      }
+        description: 'API key for service-to-service authentication',
+      },
     },
     parameters: {
       PageParam: {
         name: 'page',
         in: 'query',
         description: 'Page number for pagination (1-based)',
-        schema: { type: 'integer', minimum: 1, default: 1 }
+        schema: { type: 'integer', minimum: 1, default: 1 },
       },
       LimitParam: {
         name: 'limit',
         in: 'query',
         description: 'Number of items per page',
-        schema: { type: 'integer', minimum: 1, maximum: 100, default: 25 }
+        schema: { type: 'integer', minimum: 1, maximum: 100, default: 25 },
       },
       SortParam: {
         name: 'sort',
         in: 'query',
         description: 'Field to sort by',
-        schema: { type: 'string' }
+        schema: { type: 'string' },
       },
       OrderParam: {
         name: 'order',
         in: 'query',
         description: 'Sort order',
-        schema: { type: 'string', enum: ['asc', 'desc'], default: 'desc' }
-      }
+        schema: { type: 'string', enum: ['asc', 'desc'], default: 'desc' },
+      },
     },
     responses: {
       UnauthorizedError: {
@@ -457,13 +474,13 @@ Subscribe to specific data types for live updates on tickets, system status, and
                   type: 'object',
                   properties: {
                     code: { type: 'string', example: 'UNAUTHORIZED' },
-                    message: { type: 'string', example: 'Authentication required' }
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: { type: 'string', example: 'Authentication required' },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       ForbiddenError: {
         description: 'Insufficient permissions',
@@ -477,13 +494,13 @@ Subscribe to specific data types for live updates on tickets, system status, and
                   type: 'object',
                   properties: {
                     code: { type: 'string', example: 'FORBIDDEN' },
-                    message: { type: 'string', example: 'Insufficient permissions' }
-                  }
-                }
-              }
-            }
-          }
-        }
+                    message: { type: 'string', example: 'Insufficient permissions' },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       NotFoundError: {
         description: 'Resource not found',
@@ -497,20 +514,17 @@ Subscribe to specific data types for live updates on tickets, system status, and
                   type: 'object',
                   properties: {
                     code: { type: 'string', example: 'NOT_FOUND' },
-                    message: { type: 'string', example: 'Resource not found' }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                    message: { type: 'string', example: 'Resource not found' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
-  security: [
-    { BearerAuth: [] },
-    { ApiKeyAuth: [] }
-  ]
+  security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
 };
 
 // Combine JSDoc-generated spec with comprehensive YAML spec
@@ -534,38 +548,45 @@ if (comprehensiveSpec && comprehensiveSpec.paths) {
     info: {
       ...swaggerSpec.info,
       ...comprehensiveSpec.info,
-      version: getApiVersion() // Ensure version is from package.json
+      version: getApiVersion(), // Ensure version is from package.json
     },
     paths: {
       ...swaggerSpec.paths,
-      ...comprehensiveSpec.paths
+      ...comprehensiveSpec.paths,
     },
     components: {
       ...swaggerSpec.components,
       ...comprehensiveSpec.components,
       securitySchemes: {
         ...swaggerSpec.components?.securitySchemes,
-        ...comprehensiveSpec.components?.securitySchemes
-      }
-    }
+        ...comprehensiveSpec.components?.securitySchemes,
+      },
+    },
   };
   logger.info('📋 Merged comprehensive OpenAPI specification with JSDoc spec');
 }
 
 // Helper function to update server URLs after PORT is defined
 function updateSwaggerServerUrls() {
-  const PORT = Number(process.env.API_PORT || 3000);
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? (process.env.API_BASE_URL || 'https://api.nova-universe.com')
-    : `http://localhost:${PORT}`;
-  
+  const PORT = Number(process.env.API_PORT || process.env.PORT || 3000);
+  const baseUrl =
+    process.env.NODE_ENV === 'production'
+      ? process.env.API_BASE_URL || process.env.BASE_URL || 'https://api.nova-universe.com'
+      : process.env.API_BASE_URL || process.env.BASE_URL || `http://localhost:${PORT}`;
+
   const servers = [
-    { url: `${baseUrl}/api/v2`, description: 'Current API (v2) - Latest features and improvements' },
-    { url: `${baseUrl}/api/v1`, description: 'Legacy API (v1) - Deprecated, maintained for backward compatibility' },
+    {
+      url: `${baseUrl}/api/v2`,
+      description: 'Current API (v2) - Latest features and improvements',
+    },
+    {
+      url: `${baseUrl}/api/v1`,
+      description: 'Legacy API (v1) - Deprecated, maintained for backward compatibility',
+    },
   ];
-  
+
   swaggerSpec.servers = servers;
-  
+
   if (process.env.NODE_ENV === 'development') {
     logger.debug('📋 Updated Swagger server URLs:', servers);
   }
@@ -964,12 +985,13 @@ const v1Router = express.Router();
 const addDeprecationHeaders = (req, res, next) => {
   // Add deprecation warning headers for v1 API
   res.set({
-    'Deprecation': 'true',
-    'Sunset': '2024-12-31T23:59:59Z', // RFC 8594 compliant sunset date
-    'Link': '</api/v2>; rel="successor-version"; type="application/json"',
-    'Warning': '299 "This API version is deprecated. Please migrate to v2. See https://docs.nova-universe.com/api/migration"',
+    Deprecation: 'true',
+    Sunset: '2024-12-31T23:59:59Z', // RFC 8594 compliant sunset date
+    Link: '</api/v2>; rel="successor-version"; type="application/json"',
+    Warning:
+      '299 "This API version is deprecated. Please migrate to v2. See https://docs.nova-universe.com/api/migration"',
     'X-API-Version': 'v1',
-    'X-API-Deprecation-Notice': 'This version will be sunset on 2024-12-31. Please upgrade to v2.'
+    'X-API-Deprecation-Notice': 'This version will be sunset on 2024-12-31. Please upgrade to v2.',
   });
   next();
 };
@@ -980,21 +1002,21 @@ v1Router.use(addDeprecationHeaders);
 // Version validation middleware
 const validateApiVersion = (req, res, next) => {
   const apiVersion = req.path.match(/^\/api\/(v\d+)/)?.[1];
-  
+
   if (apiVersion) {
     // Add version information to response headers
     res.set('X-API-Version', apiVersion);
-    
+
     // Log version usage for analytics
     if (process.env.NODE_ENV !== 'test') {
       logger.debug(`API ${apiVersion} accessed: ${req.method} ${req.path}`, {
         userAgent: req.headers['user-agent'],
         ip: req.ip,
-        endpoint: req.path
+        endpoint: req.path,
       });
     }
   }
-  
+
   next();
 };
 
@@ -1010,7 +1032,7 @@ const addCurrentVersionHeaders = (req, res, next) => {
     'X-API-Version': 'v2',
     'X-API-Status': 'stable',
     'Cache-Control': 'public, max-age=300', // Cache responses for 5 minutes
-    'X-Rate-Limit-Policy': 'https://docs.nova-universe.com/api/rate-limits'
+    'X-Rate-Limit-Policy': 'https://docs.nova-universe.com/api/rate-limits',
   });
   next();
 };
@@ -1030,7 +1052,7 @@ v1Router.get('/config', ensureAuth, (req, res) => {
     const defaults = {
       logoUrl: '/logo.png',
       faviconUrl: '/vite.svg',
-      organizationName: 'Your Organization',
+      organizationName: 'Nova ITSM',
       welcomeMessage: 'Welcome to the Help Desk',
       helpMessage: 'Need to report an issue?',
       statusOpenMsg: 'Open',
@@ -1086,7 +1108,7 @@ v1Router.put('/api/config', ensureAuth, (req, res) => {
         const defaults = {
           logoUrl: '/logo.png',
           faviconUrl: '/vite.svg',
-          organizationName: 'Your Organization',
+          organizationName: 'Nova ITSM',
           welcomeMessage: 'Welcome to the Help Desk',
           helpMessage: 'Need to report an issue?',
           statusOpenMsg: 'Open',
@@ -1363,7 +1385,7 @@ v1Router.post('/api/test-smtp', ensureAuth, async (req, res) => {
       success: true,
       message: 'Test email sent successfully',
     });
-  } catch (error) {
+  } catch (_error) {
     logger.error('SMTP test failed:', error);
     res.status(500).json({
       success: false,
@@ -1532,7 +1554,9 @@ app.get('/api/health', (req, res) => {
 // Root health endpoint with performance monitoring
 app.get('/health', (req, res) => {
   const health = performanceMonitor.getHealthStatus();
-  res.status(health.status === 'healthy' ? 200 : health.status === 'warning' ? 200 : 503).json(health);
+  res
+    .status(health.status === 'healthy' ? 200 : health.status === 'warning' ? 200 : 503)
+    .json(health);
 });
 
 // Metrics endpoint (admin only)
@@ -1541,7 +1565,7 @@ app.get('/metrics', ensureAuth, (req, res) => {
   if (!userRoles.includes('admin') && !userRoles.includes('superadmin')) {
     return res.status(403).json({ error: 'Admin access required' });
   }
-  
+
   const metrics = performanceMonitor.getMetrics();
   res.json(metrics);
 });
@@ -2048,26 +2072,26 @@ app.get('/api/version', (req, res) => {
   res.json({
     api: {
       version: getApiVersion(),
-      name: 'Nova Universe Platform API'
+      name: 'Nova Universe Platform API',
     },
     versions: {
       supported: ['v2', 'v1'],
       current: 'v2',
       deprecated: ['v1'],
       sunset: {
-        v1: '2024-12-31T23:59:59Z' // Example sunset date for v1
-      }
+        v1: '2024-12-31T23:59:59Z', // Example sunset date for v1
+      },
     },
     ui: {
-      version: getUiVersion()
+      version: getUiVersion(),
     },
     cli: {
-      version: getCliVersion()
+      version: getCliVersion(),
     },
     deprecationPolicy: {
       notice: 'Deprecated versions will be supported for 12 months after deprecation announcement',
-      migration: 'See migration guide at https://docs.nova-universe.com/api/migration'
-    }
+      migration: 'See migration guide at https://docs.nova-universe.com/api/migration',
+    },
   });
 });
 
@@ -2079,7 +2103,7 @@ app.get('/api/health', (req, res) => {
     version: getApiVersion(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),
-    node: process.version
+    node: process.version,
   });
 });
 
@@ -2087,7 +2111,7 @@ app.get('/api/health', (req, res) => {
 app.get('/api-docs/test', (req, res) => {
   const pathCount = Object.keys(swaggerSpec.paths || {}).length;
   const componentCount = Object.keys(swaggerSpec.components?.schemas || {}).length;
-  
+
   res.send(`
     <!DOCTYPE html>
     <html>
@@ -2160,7 +2184,7 @@ app.get('/api-docs/test', (req, res) => {
             <h2>🔧 Server Configuration</h2>
             <div class="status info">
                 <strong>Servers:</strong><br>
-                ${swaggerSpec.servers?.map(s => `• ${s.url} - ${s.description}`).join('<br>') || 'None configured'}
+                ${swaggerSpec.servers?.map((s) => `• ${s.url} - ${s.description}`).join('<br>') || 'None configured'}
             </div>
             
             <h2>🐞 Debug Information</h2>
@@ -2229,7 +2253,7 @@ app.use(
         // Add custom headers or modify requests
         req.headers['X-Client'] = 'SwaggerUI';
         return req;
-      }
+      },
     },
     customCss: `
       .swagger-ui .topbar { display: none; }
@@ -2245,12 +2269,12 @@ app.use(
     `,
     customSiteTitle: 'Nova Universe API Documentation',
     customfavIcon: '/favicon.ico',
-    swaggerUrl: '/api-docs/swagger.json'
+    swaggerUrl: '/api-docs/swagger.json',
   }),
 );
 
 // === API VERSION ROUTING STRATEGY ===
-// 
+//
 // This API follows semantic versioning with URI-based versioning:
 // - v2: Current stable version with latest features (default for new endpoints)
 // - v1: Legacy version with deprecation warnings (maintained for backward compatibility)
@@ -2313,7 +2337,10 @@ v1Router.use('/monitoring', monitoringRouter);
 v1Router.use('/uptime-kuma', uptimeKumaProxyRouter);
 v1Router.use('/websocket/uptime-kuma', uptimeKumaWebSocketRouter);
 v1Router.use('/auth', authRouter);
+v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
+v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - Enterprise AI/ML/RAG Management
 v1Router.use('/tickets', ticketsRouter);
+v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
 v1Router.use('/spaces', spacesRouter);
 v1Router.use('/ai-fabric', aiFabricRouter);
 v1Router.use('/setup', setupRouter);
@@ -2355,6 +2382,18 @@ app.use('/api/setup', setupRouter);
 app.use('/api/nova-tv', novaTVRouter);
 app.use('/api/kiosks', kiosksRouter);
 
+// Service Catalog API routes
+app.use('/api/service-catalog', serviceCatalogRouter);
+app.use('/api/service-catalog-requests', serviceCatalogRequestsRouter);
+app.use('/api/rbac', rbacRouter);
+app.use('/api/approvals', approvalsRouter);
+app.use('/api/feature-flags', featureFlagsRouter);
+app.use('/api/ab-testing', abTestingRouter);
+app.use('/api/cost-centers', costCentersRouter);
+app.use('/api/email', emailIntegrationRouter);
+app.use('/api/email-templates', emailTemplatesRouter);
+app.use('/api/customer-activity', customerActivityRouter);
+
 // Special routes that maintain their own paths
 app.use('/scim/v2', scimRouter); // SCIM 2.0 Provisioning API
 app.use('/core', coreRouter);
@@ -2379,7 +2418,7 @@ app.use('/announcements', announcementsRouter);
 export async function createApp() {
   // Update Swagger server URLs now that PORT is available
   updateSwaggerServerUrls();
-  
+
   // Initialize configuration management system
   try {
     await ConfigurationManager.initialize();
@@ -2404,7 +2443,7 @@ export async function createApp() {
   } catch (err) {
     logger.error('Failed to setup GraphQL server:', err);
   }
-  
+
   // Initialize Nova Comms Slack integration (if configured)
   try {
     if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_SIGNING_SECRET) {
@@ -2417,14 +2456,14 @@ export async function createApp() {
   } catch (slackError) {
     logger.warn('Failed to initialize Slack integration:', slackError.message);
   }
-  
+
   // Log API versioning information
   logger.info('🔗 API Versioning Strategy:');
   logger.info('  • v2 (Current): /api/v2/* - Latest features and improvements');
   logger.info('  • v1 (Deprecated): /api/v1/* - Legacy version with sunset warnings');
   logger.info('  • Backward compatibility: /api/* routes map to v1 with deprecation headers');
   logger.info(`📋 API Documentation available at http://localhost:${PORT}/api-docs`);
-  
+
   // Do not call server.listen here
   return { app, server, io };
 }
@@ -2441,7 +2480,7 @@ if (
       logger.info(`📊 Admin interface: http://localhost:${PORT}/admin`);
       logger.info(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
       logger.info(`⚡ WebSocket server ready for real-time updates`);
-      
+
       // Start Slack app if configured
       try {
         if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_SIGNING_SECRET) {

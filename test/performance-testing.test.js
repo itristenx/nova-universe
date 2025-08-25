@@ -28,19 +28,19 @@ const activeTimeouts = new Set();
 // Graceful cleanup handler
 function gracefulCleanup() {
   console.log('🧹 Cleaning up performance test resources...');
-  
+
   // Clear all intervals
   for (const intervalId of activeIntervals) {
     clearInterval(intervalId);
   }
   activeIntervals.clear();
-  
+
   // Clear all timeouts
   for (const timeoutId of activeTimeouts) {
     clearTimeout(timeoutId);
   }
   activeTimeouts.clear();
-  
+
   console.log('✅ Performance test cleanup completed');
 }
 

@@ -86,15 +86,13 @@ router.post(
           'INSERT INTO tickets (id, ticket_id, type_code, title, description, priority, status, requested_by_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id, ticket_id',
           [id, ticketNumber, typeCode, title, description, priority, 'open', req.user.id, now, now],
         );
-        return res
-          .status(201)
-          .json({
-            id: result.rows[0].id,
-            type: typeCode,
-            title,
-            status: 'open',
-            ticket_number: result.rows[0].ticket_id,
-          });
+        return res.status(201).json({
+          id: result.rows[0].id,
+          type: typeCode,
+          title,
+          status: 'open',
+          ticket_number: result.rows[0].ticket_id,
+        });
       } catch {
         // Fallback to memory-backed ticket
         const id = (await import('crypto')).randomUUID();

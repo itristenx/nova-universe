@@ -1,13 +1,13 @@
 /**
  * Unified Notification Service
- * 
+ *
  * Centralizes all notification delivery across Nova ecosystem using Nova Comms
  * as the primary notification hub. Integrates with:
  * - Nova Comms (primary notification system)
  * - GoAlert notification channels
  * - Uptime Kuma notification providers
  * - Custom notification endpoints
- * 
+ *
  * Features:
  * - Template-based notifications
  * - Multi-channel delivery (email, SMS, Slack, Teams, etc.)
@@ -15,7 +15,7 @@
  * - Delivery confirmation and retry logic
  * - Notification preferences per user
  * - Rate limiting and spam protection
- * 
+ *
  * Part of the Nova Monitoring & Alerting Integration
  */
 
@@ -30,7 +30,7 @@ class UnifiedNotificationService {
     this.deliveryProviders = new Map();
     this.rateLimiters = new Map();
     this.retryQueues = new Map();
-    
+
     this.loadNotificationTemplates();
     this.setupDeliveryProviders();
   }
@@ -52,7 +52,6 @@ class UnifiedNotificationService {
       this.startRetryProcessors();
 
       logger.info('Unified Notification Service initialized successfully');
-
     } catch (error) {
       logger.error('Failed to initialize Unified Notification Service:', error);
       throw error;
@@ -73,7 +72,7 @@ class UnifiedNotificationService {
         channels = ['email'],
         priority = 'normal',
         tenant_id,
-        escalate = false
+        escalate = false,
       } = options;
 
       // Get notification template
@@ -86,22 +85,16 @@ class UnifiedNotificationService {
       const notification = await this.buildNotification(template, data, options);
 
       // Get effective recipients
-      const effectiveRecipients = await this.getEffectiveRecipients(
-        recipients, 
-        tenant_id, 
-        type
-      );
+      const effectiveRecipients = await this.getEffectiveRecipients(recipients, tenant_id, type);
 
       // Send notifications through each channel
       const deliveryResults = await Promise.allSettled(
-        channels.map(async channel => {
-          return this.sendThroughChannel(
-            channel,
-            notification,
-            effectiveRecipients,
-            { ...options, priority }
-          );
-        })
+        channels.map(async (channel) => {
+          return this.sendThroughChannel(channel, notification, effectiveRecipients, {
+            ...options,
+            priority,
+          });
+        }),
       );
 
       // Handle escalation if required
@@ -116,9 +109,8 @@ class UnifiedNotificationService {
         success: true,
         notification_id: notification.id,
         delivery_results: deliveryResults,
-        recipients_count: effectiveRecipients.length
+        recipients_count: effectiveRecipients.length,
       };
-
     } catch (error) {
       logger.error('Error sending monitoring notification:', error);
       throw error;
@@ -146,7 +138,7 @@ class UnifiedNotificationService {
       recipients,
       channels,
       priority,
-      escalate: immediate || alert.severity === 'critical'
+      escalate: immediate || alert.severity === 'critical',
     });
   }
 
@@ -160,7 +152,7 @@ class UnifiedNotificationService {
     const internalResult = await this.sendMonitoringNotification(type, incident, {
       ...options,
       channels: ['email', 'slack', 'teams'],
-      priority: this.getIncidentPriority(incident.severity)
+      priority: this.getIncidentPriority(incident.severity),
     });
 
     // Send to external subscribers if public incident
@@ -171,7 +163,7 @@ class UnifiedNotificationService {
 
     return {
       internal: internalResult,
-      external: externalResult
+      external: externalResult,
     };
   }
 
@@ -188,7 +180,7 @@ class UnifiedNotificationService {
       ...options,
       recipients,
       channels: ['email', 'push'],
-      priority: 'normal'
+      priority: 'normal',
     });
   }
 
@@ -234,7 +226,7 @@ Description: {{alert.description}}
 
 View Alert: {{alertUrl}}
 Acknowledge: {{acknowledgeUrl}}
-        `
+        `,
       },
       slack: {
         blocks: [
@@ -242,25 +234,25 @@ Acknowledge: {{acknowledgeUrl}}
             type: 'header',
             text: {
               type: 'plain_text',
-              text: '🚨 New Alert: {{alert.summary}}'
-            }
+              text: '🚨 New Alert: {{alert.summary}}',
+            },
           },
           {
             type: 'section',
             fields: [
               {
                 type: 'mrkdwn',
-                text: '*Severity:* {{alert.severity}}'
+                text: '*Severity:* {{alert.severity}}',
               },
               {
                 type: 'mrkdwn',
-                text: '*Monitor:* {{monitor.name}}'
+                text: '*Monitor:* {{monitor.name}}',
               },
               {
                 type: 'mrkdwn',
-                text: '*Created:* {{alert.created_at}}'
-              }
-            ]
+                text: '*Created:* {{alert.created_at}}',
+              },
+            ],
           },
           {
             type: 'actions',
@@ -269,25 +261,25 @@ Acknowledge: {{acknowledgeUrl}}
                 type: 'button',
                 text: {
                   type: 'plain_text',
-                  text: 'View Alert'
+                  text: 'View Alert',
                 },
                 url: '{{alertUrl}}',
-                style: 'primary'
+                style: 'primary',
               },
               {
                 type: 'button',
                 text: {
                   type: 'plain_text',
-                  text: 'Acknowledge'
+                  text: 'Acknowledge',
                 },
                 url: '{{acknowledgeUrl}}',
-                style: 'danger'
-              }
-            ]
-          }
-        ]
+                style: 'danger',
+              },
+            ],
+          },
+        ],
       },
-      sms: 'ALERT: {{alert.summary}} - Severity: {{alert.severity}} - {{alertUrl}}'
+      sms: 'ALERT: {{alert.summary}} - Severity: {{alert.severity}} - {{alertUrl}}',
     });
 
     this.templates.set('alert_acknowledged', {
@@ -310,12 +302,12 @@ Acknowledge: {{acknowledgeUrl}}
               </div>
             </div>
           </div>
-        `
+        `,
       },
       slack: {
-        text: '✅ Alert acknowledged: {{alert.summary}} by {{acknowledgedBy.name}}'
+        text: '✅ Alert acknowledged: {{alert.summary}} by {{acknowledgedBy.name}}',
       },
-      sms: 'ACKNOWLEDGED: {{alert.summary}} by {{acknowledgedBy.name}}'
+      sms: 'ACKNOWLEDGED: {{alert.summary}} by {{acknowledgedBy.name}}',
     });
 
     this.templates.set('alert_resolved', {
@@ -339,8 +331,8 @@ Acknowledge: {{acknowledgeUrl}}
               {{/if}}
             </div>
           </div>
-        `
-      }
+        `,
+      },
     });
 
     // Incident templates
@@ -374,8 +366,8 @@ Acknowledge: {{acknowledgeUrl}}
               </div>
             </div>
           </div>
-        `
-      }
+        `,
+      },
     });
 
     // Schedule templates
@@ -395,8 +387,8 @@ Acknowledge: {{acknowledgeUrl}}
             </ul>
             <a href="{{scheduleUrl}}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Schedule</a>
           </div>
-        `
-      }
+        `,
+      },
     });
 
     // On-call override templates
@@ -415,8 +407,8 @@ Acknowledge: {{acknowledgeUrl}}
             <p><strong>Replacing:</strong> {{replacedUser.name}}</p>
             {{/if}}
           </div>
-        `
-      }
+        `,
+      },
     });
 
     logger.info('Notification templates loaded successfully');
@@ -435,42 +427,42 @@ Acknowledge: {{acknowledgeUrl}}
     this.deliveryProviders.set('email', {
       send: this.sendEmail.bind(this),
       validate: this.validateEmailRecipients.bind(this),
-      rateLimitKey: 'email'
+      rateLimitKey: 'email',
     });
 
     // SMS provider (Nova Comms)
     this.deliveryProviders.set('sms', {
       send: this.sendSMS.bind(this),
       validate: this.validateSMSRecipients.bind(this),
-      rateLimitKey: 'sms'
+      rateLimitKey: 'sms',
     });
 
     // Slack provider
     this.deliveryProviders.set('slack', {
       send: this.sendSlack.bind(this),
       validate: this.validateSlackRecipients.bind(this),
-      rateLimitKey: 'slack'
+      rateLimitKey: 'slack',
     });
 
     // Microsoft Teams provider
     this.deliveryProviders.set('teams', {
       send: this.sendTeams.bind(this),
       validate: this.validateTeamsRecipients.bind(this),
-      rateLimitKey: 'teams'
+      rateLimitKey: 'teams',
     });
 
     // Push notifications
     this.deliveryProviders.set('push', {
       send: this.sendPushNotification.bind(this),
       validate: this.validatePushRecipients.bind(this),
-      rateLimitKey: 'push'
+      rateLimitKey: 'push',
     });
 
     // Voice calls (for critical alerts)
     this.deliveryProviders.set('voice', {
       send: this.sendVoiceCall.bind(this),
       validate: this.validateVoiceRecipients.bind(this),
-      rateLimitKey: 'voice'
+      rateLimitKey: 'voice',
     });
 
     logger.info('Notification delivery providers configured');
@@ -489,7 +481,7 @@ Acknowledge: {{acknowledgeUrl}}
         channel,
         success: false,
         error: 'No valid recipients for channel',
-        recipients_attempted: 0
+        recipients_attempted: 0,
       };
     }
 
@@ -500,14 +492,14 @@ Acknowledge: {{acknowledgeUrl}}
         channel,
         success: false,
         error: 'Rate limit exceeded',
-        recipients_attempted: validRecipients.length
+        recipients_attempted: validRecipients.length,
       };
     }
 
     try {
       // Send notification
       const result = await provider.send(notification, validRecipients, options);
-      
+
       // Update rate limiter
       await this.updateRateLimit(provider.rateLimitKey, options.tenant_id);
 
@@ -516,12 +508,11 @@ Acknowledge: {{acknowledgeUrl}}
         success: true,
         recipients_attempted: validRecipients.length,
         recipients_delivered: result.delivered_count,
-        delivery_id: result.delivery_id
+        delivery_id: result.delivery_id,
       };
-
     } catch (error) {
       logger.error(`Error sending ${channel} notification:`, error);
-      
+
       // Queue for retry if it's a temporary failure
       if (this.isRetryableError(error)) {
         await this.queueForRetry(channel, notification, validRecipients, options);
@@ -532,7 +523,7 @@ Acknowledge: {{acknowledgeUrl}}
         success: false,
         error: error.message,
         recipients_attempted: validRecipients.length,
-        recipients_delivered: 0
+        recipients_delivered: 0,
       };
     }
   }
@@ -551,9 +542,9 @@ Acknowledge: {{acknowledgeUrl}}
       subject: notification.subject,
       html: emailContent.html,
       text: emailContent.text,
-      recipients: recipients.map(r => r.email).filter(Boolean),
+      recipients: recipients.map((r) => r.email).filter(Boolean),
       priority: options.priority || 'normal',
-      tenant_id: options.tenant_id
+      tenant_id: options.tenant_id,
     };
 
     return this.commsIntegration.sendEmail(emailData);
@@ -567,9 +558,9 @@ Acknowledge: {{acknowledgeUrl}}
 
     const smsData = {
       message: smsContent,
-      recipients: recipients.map(r => r.phone).filter(Boolean),
+      recipients: recipients.map((r) => r.phone).filter(Boolean),
       priority: options.priority || 'normal',
-      tenant_id: options.tenant_id
+      tenant_id: options.tenant_id,
     };
 
     return this.commsIntegration.sendSMS(smsData);
@@ -583,9 +574,9 @@ Acknowledge: {{acknowledgeUrl}}
 
     const slackData = {
       ...slackContent,
-      channels: recipients.map(r => r.slack_channel || r.slack_user_id).filter(Boolean),
+      channels: recipients.map((r) => r.slack_channel || r.slack_user_id).filter(Boolean),
       priority: options.priority || 'normal',
-      tenant_id: options.tenant_id
+      tenant_id: options.tenant_id,
     };
 
     return this.commsIntegration.sendSlackMessage(slackData);
@@ -600,9 +591,9 @@ Acknowledge: {{acknowledgeUrl}}
     const teamsData = {
       title: notification.subject,
       text: teamsContent.text || teamsContent.html,
-      webhooks: recipients.map(r => r.teams_webhook).filter(Boolean),
+      webhooks: recipients.map((r) => r.teams_webhook).filter(Boolean),
       priority: options.priority || 'normal',
-      tenant_id: options.tenant_id
+      tenant_id: options.tenant_id,
     };
 
     return this.commsIntegration.sendTeamsMessage(teamsData);
@@ -612,13 +603,13 @@ Acknowledge: {{acknowledgeUrl}}
     const pushData = {
       title: notification.subject,
       body: notification.content.text || notification.content.sms,
-      user_ids: recipients.map(r => r.id),
+      user_ids: recipients.map((r) => r.id),
       priority: options.priority || 'normal',
       tenant_id: options.tenant_id,
       data: {
         type: 'monitoring_alert',
-        alert_id: notification.resource_id
-      }
+        alert_id: notification.resource_id,
+      },
     };
 
     return this.commsIntegration.sendPushNotification(pushData);
@@ -627,9 +618,9 @@ Acknowledge: {{acknowledgeUrl}}
   async sendVoiceCall(notification, recipients, options) {
     const voiceData = {
       message: `Alert: ${notification.subject}. Please check your monitoring dashboard.`,
-      phone_numbers: recipients.map(r => r.phone).filter(Boolean),
+      phone_numbers: recipients.map((r) => r.phone).filter(Boolean),
       priority: 'critical',
-      tenant_id: options.tenant_id
+      tenant_id: options.tenant_id,
     };
 
     return this.commsIntegration.makeVoiceCall(voiceData);
@@ -640,27 +631,27 @@ Acknowledge: {{acknowledgeUrl}}
   // =============================================================================
 
   async validateEmailRecipients(recipients) {
-    return recipients.filter(r => r.email && this.isValidEmail(r.email));
+    return recipients.filter((r) => r.email && this.isValidEmail(r.email));
   }
 
   async validateSMSRecipients(recipients) {
-    return recipients.filter(r => r.phone && this.isValidPhone(r.phone));
+    return recipients.filter((r) => r.phone && this.isValidPhone(r.phone));
   }
 
   async validateSlackRecipients(recipients) {
-    return recipients.filter(r => r.slack_channel || r.slack_user_id);
+    return recipients.filter((r) => r.slack_channel || r.slack_user_id);
   }
 
   async validateTeamsRecipients(recipients) {
-    return recipients.filter(r => r.teams_webhook);
+    return recipients.filter((r) => r.teams_webhook);
   }
 
   async validatePushRecipients(recipients) {
-    return recipients.filter(r => r.id); // All users can receive push notifications
+    return recipients.filter((r) => r.id); // All users can receive push notifications
   }
 
   async validateVoiceRecipients(recipients) {
-    return recipients.filter(r => r.phone && this.isValidPhone(r.phone));
+    return recipients.filter((r) => r.phone && this.isValidPhone(r.phone));
   }
 
   isValidEmail(email) {
@@ -685,7 +676,7 @@ Acknowledge: {{acknowledgeUrl}}
       content: {},
       resource_id: data.id,
       tenant_id: options.tenant_id,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
 
     // Render content for each available format
@@ -722,17 +713,29 @@ Acknowledge: {{acknowledgeUrl}}
     // Add computed values
     if (data.alert) {
       rendered = rendered.replace('{{severityColor}}', this.getSeverityColor(data.alert.severity));
-      rendered = rendered.replace('{{alertUrl}}', this.getAlertUrl(data.alert.id, options.tenant_id));
-      rendered = rendered.replace('{{acknowledgeUrl}}', this.getAcknowledgeUrl(data.alert.id, options.tenant_id));
+      rendered = rendered.replace(
+        '{{alertUrl}}',
+        this.getAlertUrl(data.alert.id, options.tenant_id),
+      );
+      rendered = rendered.replace(
+        '{{acknowledgeUrl}}',
+        this.getAcknowledgeUrl(data.alert.id, options.tenant_id),
+      );
     }
 
     if (data.incident) {
-      rendered = rendered.replace('{{incidentUrl}}', this.getIncidentUrl(data.incident.id, options.tenant_id));
+      rendered = rendered.replace(
+        '{{incidentUrl}}',
+        this.getIncidentUrl(data.incident.id, options.tenant_id),
+      );
       rendered = rendered.replace('{{statusPageUrl}}', this.getStatusPageUrl(options.tenant_id));
     }
 
     if (data.schedule) {
-      rendered = rendered.replace('{{scheduleUrl}}', this.getScheduleUrl(data.schedule.id, options.tenant_id));
+      rendered = rendered.replace(
+        '{{scheduleUrl}}',
+        this.getScheduleUrl(data.schedule.id, options.tenant_id),
+      );
     }
 
     return rendered;
@@ -749,7 +752,7 @@ Acknowledge: {{acknowledgeUrl}}
       critical: '#dc3545',
       high: '#fd7e14',
       medium: '#ffc107',
-      low: '#28a745'
+      low: '#28a745',
     };
     return colors[severity] || '#6c757d';
   }
@@ -878,13 +881,14 @@ Acknowledge: {{acknowledgeUrl}}
     if (result.rows.length === 0) return null;
 
     const user = result.rows[0];
-    const prefs = typeof user.contact_preferences === 'string' 
-      ? JSON.parse(user.contact_preferences) 
-      : user.contact_preferences;
+    const prefs =
+      typeof user.contact_preferences === 'string'
+        ? JSON.parse(user.contact_preferences)
+        : user.contact_preferences;
 
     return {
       ...user,
-      ...prefs
+      ...prefs,
     };
   }
 
@@ -897,7 +901,7 @@ Acknowledge: {{acknowledgeUrl}}
       critical: 'critical',
       high: 'high',
       medium: 'normal',
-      low: 'low'
+      low: 'low',
     };
     return priorities[severity] || 'normal';
   }
@@ -933,17 +937,14 @@ Acknowledge: {{acknowledgeUrl}}
 
   async logNotificationDelivery(type, notification, results, options) {
     try {
-      await database.query(`
+      await database.query(
+        `
         INSERT INTO notification_delivery_log (
           notification_id, type, tenant_id, delivery_results, created_at
         ) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
-      `, [
-        notification.id,
-        type,
-        options.tenant_id,
-        JSON.stringify(results)
-      ]);
-
+      `,
+        [notification.id, type, options.tenant_id, JSON.stringify(results)],
+      );
     } catch (error) {
       logger.error('Error logging notification delivery:', error);
     }
@@ -952,10 +953,10 @@ Acknowledge: {{acknowledgeUrl}}
   async sendPublicIncidentNotification(incident, type) {
     // Send to external status page subscribers
     logger.info(`Sending public incident notification: ${type}`, { incident_id: incident.id });
-    
+
     return {
       success: true,
-      message: 'Public incident notification would be sent here'
+      message: 'Public incident notification would be sent here',
     };
   }
 
@@ -993,22 +994,15 @@ Acknowledge: {{acknowledgeUrl}}
 
   isRetryableError(error) {
     // Determine if error is temporary and worth retrying
-    const retryableErrors = [
-      'ECONNREFUSED',
-      'ETIMEDOUT',
-      'ENOTFOUND',
-      'RATE_LIMITED'
-    ];
-    
-    return retryableErrors.some(code => 
-      error.code === code || error.message.includes(code)
-    );
+    const retryableErrors = ['ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'RATE_LIMITED'];
+
+    return retryableErrors.some((code) => error.code === code || error.message.includes(code));
   }
 
   async queueForRetry(channel, notification, _recipients, _options) {
     // Queue failed notification for retry
-    logger.info(`Queueing ${channel} notification for retry:`, { 
-      notification_id: notification.id 
+    logger.info(`Queueing ${channel} notification for retry:`, {
+      notification_id: notification.id,
     });
   }
 }

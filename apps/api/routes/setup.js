@@ -22,7 +22,7 @@ router.setupWebSocket = (httpServer) => {
 router.get('/wizard/config', async (req, res) => {
   try {
     const sessionId = req.headers['x-session-id'] || req.query.sessionId;
-    
+
     res.json({
       success: true,
       data: {
@@ -35,15 +35,15 @@ router.get('/wizard/config', async (req, res) => {
           progressSaving: true,
           rollbackSupport: true,
           configExport: true,
-          dependencyChecking: true
-        }
-      }
+          dependencyChecking: true,
+        },
+      },
     });
   } catch (error) {
     logger.error('Setup wizard config error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get setup configuration'
+      error: 'Failed to get setup configuration',
     });
   }
 });
@@ -52,7 +52,7 @@ router.get('/wizard/config', async (req, res) => {
 router.post('/wizard/session', async (req, res) => {
   try {
     const sessionId = crypto.randomUUID();
-    
+
     // Initialize session in setup wizard service
     setupWizard.sessions.set(sessionId, {
       clients: new Set(),
@@ -60,22 +60,22 @@ router.post('/wizard/session', async (req, res) => {
       configuration: {},
       startTime: new Date(),
       progress: 0,
-      status: 'created'
+      status: 'created',
     });
-    
+
     res.json({
       success: true,
       data: {
         sessionId,
         websocketUrl: `ws://${req.get('host')}/setup-wizard/ws?sessionId=${sessionId}`,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-      }
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      },
     });
   } catch (error) {
     logger.error('Setup session creation error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to create setup session'
+      error: 'Failed to create setup session',
     });
   }
 });
@@ -85,14 +85,14 @@ router.get('/wizard/session/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
     const session = setupWizard.sessions.get(sessionId);
-    
+
     if (!session) {
       return res.status(404).json({
         success: false,
-        error: 'Session not found'
+        error: 'Session not found',
       });
     }
-    
+
     res.json({
       success: true,
       data: {
@@ -101,14 +101,14 @@ router.get('/wizard/session/:sessionId', async (req, res) => {
         progress: session.progress,
         startTime: session.startTime,
         configuration: session.configuration,
-        status: session.status
-      }
+        status: session.status,
+      },
     });
   } catch (error) {
     logger.error('Setup session retrieval error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get setup session'
+      error: 'Failed to get setup session',
     });
   }
 });
@@ -147,8 +147,8 @@ router.post(
           suggestions: [
             'Verify the Slack token is valid and has not expired',
             'Ensure the token has the required permissions (chat:write, channels:read)',
-            'Check if the Slack workspace is active'
-          ]
+            'Check if the Slack workspace is active',
+          ],
         });
       }
 
@@ -167,7 +167,7 @@ router.post(
       });
 
       const testData = await testResponse.json();
-      
+
       if (!testData.ok) {
         return res.status(400).json({
           success: false,
@@ -175,8 +175,8 @@ router.post(
           suggestions: [
             'Ensure the channel exists and the bot has access',
             'Verify chat:write permissions are granted',
-            'Check if the channel is public or the bot is invited to private channels'
-          ]
+            'Check if the channel is public or the bot is invited to private channels',
+          ],
         });
       }
 
@@ -189,8 +189,8 @@ router.post(
           user: data.user,
           teamId: data.team_id,
           userId: data.user_id,
-          testMessage: testData.ts
-        }
+          testMessage: testData.ts,
+        },
       });
     } catch (error) {
       logger.error('Slack connection test failed:', error);
@@ -200,8 +200,8 @@ router.post(
         suggestions: [
           'Check your internet connection',
           'Verify Slack API is accessible from your server',
-          'Ensure firewall allows outbound HTTPS connections'
-        ]
+          'Ensure firewall allows outbound HTTPS connections',
+        ],
       });
     }
   },

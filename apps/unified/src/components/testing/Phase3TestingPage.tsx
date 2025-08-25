@@ -1,23 +1,28 @@
-import { useState } from 'react'
-import { cn } from '../../utils'
+import { useState } from 'react';
+import { cn } from '../../utils';
 
 interface Phase3TestingPageProps {
-  className?: string
+  className?: string;
 }
 
 interface TestResult {
-  id: string
-  name: string
-  category: string
-  status: 'pending' | 'running' | 'passed' | 'failed'
-  message?: string
-  duration?: number
+  id: string;
+  name: string;
+  category: string;
+  status: 'pending' | 'running' | 'passed' | 'failed';
+  message?: string;
+  duration?: number;
 }
 
 export function Phase3TestingPage({ className }: Phase3TestingPageProps) {
   const [tests, setTests] = useState<TestResult[]>([
     // Dashboard System Tests
-    { id: 'dash-1', name: 'Widget System Initialization', category: 'Dashboard', status: 'pending' },
+    {
+      id: 'dash-1',
+      name: 'Widget System Initialization',
+      category: 'Dashboard',
+      status: 'pending',
+    },
     { id: 'dash-2', name: 'Real-time Data Updates', category: 'Dashboard', status: 'pending' },
     { id: 'dash-3', name: 'Layout Persistence', category: 'Dashboard', status: 'pending' },
     { id: 'dash-4', name: 'Widget Configuration', category: 'Dashboard', status: 'pending' },
@@ -49,163 +54,174 @@ export function Phase3TestingPage({ className }: Phase3TestingPageProps) {
     { id: 'int-2', name: 'State Management', category: 'Integration', status: 'pending' },
     { id: 'int-3', name: 'Performance Metrics', category: 'Integration', status: 'pending' },
     { id: 'int-4', name: 'Error Handling', category: 'Integration', status: 'pending' },
-    { id: 'int-5', name: 'Accessibility Compliance', category: 'Integration', status: 'pending' }
-  ])
+    { id: 'int-5', name: 'Accessibility Compliance', category: 'Integration', status: 'pending' },
+  ]);
 
-  const [runningTests, setRunningTests] = useState(false)
-  const [currentTestIndex, setCurrentTestIndex] = useState(0)
+  const [runningTests, setRunningTests] = useState(false);
+  const [currentTestIndex, setCurrentTestIndex] = useState(0);
 
-  const categories = ['Dashboard', 'Tickets', 'Assets', 'Spaces', 'Integration']
-  
+  const categories = ['Dashboard', 'Tickets', 'Assets', 'Spaces', 'Integration'];
+
   const getTestStats = () => {
-    const stats = tests.reduce((acc, test) => {
-      acc[test.status] = (acc[test.status] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-    
+    const stats = tests.reduce(
+      (acc, test) => {
+        acc[test.status] = (acc[test.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
     return {
       total: tests.length,
       passed: stats.passed || 0,
       failed: stats.failed || 0,
       pending: stats.pending || 0,
-      running: stats.running || 0
-    }
-  }
+      running: stats.running || 0,
+    };
+  };
 
   const getCategoryStats = (category: string) => {
-    const categoryTests = tests.filter(t => t.category === category)
-    const passed = categoryTests.filter(t => t.status === 'passed').length
-    const total = categoryTests.length
-    return { passed, total, percentage: total > 0 ? Math.round((passed / total) * 100) : 0 }
-  }
+    const categoryTests = tests.filter((t) => t.category === category);
+    const passed = categoryTests.filter((t) => t.status === 'passed').length;
+    const total = categoryTests.length;
+    return { passed, total, percentage: total > 0 ? Math.round((passed / total) * 100) : 0 };
+  };
 
   const runSingleTest = async (testId: string): Promise<TestResult> => {
     return new Promise((resolve) => {
-      const test = tests.find(t => t.id === testId)!
-      const startTime = Date.now()
-      
+      const test = tests.find((t) => t.id === testId)!;
+      const startTime = Date.now();
+
       // Simulate test execution with random duration and outcome
-      const duration = Math.random() * 2000 + 500 // 500ms - 2500ms
-      const shouldPass = Math.random() > 0.1 // 90% pass rate
-      
+      const duration = Math.random() * 2000 + 500; // 500ms - 2500ms
+      const shouldPass = Math.random() > 0.1; // 90% pass rate
+
       setTimeout(() => {
-        const endTime = Date.now()
+        const endTime = Date.now();
         const result: TestResult = {
           ...test,
           status: shouldPass ? 'passed' : 'failed',
           duration: endTime - startTime,
-          message: shouldPass 
+          message: shouldPass
             ? `Test completed successfully`
-            : `Mock test failure - ${Math.random() > 0.5 ? 'Assertion failed' : 'Timeout exceeded'}`
-        }
-        resolve(result)
-      }, duration)
-    })
-  }
+            : `Mock test failure - ${Math.random() > 0.5 ? 'Assertion failed' : 'Timeout exceeded'}`,
+        };
+        resolve(result);
+      }, duration);
+    });
+  };
 
   const runAllTests = async () => {
-    setRunningTests(true)
-    setCurrentTestIndex(0)
-    
+    setRunningTests(true);
+    setCurrentTestIndex(0);
+
     // Reset all tests to pending
-    setTests(prev => prev.map(test => ({ ...test, status: 'pending' as const })))
-    
+    setTests((prev) => prev.map((test) => ({ ...test, status: 'pending' as const })));
+
     // Run tests sequentially
     for (let i = 0; i < tests.length; i++) {
-      setCurrentTestIndex(i)
-      
+      setCurrentTestIndex(i);
+
       // Set current test to running
-      setTests(prev => prev.map((test, index) => 
-        index === i ? { ...test, status: 'running' as const } : test
-      ))
-      
+      setTests((prev) =>
+        prev.map((test, index) => (index === i ? { ...test, status: 'running' as const } : test)),
+      );
+
       // Run the test
       const currentTest = tests[i];
       if (currentTest) {
-        const result = await runSingleTest(currentTest.id)
-      
+        const result = await runSingleTest(currentTest.id);
+
         // Update test result
-        setTests(prev => prev.map((test, index) => 
-          index === i ? result : test
-        ))
-        
+        setTests((prev) => prev.map((test, index) => (index === i ? result : test)));
+
         // Small delay between tests for visual effect
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
-    
-    setRunningTests(false)
-    setCurrentTestIndex(0)
-  }
+
+    setRunningTests(false);
+    setCurrentTestIndex(0);
+  };
 
   const runCategoryTests = async (category: string) => {
-    const categoryTests = tests.filter(t => t.category === category)
-    setRunningTests(true)
-    
+    const categoryTests = tests.filter((t) => t.category === category);
+    setRunningTests(true);
+
     // Reset category tests to pending
-    setTests(prev => prev.map(test => 
-      test.category === category ? { ...test, status: 'pending' as const } : test
-    ))
-    
+    setTests((prev) =>
+      prev.map((test) =>
+        test.category === category ? { ...test, status: 'pending' as const } : test,
+      ),
+    );
+
     // Run category tests
     for (const test of categoryTests) {
-      setTests(prev => prev.map(t => 
-        t.id === test.id ? { ...t, status: 'running' as const } : t
-      ))
-      
-      const result = await runSingleTest(test.id)
-      
-      setTests(prev => prev.map(t => 
-        t.id === test.id ? result : t
-      ))
-      
-      await new Promise(resolve => setTimeout(resolve, 100))
+      setTests((prev) =>
+        prev.map((t) => (t.id === test.id ? { ...t, status: 'running' as const } : t)),
+      );
+
+      const result = await runSingleTest(test.id);
+
+      setTests((prev) => prev.map((t) => (t.id === test.id ? result : t)));
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    
-    setRunningTests(false)
-  }
+
+    setRunningTests(false);
+  };
 
   const getStatusIcon = (status: TestResult['status']) => {
     switch (status) {
-      case 'pending': return '⏳'
-      case 'running': return '🔄'
-      case 'passed': return '✅'
-      case 'failed': return '❌'
-      default: return '⏳'
+      case 'pending':
+        return '⏳';
+      case 'running':
+        return '🔄';
+      case 'passed':
+        return '✅';
+      case 'failed':
+        return '❌';
+      default:
+        return '⏳';
     }
-  }
+  };
 
   const getStatusColor = (status: TestResult['status']) => {
     switch (status) {
-      case 'pending': return 'text-gray-500'
-      case 'running': return 'text-blue-600'
-      case 'passed': return 'text-green-600'
-      case 'failed': return 'text-red-600'
-      default: return 'text-gray-500'
+      case 'pending':
+        return 'text-gray-500';
+      case 'running':
+        return 'text-blue-600';
+      case 'passed':
+        return 'text-green-600';
+      case 'failed':
+        return 'text-red-600';
+      default:
+        return 'text-gray-500';
     }
-  }
+  };
 
-  const stats = getTestStats()
+  const stats = getTestStats();
 
   return (
-    <div className={cn("h-full flex flex-col", className)}>
+    <div className={cn('flex h-full flex-col', className)}>
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className="border-b border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               🧪 Phase 3 Testing Suite
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               Comprehensive testing for all Phase 3 modules and integrations
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <button
               onClick={runAllTests}
               disabled={runningTests}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             >
               {runningTests ? '🔄 Running...' : '🚀 Run All Tests'}
             </button>
@@ -214,33 +230,25 @@ export function Phase3TestingPage({ className }: Phase3TestingPageProps) {
       </div>
 
       {/* Stats Overview */}
-      <div className="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {stats.total}
-            </div>
+      <div className="border-b border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-900">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+          <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Total Tests</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-green-600">
-              {stats.passed}
-            </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+            <div className="text-2xl font-bold text-green-600">{stats.passed}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Passed</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-red-600">
-              {stats.failed}
-            </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+            <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Failed</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-blue-600">
-              {stats.running}
-            </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+            <div className="text-2xl font-bold text-blue-600">{stats.running}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Running</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
             <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">
               {stats.pending}
             </div>
@@ -250,13 +258,15 @@ export function Phase3TestingPage({ className }: Phase3TestingPageProps) {
 
         {runningTests && (
           <div className="mt-4">
-            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-              <span>Running test {currentTestIndex + 1} of {stats.total}</span>
+            <div className="mb-2 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+              <span>
+                Running test {currentTestIndex + 1} of {stats.total}
+              </span>
               <span>{Math.round(((currentTestIndex + 1) / stats.total) * 100)}% Complete</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="h-2 rounded-full bg-blue-600 transition-all duration-300"
                 style={{ width: `${((currentTestIndex + 1) / stats.total) * 100}%` }}
               />
             </div>
@@ -265,19 +275,19 @@ export function Phase3TestingPage({ className }: Phase3TestingPageProps) {
       </div>
 
       {/* Test Categories */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         {/* Category Sidebar */}
-        <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+        <div className="w-64 overflow-y-auto border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
           <div className="p-4">
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+            <h3 className="mb-3 text-sm font-medium text-gray-900 dark:text-white">
               Test Categories
             </h3>
             <div className="space-y-2">
               {categories.map((category) => {
-                const categoryStats = getCategoryStats(category)
+                const categoryStats = getCategoryStats(category);
                 return (
                   <div key={category} className="group">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                    <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600">
                       <div>
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {category}
@@ -293,20 +303,20 @@ export function Phase3TestingPage({ className }: Phase3TestingPageProps) {
                         <button
                           onClick={() => runCategoryTests(category)}
                           disabled={runningTests}
-                          className="opacity-0 group-hover:opacity-100 text-blue-600 hover:text-blue-700 text-xs disabled:opacity-50"
+                          className="text-xs text-blue-600 opacity-0 group-hover:opacity-100 hover:text-blue-700 disabled:opacity-50"
                         >
                           Run
                         </button>
                       </div>
                     </div>
-                    <div className="mt-1 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1">
+                    <div className="mt-1 h-1 w-full rounded-full bg-gray-200 dark:bg-gray-600">
                       <div
-                        className="bg-green-500 h-1 rounded-full transition-all duration-300"
+                        className="h-1 rounded-full bg-green-500 transition-all duration-300"
                         style={{ width: `${categoryStats.percentage}%` }}
                       />
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </div>
@@ -318,28 +328,28 @@ export function Phase3TestingPage({ className }: Phase3TestingPageProps) {
             <div className="space-y-6">
               {categories.map((category) => (
                 <div key={category}>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
                     {category} Tests
                   </h3>
                   <div className="space-y-2">
                     {tests
-                      .filter(test => test.category === category)
+                      .filter((test) => test.category === category)
                       .map((test) => (
                         <div
                           key={test.id}
                           className={cn(
-                            "flex items-center justify-between p-4 border rounded-lg transition-all duration-200",
-                            test.status === 'running' 
-                              ? "border-blue-300 bg-blue-50 dark:bg-blue-900/20" 
+                            'flex items-center justify-between rounded-lg border p-4 transition-all duration-200',
+                            test.status === 'running'
+                              ? 'border-blue-300 bg-blue-50 dark:bg-blue-900/20'
                               : test.status === 'passed'
-                              ? "border-green-300 bg-green-50 dark:bg-green-900/20"
-                              : test.status === 'failed'
-                              ? "border-red-300 bg-red-50 dark:bg-red-900/20"
-                              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                                ? 'border-green-300 bg-green-50 dark:bg-green-900/20'
+                                : test.status === 'failed'
+                                  ? 'border-red-300 bg-red-50 dark:bg-red-900/20'
+                                  : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800',
                           )}
                         >
                           <div className="flex items-center space-x-3">
-                            <div className={cn("text-lg", getStatusColor(test.status))}>
+                            <div className={cn('text-lg', getStatusColor(test.status))}>
                               {getStatusIcon(test.status)}
                             </div>
                             <div>
@@ -347,19 +357,21 @@ export function Phase3TestingPage({ className }: Phase3TestingPageProps) {
                                 {test.name}
                               </div>
                               {test.message && (
-                                <div className={cn(
-                                  "text-xs mt-1",
-                                  test.status === 'failed' ? "text-red-600" : "text-gray-600 dark:text-gray-400"
-                                )}>
+                                <div
+                                  className={cn(
+                                    'mt-1 text-xs',
+                                    test.status === 'failed'
+                                      ? 'text-red-600'
+                                      : 'text-gray-600 dark:text-gray-400',
+                                  )}
+                                >
                                   {test.message}
                                 </div>
                               )}
                             </div>
                           </div>
                           <div className="flex items-center space-x-3 text-xs text-gray-500">
-                            {test.duration && (
-                              <span>{test.duration}ms</span>
-                            )}
+                            {test.duration && <span>{test.duration}ms</span>}
                             <span className="text-gray-400">{test.id}</span>
                           </div>
                         </div>
@@ -373,22 +385,22 @@ export function Phase3TestingPage({ className }: Phase3TestingPageProps) {
       </div>
 
       {/* Status Bar */}
-      <div className="flex items-center justify-between px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 text-sm">
+      <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-3 text-sm dark:border-gray-700 dark:bg-gray-900">
         <div className="flex items-center space-x-4 text-gray-600 dark:text-gray-400">
           <span>🧪 Test Suite Version 1.0</span>
           <span>📅 {new Date().toLocaleDateString()}</span>
           <span>🕐 {new Date().toLocaleTimeString()}</span>
         </div>
-        
+
         <div className="flex items-center space-x-4 text-gray-600 dark:text-gray-400">
           {runningTests ? (
             <span className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500"></div>
               <span>Tests Running...</span>
             </span>
           ) : (
             <span className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="h-2 w-2 rounded-full bg-green-500"></div>
               <span>Ready to Test</span>
             </span>
           )}
@@ -396,5 +408,5 @@ export function Phase3TestingPage({ className }: Phase3TestingPageProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

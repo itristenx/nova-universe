@@ -1,6 +1,6 @@
 /**
  * Comprehensive Integration Test Suite
- * 
+ *
  * Tests the complete Nova Monitoring & Alerting Integration including:
  * - Database schema and migrations
  * - API gateway endpoints
@@ -8,10 +8,10 @@
  * - Notification delivery
  * - External service integration
  * - Error handling and edge cases
- * 
+ *
  * Test Categories:
  * 1. Database Integration Tests
- * 2. API Endpoint Tests  
+ * 2. API Endpoint Tests
  * 3. Real-time Synchronization Tests
  * 4. Notification System Tests
  * 5. External Service Integration Tests
@@ -20,7 +20,16 @@
  * 8. Edge Case and Error Handling Tests
  */
 
-import { describe, beforeAll, afterAll, beforeEach, afterEach, test, expect, jest } from '@jest/globals';
+import {
+  describe,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  afterEach,
+  test,
+  expect,
+  jest,
+} from '@jest/globals';
 import supertest from 'supertest';
 import { database } from '../../../apps/api/utils/database.js';
 import { monitoringEventBridge } from '../../../apps/api/lib/monitoring-event-bridge.js';
@@ -45,7 +54,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
 
     // Initialize test database
     await database.connect();
-    
+
     // Run migrations
     await database.migrate();
 
@@ -106,12 +115,12 @@ describe('Nova Monitoring & Alerting Integration', () => {
         'integration_audit_log',
         'integration_sync_errors',
         'status_page_config',
-        'notification_delivery_log'
+        'notification_delivery_log',
       ];
 
-      const tableNames = tables.rows.map(row => row.table_name);
-      
-      expectedTables.forEach(expectedTable => {
+      const tableNames = tables.rows.map((row) => row.table_name);
+
+      expectedTables.forEach((expectedTable) => {
         expect(tableNames).toContain(expectedTable);
       });
     });
@@ -126,39 +135,50 @@ describe('Nova Monitoring & Alerting Integration', () => {
       `);
 
       expect(indexes.rows.length).toBeGreaterThan(10);
-      
+
       // Check for critical indexes
-      const indexNames = indexes.rows.map(row => `${row.tablename}.${row.indexname}`);
+      const indexNames = indexes.rows.map((row) => `${row.tablename}.${row.indexname}`);
       expect(indexNames).toContain('nova_alerts.idx_nova_alerts_status_severity');
       expect(indexNames).toContain('nova_alerts.idx_nova_alerts_monitor_id');
-      expect(indexNames).toContain('oncall_schedule_assignments.idx_oncall_assignments_schedule_time');
+      expect(indexNames).toContain(
+        'oncall_schedule_assignments.idx_oncall_assignments_schedule_time',
+      );
     });
 
     test('should handle database constraints properly', async () => {
       // Test unique constraints
       await expect(
-        database.query(`
+        database.query(
+          `
           INSERT INTO monitoring_user_mappings (tenant_id, nova_user_id, goalert_user_id, uptime_kuma_user_id)
           VALUES ($1, $2, 'duplicate_goalert_id', 'uk_id_1')
-        `, [testTenantId, testUserId])
+        `,
+          [testTenantId, testUserId],
+        ),
       ).resolves.toBeDefined();
 
       // Should fail on duplicate GoAlert user ID
       await expect(
-        database.query(`
+        database.query(
+          `
           INSERT INTO monitoring_user_mappings (tenant_id, nova_user_id, goalert_user_id, uptime_kuma_user_id)
           VALUES ($1, $2, 'duplicate_goalert_id', 'uk_id_2')
-        `, [testTenantId, 'other-user-id'])
+        `,
+          [testTenantId, 'other-user-id'],
+        ),
       ).rejects.toThrow();
     });
 
     test('should handle foreign key relationships', async () => {
       // Test monitor-alert relationship
-      const alertResult = await database.query(`
+      const alertResult = await database.query(
+        `
         INSERT INTO nova_alerts (summary, severity, monitor_id, status)
         VALUES ('Test Alert', 'medium', $1, 'active')
         RETURNING id
-      `, [testMonitorId]);
+      `,
+        [testMonitorId],
+      );
 
       expect(alertResult.rows[0].id).toBeDefined();
 
@@ -167,7 +187,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
         database.query(`
           INSERT INTO nova_alerts (summary, severity, monitor_id, status)
           VALUES ('Invalid Alert', 'medium', '00000000-0000-0000-0000-000000000000', 'active')
-        `)
+        `),
       ).rejects.toThrow();
     });
   });
@@ -208,13 +228,13 @@ describe('Nova Monitoring & Alerting Integration', () => {
           interval: 300,
           timeout: 30,
           create_in_uptime_kuma: true,
-          create_in_goalert: false
+          create_in_goalert: false,
         };
 
         // Mock external service calls
         monitoringIntegrationService.createUptimeKumaMonitor.mockResolvedValue({
           id: 'uk_monitor_123',
-          status: 'created'
+          status: 'created',
         });
 
         const response = await supertest(app)
@@ -230,8 +250,8 @@ describe('Nova Monitoring & Alerting Integration', () => {
           expect.objectContaining({
             name: monitorData.name,
             type: monitorData.type,
-            url: monitorData.url
-          })
+            url: monitorData.url,
+          }),
         );
       });
 
@@ -239,11 +259,11 @@ describe('Nova Monitoring & Alerting Integration', () => {
         const updateData = {
           name: 'Updated Monitor Name',
           interval: 600,
-          timeout: 45
+          timeout: 45,
         };
 
         monitoringIntegrationService.updateUptimeKumaMonitor.mockResolvedValue({
-          success: true
+          success: true,
         });
 
         const response = await supertest(app)
@@ -265,14 +285,14 @@ describe('Nova Monitoring & Alerting Integration', () => {
           .send({
             name: 'Monitor to Delete',
             type: 'http',
-            url: 'https://example.com'
+            url: 'https://example.com',
           })
           .expect(201);
 
         const monitorId = createResponse.body.monitor.id;
 
         monitoringIntegrationService.removeMonitorFromUptimeKuma.mockResolvedValue({
-          success: true
+          success: true,
         });
 
         const response = await supertest(app)
@@ -290,11 +310,11 @@ describe('Nova Monitoring & Alerting Integration', () => {
         const response = await supertest(app)
           .get('/api/v2/alerts')
           .set('Authorization', `Bearer ${authToken}`)
-          .query({ 
+          .query({
             severity: 'high',
             status: 'active',
             page: 1,
-            limit: 20
+            limit: 20,
           })
           .expect(200);
 
@@ -311,12 +331,12 @@ describe('Nova Monitoring & Alerting Integration', () => {
           description: 'This is a test critical alert',
           severity: 'critical',
           monitor_id: testMonitorId,
-          escalate_immediately: true
+          escalate_immediately: true,
         };
 
         monitoringIntegrationService.createGoAlertAlert.mockResolvedValue({
           id: 'goalert_alert_123',
-          status: 'active'
+          status: 'active',
         });
 
         const response = await supertest(app)
@@ -334,11 +354,11 @@ describe('Nova Monitoring & Alerting Integration', () => {
 
       test('PUT /api/v2/alerts/:id/acknowledge should acknowledge alert in both systems', async () => {
         const acknowledgeData = {
-          message: 'Investigating the issue'
+          message: 'Investigating the issue',
         };
 
         monitoringIntegrationService.acknowledgeGoAlertAlert.mockResolvedValue({
-          success: true
+          success: true,
         });
 
         const response = await supertest(app)
@@ -356,11 +376,11 @@ describe('Nova Monitoring & Alerting Integration', () => {
       test('PUT /api/v2/alerts/:id/resolve should resolve alert in both systems', async () => {
         const resolveData = {
           resolution_notes: 'Issue was resolved by restarting the service',
-          root_cause: 'Service memory leak'
+          root_cause: 'Service memory leak',
         };
 
         monitoringIntegrationService.resolveGoAlertAlert.mockResolvedValue({
-          success: true
+          success: true,
         });
 
         const response = await supertest(app)
@@ -396,14 +416,14 @@ describe('Nova Monitoring & Alerting Integration', () => {
           rotation_type: 'weekly',
           rotation_config: {
             rotation_start: '2024-01-01T00:00:00Z',
-            participants: [testUserId]
+            participants: [testUserId],
           },
-          create_in_goalert: true
+          create_in_goalert: true,
         };
 
         monitoringIntegrationService.createGoAlertSchedule.mockResolvedValue({
           id: 'goalert_schedule_123',
-          status: 'created'
+          status: 'created',
         });
 
         const response = await supertest(app)
@@ -436,7 +456,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
           user_id: testUserId,
           start_time: '2024-12-20T12:00:00Z',
           end_time: '2024-12-20T20:00:00Z',
-          reason: 'Emergency coverage needed'
+          reason: 'Emergency coverage needed',
         };
 
         const response = await supertest(app)
@@ -472,7 +492,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
           severity: 'high',
           status: 'investigating',
           affected_services: [testMonitorId],
-          is_public: true
+          is_public: true,
         };
 
         const response = await supertest(app)
@@ -495,7 +515,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
             summary: 'Test Incident for Update',
             severity: 'medium',
             status: 'investigating',
-            affected_services: [testMonitorId]
+            affected_services: [testMonitorId],
           })
           .expect(201);
 
@@ -503,7 +523,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
 
         const updateData = {
           status: 'resolved',
-          message: 'Issue has been resolved. All services are operational.'
+          message: 'Issue has been resolved. All services are operational.',
         };
 
         const response = await supertest(app)
@@ -532,17 +552,20 @@ describe('Nova Monitoring & Alerting Integration', () => {
         .send({
           name: 'Event Test Monitor',
           type: 'http',
-          url: 'https://example.com'
+          url: 'https://example.com',
         })
         .expect(201);
 
-      expect(eventSpy).toHaveBeenCalledWith('monitor.created', expect.objectContaining({
-        monitor: expect.objectContaining({
-          name: 'Event Test Monitor'
+      expect(eventSpy).toHaveBeenCalledWith(
+        'monitor.created',
+        expect.objectContaining({
+          monitor: expect.objectContaining({
+            name: 'Event Test Monitor',
+          }),
+          user: expect.any(Object),
+          timestamp: expect.any(String),
         }),
-        user: expect.any(Object),
-        timestamp: expect.any(String)
-      }));
+      );
     });
 
     test('should handle external GoAlert events', async () => {
@@ -553,20 +576,23 @@ describe('Nova Monitoring & Alerting Integration', () => {
           status: 'acknowledged',
           service_id: 'service_123',
           acknowledged_by: 'test@example.com',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         },
         action: 'acknowledged',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       // Simulate external GoAlert event
       await monitoringEventBridge.handleGoAlertEvent(goalertEventData);
 
       // Verify Nova alert was updated
-      const alertResult = await database.query(`
+      const alertResult = await database.query(
+        `
         SELECT * FROM nova_alerts 
         WHERE goalert_alert_id = $1
-      `, [goalertEventData.alert.id]);
+      `,
+        [goalertEventData.alert.id],
+      );
 
       if (alertResult.rows.length > 0) {
         expect(alertResult.rows[0].status).toBe('acknowledged');
@@ -577,26 +603,32 @@ describe('Nova Monitoring & Alerting Integration', () => {
       const uptimeKumaEventData = {
         monitor: {
           id: 'uk_monitor_123',
-          name: 'Test Monitor'
+          name: 'Test Monitor',
         },
         status: 'down',
         response_time: 5000,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       // Mock monitor lookup
-      await database.query(`
+      await database.query(
+        `
         UPDATE monitors 
         SET uptime_kuma_id = $1 
         WHERE id = $2
-      `, ['uk_monitor_123', testMonitorId]);
+      `,
+        ['uk_monitor_123', testMonitorId],
+      );
 
       await monitoringEventBridge.handleUptimeKumaEvent(uptimeKumaEventData);
 
       // Verify monitor status was updated
-      const monitorResult = await database.query(`
+      const monitorResult = await database.query(
+        `
         SELECT status FROM monitors WHERE id = $1
-      `, [testMonitorId]);
+      `,
+        [testMonitorId],
+      );
 
       expect(monitorResult.rows[0].status).toBe('down');
     });
@@ -607,14 +639,14 @@ describe('Nova Monitoring & Alerting Integration', () => {
         nova_data: {
           id: 'nova_alert_123',
           status: 'active',
-          updated_at: '2024-12-20T10:00:00Z'
+          updated_at: '2024-12-20T10:00:00Z',
         },
         external_data: {
           id: 'goalert_alert_123',
           status: 'acknowledged',
-          updated_at: '2024-12-20T11:00:00Z'
+          updated_at: '2024-12-20T11:00:00Z',
         },
-        source: 'goalert'
+        source: 'goalert',
       };
 
       const resolution = await monitoringEventBridge.handleSyncConflict(conflictData);
@@ -637,7 +669,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
         severity: 'critical',
         status: 'active',
         monitor_id: testMonitorId,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       };
 
       const options = {
@@ -645,7 +677,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
         channels: ['email', 'sms', 'slack'],
         priority: 'critical',
         tenant_id: testTenantId,
-        escalate: true
+        escalate: true,
       };
 
       const result = await unifiedNotificationService.sendAlertNotification(alertData, options);
@@ -664,18 +696,17 @@ describe('Nova Monitoring & Alerting Integration', () => {
           id: 'test_alert_123',
           summary: 'Database Connection Failed',
           severity: 'critical',
-          created_at: '2024-12-20T12:00:00Z'
+          created_at: '2024-12-20T12:00:00Z',
         },
         monitor: {
-          name: 'Production Database'
-        }
+          name: 'Production Database',
+        },
       };
 
-      const notification = await unifiedNotificationService.buildNotification(
-        template, 
-        alertData, 
-        { tenant_id: testTenantId, type: 'alert_created' }
-      );
+      const notification = await unifiedNotificationService.buildNotification(template, alertData, {
+        tenant_id: testTenantId,
+        type: 'alert_created',
+      });
 
       expect(notification.subject).toContain('Database Connection Failed');
       expect(notification.content.email.html).toContain('Production Database');
@@ -684,17 +715,20 @@ describe('Nova Monitoring & Alerting Integration', () => {
 
     test('should respect user notification preferences', async () => {
       // Set user preferences to disable SMS
-      await database.query(`
+      await database.query(
+        `
         INSERT INTO user_contact_preferences (user_id, email_enabled, sms_enabled, push_enabled)
         VALUES ($1, true, false, true)
         ON CONFLICT (user_id) 
         DO UPDATE SET sms_enabled = false
-      `, [testUserId]);
+      `,
+        [testUserId],
+      );
 
       const recipients = await unifiedNotificationService.getEffectiveRecipients(
-        [testUserId], 
-        testTenantId, 
-        'alert_created'
+        [testUserId],
+        testTenantId,
+        'alert_created',
       );
 
       expect(recipients).toHaveLength(1);
@@ -705,20 +739,20 @@ describe('Nova Monitoring & Alerting Integration', () => {
     test('should handle notification delivery failures gracefully', async () => {
       // Mock a delivery failure
       const originalSendEmail = unifiedNotificationService.sendEmail;
-      unifiedNotificationService.sendEmail = jest.fn().mockRejectedValue(
-        new Error('SMTP server unavailable')
-      );
+      unifiedNotificationService.sendEmail = jest
+        .fn()
+        .mockRejectedValue(new Error('SMTP server unavailable'));
 
       const alertData = {
         id: 'test_alert_456',
         summary: 'Test Alert with Delivery Failure',
-        severity: 'high'
+        severity: 'high',
       };
 
       const result = await unifiedNotificationService.sendAlertNotification(alertData, {
         recipients: [testUserId],
         channels: ['email'],
-        tenant_id: testTenantId
+        tenant_id: testTenantId,
       });
 
       expect(result.success).toBe(true); // Should still succeed overall
@@ -738,7 +772,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
     test('should handle concurrent monitor creation', async () => {
       const authToken = await getTestAuthToken(testUserId);
       const concurrentRequests = 10;
-      
+
       const requests = Array.from({ length: concurrentRequests }, (_, i) =>
         supertest(app)
           .post('/api/v2/monitors')
@@ -746,12 +780,14 @@ describe('Nova Monitoring & Alerting Integration', () => {
           .send({
             name: `Concurrent Monitor ${i}`,
             type: 'http',
-            url: `https://example${i}.com`
-          })
+            url: `https://example${i}.com`,
+          }),
       );
 
       const results = await Promise.allSettled(requests);
-      const successfulRequests = results.filter(r => r.status === 'fulfilled' && r.value.status === 201);
+      const successfulRequests = results.filter(
+        (r) => r.status === 'fulfilled' && r.value.status === 201,
+      );
 
       expect(successfulRequests.length).toBe(concurrentRequests);
     });
@@ -768,7 +804,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
 
       expect(response.body.pagination.limit).toBe(100);
       expect(response.header['content-length']).toBeDefined();
-      
+
       // Response should be returned within reasonable time
       expect(response.header['x-response-time']).toBeDefined();
     });
@@ -784,12 +820,12 @@ describe('Nova Monitoring & Alerting Integration', () => {
           status: i % 2 === 0 ? 'up' : 'down',
           response_time: Math.random() * 1000,
           checked_at: new Date().toISOString(),
-          details: { test: `event_${i}` }
-        })
+          details: { test: `event_${i}` },
+        }),
       );
 
       await Promise.all(eventPromises);
-      
+
       const duration = Date.now() - startTime;
       expect(duration).toBeLessThan(5000); // Should complete within 5 seconds
     });
@@ -806,7 +842,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
         { method: 'post', path: '/api/v2/monitors' },
         { method: 'get', path: '/api/v2/alerts' },
         { method: 'post', path: '/api/v2/alerts' },
-        { method: 'get', path: '/api/v2/oncall/schedules' }
+        { method: 'get', path: '/api/v2/oncall/schedules' },
       ];
 
       for (const endpoint of endpoints) {
@@ -828,7 +864,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
 
       // Should return empty results or only user's tenant data
       expect(response.body.monitors).toBeInstanceOf(Array);
-      expect(response.body.monitors.every(m => m.tenant_id === testTenantId)).toBe(true);
+      expect(response.body.monitors.every((m) => m.tenant_id === testTenantId)).toBe(true);
     });
 
     test('should validate input data properly', async () => {
@@ -840,7 +876,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
         type: 'invalid_type',
         url: 'not_a_url',
         interval: -1, // Negative interval
-        timeout: 'not_a_number'
+        timeout: 'not_a_number',
       };
 
       const response = await supertest(app)
@@ -870,9 +906,12 @@ describe('Nova Monitoring & Alerting Integration', () => {
       expect(response.body.success).toBe(true);
 
       // Verify table still exists
-      const tableCheck = await database.query(`
+      const tableCheck = await database.query(
+        `
         SELECT COUNT(*) FROM monitors WHERE tenant_id = $1
-      `, [testTenantId]);
+      `,
+        [testTenantId],
+      );
 
       expect(tableCheck.rows[0].count).toBeDefined();
     });
@@ -883,14 +922,12 @@ describe('Nova Monitoring & Alerting Integration', () => {
 
       // Make many requests rapidly
       const requests = Array.from({ length: rapidRequests }, () =>
-        supertest(app)
-          .get('/api/v2/monitors')
-          .set('Authorization', `Bearer ${authToken}`)
+        supertest(app).get('/api/v2/monitors').set('Authorization', `Bearer ${authToken}`),
       );
 
       const results = await Promise.allSettled(requests);
       const rateLimitedRequests = results.filter(
-        r => r.status === 'fulfilled' && r.value.status === 429
+        (r) => r.status === 'fulfilled' && r.value.status === 429,
       );
 
       // Should have some rate limited requests
@@ -908,7 +945,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
 
       // Mock external service failure
       monitoringIntegrationService.createUptimeKumaMonitor.mockRejectedValue(
-        new Error('Uptime Kuma service unavailable')
+        new Error('Uptime Kuma service unavailable'),
       );
 
       const response = await supertest(app)
@@ -918,7 +955,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
           name: 'Monitor with Service Failure',
           type: 'http',
           url: 'https://example.com',
-          create_in_uptime_kuma: true
+          create_in_uptime_kuma: true,
         })
         .expect(201); // Should still succeed
 
@@ -948,7 +985,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
     test('should handle malformed webhook data', async () => {
       const malformedData = {
         // Missing required fields
-        incomplete: 'data'
+        incomplete: 'data',
       };
 
       // Should not crash the application
@@ -969,7 +1006,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
           summary: 'Large Payload Test',
           description: largeDescription,
           severity: 'medium',
-          monitor_id: testMonitorId
+          monitor_id: testMonitorId,
         });
 
       // Should either accept it or return appropriate error
@@ -984,16 +1021,16 @@ describe('Nova Monitoring & Alerting Integration', () => {
         supertest(app)
           .put(`/api/v2/alerts/${testAlertId}/acknowledge`)
           .set('Authorization', `Bearer ${authToken}`)
-          .send({ message: 'Concurrent acknowledgment' })
+          .send({ message: 'Concurrent acknowledgment' }),
       );
 
       const results = await Promise.allSettled(updateRequests);
-      
+
       // At least one should succeed
       const successfulRequests = results.filter(
-        r => r.status === 'fulfilled' && r.value.status === 200
+        (r) => r.status === 'fulfilled' && r.value.status === 200,
       );
-      
+
       expect(successfulRequests.length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -1010,7 +1047,7 @@ describe('Nova Monitoring & Alerting Integration', () => {
 async function setupTestData() {
   // These will be set by the main test suite
   let testTenantId, testUserId, testMonitorId, testAlertId, testScheduleId;
-  
+
   // Create test tenant
   const tenantResult = await database.query(`
     INSERT INTO tenants (name, subdomain, plan_type)
@@ -1020,35 +1057,47 @@ async function setupTestData() {
   testTenantId = tenantResult.rows[0].id;
 
   // Create test user
-  const userResult = await database.query(`
+  const userResult = await database.query(
+    `
     INSERT INTO users (email, first_name, last_name, tenant_id, role)
     VALUES ('test@example.com', 'Test', 'User', $1, 'admin')
     RETURNING id
-  `, [testTenantId]);
+  `,
+    [testTenantId],
+  );
   testUserId = userResult.rows[0].id;
 
   // Create test monitor
-  const monitorResult = await database.query(`
+  const monitorResult = await database.query(
+    `
     INSERT INTO monitors (name, type, url, tenant_id, created_by)
     VALUES ('Test Monitor', 'http', 'https://example.com', $1, $2)
     RETURNING id
-  `, [testTenantId, testUserId]);
+  `,
+    [testTenantId, testUserId],
+  );
   testMonitorId = monitorResult.rows[0].id;
 
   // Create test alert
-  const alertResult = await database.query(`
+  const alertResult = await database.query(
+    `
     INSERT INTO nova_alerts (summary, severity, status, monitor_id, created_by)
     VALUES ('Test Alert', 'medium', 'active', $1, $2)
     RETURNING id
-  `, [testMonitorId, testUserId]);
+  `,
+    [testMonitorId, testUserId],
+  );
   testAlertId = alertResult.rows[0].id;
 
   // Create test schedule
-  const scheduleResult = await database.query(`
+  const scheduleResult = await database.query(
+    `
     INSERT INTO oncall_schedules (name, timezone, rotation_type, tenant_id, created_by)
     VALUES ('Test Schedule', 'UTC', 'weekly', $1, $2)
     RETURNING id
-  `, [testTenantId, testUserId]);
+  `,
+    [testTenantId, testUserId],
+  );
   testScheduleId = scheduleResult.rows[0].id;
 
   return {
@@ -1056,7 +1105,7 @@ async function setupTestData() {
     testUserId,
     testMonitorId,
     testAlertId,
-    testScheduleId
+    testScheduleId,
   };
 }
 
@@ -1068,7 +1117,7 @@ async function cleanupTestData(testTenantId) {
 }
 
 async function getTestAuthToken(testUserId) {
-  // Mock authentication token generation  
+  // Mock authentication token generation
   // In real implementation, this would call the auth service
   return 'test_auth_token_' + testUserId;
 }

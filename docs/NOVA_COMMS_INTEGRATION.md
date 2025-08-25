@@ -1,18 +1,22 @@
 # Nova Comms Integration Summary
 
 ## Overview
+
 Nova Comms has been successfully integrated directly into the Nova Universe API, eliminating the need for a separate microservice. This integration provides Slack bot functionality through the main API server.
 
 ## What Was Integrated
 
 ### 1. Dependencies Added
+
 - `@slack/bolt@^4.4.0` - Slack Bolt framework for Node.js
 
 ### 2. New Files Created
+
 - `/apps/api/services/nova-comms.js` - Core Slack integration service
 - `/apps/api/routes/comms.js` - REST API endpoints for Nova Comms
 
 ### 3. Files Modified
+
 - `/apps/api/package.json` - Added @slack/bolt dependency
 - `/apps/api/index.js` - Added comms route mounting and Slack initialization
 - `/apps/api/.env.production.template` - Added Slack environment variables
@@ -23,7 +27,7 @@ Nova Comms has been successfully integrated directly into the Nova Universe API,
 The integration provides the following Slack commands:
 
 1. `/new-ticket` - Submit a new support ticket
-2. `/it-help` - Submit a new IT help request  
+2. `/it-help` - Submit a new IT help request
 3. `/nova-status` - Get Nova Universe system status
 4. `/nova-queue` - Get Pulse queue metrics summary
 5. `/nova-feedback <message>` - Submit platform feedback
@@ -43,12 +47,14 @@ Nova Comms exposes the following REST endpoints:
 ## Environment Variables
 
 ### Required for Slack Integration
+
 ```bash
 SLACK_BOT_TOKEN=xoxb-your-slack-bot-token
 SLACK_SIGNING_SECRET=your-slack-signing-secret
 ```
 
 ### Optional Configuration
+
 ```bash
 SLACK_PORT=3001                           # Default: 3001
 COMMS_SERVICE_USER_ID=comms-service       # Default: comms-service

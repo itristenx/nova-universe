@@ -248,7 +248,9 @@ router.post(
           if (err) {
             logger.error('Error saving file metadata:', err);
             // Clean up uploaded file
-            fs.unlink(req.file.path).catch((unlinkErr) => logger.error('Failed to cleanup file:', unlinkErr));
+            fs.unlink(req.file.path).catch((unlinkErr) =>
+              logger.error('Failed to cleanup file:', unlinkErr),
+            );
             return res.status(500).json({
               success: false,
               error: 'Failed to save file metadata',
@@ -288,7 +290,9 @@ router.post(
 
       // Clean up uploaded file if it exists
       if (req.file) {
-        fs.unlink(req.file.path).catch((unlinkErr) => logger.error('Failed to cleanup file:', unlinkErr));
+        fs.unlink(req.file.path).catch((unlinkErr) =>
+          logger.error('Failed to cleanup file:', unlinkErr),
+        );
       }
 
       res.status(500).json({

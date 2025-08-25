@@ -13,7 +13,7 @@ export class UptimeKumaClient {
     this.axios = axios.create({
       baseURL: this.baseUrl,
       timeout: 10000,
-      headers: this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {}
+      headers: this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {},
     });
   }
 
@@ -21,7 +21,9 @@ export class UptimeKumaClient {
     try {
       const response = await this.axios.get('/api/getMonitorList');
       if (response.data.ok) {
-        return Object.values(response.data.monitorList || {}).map(monitor => this.transformMonitor(monitor));
+        return Object.values(response.data.monitorList || {}).map((monitor) =>
+          this.transformMonitor(monitor),
+        );
       }
       throw new Error('Failed to fetch monitors');
     } catch (error) {
@@ -41,7 +43,7 @@ export class UptimeKumaClient {
         interval: monitor.interval || 60,
         timeout: monitor.timeout || 30,
         active: monitor.active !== false,
-        tags: monitor.tags || []
+        tags: monitor.tags || [],
       });
 
       if (response.data.ok) {
@@ -58,7 +60,7 @@ export class UptimeKumaClient {
     try {
       const response = await this.axios.post('/api/editMonitor', {
         id,
-        ...updates
+        ...updates,
       });
 
       if (response.data.ok) {
@@ -100,7 +102,7 @@ export class UptimeKumaClient {
     try {
       const response = await this.axios.get(`/api/getMonitorBeats/${monitorId}/${hours}`);
       if (response.data.ok) {
-        return response.data.data.map(beat => this.transformHeartbeat(beat));
+        return response.data.data.map((beat) => this.transformHeartbeat(beat));
       }
       return [];
     } catch (error) {
@@ -139,7 +141,7 @@ export class UptimeKumaClient {
       uptime: kumaMonitor.uptime || 0,
       responseTime: kumaMonitor.ping || 0,
       lastCheck: kumaMonitor.lastCheck ? new Date(kumaMonitor.lastCheck).toISOString() : null,
-      createdAt: kumaMonitor.created_date ? new Date(kumaMonitor.created_date).toISOString() : null
+      createdAt: kumaMonitor.created_date ? new Date(kumaMonitor.created_date).toISOString() : null,
     };
   }
 
@@ -149,7 +151,7 @@ export class UptimeKumaClient {
       uptime: kumaData.uptime || 0,
       responseTime: kumaData.ping || 0,
       certExpiry: kumaData.certExpiry || null,
-      lastCheck: kumaData.lastCheck ? new Date(kumaData.lastCheck).toISOString() : null
+      lastCheck: kumaData.lastCheck ? new Date(kumaData.lastCheck).toISOString() : null,
     };
   }
 
@@ -160,7 +162,7 @@ export class UptimeKumaClient {
       status: kumaHeartbeat.status,
       responseTime: kumaHeartbeat.ping || 0,
       message: kumaHeartbeat.msg || '',
-      timestamp: kumaHeartbeat.time ? new Date(kumaHeartbeat.time).toISOString() : null
+      timestamp: kumaHeartbeat.time ? new Date(kumaHeartbeat.time).toISOString() : null,
     };
   }
 }
@@ -171,10 +173,10 @@ export const uptimeKumaClient = new UptimeKumaClient();
 // Export Nova-compatible monitor management functions
 export async function getNovaMonitors() {
   const monitors = await uptimeKumaClient.getMonitors();
-  return monitors.map(monitor => ({
+  return monitors.map((monitor) => ({
     ...monitor,
     source: 'uptime-kuma',
-    managedBy: 'nova'
+    managedBy: 'nova',
   }));
 }
 
@@ -183,7 +185,7 @@ export async function createNovaMonitor(monitorData) {
   return {
     ...monitor,
     source: 'uptime-kuma',
-    managedBy: 'nova'
+    managedBy: 'nova',
   };
 }
 
@@ -192,7 +194,7 @@ export async function updateNovaMonitor(id, updates) {
   return {
     ...monitor,
     source: 'uptime-kuma',
-    managedBy: 'nova'
+    managedBy: 'nova',
   };
 }
 
@@ -205,18 +207,18 @@ export async function getNovaMonitorStatus(id) {
   return {
     ...status,
     source: 'uptime-kuma',
-    managedBy: 'nova'
+    managedBy: 'nova',
   };
 }
 
 export async function getNovaSystemHealth() {
   const info = await uptimeKumaClient.getSystemInfo();
   const monitors = await getNovaMonitors();
-  
+
   const totalMonitors = monitors.length;
-  const activeMonitors = monitors.filter(m => m.active).length;
-  const upMonitors = monitors.filter(m => m.status === 'up').length;
-  
+  const activeMonitors = monitors.filter((m) => m.active).length;
+  const upMonitors = monitors.filter((m) => m.status === 'up').length;
+
   return {
     service: 'uptime-kuma',
     version: info.version,
@@ -225,7 +227,7 @@ export async function getNovaSystemHealth() {
     activeMonitors,
     upMonitors,
     downMonitors: activeMonitors - upMonitors,
-    uptime: totalMonitors > 0 ? (upMonitors / totalMonitors) * 100 : 100
+    uptime: totalMonitors > 0 ? (upMonitors / totalMonitors) * 100 : 100,
   };
 }
 

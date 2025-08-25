@@ -1,12 +1,12 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { BrowserRouter } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
-import App from './App'
-import '@styles/globals.css'
-import './i18n/config' // Initialize i18n
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { BrowserRouter } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import App from './App';
+import '@styles/globals.css';
+import './i18n/config'; // Initialize i18n
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -17,12 +17,12 @@ const queryClient = new QueryClient({
       retry: (failureCount, error) => {
         // Don't retry on 4xx errors
         if (error instanceof Error && 'status' in error) {
-          const status = (error as any).status
+          const status = (error as any).status;
           if (status >= 400 && status < 500) {
-            return false
+            return false;
           }
         }
-        return failureCount < 3
+        return failureCount < 3;
       },
       refetchOnWindowFocus: false,
     },
@@ -30,16 +30,16 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
-})
+});
 
 // Get root element
-const rootElement = document.getElementById('root')
+const rootElement = document.getElementById('root');
 if (!rootElement) {
-  throw new Error('Root element not found')
+  throw new Error('Root element not found');
 }
 
 // Create root and render app
-const root = ReactDOM.createRoot(rootElement)
+const root = ReactDOM.createRoot(rootElement);
 
 root.render(
   <React.StrictMode>
@@ -74,5 +74,5 @@ root.render(
       </BrowserRouter>
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
-  </React.StrictMode>
-)
+  </React.StrictMode>,
+);

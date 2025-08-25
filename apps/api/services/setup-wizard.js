@@ -19,7 +19,7 @@ class SetupWizardService extends EventEmitter {
     this.auditLog = [];
     this.rollbackStack = new Map();
     this.websocketServer = null;
-    
+
     // Setup wizard step definitions with dependency checking
     this.steps = [
       {
@@ -123,7 +123,7 @@ class SetupWizardService extends EventEmitter {
         estimatedTime: 120,
       },
     ];
-    
+
     // Build dependency graph after steps are defined
     this.dependencyGraph = this.buildDependencyGraph();
   }
@@ -132,20 +132,20 @@ class SetupWizardService extends EventEmitter {
    * Initialize WebSocket server for real-time communication
    */
   initializeWebSocketServer(httpServer) {
-    this.websocketServer = new WebSocketServer({ 
+    this.websocketServer = new WebSocketServer({
       server: httpServer,
-      path: '/setup-wizard/ws'
+      path: '/setup-wizard/ws',
     });
 
     this.websocketServer.on('connection', (ws, request) => {
       const sessionId = this.extractSessionId(request);
       const clientId = crypto.randomUUID();
-      
+
       logger.info(`Setup wizard WebSocket connection established: ${clientId}`);
-      
+
       ws.sessionId = sessionId;
       ws.clientId = clientId;
-      
+
       // Store client connection
       if (!this.sessions.has(sessionId)) {
         this.sessions.set(sessionId, {
@@ -154,10 +154,10 @@ class SetupWizardService extends EventEmitter {
           configuration: {},
           startTime: new Date(),
           progress: 0,
-          status: 'started'
+          status: 'started',
         });
       }
-      
+
       this.sessions.get(sessionId).clients.add(ws);
 
       ws.on('message', async (data) => {
@@ -188,7 +188,7 @@ class SetupWizardService extends EventEmitter {
         clientId,
         steps: this.getStepsForClient(),
         currentStep: this.sessions.get(sessionId).currentStep,
-        progress: this.sessions.get(sessionId).progress
+        progress: this.sessions.get(sessionId).progress,
       });
     });
 
@@ -245,9 +245,9 @@ class SetupWizardService extends EventEmitter {
   async handleStepValidation(ws, payload) {
     const { stepId, data } = payload;
     const session = this.sessions.get(ws.sessionId);
-    
+
     try {
-      const step = this.steps.find(s => s.id === stepId);
+      const step = this.steps.find((s) => s.id === stepId);
       if (!step) {
         return this.sendError(ws, 'Step not found', stepId);
       }
@@ -262,14 +262,14 @@ class SetupWizardService extends EventEmitter {
       this.sendToClient(ws, {
         type: 'validation_started',
         stepId,
-        progress: 0
+        progress: 0,
       });
 
       const validationResult = await step.validation(data, session, (progress) => {
         this.sendToClient(ws, {
           type: 'validation_progress',
           stepId,
-          progress
+          progress,
         });
       });
 
@@ -277,14 +277,14 @@ class SetupWizardService extends EventEmitter {
         this.sendToClient(ws, {
           type: 'validation_success',
           stepId,
-          result: validationResult
+          result: validationResult,
         });
       } else {
         this.sendToClient(ws, {
           type: 'validation_error',
           stepId,
           errors: validationResult.errors,
-          suggestions: validationResult.suggestions
+          suggestions: validationResult.suggestions,
         });
       }
     } catch (error) {
@@ -299,46 +299,47 @@ class SetupWizardService extends EventEmitter {
   async handleStepCompletion(ws, payload) {
     const { stepId, data } = payload;
     const session = this.sessions.get(ws.sessionId);
-    
+
     try {
       // Validate before completion
-      const step = this.steps.find(s => s.id === stepId);
+      const step = this.steps.find((s) => s.id === stepId);
       const validationResult = await step.validation(data, session);
-      
+
       if (!validationResult.valid) {
         return this.sendError(ws, 'Step validation failed', validationResult.errors);
       }
 
       // Store configuration
       session.configuration[stepId] = data;
-      
+
       // Create rollback point
       this.createRollbackPoint(ws.sessionId, stepId, data);
-      
+
       // Update progress
       const completedSteps = Object.keys(session.configuration).length;
-      const totalSteps = this.steps.filter(s => s.required || Object.prototype.hasOwnProperty.call(session.configuration, s.id)).length;
+      const totalSteps = this.steps.filter(
+        (s) => s.required || Object.prototype.hasOwnProperty.call(session.configuration, s.id),
+      ).length;
       session.progress = Math.round((completedSteps / totalSteps) * 100);
-      
+
       // Determine next step
       const nextStep = this.getNextStep(stepId, session);
       session.currentStep = nextStep?.id || 'complete';
-      
+
       // Broadcast to all clients in session
       this.broadcastToSession(ws.sessionId, {
         type: 'step_completed',
         stepId,
         nextStep: nextStep?.id,
         progress: session.progress,
-        estimatedTimeRemaining: this.calculateRemainingTime(session)
+        estimatedTimeRemaining: this.calculateRemainingTime(session),
       });
 
       // Auto-save progress
       await this.saveProgress(ws.sessionId);
-      
+
       // Add to audit log
       this.addAuditEntry(ws.sessionId, 'step_completed', { stepId, data });
-      
     } catch (error) {
       logger.error(`Step completion error for ${stepId}:`, error);
       this.sendError(ws, 'Step completion failed', error.message);
@@ -350,11 +351,11 @@ class SetupWizardService extends EventEmitter {
    */
   async handleConnectionTest(ws, payload) {
     const { service, config } = payload;
-    
+
     try {
       this.sendToClient(ws, {
         type: 'connection_test_started',
-        service
+        service,
       });
 
       let testResult;
@@ -387,9 +388,8 @@ class SetupWizardService extends EventEmitter {
       this.sendToClient(ws, {
         type: 'connection_test_result',
         service,
-        result: testResult
+        result: testResult,
       });
-      
     } catch (error) {
       logger.error(`Connection test error for ${service}:`, error);
       this.sendError(ws, 'Connection test failed', error.message);
@@ -401,17 +401,17 @@ class SetupWizardService extends EventEmitter {
    */
   buildDependencyGraph() {
     const graph = new Map();
-    
-    this.steps.forEach(step => {
+
+    this.steps.forEach((step) => {
       graph.set(step.id, {
         ...step,
-        dependents: []
+        dependents: [],
       });
     });
 
     // Build reverse dependencies
-    this.steps.forEach(step => {
-      step.dependencies.forEach(dep => {
+    this.steps.forEach((step) => {
+      step.dependencies.forEach((dep) => {
         if (graph.has(dep)) {
           graph.get(dep).dependents.push(step.id);
         }
@@ -427,17 +427,17 @@ class SetupWizardService extends EventEmitter {
   async checkStepDependencies(stepId, session) {
     const step = this.dependencyGraph.get(stepId);
     const missing = [];
-    
+
     for (const dep of step.dependencies) {
       if (!Object.prototype.hasOwnProperty.call(session.configuration, dep)) {
         missing.push(dep);
       }
     }
-    
+
     return {
       satisfied: missing.length === 0,
       missing,
-      required: step.dependencies
+      required: step.dependencies,
     };
   }
 
@@ -447,10 +447,10 @@ class SetupWizardService extends EventEmitter {
   getNextStep(currentStepId, session) {
     const completedSteps = new Set(Object.keys(session.configuration));
     completedSteps.add(currentStepId);
-    
-    return this.steps.find(step => {
+
+    return this.steps.find((step) => {
       if (completedSteps.has(step.id)) return false;
-      return step.dependencies.every(dep => completedSteps.has(dep));
+      return step.dependencies.every((dep) => completedSteps.has(dep));
     });
   }
 
@@ -459,11 +459,12 @@ class SetupWizardService extends EventEmitter {
    */
   calculateRemainingTime(session) {
     const completedSteps = Object.keys(session.configuration);
-    const remainingSteps = this.steps.filter(step => 
-      !completedSteps.includes(step.id) && 
-      (step.required || session.selectedOptionalSteps?.includes(step.id))
+    const remainingSteps = this.steps.filter(
+      (step) =>
+        !completedSteps.includes(step.id) &&
+        (step.required || session.selectedOptionalSteps?.includes(step.id)),
     );
-    
+
     return remainingSteps.reduce((total, step) => total + step.estimatedTime, 0);
   }
 
@@ -474,12 +475,12 @@ class SetupWizardService extends EventEmitter {
     if (!this.rollbackStack.has(sessionId)) {
       this.rollbackStack.set(sessionId, []);
     }
-    
+
     this.rollbackStack.get(sessionId).push({
       stepId,
       data,
       timestamp: new Date(),
-      rollback: this.steps.find(s => s.id === stepId).rollback
+      rollback: this.steps.find((s) => s.id === stepId).rollback,
     });
   }
 
@@ -490,39 +491,38 @@ class SetupWizardService extends EventEmitter {
     const { stepId } = payload;
     const session = this.sessions.get(ws.sessionId);
     const rollbackStack = this.rollbackStack.get(ws.sessionId) || [];
-    
+
     try {
       // Find rollback point
-      const rollbackPoint = rollbackStack.find(point => point.stepId === stepId);
+      const rollbackPoint = rollbackStack.find((point) => point.stepId === stepId);
       if (!rollbackPoint) {
         return this.sendError(ws, 'No rollback point found', stepId);
       }
 
       // Execute rollback
       await rollbackPoint.rollback(rollbackPoint.data, session);
-      
+
       // Remove from configuration
       delete session.configuration[stepId];
-      
+
       // Remove rollback points after this step
-      const filteredStack = rollbackStack.filter(point => 
-        this.getStepIndex(point.stepId) < this.getStepIndex(stepId)
+      const filteredStack = rollbackStack.filter(
+        (point) => this.getStepIndex(point.stepId) < this.getStepIndex(stepId),
       );
       this.rollbackStack.set(ws.sessionId, filteredStack);
-      
+
       // Update session state
       session.currentStep = stepId;
       session.progress = this.calculateProgress(session);
-      
+
       this.broadcastToSession(ws.sessionId, {
         type: 'step_rolled_back',
         stepId,
         currentStep: session.currentStep,
-        progress: session.progress
+        progress: session.progress,
       });
-      
+
       this.addAuditEntry(ws.sessionId, 'step_rolled_back', { stepId });
-      
     } catch (error) {
       logger.error(`Rollback error for ${stepId}:`, error);
       this.sendError(ws, 'Rollback failed', error.message);
@@ -537,10 +537,10 @@ class SetupWizardService extends EventEmitter {
     if (!session) return;
 
     const progressFile = path.join(process.cwd(), 'data', 'setup-progress', `${sessionId}.json`);
-    
+
     // Ensure directory exists
     mkdirSync(path.dirname(progressFile), { recursive: true });
-    
+
     const progressData = {
       sessionId,
       currentStep: session.currentStep,
@@ -548,9 +548,9 @@ class SetupWizardService extends EventEmitter {
       progress: session.progress,
       startTime: session.startTime,
       lastSaved: new Date(),
-      auditLog: this.auditLog.filter(entry => entry.sessionId === sessionId)
+      auditLog: this.auditLog.filter((entry) => entry.sessionId === sessionId),
     };
-    
+
     writeFileSync(progressFile, JSON.stringify(progressData, null, 2));
     logger.info(`Setup progress saved for session ${sessionId}`);
   }
@@ -560,44 +560,43 @@ class SetupWizardService extends EventEmitter {
    */
   async handleSessionResume(ws, payload) {
     const { sessionId } = payload;
-    
+
     try {
       const progressFile = path.join(process.cwd(), 'data', 'setup-progress', `${sessionId}.json`);
-      
+
       if (!existsSync(progressFile)) {
         return this.sendError(ws, 'No saved progress found', sessionId);
       }
-      
+
       const progressData = JSON.parse(readFileSync(progressFile, 'utf8'));
-      
+
       // Restore session state
       const session = this.sessions.get(ws.sessionId) || {
         clients: new Set(),
-        status: 'resumed'
+        status: 'resumed',
       };
-      
+
       Object.assign(session, {
         currentStep: progressData.currentStep,
         configuration: progressData.configuration,
         progress: progressData.progress,
-        startTime: new Date(progressData.startTime)
+        startTime: new Date(progressData.startTime),
       });
-      
+
       this.sessions.set(ws.sessionId, session);
       session.clients.add(ws);
-      
+
       this.sendToClient(ws, {
         type: 'session_resumed',
         session: {
           currentStep: session.currentStep,
           progress: session.progress,
           configuration: session.configuration,
-          startTime: session.startTime
-        }
+          startTime: session.startTime,
+        },
       });
-      
+
       this.addAuditEntry(ws.sessionId, 'session_resumed', { originalSessionId: sessionId });
-      
     } catch (error) {
       logger.error(`Session resume error:`, error);
       this.sendError(ws, 'Session resume failed', error.message);
@@ -610,15 +609,15 @@ class SetupWizardService extends EventEmitter {
   async handleConfigExport(ws, payload) {
     const session = this.sessions.get(ws.sessionId);
     const { format = 'json', includeSecrets = false } = payload;
-    
+
     try {
       let config = { ...session.configuration };
-      
+
       // Sanitize secrets if not explicitly included
       if (!includeSecrets) {
         config = this.sanitizeConfiguration(config);
       }
-      
+
       const exportData = {
         version: '1.0',
         exported: new Date().toISOString(),
@@ -627,10 +626,10 @@ class SetupWizardService extends EventEmitter {
         metadata: {
           setupVersion: process.env.npm_package_version,
           nodeVersion: process.version,
-          platform: process.platform
-        }
+          platform: process.platform,
+        },
       };
-      
+
       let exportContent;
       switch (format) {
         case 'json':
@@ -645,14 +644,13 @@ class SetupWizardService extends EventEmitter {
         default:
           throw new Error(`Unsupported format: ${format}`);
       }
-      
+
       this.sendToClient(ws, {
         type: 'config_exported',
         format,
         content: exportContent,
-        filename: `nova-setup-${ws.sessionId}.${format}`
+        filename: `nova-setup-${ws.sessionId}.${format}`,
       });
-      
     } catch (error) {
       logger.error('Config export error:', error);
       this.sendError(ws, 'Config export failed', error.message);
@@ -668,7 +666,7 @@ class SetupWizardService extends EventEmitter {
       sessionId,
       action,
       data,
-      clientIp: this.getSessionClientIp(sessionId)
+      clientIp: this.getSessionClientIp(sessionId),
     });
   }
 
@@ -677,65 +675,67 @@ class SetupWizardService extends EventEmitter {
    */
   async validateWelcomeStep(data, session, progressCallback) {
     progressCallback?.(25);
-    
+
     // Check system requirements
     const requirements = await this.checkSystemRequirements();
     progressCallback?.(50);
-    
+
     // Verify permissions
     const permissions = await this.checkFileSystemPermissions();
     progressCallback?.(75);
-    
+
     // Check network connectivity
     const network = await this.checkNetworkConnectivity();
     progressCallback?.(100);
-    
+
     return {
       valid: requirements.passed && permissions.passed && network.passed,
       errors: [
-        ...requirements.errors || [],
-        ...permissions.errors || [],
-        ...network.errors || []
+        ...(requirements.errors || []),
+        ...(permissions.errors || []),
+        ...(network.errors || []),
       ],
       suggestions: [
-        ...requirements.suggestions || [],
-        ...permissions.suggestions || [],
-        ...network.suggestions || []
-      ]
+        ...(requirements.suggestions || []),
+        ...(permissions.suggestions || []),
+        ...(network.suggestions || []),
+      ],
     };
   }
 
   async validateOrganizationStep(data, session, progressCallback) {
     const errors = [];
     const suggestions = [];
-    
+
     progressCallback?.(20);
-    
+
     // Validate organization name
     if (!data.name || data.name.length < 2) {
       errors.push('Organization name is required and must be at least 2 characters');
     }
-    
+
     progressCallback?.(40);
-    
+
     // Validate logo URL if provided
     if (data.logoUrl) {
       const logoValid = await this.validateImageUrl(data.logoUrl);
       if (!logoValid) {
         errors.push('Logo URL is not accessible or not a valid image');
-        suggestions.push('Ensure the logo URL is publicly accessible and points to a valid image file');
+        suggestions.push(
+          'Ensure the logo URL is publicly accessible and points to a valid image file',
+        );
       }
     }
-    
+
     progressCallback?.(60);
-    
+
     // Validate color scheme
     if (data.primaryColor && !this.isValidColor(data.primaryColor)) {
       errors.push('Primary color must be a valid hex color code');
     }
-    
+
     progressCallback?.(80);
-    
+
     // Check domain availability if provided
     if (data.domain) {
       const domainValid = await this.validateDomain(data.domain);
@@ -744,65 +744,65 @@ class SetupWizardService extends EventEmitter {
         suggestions.push('Ensure the domain is properly configured and points to your server');
       }
     }
-    
+
     progressCallback?.(100);
-    
+
     return {
       valid: errors.length === 0,
       errors,
-      suggestions
+      suggestions,
     };
   }
 
   async validateAdminStep(data, session, progressCallback) {
     const errors = [];
     const suggestions = [];
-    
+
     progressCallback?.(25);
-    
+
     // Validate email
     if (!data.email || !this.isValidEmail(data.email)) {
       errors.push('Valid email address is required');
     }
-    
+
     progressCallback?.(50);
-    
+
     // Validate password strength
     const passwordValidation = this.validatePassword(data.password);
     if (!passwordValidation.valid) {
       errors.push(...passwordValidation.errors);
       suggestions.push(...passwordValidation.suggestions);
     }
-    
+
     progressCallback?.(75);
-    
+
     // Check if email is already in use
     const emailExists = await this.checkEmailExists(data.email);
     if (emailExists) {
       errors.push('Email address is already in use');
       suggestions.push('Use a different email address or recover the existing account');
     }
-    
+
     progressCallback?.(100);
-    
+
     return {
       valid: errors.length === 0,
       errors,
-      suggestions
+      suggestions,
     };
   }
 
   async validateDatabaseStep(data, session, progressCallback) {
     const errors = [];
     const suggestions = [];
-    
+
     try {
       progressCallback?.(20);
-      
+
       // Test database connection
       const connection = await this.testDatabaseConnection(data);
       progressCallback?.(50);
-      
+
       if (!connection.success) {
         errors.push(`Database connection failed: ${connection.error}`);
         suggestions.push('Check database credentials and ensure the database server is running');
@@ -810,32 +810,33 @@ class SetupWizardService extends EventEmitter {
         // Test database permissions
         const permissions = await this.testDatabasePermissions(data);
         progressCallback?.(75);
-        
+
         if (!permissions.canCreate || !permissions.canWrite) {
           errors.push('Database user lacks required permissions');
-          suggestions.push('Ensure database user has CREATE, SELECT, INSERT, UPDATE, DELETE permissions');
+          suggestions.push(
+            'Ensure database user has CREATE, SELECT, INSERT, UPDATE, DELETE permissions',
+          );
         }
-        
+
         // Check database version compatibility
         const versionCheck = await this.checkDatabaseVersion(data);
         progressCallback?.(90);
-        
+
         if (!versionCheck.compatible) {
           errors.push(`Database version ${versionCheck.version} is not supported`);
           suggestions.push(`Please upgrade to PostgreSQL 12.0 or higher`);
         }
       }
-      
+
       progressCallback?.(100);
-      
     } catch (error) {
       errors.push(`Database validation error: ${error.message}`);
     }
-    
+
     return {
       valid: errors.length === 0,
       errors,
-      suggestions
+      suggestions,
     };
   }
 
@@ -924,7 +925,8 @@ class SetupWizardService extends EventEmitter {
    * Utility methods
    */
   sendToClient(ws, message) {
-    if (ws.readyState === 1) { // WebSocket.OPEN
+    if (ws.readyState === 1) {
+      // WebSocket.OPEN
       ws.send(JSON.stringify(message));
     }
   }
@@ -934,14 +936,14 @@ class SetupWizardService extends EventEmitter {
       type: 'error',
       message,
       details,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
   broadcastToSession(sessionId, message) {
     const session = this.sessions.get(sessionId);
     if (session) {
-      session.clients.forEach(client => {
+      session.clients.forEach((client) => {
         this.sendToClient(client, message);
       });
     }
@@ -949,48 +951,50 @@ class SetupWizardService extends EventEmitter {
 
   extractSessionId(request) {
     // Extract session ID from request headers or URL
-    return request.headers['x-session-id'] || 
-           new URL(request.url, 'http://localhost').searchParams.get('sessionId') ||
-           crypto.randomUUID();
+    return (
+      request.headers['x-session-id'] ||
+      new URL(request.url, 'http://localhost').searchParams.get('sessionId') ||
+      crypto.randomUUID()
+    );
   }
 
   getStepsForClient() {
-    return this.steps.map(step => ({
+    return this.steps.map((step) => ({
       id: step.id,
       name: step.name,
       description: step.description,
       required: step.required,
       dependencies: step.dependencies,
-      estimatedTime: step.estimatedTime
+      estimatedTime: step.estimatedTime,
     }));
   }
 
   getStepIndex(stepId) {
-    return this.steps.findIndex(step => step.id === stepId);
+    return this.steps.findIndex((step) => step.id === stepId);
   }
 
   calculateProgress(session) {
     const completedSteps = Object.keys(session.configuration).length;
-    const totalSteps = this.steps.filter(s => s.required).length;
+    const totalSteps = this.steps.filter((s) => s.required).length;
     return Math.round((completedSteps / totalSteps) * 100);
   }
 
   sanitizeConfiguration(config) {
     const sanitized = { ...config };
-    
+
     // Remove sensitive fields
     const sensitiveFields = ['password', 'secret', 'key', 'token', 'apiKey', 'privateKey'];
-    
+
     const removeSensitive = (obj) => {
-      Object.keys(obj).forEach(key => {
-        if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
+      Object.keys(obj).forEach((key) => {
+        if (sensitiveFields.some((field) => key.toLowerCase().includes(field.toLowerCase()))) {
           obj[key] = '[REDACTED]';
         } else if (typeof obj[key] === 'object' && obj[key] !== null) {
           removeSensitive(obj[key]);
         }
       });
     };
-    
+
     removeSensitive(sanitized);
     return sanitized;
   }
@@ -1032,31 +1036,31 @@ class SetupWizardService extends EventEmitter {
   validatePassword(password) {
     const errors = [];
     const suggestions = [];
-    
+
     if (!password || password.length < 8) {
       errors.push('Password must be at least 8 characters long');
     }
-    
+
     if (!/[A-Z]/.test(password)) {
       errors.push('Password must contain at least one uppercase letter');
     }
-    
+
     if (!/[a-z]/.test(password)) {
       errors.push('Password must contain at least one lowercase letter');
     }
-    
+
     if (!/\d/.test(password)) {
       errors.push('Password must contain at least one number');
     }
-    
+
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
       suggestions.push('Consider adding special characters for stronger security');
     }
-    
+
     return {
       valid: errors.length === 0,
       errors,
-      suggestions
+      suggestions,
     };
   }
 
@@ -1123,12 +1127,12 @@ class SetupWizardService extends EventEmitter {
   convertToEnvFile(config) {
     // Convert configuration to .env file format
     const envLines = [];
-    
+
     const flatten = (obj, prefix = '') => {
-      Object.keys(obj).forEach(key => {
+      Object.keys(obj).forEach((key) => {
         const value = obj[key];
         const envKey = prefix ? `${prefix}_${key.toUpperCase()}` : key.toUpperCase();
-        
+
         if (typeof value === 'object' && value !== null) {
           flatten(value, envKey);
         } else {
@@ -1136,7 +1140,7 @@ class SetupWizardService extends EventEmitter {
         }
       });
     };
-    
+
     flatten(config);
     return envLines.join('\n');
   }

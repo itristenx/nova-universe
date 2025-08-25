@@ -84,7 +84,7 @@ async function main() {
       logger.info('3. Verify data integrity');
       logger.info('4. Consider removing the old SQLite database after verification');
     }
-  } catch (error) {
+  } catch (_error) {
     logger.error('Migration failed:', error);
     process.exit(1);
   }

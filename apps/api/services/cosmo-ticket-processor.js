@@ -33,7 +33,21 @@ class TicketClassifier {
         'sluggish',
         'performance issue',
       ],
-      software: ['application', 'program', 'install', 'update', 'crash', 'error', 'bug', 'license', 'software', 'system', 'deployment', 'comprehensive test', 'validation'],
+      software: [
+        'application',
+        'program',
+        'install',
+        'update',
+        'crash',
+        'error',
+        'bug',
+        'license',
+        'software',
+        'system',
+        'deployment',
+        'comprehensive test',
+        'validation',
+      ],
       network: [
         'internet',
         'wifi',
@@ -154,9 +168,9 @@ class TicketClassifier {
       } else if (bestCategory === 'network' && maxScore >= 4) {
         confidence = 0.85;
       } else if (bestCategory === 'software' && text.includes('system')) {
-        confidence = 0.90;
+        confidence = 0.9;
       } else if (maxScore >= 4) {
-        confidence = 0.80;
+        confidence = 0.8;
       } else if (maxScore >= 3) {
         confidence = 0.75;
       } else if (maxScore >= 2) {
@@ -184,7 +198,7 @@ class TicketClassifier {
 
     // Check priorities in order from highest to lowest
     const priorityOrder = ['critical', 'high', 'medium', 'low'];
-    
+
     for (const priority of priorityOrder) {
       const keywords = this.priorities[priority] || [];
       for (const keyword of keywords) {
@@ -388,14 +402,17 @@ class SimilarTicketDetector {
     for (const [ticketId, data] of this.vectorStore) {
       // Vector similarity
       const vectorSimilarity = this.cosineSimilarity(queryVector, data.vector);
-      
+
       // Keyword similarity
-      const ticketKeywords = this.extractKeywords(data.ticket.title || '', data.ticket.description || '');
+      const ticketKeywords = this.extractKeywords(
+        data.ticket.title || '',
+        data.ticket.description || '',
+      );
       const keywordSimilarity = this.calculateKeywordSimilarity(queryKeywords, ticketKeywords);
-      
+
       // Combined similarity with weights
-      const combinedSimilarity = (vectorSimilarity * 0.6) + (keywordSimilarity * 0.4);
-      
+      const combinedSimilarity = vectorSimilarity * 0.6 + keywordSimilarity * 0.4;
+
       if (combinedSimilarity > 0.2) {
         // Lower threshold for better recall
         similarities.push({
@@ -414,12 +431,12 @@ class SimilarTicketDetector {
 
   calculateKeywordSimilarity(keywords1, keywords2) {
     if (keywords1.length === 0 || keywords2.length === 0) return 0;
-    
+
     const set1 = new Set(keywords1);
     const set2 = new Set(keywords2);
-    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    const intersection = new Set([...set1].filter((x) => set2.has(x)));
     const union = new Set([...set1, ...set2]);
-    
+
     return intersection.size / union.size; // Jaccard similarity
   }
 
@@ -732,7 +749,7 @@ export class CosmoTicketProcessor extends EventEmitter {
       // Step 4: Add to similarity index for future comparisons
       if (enriched.id) {
         this.similarTicketDetector.addTicket(enriched);
-        
+
         if (this.config.enableTrendAnalysis) {
           this.trendAnalyzer.addTicketData(enriched);
         }
@@ -869,7 +886,7 @@ export class CosmoTicketProcessor extends EventEmitter {
 
   getTrends() {
     const currentTrends = this.trendAnalyzer.trends.get('daily') || {};
-    
+
     return {
       totalTickets: currentTrends.totalTickets || 0,
       byCategory: currentTrends.categories || {},

@@ -1,164 +1,164 @@
 export interface Package {
-  id: string
-  trackingNumber: string
-  carrier: Carrier
-  recipient: Recipient
-  sender: Sender
-  status: PackageStatus
-  location: string
-  lockerAssignment?: LockerAssignment
-  images: PackageImage[]
-  notifications: Notification[]
-  createdAt: string
-  updatedAt: string
-  deliveredAt?: string
-  pickedUpAt?: string
-  pickupCode?: string
-  priority: PackagePriority
-  packageType: PackageType
-  dimensions?: PackageDimensions
-  weight?: number
-  specialInstructions?: string
-  chainOfCustody: CustodyRecord[]
+  id: string;
+  trackingNumber: string;
+  carrier: Carrier;
+  recipient: Recipient;
+  sender: Sender;
+  status: PackageStatus;
+  location: string;
+  lockerAssignment?: LockerAssignment;
+  images: PackageImage[];
+  notifications: Notification[];
+  createdAt: string;
+  updatedAt: string;
+  deliveredAt?: string;
+  pickedUpAt?: string;
+  pickupCode?: string;
+  priority: PackagePriority;
+  packageType: PackageType;
+  dimensions?: PackageDimensions;
+  weight?: number;
+  specialInstructions?: string;
+  chainOfCustody: CustodyRecord[];
 }
 
 export interface Recipient {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  department: string
-  location: string
-  building?: string
-  floor?: string
-  room?: string
-  deliveryPreferences: DeliveryPreferences
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  department: string;
+  location: string;
+  building?: string;
+  floor?: string;
+  room?: string;
+  deliveryPreferences: DeliveryPreferences;
 }
 
 export interface Sender {
-  name: string
-  company?: string
-  address: Address
-  phone?: string
-  email?: string
+  name: string;
+  company?: string;
+  address: Address;
+  phone?: string;
+  email?: string;
 }
 
 export interface Address {
-  street: string
-  city: string
-  state: string
-  zipCode: string
-  country: string
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
 }
 
 export interface DeliveryPreferences {
-  notificationChannels: NotificationChannel[]
-  preferredPickupTime?: TimeWindow
-  delegatedPickupUsers: string[]
-  specialInstructions?: string
+  notificationChannels: NotificationChannel[];
+  preferredPickupTime?: TimeWindow;
+  delegatedPickupUsers: string[];
+  specialInstructions?: string;
 }
 
 export interface TimeWindow {
-  start: string
-  end: string
+  start: string;
+  end: string;
 }
 
 export interface LockerAssignment {
-  lockerId: string
-  lockerNumber: string
-  accessCode: string
-  expiresAt: string
-  assignedAt: string
+  lockerId: string;
+  lockerNumber: string;
+  accessCode: string;
+  expiresAt: string;
+  assignedAt: string;
 }
 
 export interface PackageImage {
-  id: string
-  url: string
-  type: ImageType
-  uploadedAt: string
-  uploadedBy: string
+  id: string;
+  url: string;
+  type: ImageType;
+  uploadedAt: string;
+  uploadedBy: string;
 }
 
 export interface Notification {
-  id: string
-  type: NotificationType
-  channel: NotificationChannel
-  message: string
-  sentAt: string
-  deliveredAt?: string
-  readAt?: string
-  failed?: boolean
-  failureReason?: string
+  id: string;
+  type: NotificationType;
+  channel: NotificationChannel;
+  message: string;
+  sentAt: string;
+  deliveredAt?: string;
+  readAt?: string;
+  failed?: boolean;
+  failureReason?: string;
 }
 
 export interface CustodyRecord {
-  id: string
-  action: CustodyAction
-  performedBy: string
-  timestamp: string
-  location: string
-  notes?: string
-  signature?: string
-  ipAddress?: string
+  id: string;
+  action: CustodyAction;
+  performedBy: string;
+  timestamp: string;
+  location: string;
+  notes?: string;
+  signature?: string;
+  ipAddress?: string;
 }
 
 export interface PackageDimensions {
-  length: number
-  width: number
-  height: number
-  unit: 'inches' | 'cm'
+  length: number;
+  width: number;
+  height: number;
+  unit: 'inches' | 'cm';
 }
 
 export interface ScanResult {
-  trackingNumber?: string
-  carrier?: Carrier
-  confidence: number
-  rawText: string
-  extractedData: Record<string, unknown>
-  image: string
+  trackingNumber?: string;
+  carrier?: Carrier;
+  confidence: number;
+  rawText: string;
+  extractedData: Record<string, unknown>;
+  image: string;
 }
 
 export interface SmartLocker {
-  id: string
-  number: string
-  size: LockerSize
-  status: LockerStatus
-  location: string
-  currentPackage?: string
-  lastUsed?: string
-  maintenanceStatus: MaintenanceStatus
+  id: string;
+  number: string;
+  size: LockerSize;
+  status: LockerStatus;
+  location: string;
+  currentPackage?: string;
+  lastUsed?: string;
+  maintenanceStatus: MaintenanceStatus;
 }
 
 export interface LockerNetwork {
-  id: string
-  name: string
-  location: string
-  lockers: SmartLocker[]
-  status: NetworkStatus
-  totalCapacity: number
-  availableCapacity: number
+  id: string;
+  name: string;
+  location: string;
+  lockers: SmartLocker[];
+  status: NetworkStatus;
+  totalCapacity: number;
+  availableCapacity: number;
 }
 
 export interface PackageStats {
-  totalPackages: number
-  pendingPickup: number
-  deliveredToday: number
-  averageProcessingTime: number
-  utilizationRate: number
-  topCarriers: CarrierStats[]
-  departmentBreakdown: DepartmentStats[]
+  totalPackages: number;
+  pendingPickup: number;
+  deliveredToday: number;
+  averageProcessingTime: number;
+  utilizationRate: number;
+  topCarriers: CarrierStats[];
+  departmentBreakdown: DepartmentStats[];
 }
 
 export interface CarrierStats {
-  carrier: Carrier
-  count: number
-  percentage: number
+  carrier: Carrier;
+  count: number;
+  percentage: number;
 }
 
 export interface DepartmentStats {
-  department: string
-  count: number
-  percentage: number
+  department: string;
+  count: number;
+  percentage: number;
 }
 
 // Enums
@@ -170,14 +170,14 @@ export enum PackageStatus {
   PICKED_UP = 'picked_up',
   RETURNED_TO_SENDER = 'returned_to_sender',
   DAMAGED = 'damaged',
-  LOST = 'lost'
+  LOST = 'lost',
 }
 
 export enum PackagePriority {
   LOW = 'low',
   NORMAL = 'normal',
   HIGH = 'high',
-  URGENT = 'urgent'
+  URGENT = 'urgent',
 }
 
 export enum PackageType {
@@ -185,7 +185,7 @@ export enum PackageType {
   BOX = 'box',
   TUBE = 'tube',
   PALLET = 'pallet',
-  IRREGULAR = 'irregular'
+  IRREGULAR = 'irregular',
 }
 
 export enum Carrier {
@@ -194,7 +194,7 @@ export enum Carrier {
   USPS = 'usps',
   DHL = 'dhl',
   AMAZON = 'amazon',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 export enum NotificationChannel {
@@ -202,7 +202,7 @@ export enum NotificationChannel {
   SMS = 'sms',
   PUSH = 'push',
   SLACK = 'slack',
-  VOICE = 'voice'
+  VOICE = 'voice',
 }
 
 export enum NotificationType {
@@ -212,14 +212,14 @@ export enum NotificationType {
   PACKAGE_DELIVERED = 'package_delivered',
   PACKAGE_RETURNED = 'package_returned',
   LOCKER_ASSIGNED = 'locker_assigned',
-  ESCALATION = 'escalation'
+  ESCALATION = 'escalation',
 }
 
 export enum ImageType {
   LABEL = 'label',
   PACKAGE = 'package',
   DAMAGE = 'damage',
-  SIGNATURE = 'signature'
+  SIGNATURE = 'signature',
 }
 
 export enum CustodyAction {
@@ -230,31 +230,31 @@ export enum CustodyAction {
   ACCESS_GRANTED = 'access_granted',
   PICKED_UP = 'picked_up',
   RETURNED = 'returned',
-  ESCALATED = 'escalated'
+  ESCALATED = 'escalated',
 }
 
 export enum LockerSize {
   SMALL = 'small',
   MEDIUM = 'medium',
   LARGE = 'large',
-  EXTRA_LARGE = 'extra_large'
+  EXTRA_LARGE = 'extra_large',
 }
 
 export enum LockerStatus {
   AVAILABLE = 'available',
   OCCUPIED = 'occupied',
   OUT_OF_ORDER = 'out_of_order',
-  MAINTENANCE = 'maintenance'
+  MAINTENANCE = 'maintenance',
 }
 
 export enum MaintenanceStatus {
   GOOD = 'good',
   NEEDS_ATTENTION = 'needs_attention',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 export enum NetworkStatus {
   ONLINE = 'online',
   OFFLINE = 'offline',
-  PARTIAL = 'partial'
+  PARTIAL = 'partial',
 }

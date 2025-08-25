@@ -1,29 +1,31 @@
-import { useAssetStore } from '@stores/assets'
+import { useAssetStore } from '@stores/assets';
 
 interface AssetFiltersProps {
-  filters: Record<string, any>
-  onFiltersChange: (filters: any) => void
-  onClearFilters: () => void
+  filters: Record<string, any>;
+  onFiltersChange: (filters: any) => void;
+  onClearFilters: () => void;
 }
 
 export function AssetFilters({ filters, onFiltersChange, onClearFilters }: AssetFiltersProps) {
-  const { categories, types, locations } = useAssetStore()
+  const { categories, types, locations } = useAssetStore();
 
   const handleFilterChange = (key: string, value: string) => {
     if (value === '') {
-      const { [key]: removed, ...rest } = filters
-      onFiltersChange(rest)
+      const { [key]: removed, ...rest } = filters;
+      onFiltersChange(rest);
     } else {
-      onFiltersChange({ ...filters, [key]: value })
+      onFiltersChange({ ...filters, [key]: value });
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-          <select 
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Status
+          </label>
+          <select
             className="input mt-1"
             value={filters.status || ''}
             onChange={(e) => handleFilterChange('status', e.target.value)}
@@ -37,10 +39,12 @@ export function AssetFilters({ filters, onFiltersChange, onClearFilters }: Asset
             <option value="stolen">Stolen</option>
           </select>
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Condition</label>
-          <select 
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Condition
+          </label>
+          <select
             className="input mt-1"
             value={filters.condition || ''}
             onChange={(e) => handleFilterChange('condition', e.target.value)}
@@ -53,58 +57,64 @@ export function AssetFilters({ filters, onFiltersChange, onClearFilters }: Asset
             <option value="damaged">Damaged</option>
           </select>
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-          <select 
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Category
+          </label>
+          <select
             className="input mt-1"
             value={filters.category || ''}
             onChange={(e) => handleFilterChange('category', e.target.value)}
           >
             <option value="">All Categories</option>
-            {categories.map(category => (
+            {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
               </option>
             ))}
           </select>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
-          <select 
+          <select
             className="input mt-1"
             value={filters.type || ''}
             onChange={(e) => handleFilterChange('type', e.target.value)}
           >
             <option value="">All Types</option>
-            {types.map(type => (
+            {types.map((type) => (
               <option key={type.id} value={type.id}>
                 {type.name}
               </option>
             ))}
           </select>
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
-          <select 
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Location
+          </label>
+          <select
             className="input mt-1"
             value={filters.location || ''}
             onChange={(e) => handleFilterChange('location', e.target.value)}
           >
             <option value="">All Locations</option>
-            {locations.map(location => (
+            {locations.map((location) => (
               <option key={location.id} value={location.id}>
                 {location.name}
               </option>
             ))}
           </select>
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Assignment</label>
-          <select 
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Assignment
+          </label>
+          <select
             className="input mt-1"
             value={filters.assignee || ''}
             onChange={(e) => handleFilterChange('assignee', e.target.value)}
@@ -114,10 +124,12 @@ export function AssetFilters({ filters, onFiltersChange, onClearFilters }: Asset
             <option value="unassigned">Unassigned Only</option>
           </select>
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Maintenance</label>
-          <select 
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Maintenance
+          </label>
+          <select
             className="input mt-1"
             value={filters.maintenanceDue ? 'due' : ''}
             onChange={(e) => handleFilterChange('maintenanceDue', e.target.value)}
@@ -126,10 +138,12 @@ export function AssetFilters({ filters, onFiltersChange, onClearFilters }: Asset
             <option value="due">Maintenance Due</option>
           </select>
         </div>
-        
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Warranty</label>
-          <select 
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Warranty
+          </label>
+          <select
             className="input mt-1"
             value={filters.warrantyExpiring ? 'expiring' : ''}
             onChange={(e) => handleFilterChange('warrantyExpiring', e.target.value)}
@@ -139,12 +153,12 @@ export function AssetFilters({ filters, onFiltersChange, onClearFilters }: Asset
           </select>
         </div>
       </div>
-      
+
       <div className="flex justify-end">
         <button onClick={onClearFilters} className="btn btn-secondary btn-sm">
           Clear All Filters
         </button>
       </div>
     </div>
-  )
+  );
 }

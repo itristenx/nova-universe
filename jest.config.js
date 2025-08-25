@@ -7,11 +7,19 @@ export default {
       testMatch: [
         '<rootDir>/test/**/*.(test|spec).(js|ts)',
         '!<rootDir>/test/components/**/*',
-        '!<rootDir>/test/**/*.tsx'
+        '!<rootDir>/test/**/*.tsx',
       ],
       setupFilesAfterEnv: ['<rootDir>/test/test-cleanup.js'],
       transform: {},
       extensionsToTreatAsEsm: ['.ts'],
+      globals: {
+        'ts-jest': {
+          useESM: true,
+        },
+      },
+      moduleNameMapper: {
+        '^(\\.{1,2}/.*)\\.js$': '$1',
+      },
       moduleFileExtensions: ['js', 'mjs', 'cjs', 'ts', 'json'],
       clearMocks: true,
       resetMocks: true,
@@ -25,39 +33,42 @@ export default {
       testEnvironment: '@happy-dom/jest-environment',
       testMatch: [
         '<rootDir>/test/components/**/*.(test|spec).(ts|tsx)',
-        '<rootDir>/test/**/*.(test|spec).tsx'
+        '<rootDir>/test/**/*.(test|spec).tsx',
       ],
-      setupFilesAfterEnv: [
-        '<rootDir>/test/setup/jest-setup.js',
-        '<rootDir>/test/test-cleanup.js'
-      ],
+      setupFilesAfterEnv: ['<rootDir>/test/setup/jest-setup.js', '<rootDir>/test/test-cleanup.js'],
       transform: {
-        '^.+\\.(ts|tsx)$': ['@swc/jest', {
-          jsc: {
-            parser: {
-              syntax: 'typescript',
-              tsx: true,
-            },
-            transform: {
-              react: {
-                runtime: 'automatic',
+        '^.+\\.(ts|tsx)$': [
+          '@swc/jest',
+          {
+            jsc: {
+              parser: {
+                syntax: 'typescript',
+                tsx: true,
+              },
+              transform: {
+                react: {
+                  runtime: 'automatic',
+                },
               },
             },
-          },
-          module: {
-            type: 'commonjs',
-          },
-        }],
-        '^.+\\.(js|mjs)$': ['@swc/jest', {
-          jsc: {
-            parser: {
-              syntax: 'ecmascript',
+            module: {
+              type: 'commonjs',
             },
           },
-          module: {
-            type: 'commonjs',
+        ],
+        '^.+\\.(js|mjs)$': [
+          '@swc/jest',
+          {
+            jsc: {
+              parser: {
+                syntax: 'ecmascript',
+              },
+            },
+            module: {
+              type: 'commonjs',
+            },
           },
-        }],
+        ],
       },
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
@@ -72,7 +83,7 @@ export default {
       restoreMocks: true,
       testTimeout: 30000,
       maxWorkers: 1,
-    }
+    },
   ],
   // Global configuration
   verbose: false,
@@ -83,7 +94,7 @@ export default {
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/dist/**',
-    '!**/coverage/**'
+    '!**/coverage/**',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],

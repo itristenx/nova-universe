@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { 
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import {
   ArrowLeftIcon,
   PencilIcon,
   TrashIcon,
@@ -9,115 +9,110 @@ import {
   ClockIcon,
   UserIcon,
   TagIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline'
-import { useTicketStore } from '@stores/tickets'
-import { useAuthStore } from '@stores/auth'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { TicketComments } from '@components/tickets/TicketComments'
-import { TicketHistory } from '@components/tickets/TicketHistory'
-import { TicketAttachments } from '@components/tickets/TicketAttachments'
-import { UpdateTicketModal } from '@components/tickets/UpdateTicketModal'
-import { 
-  cn, 
-  formatRelativeTime, 
-  getTicketPriorityColor, 
+  ExclamationTriangleIcon,
+} from '@heroicons/react/24/outline';
+import { useTicketStore } from '@stores/tickets';
+import { useAuthStore } from '@stores/auth';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { TicketComments } from '@components/tickets/TicketComments';
+import { TicketHistory } from '@components/tickets/TicketHistory';
+import { TicketAttachments } from '@components/tickets/TicketAttachments';
+import { UpdateTicketModal } from '@components/tickets/UpdateTicketModal';
+import {
+  cn,
+  formatRelativeTime,
+  getTicketPriorityColor,
   getTicketStatusColor,
   formatTicketNumber,
   getUserDisplayName,
-  getInitials
-} from '@utils/index'
-import toast from 'react-hot-toast'
+  getInitials,
+} from '@utils/index';
+import toast from 'react-hot-toast';
 
 export default function TicketDetailPage() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const { user } = useAuthStore()
-  const { 
-    currentTicket, 
-    isLoading, 
-    error, 
-    loadTicket, 
-    updateTicket, 
-    deleteTicket,
-    clearError 
-  } = useTicketStore()
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const { currentTicket, isLoading, error, loadTicket, updateTicket, deleteTicket, clearError } =
+    useTicketStore();
 
-  const [showUpdateModal, setShowUpdateModal] = useState(false)
-  const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'history' | 'attachments'>('details')
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'history' | 'attachments'>(
+    'details',
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Load ticket on component mount
   useEffect(() => {
     if (id) {
-      loadTicket(id)
+      loadTicket(id);
     }
-  }, [id, loadTicket])
+  }, [id, loadTicket]);
 
   // Clear error when component unmounts
   useEffect(() => {
     return () => {
-      if (error) clearError()
-    }
-  }, [error, clearError])
+      if (error) clearError();
+    };
+  }, [error, clearError]);
 
   const handleStatusUpdate = async (status: string) => {
-    if (!currentTicket) return
+    if (!currentTicket) return;
 
     try {
-      await updateTicket(currentTicket.id, { status })
-      toast.success(`Ticket ${status}`)
-    } catch (error) {
-      toast.error('Failed to update ticket status')
+      await updateTicket(currentTicket.id, { status });
+      toast.success(`Ticket ${status}`);
+    } catch (_error) {
+      toast.error('Failed to update ticket status');
     }
-  }
+  };
 
   const handlePriorityUpdate = async (priority: string) => {
-    if (!currentTicket) return
+    if (!currentTicket) return;
 
     try {
-      await updateTicket(currentTicket.id, { priority })
-      toast.success('Priority updated')
-    } catch (error) {
-      toast.error('Failed to update priority')
+      await updateTicket(currentTicket.id, { priority });
+      toast.success('Priority updated');
+    } catch (_error) {
+      toast.error('Failed to update priority');
     }
-  }
+  };
 
   const handleAssignment = async (assigneeId: string) => {
-    if (!currentTicket) return
+    if (!currentTicket) return;
 
     try {
-      await updateTicket(currentTicket.id, { assigneeId })
-      toast.success('Ticket assigned')
-    } catch (error) {
-      toast.error('Failed to assign ticket')
+      await updateTicket(currentTicket.id, { assigneeId });
+      toast.success('Ticket assigned');
+    } catch (_error) {
+      toast.error('Failed to assign ticket');
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!currentTicket) return
+    if (!currentTicket) return;
 
     if (!confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) {
-      return
+      return;
     }
 
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      await deleteTicket(currentTicket.id)
-      toast.success('Ticket deleted')
-      navigate('/tickets')
-    } catch (error) {
-      toast.error('Failed to delete ticket')
-      setIsDeleting(false)
+      await deleteTicket(currentTicket.id);
+      toast.success('Ticket deleted');
+      navigate('/tickets');
+    } catch (_error) {
+      toast.error('Failed to delete ticket');
+      setIsDeleting(false);
     }
-  }
+  };
 
   if (isLoading && !currentTicket) {
     return (
       <div className="flex h-screen items-center justify-center">
         <LoadingSpinner size="lg" text="Loading ticket..." />
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -133,25 +128,20 @@ export default function TicketDetailPage() {
             <button onClick={() => navigate('/tickets')} className="btn btn-secondary">
               Back to Tickets
             </button>
-            <button 
-              onClick={() => id && loadTicket(id)} 
-              className="btn btn-primary"
-            >
+            <button onClick={() => id && loadTicket(id)} className="btn btn-primary">
               Try Again
             </button>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!currentTicket) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-            Ticket not found
-          </h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Ticket not found</h3>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             The ticket you're looking for doesn't exist or has been deleted.
           </p>
@@ -160,12 +150,12 @@ export default function TicketDetailPage() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
-  const isOwner = currentTicket.requester?.id === user?.id
-  const isAssignee = currentTicket.assignee?.id === user?.id
-  const canEdit = isOwner || isAssignee || user?.roles?.some(role => role.name === 'admin')
+  const isOwner = currentTicket.requester?.id === user?.id;
+  const isAssignee = currentTicket.assignee?.id === user?.id;
+  const canEdit = isOwner || isAssignee || user?.roles?.some((role) => role.name === 'admin');
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -178,48 +168,35 @@ export default function TicketDetailPage() {
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
-          
+
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {formatTicketNumber(currentTicket.number, currentTicket.type)}
               </h1>
-              
+
               <span className={cn('badge', getTicketStatusColor(currentTicket.status))}>
                 {currentTicket.status}
               </span>
-              
+
               <span className={cn('badge', getTicketPriorityColor(currentTicket.priority))}>
                 {currentTicket.priority}
               </span>
             </div>
-            
-            <h2 className="mt-1 text-xl text-gray-600 dark:text-gray-400">
-              {currentTicket.title}
-            </h2>
+
+            <h2 className="mt-1 text-xl text-gray-600 dark:text-gray-400">{currentTicket.title}</h2>
           </div>
         </div>
 
         {canEdit && (
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowUpdateModal(true)}
-              className="btn btn-secondary"
-            >
+            <button onClick={() => setShowUpdateModal(true)} className="btn btn-secondary">
               <PencilIcon className="h-4 w-4" />
               Edit
             </button>
-            
-            <button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="btn btn-error"
-            >
-              {isDeleting ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                <TrashIcon className="h-4 w-4" />
-              )}
+
+            <button onClick={handleDelete} disabled={isDeleting} className="btn btn-error">
+              {isDeleting ? <LoadingSpinner size="sm" /> : <TrashIcon className="h-4 w-4" />}
               Delete
             </button>
           </div>
@@ -243,10 +220,10 @@ export default function TicketDetailPage() {
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key as any)}
                     className={cn(
-                      'flex items-center gap-2 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium',
+                      'flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap',
                       activeTab === tab.key
                         ? 'border-nova-500 text-nova-600 dark:text-nova-400'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
                     )}
                   >
                     <tab.icon className="h-4 w-4" />
@@ -260,10 +237,10 @@ export default function TicketDetailPage() {
               {activeTab === 'details' && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
+                    <h3 className="mb-3 text-lg font-medium text-gray-900 dark:text-gray-100">
                       Description
                     </h3>
-                    <div className="prose max-w-none dark:prose-invert">
+                    <div className="prose dark:prose-invert max-w-none">
                       <p className="text-gray-700 dark:text-gray-300">
                         {currentTicket.description}
                       </p>
@@ -272,11 +249,11 @@ export default function TicketDetailPage() {
 
                   {currentTicket.tags && currentTicket.tags.length > 0 && (
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
+                      <h3 className="mb-3 text-lg font-medium text-gray-900 dark:text-gray-100">
                         Tags
                       </h3>
                       <div className="flex flex-wrap gap-2">
-                        {currentTicket.tags.map(tag => (
+                        {currentTicket.tags.map((tag) => (
                           <span
                             key={tag}
                             className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-200"
@@ -291,26 +268,26 @@ export default function TicketDetailPage() {
 
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                      <h4 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                         Created
                       </h4>
                       <p className="text-gray-900 dark:text-gray-100">
                         {formatRelativeTime(currentTicket.createdAt)}
                       </p>
                     </div>
-                    
+
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                      <h4 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                         Last Updated
                       </h4>
                       <p className="text-gray-900 dark:text-gray-100">
                         {formatRelativeTime(currentTicket.updatedAt)}
                       </p>
                     </div>
-                    
+
                     {currentTicket.dueDate && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                        <h4 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                           Due Date
                         </h4>
                         <p className="text-gray-900 dark:text-gray-100">
@@ -318,32 +295,24 @@ export default function TicketDetailPage() {
                         </p>
                       </div>
                     )}
-                    
+
                     {currentTicket.category && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                        <h4 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                           Category
                         </h4>
-                        <p className="text-gray-900 dark:text-gray-100">
-                          {currentTicket.category}
-                        </p>
+                        <p className="text-gray-900 dark:text-gray-100">{currentTicket.category}</p>
                       </div>
                     )}
                   </div>
                 </div>
               )}
 
-              {activeTab === 'comments' && (
-                <TicketComments ticketId={currentTicket.id} />
-              )}
+              {activeTab === 'comments' && <TicketComments ticketId={currentTicket.id} />}
 
-              {activeTab === 'history' && (
-                <TicketHistory ticketId={currentTicket.id} />
-              )}
+              {activeTab === 'history' && <TicketHistory ticketId={currentTicket.id} />}
 
-              {activeTab === 'attachments' && (
-                <TicketAttachments ticketId={currentTicket.id} />
-              )}
+              {activeTab === 'attachments' && <TicketAttachments ticketId={currentTicket.id} />}
             </div>
           </div>
         </div>
@@ -352,15 +321,15 @@ export default function TicketDetailPage() {
         <div className="space-y-6">
           {/* Quick actions */}
           <div className="card p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+            <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">
               Quick Actions
             </h3>
-            
+
             <div className="space-y-3">
               {canEdit && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Status
                     </label>
                     <select
@@ -377,7 +346,7 @@ export default function TicketDetailPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Priority
                     </label>
                     <select
@@ -394,7 +363,7 @@ export default function TicketDetailPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Assign to
                     </label>
                     <select
@@ -410,7 +379,7 @@ export default function TicketDetailPage() {
                   </div>
                 </>
               )}
-              
+
               {!canEdit && (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   You don't have permission to modify this ticket.
@@ -421,13 +390,13 @@ export default function TicketDetailPage() {
 
           {/* Ticket info */}
           <div className="card p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+            <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">
               Ticket Information
             </h3>
-            
+
             <div className="space-y-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                <h4 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                   Requester
                 </h4>
                 <div className="flex items-center gap-2">
@@ -439,17 +408,21 @@ export default function TicketDetailPage() {
                     />
                   ) : (
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-xs font-medium text-gray-700 dark:bg-gray-600 dark:text-gray-200">
-                      {currentTicket.requester ? getInitials(getUserDisplayName(currentTicket.requester)) : 'U'}
+                      {currentTicket.requester
+                        ? getInitials(getUserDisplayName(currentTicket.requester))
+                        : 'U'}
                     </div>
                   )}
                   <span className="text-sm text-gray-900 dark:text-gray-100">
-                    {currentTicket.requester ? getUserDisplayName(currentTicket.requester) : 'Unknown'}
+                    {currentTicket.requester
+                      ? getUserDisplayName(currentTicket.requester)
+                      : 'Unknown'}
                   </span>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                <h4 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                   Assignee
                 </h4>
                 <div className="flex items-center gap-2">
@@ -480,9 +453,7 @@ export default function TicketDetailPage() {
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                  Type
-                </h4>
+                <h4 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">Type</h4>
                 <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-200">
                   {currentTicket.type}
                 </span>
@@ -498,11 +469,11 @@ export default function TicketDetailPage() {
           ticket={currentTicket}
           onClose={() => setShowUpdateModal(false)}
           onUpdate={() => {
-            setShowUpdateModal(false)
-            if (id) loadTicket(id)
+            setShowUpdateModal(false);
+            if (id) loadTicket(id);
           }}
         />
       )}
     </div>
-  )
+  );
 }

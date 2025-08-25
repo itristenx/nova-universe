@@ -1,0 +1,567 @@
+// Enhanced ITSM Schema - Extends core SupportTicket functionality
+// This schema should be integrated with the main core schema
+
+// Enhanced Support Ticket model to replace basic SupportTicket
+model EnhancedSupportTicket {
+  id                    String    @id @default(uuid())
+  ticketNumber         String    @unique
+  title                String
+  description          String
+  shortDescription     String?   @map("short_description")
+  
+  // Basic classification
+  type                 TicketType @default(REQUEST)
+  state               TicketState @default(NEW)
+  priority            Priority   @default(MEDIUM)
+  urgency             Priority   @default(MEDIUM)
+  impact              Priority   @default(MEDIUM)
+  
+  // Categorization
+  category            String?
+  subcategory         String?
+  businessService     String?   @map("business_service")
+  configurationItem   String?   @map("configuration_item")
+  
+  // User relationships
+  userId              String    @map("user_id")
+  assignedToUserId    String?   @map("assigned_to_user_id")
+  assignedToGroupId   String?   @map("assigned_to_group_id")
+  assignedToQueueId   String?   @map("assigned_to_queue_id")
+  
+  // Source and channel
+  source              TicketSource @default(PORTAL)
+  channel             String?
+  location            String?
+  costCenter          String?     @map("cost_center")
+  businessJustification String?  @map("business_justification")
+  
+  // Resolution
+  resolution          String?
+  closeNotes          String?     @map("close_notes")
+  
+  // Metadata
+  tags                String[]    @default([])
+  customFields        Json?       @map("custom_fields")
+  isVip               Boolean     @default(false) @map("is_vip")
+  isEscalated         Boolean     @default(false) @map("is_escalated")
+  confidentialityLevel String     @default("internal") @map("confidentiality_level")
+  
+  // Customer satisfaction
+  satisfactionRating  Int?        @map("satisfaction_rating")
+  satisfactionComment String?     @map("satisfaction_comment")
+  
+  // SLA and timing
+  slaId               String?     @map("sla_id")
+  responseTimeTarget  Int?        @map("response_time_target") // in minutes
+  resolutionTimeTarget Int?       @map("resolution_time_target") // in minutes
+  responseTimeBreached Boolean    @default(false) @map("response_time_breached")
+  resolutionTimeBreached Boolean  @default(false) @map("resolution_time_breached")
+  responseTimeBreachedAt DateTime? @map("response_time_breached_at")
+  resolutionTimeBreachedAt DateTime? @map("resolution_time_breached_at")
+  responseTime        Int?        @map("response_time") // actual time in minutes
+  resolutionTime      Int?        @map("resolution_time") // actual time in minutes
+  
+  // Timestamps
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+  closedAt            DateTime?   @map("closed_at")
+  resolvedAt          DateTime?   @map("resolved_at")
+  firstResponseAt     DateTime?   @map("first_response_at")
+  lastActivityAt      DateTime?   @map("last_activity_at")
+  dueDate             DateTime?   @map("due_date")
+  
+  // Parent/child relationships
+  parentTicketId      String?     @map("parent_ticket_id")
+  
+  // Relationships
+  requester           User        @relation("TicketRequester", fields: [userId], references: [id])
+  assignedUser        User?       @relation("TicketAssignedUser", fields: [assignedToUserId], references: [id])
+  assignedGroup       TicketGroup? @relation(fields: [assignedToGroupId], references: [id])
+  assignedQueue       TicketQueue? @relation(fields: [assignedToQueueId], references: [id])
+  sla                 SlaDefinition? @relation(fields: [slaId], references: [id])
+  parentTicket        EnhancedSupportTicket? @relation("TicketHierarchy", fields: [parentTicketId], references: [id])
+  childTickets        EnhancedSupportTicket[] @relation("TicketHierarchy")
+  
+  // Related entities
+  comments            TicketComment[]
+  attachments         TicketAttachment[]
+  watchers            TicketWatcher[]
+  history             TicketHistory[]
+  escalations         TicketEscalation[]
+  timeEntries         TicketTimeEntry[]
+  linkedTickets       TicketLink[]        @relation("SourceTicketLink")
+  linkedFromTickets   TicketLink[]        @relation("TargetTicketLink")
+  approvals           TicketApproval[]
+  workflowInstances   WorkflowInstance[]
+  slaBreach           SlaBreach[]
+  
+  @@map("enhanced_support_tickets")
+  @@index([state, priority, assignedToUserId])
+  @@index([createdAt, state])
+  @@index([ticketNumber])
+  @@index([category, subcategory])
+  @@index([slaId, state])
+}
+
+model TicketComment {
+  id          String    @id @default(uuid())
+  ticketId    String    @map("ticket_id")
+  userId      String    @map("user_id")
+  content     String
+  isInternal  Boolean   @default(false) @map("is_internal")
+  isSystem    Boolean   @default(false) @map("is_system")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  ticket      EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user        User      @relation("CommentUser", fields: [userId], references: [id])
+  attachments CommentAttachment[]
+  
+  @@map("ticket_comments")
+  @@index([ticketId, createdAt])
+}
+
+model TicketAttachment {
+  id          String    @id @default(uuid())
+  ticketId    String    @map("ticket_id")
+  uploadedBy  String    @map("uploaded_by")
+  filename    String
+  originalName String   @map("original_name")
+  mimeType    String    @map("mime_type")
+  fileSize    Int       @map("file_size")
+  fileKey     String    @map("file_key") // S3 key or file path
+  isPublic    Boolean   @default(false) @map("is_public")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  ticket      EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploader    User      @relation("AttachmentUploader", fields: [uploadedBy], references: [id])
+  
+  @@map("ticket_attachments")
+  @@index([ticketId])
+}
+
+model CommentAttachment {
+  id          String    @id @default(uuid())
+  commentId   String    @map("comment_id")
+  filename    String
+  originalName String   @map("original_name")
+  mimeType    String    @map("mime_type")
+  fileSize    Int       @map("file_size")
+  fileKey     String    @map("file_key")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  comment     TicketComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@map("comment_attachments")
+}
+
+model TicketWatcher {
+  ticketId    String    @map("ticket_id")
+  userId      String    @map("user_id")
+  watchType   WatchType @default(MANUAL) @map("watch_type")
+  addedBy     String?   @map("added_by")
+  addedAt     DateTime  @default(now()) @map("added_at")
+  
+  ticket      EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user        User      @relation("TicketWatcher", fields: [userId], references: [id], onDelete: Cascade)
+  addedByUser User?     @relation("WatcherAddedBy", fields: [addedBy], references: [id])
+  
+  @@id([ticketId, userId])
+  @@map("ticket_watchers")
+}
+
+model TicketHistory {
+  id          String    @id @default(uuid())
+  ticketId    String    @map("ticket_id")
+  userId      String?   @map("user_id") // null for system actions
+  action      HistoryAction
+  fieldChanged String?  @map("field_changed")
+  oldValue    String?   @map("old_value")
+  newValue    String?   @map("new_value")
+  description String?
+  metadata    Json?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  ticket      EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user        User?     @relation("HistoryUser", fields: [userId], references: [id])
+  
+  @@map("ticket_history")
+  @@index([ticketId, createdAt])
+  @@index([action, createdAt])
+}
+
+model TicketEscalation {
+  id              String    @id @default(uuid())
+  ticketId        String    @map("ticket_id")
+  escalationLevel Int       @map("escalation_level")
+  escalatedBy     String    @map("escalated_by")
+  escalatedTo     String?   @map("escalated_to")
+  escalatedToGroup String?  @map("escalated_to_group")
+  reason          String
+  status          EscalationStatus @default(ACTIVE)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  resolvedAt      DateTime? @map("resolved_at")
+  
+  ticket          EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  escalatingUser  User      @relation("EscalatingUser", fields: [escalatedBy], references: [id])
+  escalatedToUser User?     @relation("EscalatedToUser", fields: [escalatedTo], references: [id])
+  escalatedToGroupRel TicketGroup? @relation(fields: [escalatedToGroup], references: [id])
+  
+  @@map("ticket_escalations")
+  @@index([ticketId, escalationLevel])
+}
+
+model TicketTimeEntry {
+  id          String    @id @default(uuid())
+  ticketId    String    @map("ticket_id")
+  userId      String    @map("user_id")
+  duration    Int       // in minutes
+  description String?
+  timeType    TimeType  @default(WORK) @map("time_type")
+  billable    Boolean   @default(false)
+  startTime   DateTime  @map("start_time")
+  endTime     DateTime? @map("end_time")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  ticket      EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user        User      @relation("TimeEntryUser", fields: [userId], references: [id])
+  
+  @@map("ticket_time_entries")
+  @@index([ticketId, startTime])
+  @@index([userId, startTime])
+}
+
+model TicketLink {
+  id               String           @id @default(uuid())
+  sourceTicketId   String           @map("source_ticket_id")
+  targetTicketId   String           @map("target_ticket_id")
+  relationshipType RelationshipType @map("relationship_type")
+  createdBy        String           @map("created_by")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  
+  sourceTicket     EnhancedSupportTicket @relation("SourceTicketLink", fields: [sourceTicketId], references: [id], onDelete: Cascade)
+  targetTicket     EnhancedSupportTicket @relation("TargetTicketLink", fields: [targetTicketId], references: [id], onDelete: Cascade)
+  creator          User             @relation("LinkCreator", fields: [createdBy], references: [id])
+  
+  @@map("ticket_links")
+  @@index([sourceTicketId])
+  @@index([targetTicketId])
+}
+
+model TicketGroup {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  managerId   String?   @map("manager_id")
+  email       String?
+  isActive    Boolean   @default(true) @map("is_active")
+  metadata    Json?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  manager     User?     @relation("GroupManager", fields: [managerId], references: [id])
+  members     GroupMember[]
+  tickets     EnhancedSupportTicket[]
+  escalations TicketEscalation[]
+  queues      TicketQueue[]
+  
+  @@map("ticket_groups")
+}
+
+model GroupMember {
+  groupId   String    @map("group_id")
+  userId    String    @map("user_id")
+  role      String    @default("member")
+  joinedAt  DateTime  @default(now()) @map("joined_at")
+  
+  group     TicketGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User      @relation("GroupMemberUser", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@id([groupId, userId])
+  @@map("group_members")
+}
+
+model TicketQueue {
+  id               String    @id @default(uuid())
+  name             String    @unique
+  description      String?
+  groupId          String?   @map("group_id")
+  isActive         Boolean   @default(true) @map("is_active")
+  autoAssignment   Boolean   @default(false) @map("auto_assignment")
+  assignmentRules  Json?     @map("assignment_rules")
+  maxCapacity      Int?      @map("max_capacity")
+  businessHours    Json?     @map("business_hours")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  
+  group            TicketGroup? @relation(fields: [groupId], references: [id])
+  tickets          EnhancedSupportTicket[]
+  
+  @@map("ticket_queues")
+}
+
+model SlaDefinition {
+  id             String    @id @default(uuid())
+  name           String    @unique
+  description    String?
+  priority       Priority?
+  category       String?
+  subcategory    String?
+  isVipOnly      Boolean   @default(false) @map("is_vip_only")
+  responseTime   Int       @map("response_time") // in minutes
+  resolutionTime Int       @map("resolution_time") // in minutes
+  businessHours  Boolean   @default(true) @map("business_hours")
+  isActive       Boolean   @default(true) @map("is_active")
+  isDefault      Boolean   @default(false) @map("is_default")
+  metadata       Json?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  
+  tickets        EnhancedSupportTicket[]
+  breaches       SlaBreach[]
+  
+  @@map("sla_definitions")
+}
+
+model SlaBreach {
+  id             String        @id @default(uuid())
+  ticketId       String        @map("ticket_id")
+  slaId          String        @map("sla_id")
+  breachType     SlaBreachType @map("breach_type")
+  targetTime     DateTime      @map("target_time")
+  actualTime     DateTime      @map("actual_time")
+  breachDuration Int           @map("breach_duration") // in minutes
+  createdAt      DateTime      @default(now()) @map("created_at")
+  
+  ticket         EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sla            SlaDefinition @relation(fields: [slaId], references: [id])
+  
+  @@map("sla_breaches")
+  @@index([ticketId])
+  @@index([createdAt, breachType])
+}
+
+model TicketApproval {
+  id           String        @id @default(uuid())
+  ticketId     String        @map("ticket_id")
+  approverId   String        @map("approver_id")
+  approvalType ApprovalType  @map("approval_type")
+  status       ApprovalStatus @default(PENDING)
+  comments     String?
+  approvedAt   DateTime?     @map("approved_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  
+  ticket       EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  approver     User          @relation("TicketApprover", fields: [approverId], references: [id])
+  
+  @@map("ticket_approvals")
+  @@index([ticketId, status])
+  @@index([approverId, status])
+}
+
+model WorkflowDefinition {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  isActive    Boolean   @default(true) @map("is_active")
+  autoStart   Boolean   @default(false) @map("auto_start")
+  triggers    Json?     // conditions that start this workflow
+  metadata    Json?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  steps       WorkflowStep[]
+  instances   WorkflowInstance[]
+  
+  @@map("workflow_definitions")
+}
+
+model WorkflowStep {
+  id               String            @id @default(uuid())
+  workflowId       String            @map("workflow_id")
+  stepOrder        Int               @map("step_order")
+  stepType         WorkflowStepType  @map("step_type")
+  name             String
+  description      String?
+  configuration    Json              // step-specific configuration
+  isRequired       Boolean           @default(true) @map("is_required")
+  
+  workflow         WorkflowDefinition @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  
+  @@map("workflow_steps")
+  @@index([workflowId, stepOrder])
+}
+
+model WorkflowInstance {
+  id                   String              @id @default(uuid())
+  ticketId             String              @map("ticket_id")
+  workflowDefinitionId String              @map("workflow_definition_id")
+  status               WorkflowStatus      @default(ACTIVE)
+  currentStep          Int                 @default(0) @map("current_step")
+  startedBy            String              @map("started_by")
+  context              Json?               // runtime context/variables
+  createdAt            DateTime            @default(now()) @map("created_at")
+  completedAt          DateTime?           @map("completed_at")
+  
+  ticket               EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  workflowDefinition   WorkflowDefinition  @relation(fields: [workflowDefinitionId], references: [id])
+  startedByUser        User                @relation("WorkflowStarter", fields: [startedBy], references: [id])
+  
+  @@map("workflow_instances")
+  @@index([ticketId, status])
+}
+
+// Enums
+enum TicketType {
+  INCIDENT
+  REQUEST
+  PROBLEM
+  CHANGE
+  TASK
+  HR
+  OPS
+  ISAC
+  FEEDBACK
+}
+
+enum TicketState {
+  NEW
+  ASSIGNED
+  IN_PROGRESS
+  PENDING
+  PENDING_APPROVAL
+  RESOLVED
+  CLOSED
+  REOPENED
+  CANCELLED
+}
+
+enum Priority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum TicketSource {
+  PORTAL
+  EMAIL
+  PHONE
+  WALK_IN
+  CHAT
+  API
+  MONITORING
+  SELF_SERVICE
+}
+
+enum WatchType {
+  MANUAL
+  AUTO_REQUESTER
+  AUTO_ASSIGNEE
+  AUTO_GROUP
+  AUTO_ESCALATION
+}
+
+enum HistoryAction {
+  CREATED
+  UPDATED
+  ASSIGNED
+  ESCALATED
+  RESOLVED
+  CLOSED
+  REOPENED
+  CANCELLED
+  COMMENT_ADDED
+  ATTACHMENT_ADDED
+  SLA_BREACH
+  APPROVAL_REQUESTED
+  APPROVED
+  REJECTED
+  WORKFLOW_STARTED
+  WORKFLOW_COMPLETED
+}
+
+enum EscalationStatus {
+  ACTIVE
+  RESOLVED
+  CANCELLED
+}
+
+enum TimeType {
+  WORK
+  RESEARCH
+  DOCUMENTATION
+  TESTING
+  TRAVEL
+  TRAINING
+  ADMIN
+}
+
+enum RelationshipType {
+  BLOCKS
+  IS_BLOCKED_BY
+  DUPLICATES
+  IS_DUPLICATED_BY
+  RELATES_TO
+  PARENT_OF
+  CHILD_OF
+  CAUSED_BY
+  CAUSES
+}
+
+enum SlaBreachType {
+  RESPONSE
+  RESOLUTION
+}
+
+enum ApprovalType {
+  REQUIRED
+  OPTIONAL
+  INFORMATIONAL
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum WorkflowStepType {
+  ASSIGN
+  APPROVE
+  NOTIFY
+  UPDATE_FIELD
+  WAIT
+  CONDITION
+  PARALLEL
+  SUBPROCESS
+}
+
+enum WorkflowStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+  CANCELLED
+  PAUSED
+}
+
+// Additional User relations for the enhanced ticket system
+// These would extend the existing User model in core schema
+extend model User {
+  ticketsRequested       EnhancedSupportTicket[] @relation("TicketRequester")
+  ticketsAssigned        EnhancedSupportTicket[] @relation("TicketAssignedUser")
+  comments               TicketComment[]         @relation("CommentUser")
+  attachmentUploads      TicketAttachment[]      @relation("AttachmentUploader")
+  ticketWatches          TicketWatcher[]         @relation("TicketWatcher")
+  watchesAdded           TicketWatcher[]         @relation("WatcherAddedBy")
+  historyEntries         TicketHistory[]         @relation("HistoryUser")
+  escalationsStarted     TicketEscalation[]      @relation("EscalatingUser")
+  escalationsReceived    TicketEscalation[]      @relation("EscalatedToUser")
+  timeEntries            TicketTimeEntry[]       @relation("TimeEntryUser")
+  linksCreated           TicketLink[]            @relation("LinkCreator")
+  groupsManaged          TicketGroup[]           @relation("GroupManager")
+  groupMemberships       GroupMember[]           @relation("GroupMemberUser")
+  approvals              TicketApproval[]        @relation("TicketApprover")
+  workflowsStarted       WorkflowInstance[]      @relation("WorkflowStarter")
+}

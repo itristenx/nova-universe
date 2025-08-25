@@ -1,27 +1,27 @@
-import { useState, useEffect } from 'react'
-import { 
+import { useState, useEffect } from 'react';
+import {
   CogIcon,
   ShieldCheckIcon,
   BellIcon,
   PuzzlePieceIcon,
   BuildingOfficeIcon,
-  CircleStackIcon
-} from '@heroicons/react/24/outline'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import { featureService } from '@services/features'
-import { cn } from '@utils/index'
-import toast from 'react-hot-toast'
+  CircleStackIcon,
+} from '@heroicons/react/24/outline';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { featureService } from '@services/features';
+import { cn } from '@utils/index';
+import toast from 'react-hot-toast';
 
 interface SettingsSection {
-  id: string
-  name: string
-  icon: React.ComponentType<any>
-  description: string
+  id: string;
+  name: string;
+  icon: React.ComponentType<any>;
+  description: string;
 }
 
 export default function SettingsPage() {
-  const [activeSection, setActiveSection] = useState('general')
-  const [isLoading, setIsLoading] = useState(false)
+  const [activeSection, setActiveSection] = useState('general');
+  const [isLoading, setIsLoading] = useState(false);
   const [settings, setSettings] = useState<Record<string, any>>({
     general: {
       siteName: 'Nova Universe',
@@ -49,7 +49,7 @@ export default function SettingsPage() {
       zoomEnabled: false,
     },
     modules: {},
-  })
+  });
 
   const sections: SettingsSection[] = [
     {
@@ -88,55 +88,58 @@ export default function SettingsPage() {
       icon: BuildingOfficeIcon,
       description: 'Company and organizational settings',
     },
-  ]
+  ];
 
   useEffect(() => {
-    loadModuleSettings()
-  }, [])
+    loadModuleSettings();
+  }, []);
 
   const loadModuleSettings = async () => {
     try {
-      const modules = await featureService.getModules()
-      setSettings(prev => ({
+      const modules = await featureService.getModules();
+      setSettings((prev) => ({
         ...prev,
-        modules: modules.reduce((acc, module) => ({
-          ...acc,
-          [module.key]: module.enabled
-        }), {})
-      }))
-    } catch (error) {
-      console.error('Failed to load module settings:', error)
+        modules: modules.reduce(
+          (acc, module) => ({
+            ...acc,
+            [module.key]: module.enabled,
+          }),
+          {},
+        ),
+      }));
+    } catch (_error) {
+      console.error('Failed to load module settings:', error);
     }
-  }
+  };
 
   const handleSave = async (section: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      toast.success(`${sections.find(s => s.id === section)?.name} settings saved`)
-    } catch (error) {
-      toast.error('Failed to save settings')
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast.success(`${sections.find((s) => s.id === section)?.name} settings saved`);
+    } catch (_error) {
+      toast.error('Failed to save settings');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleModuleToggle = async (moduleKey: string, enabled: boolean) => {
     try {
-      await featureService.toggleModule(moduleKey, enabled)
-      setSettings(prev => ({
+      await featureService.toggleModule(moduleKey, enabled);
+      setSettings((prev) => ({
         ...prev,
         modules: {
           ...prev.modules,
-          [moduleKey]: enabled
-        }
-      }))
-      toast.success(`${moduleKey} ${enabled ? 'enabled' : 'disabled'}`)
-    } catch (error) {
-      toast.error('Failed to update module')
+          [moduleKey]: enabled,
+        },
+      }));
+      toast.success(`${moduleKey} ${enabled ? 'enabled' : 'disabled'}`);
+    } catch (_error) {
+      toast.error('Failed to update module');
     }
-  }
+  };
 
   const renderGeneralSettings = () => (
     <div className="space-y-6">
@@ -148,14 +151,16 @@ export default function SettingsPage() {
           <input
             type="text"
             value={settings.general.siteName}
-            onChange={(e) => setSettings(prev => ({
-              ...prev,
-              general: { ...prev.general, siteName: e.target.value }
-            }))}
+            onChange={(e) =>
+              setSettings((prev) => ({
+                ...prev,
+                general: { ...prev.general, siteName: e.target.value },
+              }))
+            }
             className="input mt-1"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Site URL
@@ -163,24 +168,28 @@ export default function SettingsPage() {
           <input
             type="url"
             value={settings.general.siteUrl}
-            onChange={(e) => setSettings(prev => ({
-              ...prev,
-              general: { ...prev.general, siteUrl: e.target.value }
-            }))}
+            onChange={(e) =>
+              setSettings((prev) => ({
+                ...prev,
+                general: { ...prev.general, siteUrl: e.target.value },
+              }))
+            }
             className="input mt-1"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Default Language
           </label>
           <select
             value={settings.general.defaultLanguage}
-            onChange={(e) => setSettings(prev => ({
-              ...prev,
-              general: { ...prev.general, defaultLanguage: e.target.value }
-            }))}
+            onChange={(e) =>
+              setSettings((prev) => ({
+                ...prev,
+                general: { ...prev.general, defaultLanguage: e.target.value },
+              }))
+            }
             className="input mt-1"
           >
             <option value="en">English</option>
@@ -189,17 +198,19 @@ export default function SettingsPage() {
             <option value="de">German</option>
           </select>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Timezone
           </label>
           <select
             value={settings.general.timezone}
-            onChange={(e) => setSettings(prev => ({
-              ...prev,
-              general: { ...prev.general, timezone: e.target.value }
-            }))}
+            onChange={(e) =>
+              setSettings((prev) => ({
+                ...prev,
+                general: { ...prev.general, timezone: e.target.value },
+              }))
+            }
             className="input mt-1"
           >
             <option value="UTC">UTC</option>
@@ -210,24 +221,29 @@ export default function SettingsPage() {
           </select>
         </div>
       </div>
-      
+
       <div className="flex items-center">
         <input
           type="checkbox"
           id="maintenanceMode"
           checked={settings.general.maintenanceMode}
-          onChange={(e) => setSettings(prev => ({
-            ...prev,
-            general: { ...prev.general, maintenanceMode: e.target.checked }
-          }))}
-          className="h-4 w-4 text-nova-600 focus:ring-nova-500"
+          onChange={(e) =>
+            setSettings((prev) => ({
+              ...prev,
+              general: { ...prev.general, maintenanceMode: e.target.checked },
+            }))
+          }
+          className="text-nova-600 focus:ring-nova-500 h-4 w-4"
         />
-        <label htmlFor="maintenanceMode" className="ml-2 block text-sm text-gray-900 dark:text-gray-100">
+        <label
+          htmlFor="maintenanceMode"
+          className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
+        >
           Enable maintenance mode
         </label>
       </div>
     </div>
-  )
+  );
 
   const renderSecuritySettings = () => (
     <div className="space-y-6">
@@ -241,14 +257,16 @@ export default function SettingsPage() {
             min="6"
             max="32"
             value={settings.security.passwordMinLength}
-            onChange={(e) => setSettings(prev => ({
-              ...prev,
-              security: { ...prev.security, passwordMinLength: parseInt(e.target.value) }
-            }))}
+            onChange={(e) =>
+              setSettings((prev) => ({
+                ...prev,
+                security: { ...prev.security, passwordMinLength: parseInt(e.target.value) },
+              }))
+            }
             className="input mt-1"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Session Timeout (minutes)
@@ -258,14 +276,16 @@ export default function SettingsPage() {
             min="5"
             max="480"
             value={settings.security.sessionTimeout}
-            onChange={(e) => setSettings(prev => ({
-              ...prev,
-              security: { ...prev.security, sessionTimeout: parseInt(e.target.value) }
-            }))}
+            onChange={(e) =>
+              setSettings((prev) => ({
+                ...prev,
+                security: { ...prev.security, sessionTimeout: parseInt(e.target.value) },
+              }))
+            }
             className="input mt-1"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Max Login Attempts
@@ -275,50 +295,62 @@ export default function SettingsPage() {
             min="3"
             max="10"
             value={settings.security.maxLoginAttempts}
-            onChange={(e) => setSettings(prev => ({
-              ...prev,
-              security: { ...prev.security, maxLoginAttempts: parseInt(e.target.value) }
-            }))}
+            onChange={(e) =>
+              setSettings((prev) => ({
+                ...prev,
+                security: { ...prev.security, maxLoginAttempts: parseInt(e.target.value) },
+              }))
+            }
             className="input mt-1"
           />
         </div>
       </div>
-      
+
       <div className="space-y-4">
         <div className="flex items-center">
           <input
             type="checkbox"
             id="requireMFA"
             checked={settings.security.requireMFA}
-            onChange={(e) => setSettings(prev => ({
-              ...prev,
-              security: { ...prev.security, requireMFA: e.target.checked }
-            }))}
-            className="h-4 w-4 text-nova-600 focus:ring-nova-500"
+            onChange={(e) =>
+              setSettings((prev) => ({
+                ...prev,
+                security: { ...prev.security, requireMFA: e.target.checked },
+              }))
+            }
+            className="text-nova-600 focus:ring-nova-500 h-4 w-4"
           />
-          <label htmlFor="requireMFA" className="ml-2 block text-sm text-gray-900 dark:text-gray-100">
+          <label
+            htmlFor="requireMFA"
+            className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
+          >
             Require multi-factor authentication
           </label>
         </div>
-        
+
         <div className="flex items-center">
           <input
             type="checkbox"
             id="allowSelfRegistration"
             checked={settings.security.allowSelfRegistration}
-            onChange={(e) => setSettings(prev => ({
-              ...prev,
-              security: { ...prev.security, allowSelfRegistration: e.target.checked }
-            }))}
-            className="h-4 w-4 text-nova-600 focus:ring-nova-500"
+            onChange={(e) =>
+              setSettings((prev) => ({
+                ...prev,
+                security: { ...prev.security, allowSelfRegistration: e.target.checked },
+              }))
+            }
+            className="text-nova-600 focus:ring-nova-500 h-4 w-4"
           />
-          <label htmlFor="allowSelfRegistration" className="ml-2 block text-sm text-gray-900 dark:text-gray-100">
+          <label
+            htmlFor="allowSelfRegistration"
+            className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
+          >
             Allow self-registration
           </label>
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderModulesSettings = () => (
     <div className="space-y-6">
@@ -330,23 +362,19 @@ export default function SettingsPage() {
                 <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {config.name}
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {config.description}
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{config.description}</p>
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {config.features.slice(0, 3).map(feature => (
+                  {config.features.slice(0, 3).map((feature) => (
                     <span key={feature} className="badge badge-sm">
                       {feature}
                     </span>
                   ))}
                   {config.features.length > 3 && (
-                    <span className="badge badge-sm">
-                      +{config.features.length - 3} more
-                    </span>
+                    <span className="badge badge-sm">+{config.features.length - 3} more</span>
                   )}
                 </div>
               </div>
-              
+
               <div className="ml-4">
                 <label className="relative inline-flex cursor-pointer items-center">
                   <input
@@ -355,7 +383,7 @@ export default function SettingsPage() {
                     onChange={(e) => handleModuleToggle(key, e.target.checked)}
                     className="peer sr-only"
                   />
-                  <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-nova-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-nova-300 dark:border-gray-600 dark:bg-gray-700 dark:peer-focus:ring-nova-800"></div>
+                  <div className="peer peer-checked:bg-nova-600 peer-focus:ring-nova-300 dark:peer-focus:ring-nova-800 h-6 w-11 rounded-full bg-gray-200 peer-focus:ring-4 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white dark:border-gray-600 dark:bg-gray-700"></div>
                 </label>
               </div>
             </div>
@@ -363,26 +391,27 @@ export default function SettingsPage() {
         ))}
       </div>
     </div>
-  )
+  );
 
   const renderCurrentSection = () => {
     switch (activeSection) {
       case 'general':
-        return renderGeneralSettings()
+        return renderGeneralSettings();
       case 'security':
-        return renderSecuritySettings()
+        return renderSecuritySettings();
       case 'modules':
-        return renderModulesSettings()
+        return renderModulesSettings();
       default:
         return (
-          <div className="text-center py-12">
+          <div className="py-12 text-center">
             <p className="text-gray-600 dark:text-gray-400">
-              {sections.find(s => s.id === activeSection)?.name} settings are available here. Configure various application settings using the sections on the left.
+              {sections.find((s) => s.id === activeSection)?.name} settings are available here.
+              Configure various application settings using the sections on the left.
             </p>
           </div>
-        )
+        );
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -398,7 +427,7 @@ export default function SettingsPage() {
         {/* Sidebar */}
         <div className="card p-4">
           <nav className="space-y-1">
-            {sections.map(section => (
+            {sections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
@@ -406,7 +435,7 @@ export default function SettingsPage() {
                   'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors',
                   activeSection === section.id
                     ? 'bg-nova-100 text-nova-700 dark:bg-nova-900 dark:text-nova-300'
-                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700',
                 )}
               >
                 <section.icon className="h-5 w-5" />
@@ -426,10 +455,10 @@ export default function SettingsPage() {
           <div className="card p-6">
             <div className="mb-6">
               <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                {sections.find(s => s.id === activeSection)?.name}
+                {sections.find((s) => s.id === activeSection)?.name}
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {sections.find(s => s.id === activeSection)?.description}
+                {sections.find((s) => s.id === activeSection)?.description}
               </p>
             </div>
 
@@ -448,5 +477,5 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

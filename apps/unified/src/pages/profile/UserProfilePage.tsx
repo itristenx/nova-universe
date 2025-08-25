@@ -1,58 +1,53 @@
-import { useState, useEffect } from 'react'
-import { 
-  UserIcon, 
-  CameraIcon,
-  CheckIcon,
-  XMarkIcon 
-} from '@heroicons/react/24/outline'
-import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@stores/auth'
-import { authService } from '@services/auth'
-import { getInitials } from '@utils/index'
-import { EnhancedFileUpload } from '@components/files/EnhancedFileUpload'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
-import toast from 'react-hot-toast'
+import { useState, useEffect } from 'react';
+import { UserIcon, CameraIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '@stores/auth';
+import { authService } from '@services/auth';
+import { getInitials } from '@utils/index';
+import { EnhancedFileUpload } from '@components/files/EnhancedFileUpload';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import toast from 'react-hot-toast';
 
 interface UserProfile {
-  id: string
-  firstName?: string
-  lastName?: string
-  email: string
-  avatar?: string
-  phone?: string
-  title?: string
-  department?: string
-  bio?: string
-  timezone?: string
-  language?: string
-  displayName?: string
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  avatar?: string;
+  phone?: string;
+  title?: string;
+  department?: string;
+  bio?: string;
+  timezone?: string;
+  language?: string;
+  displayName?: string;
 }
 
 export default function UserProfilePage() {
-  const { t } = useTranslation(['profile', 'forms', 'common'])
-  const { user } = useAuthStore()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [editMode, setEditMode] = useState(false)
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
+  const { t } = useTranslation(['profile', 'forms', 'common']);
+  const { user } = useAuthStore();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
 
   // Helper function to get display name for profile
   const getProfileDisplayName = (profile: UserProfile): string => {
-    if (profile.displayName) return profile.displayName
+    if (profile.displayName) return profile.displayName;
     if (profile.firstName && profile.lastName) {
-      return `${profile.firstName} ${profile.lastName}`
+      return `${profile.firstName} ${profile.lastName}`;
     }
-    if (profile.firstName) return profile.firstName
-    if (profile.lastName) return profile.lastName
-    return profile.email
-  }
+    if (profile.firstName) return profile.firstName;
+    if (profile.lastName) return profile.lastName;
+    return profile.email;
+  };
 
   // Helper function to get initials for profile
   const getProfileInitials = (profile: UserProfile): string => {
-    const displayName = getProfileDisplayName(profile)
-    return getInitials(displayName)
-  }
+    const displayName = getProfileDisplayName(profile);
+    return getInitials(displayName);
+  };
 
   useEffect(() => {
     if (user) {
@@ -64,36 +59,36 @@ export default function UserProfilePage() {
         ...(user.avatar && { avatar: user.avatar }),
         displayName: user.displayName,
         timezone: user.preferences?.timezone || 'UTC',
-        language: user.preferences?.language || 'en'
-      })
+        language: user.preferences?.language || 'en',
+      });
     }
-    setIsLoading(false)
-  }, [user])
+    setIsLoading(false);
+  }, [user]);
 
   const handleSave = async () => {
-    if (!profile) return
+    if (!profile) return;
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
       // If a new avatar was uploaded, use it
-      const updatedProfile = { ...profile }
+      const updatedProfile = { ...profile };
       if (uploadedFiles.length > 0) {
-        updatedProfile.avatar = uploadedFiles[0].url
+        updatedProfile.avatar = uploadedFiles[0].url;
       }
 
       // Call API to update user profile
-      await authService.updateProfile(updatedProfile)
-      
-      toast.success('Profile updated successfully!')
-      setEditMode(false)
-      setUploadedFiles([])
-    } catch (error) {
-      console.error('Failed to update profile:', error)
-      toast.error('Failed to update profile. Please try again.')
+      await authService.updateProfile(updatedProfile);
+
+      toast.success('Profile updated successfully!');
+      setEditMode(false);
+      setUploadedFiles([]);
+    } catch (_error) {
+      console.error('Failed to update profile:', error);
+      toast.error('Failed to update profile. Please try again.');
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleCancel = () => {
     if (user) {
@@ -105,31 +100,31 @@ export default function UserProfilePage() {
         ...(user.avatar && { avatar: user.avatar }),
         displayName: user.displayName,
         timezone: user.preferences?.timezone || 'UTC',
-        language: user.preferences?.language || 'en'
-      })
+        language: user.preferences?.language || 'en',
+      });
     }
-    setEditMode(false)
-    setUploadedFiles([])
-  }
+    setEditMode(false);
+    setUploadedFiles([]);
+  };
 
   const handleFileUpload = (files: any[]) => {
-    setUploadedFiles(files)
+    setUploadedFiles(files);
     if (files.length > 0 && profile) {
-      setProfile({ ...profile, avatar: files[0].url })
+      setProfile({ ...profile, avatar: files[0].url });
     }
-  }
+  };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
           <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -140,25 +135,23 @@ export default function UserProfilePage() {
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="mx-auto max-w-4xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Profile Settings
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Profile Settings</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Manage your personal information and account settings.
         </p>
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+      <div className="overflow-hidden rounded-lg bg-white shadow-sm dark:bg-gray-800">
         {/* Card Header */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
               Personal Information
@@ -169,20 +162,20 @@ export default function UserProfilePage() {
                   <button
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-nova-500 disabled:opacity-50"
+                    className="focus:ring-nova-500 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-4 font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                   >
-                    <XMarkIcon className="h-4 w-4 mr-1" />
+                    <XMarkIcon className="mr-1 h-4 w-4" />
                     Cancel
                   </button>
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-nova-600 hover:bg-nova-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-nova-500 disabled:opacity-50"
+                    className="bg-nova-600 hover:bg-nova-700 focus:ring-nova-500 inline-flex items-center rounded-md border border-transparent px-3 py-2 text-sm leading-4 font-medium text-white focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                   >
                     {isSaving ? (
                       <LoadingSpinner size="sm" className="mr-1" />
                     ) : (
-                      <CheckIcon className="h-4 w-4 mr-1" />
+                      <CheckIcon className="mr-1 h-4 w-4" />
                     )}
                     Save Changes
                   </button>
@@ -190,7 +183,7 @@ export default function UserProfilePage() {
               ) : (
                 <button
                   onClick={() => setEditMode(true)}
-                  className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-nova-500"
+                  className="focus:ring-nova-500 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-4 font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
                   Edit Profile
                 </button>
@@ -201,7 +194,7 @@ export default function UserProfilePage() {
 
         {/* Card Content */}
         <div className="px-6 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Avatar Section */}
             <div className="lg:col-span-1">
               <div className="flex flex-col items-center">
@@ -213,13 +206,13 @@ export default function UserProfilePage() {
                       className="h-32 w-32 rounded-full object-cover ring-4 ring-white dark:ring-gray-800"
                     />
                   ) : (
-                    <div className="flex h-32 w-32 items-center justify-center rounded-full bg-nova-600 text-2xl font-medium text-white ring-4 ring-white dark:ring-gray-800">
+                    <div className="bg-nova-600 flex h-32 w-32 items-center justify-center rounded-full text-2xl font-medium text-white ring-4 ring-white dark:ring-gray-800">
                       {getProfileInitials(profile)}
                     </div>
                   )}
-                  
+
                   {editMode && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                    <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-black">
                       <CameraIcon className="h-8 w-8 text-white" />
                     </div>
                   )}
@@ -228,29 +221,25 @@ export default function UserProfilePage() {
                 <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">
                   {getProfileDisplayName(profile)}
                 </h3>
-                
+
                 {profile.title && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {profile.title}
-                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{profile.title}</p>
                 )}
-                
+
                 {profile.department && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {profile.department}
-                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{profile.department}</p>
                 )}
 
                 {editMode && (
                   <div className="mt-4 w-full">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Profile Picture
                     </label>
                     <EnhancedFileUpload
                       context="profileImages"
                       maxFiles={1}
                       acceptedFileTypes={{
-                        'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp']
+                        'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
                       }}
                       maxFileSize={5 * 1024 * 1024} // 5MB
                       onFilesUploaded={handleFileUpload}
@@ -266,7 +255,7 @@ export default function UserProfilePage() {
 
             {/* Profile Information */}
             <div className="lg:col-span-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* First Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -279,7 +268,7 @@ export default function UserProfilePage() {
                       aria-label={t('profile.firstName', 'First Name')}
                       value={profile.firstName || ''}
                       onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
+                      className="focus:ring-nova-500 focus:border-nova-500 mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     />
                   ) : (
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -300,7 +289,7 @@ export default function UserProfilePage() {
                       aria-label={t('profile.lastName', 'Last Name')}
                       value={profile.lastName || ''}
                       onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
+                      className="focus:ring-nova-500 focus:border-nova-500 mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     />
                   ) : (
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -314,9 +303,7 @@ export default function UserProfilePage() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Email Address
                   </label>
-                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {profile.email}
-                  </p>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{profile.email}</p>
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Email address cannot be changed here. Contact your administrator.
                   </p>
@@ -334,7 +321,7 @@ export default function UserProfilePage() {
                       aria-label={t('profile.phoneNumber', 'Phone Number')}
                       value={profile.phone || ''}
                       onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
+                      className="focus:ring-nova-500 focus:border-nova-500 mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     />
                   ) : (
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -355,7 +342,7 @@ export default function UserProfilePage() {
                       aria-label={t('profile.jobTitle', 'Job Title')}
                       value={profile.title || ''}
                       onChange={(e) => setProfile({ ...profile, title: e.target.value })}
-                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
+                      className="focus:ring-nova-500 focus:border-nova-500 mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     />
                   ) : (
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -376,7 +363,7 @@ export default function UserProfilePage() {
                       aria-label={t('profile.department', 'Department')}
                       value={profile.department || ''}
                       onChange={(e) => setProfile({ ...profile, department: e.target.value })}
-                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
+                      className="focus:ring-nova-500 focus:border-nova-500 mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     />
                   ) : (
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -396,7 +383,7 @@ export default function UserProfilePage() {
                       aria-label={t('profile.timezone', 'Timezone')}
                       value={profile.timezone || 'UTC'}
                       onChange={(e) => setProfile({ ...profile, timezone: e.target.value })}
-                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
+                      className="focus:ring-nova-500 focus:border-nova-500 mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     >
                       <option value="UTC">UTC</option>
                       <option value="America/New_York">Eastern Time</option>
@@ -425,7 +412,7 @@ export default function UserProfilePage() {
                       value={profile.bio || ''}
                       onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                       placeholder={t('profile.bioPlaceholder', 'Tell us a bit about yourself...')}
-                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-nova-500 focus:border-nova-500 dark:bg-gray-700 dark:text-gray-100"
+                      className="focus:ring-nova-500 focus:border-nova-500 mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     />
                   ) : (
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
@@ -439,5 +426,5 @@ export default function UserProfilePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

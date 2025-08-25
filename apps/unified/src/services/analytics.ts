@@ -82,7 +82,9 @@ export interface ActivityItem {
 }
 
 class AnalyticsService {
-  async getDashboardAnalytics(timeRange: '1d' | '7d' | '30d' | '90d' = '7d'): Promise<DashboardAnalytics> {
+  async getDashboardAnalytics(
+    timeRange: '1d' | '7d' | '30d' | '90d' = '7d',
+  ): Promise<DashboardAnalytics> {
     const response = await api.get(`/v1/analytics/dashboard?range=${timeRange}`);
     return response.data;
   }
@@ -123,8 +125,10 @@ class AnalyticsService {
       const auditResponse = await api.get(`/helix/login/audit?limit=${Math.min(limit, 5)}`);
       const auditLogs = auditResponse.data?.data || [];
 
-      // Get recent ticket activity 
-      const ticketResponse = await api.get(`/v1/tickets?limit=${Math.min(limit, 5)}&sort=created_at:desc`);
+      // Get recent ticket activity
+      const ticketResponse = await api.get(
+        `/v1/tickets?limit=${Math.min(limit, 5)}&sort=created_at:desc`,
+      );
       const recentTickets = ticketResponse.data?.data || [];
 
       // Transform audit logs to activity items
@@ -136,7 +140,7 @@ class AnalyticsService {
         timestamp: this.formatTimestamp(log.created_at),
         user: log.user_name || log.user_email || 'System',
         status: this.getAuditStatus(log.event_type),
-        metadata: log.metadata
+        metadata: log.metadata,
       }));
 
       // Transform tickets to activity items
@@ -148,7 +152,7 @@ class AnalyticsService {
         timestamp: this.formatTimestamp(ticket.created_at),
         user: ticket.requester?.name || ticket.requester?.email || 'Unknown',
         status: this.getTicketStatus(ticket.status),
-        metadata: { priority: ticket.priority, type: ticket.type }
+        metadata: { priority: ticket.priority, type: ticket.type },
       }));
 
       // Combine and sort by timestamp
@@ -157,7 +161,7 @@ class AnalyticsService {
         .slice(0, limit);
 
       return allActivities;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching recent activity:', error);
       // Return empty array as fallback
       return [];
@@ -166,15 +170,15 @@ class AnalyticsService {
 
   private formatAuditTitle(eventType: string): string {
     const titles: Record<string, string> = {
-      'login_success': 'User Login',
-      'login_failed': 'Failed Login Attempt',
-      'logout': 'User Logout',
-      'password_change': 'Password Changed',
-      'mfa_enabled': 'MFA Enabled',
-      'mfa_disabled': 'MFA Disabled',
-      'tenant_discovery': 'Tenant Discovery',
-      'sso_login': 'SSO Login',
-      'token_refresh': 'Session Refreshed'
+      login_success: 'User Login',
+      login_failed: 'Failed Login Attempt',
+      logout: 'User Logout',
+      password_change: 'Password Changed',
+      mfa_enabled: 'MFA Enabled',
+      mfa_disabled: 'MFA Disabled',
+      tenant_discovery: 'Tenant Discovery',
+      sso_login: 'SSO Login',
+      token_refresh: 'Session Refreshed',
     };
     return titles[eventType] || 'Authentication Event';
   }
@@ -191,7 +195,10 @@ class AnalyticsService {
       case 'sso_login':
         return `SSO login via ${metadata.provider || 'provider'}`;
       default:
-        return log.event_type?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'System event';
+        return (
+          log.event_type?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) ||
+          'System event'
+        );
     }
   }
 

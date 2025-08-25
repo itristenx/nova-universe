@@ -31,7 +31,8 @@ async function testNovaSynthIntegration() {
     console.log('\n📋 Test 1: Checking DATA_INTELLIGENCE connector type...');
     const connectorTypes =
       nil.constructor.ConnectorType ||
-      (await import('../packages/integrations/integration/nova-integration-layer.js')).ConnectorType;
+      (await import('../packages/integrations/integration/nova-integration-layer.js'))
+        .ConnectorType;
 
     if (connectorTypes.DATA_INTELLIGENCE) {
       console.log('✅ DATA_INTELLIGENCE connector type found');

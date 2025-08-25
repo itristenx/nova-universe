@@ -331,14 +331,12 @@ router.post(
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            error: 'Invalid input',
-            details: errors.array(),
-            errorCode: 'VALIDATION_ERROR',
-          });
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid input',
+          details: errors.array(),
+          errorCode: 'VALIDATION_ERROR',
+        });
       }
 
       const {
@@ -481,13 +479,11 @@ router.post(
       res.status(201).json({ success: true, ticketId, type: typeCode, vipWeight });
     } catch (error) {
       logger.error('Error creating ticket:', error);
-      res
-        .status(500)
-        .json({
-          success: false,
-          error: 'Failed to create ticket',
-          errorCode: 'TICKET_CREATE_ERROR',
-        });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create ticket',
+        errorCode: 'TICKET_CREATE_ERROR',
+      });
     }
   },
 );
@@ -1259,13 +1255,11 @@ router.get(
         (err, rows) => {
           if (err) {
             logger.error('Error fetching ticket history:', err);
-            return res
-              .status(500)
-              .json({
-                success: false,
-                error: 'Failed to fetch ticket history',
-                errorCode: 'HISTORY_ERROR',
-              });
+            return res.status(500).json({
+              success: false,
+              error: 'Failed to fetch ticket history',
+              errorCode: 'HISTORY_ERROR',
+            });
           }
           const history = (rows || []).map((r) => ({
             action: r.action,
@@ -1278,13 +1272,11 @@ router.get(
       );
     } catch (error) {
       logger.error('Error fetching ticket history:', error);
-      res
-        .status(500)
-        .json({
-          success: false,
-          error: 'Failed to fetch ticket history',
-          errorCode: 'HISTORY_ERROR',
-        });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch ticket history',
+        errorCode: 'HISTORY_ERROR',
+      });
     }
   },
 );
@@ -1349,13 +1341,11 @@ router.get('/xp', authenticateJWT, async (req, res) => {
     res.json({ success: true, leaderboard: rows, teams: teamRows, me: { xp: myXp } });
   } catch (err) {
     logger.error('Error fetching leaderboard:', err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        error: 'Failed to fetch leaderboard',
-        errorCode: 'LEADERBOARD_ERROR',
-      });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch leaderboard',
+      errorCode: 'LEADERBOARD_ERROR',
+    });
   }
 });
 

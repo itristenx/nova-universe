@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 // import { PrismaClient } from '../../prisma/generated/core/index.js';
 
 // Keep filename for potential future use
- 
+
 const __filename = fileURLToPath(import.meta.url);
 
 // Initialize database factory
@@ -27,8 +27,9 @@ let isInitialized = false;
 async function initializeDatabase() {
   if (isInitialized) return db;
   try {
-    const verboseLogging = process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
-    
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+
     if (verboseLogging) {
       logger.info('Initializing database factory...');
     }
@@ -37,7 +38,7 @@ async function initializeDatabase() {
     await setupSchemas();
     await setupInitialData();
     isInitialized = true;
-    
+
     if (verboseLogging) {
       logger.info('Database factory initialized successfully');
     }
@@ -365,7 +366,8 @@ async function setupSchemas() {
       );
     `);
 
-    const verboseLogging = process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
     if (verboseLogging) {
       logger.info('Database schemas verified and updated');
     }
@@ -387,8 +389,9 @@ async function setupSchemas() {
  */
 async function setupInitialData() {
   try {
-    const verboseLogging = process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
-    
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+
     await setupRolesAndPermissions();
     await setupDefaultConfig();
     await setupDefaultAdmin();
@@ -405,7 +408,7 @@ async function setupInitialData() {
     } catch {
       // Ignore if admin user already exists
     }
-    
+
     if (verboseLogging) {
       logger.info('Initial data setup completed');
     }
@@ -489,7 +492,8 @@ async function setupRolesAndPermissions() {
       );
     }
 
-    const verboseLogging = process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
     if (verboseLogging) {
       logger.info('Roles and permissions setup completed');
     }
@@ -528,8 +532,9 @@ async function setupDefaultSlaPolicies() {
         [c.type, c.urgency, c.impact, c.response, c.resolution],
       );
     }
-    
-    const verboseLogging = process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
     if (verboseLogging) {
       logger.info('Default SLA policies seeded');
     }
@@ -745,7 +750,7 @@ class DatabaseWrapper {
       if (cb) cb(null, result);
       return result;
     } catch (error) {
-      // Only log purge errors in debug mode when DB is unavailable  
+      // Only log purge errors in debug mode when DB is unavailable
       if (error.message === 'DB unavailable') {
         if (process.env.DEBUG_DB_MAINTENANCE === 'true') {
           logger.error('Failed to purge old logs:', error);

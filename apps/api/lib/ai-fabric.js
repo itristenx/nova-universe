@@ -9,7 +9,7 @@ import crypto from 'crypto';
 /**
  * AI Fabric Core System - Enterprise Implementation
  * Orchestrates multiple AI providers with full compliance and governance
- * 
+ *
  * Standards Compliance:
  * - NIST AI Risk Management Framework (AI RMF 1.0)
  * - ISO/IEC 42001 (AI Management Systems)
@@ -123,8 +123,9 @@ class AIFabric extends EventEmitter {
    * Get available models
    */
   getModels() {
-    return Array.from(this.providers.values()).flatMap(provider => 
-      provider.models || [{ id: provider.id, name: provider.name, type: provider.type }]
+    return Array.from(this.providers.values()).flatMap(
+      (provider) =>
+        provider.models || [{ id: provider.id, name: provider.name, type: provider.type }],
     );
   }
 
@@ -155,7 +156,7 @@ class AIFabric extends EventEmitter {
       // STEP 1: Security and Compliance Pre-checks (NIST AI RMF - GOVERN)
       await this.securityGuard.validateRequest(request);
       const complianceCheck = await this.complianceEngine.checkCompliance(request);
-      
+
       if (complianceCheck.violations.length > 0) {
         throw new Error(`Compliance violations detected: ${complianceCheck.violations.join(', ')}`);
       }
@@ -176,7 +177,7 @@ class AIFabric extends EventEmitter {
 
       // STEP 4: Route to appropriate provider (NIST AI RMF - MEASURE)
       const provider = await this.selectOptimalProvider(request);
-      
+
       // STEP 5: Execute with monitoring (NIST AI RMF - MANAGE)
       const response = await this.executeWithMonitoring(request, provider);
 
@@ -274,23 +275,24 @@ class AIFabric extends EventEmitter {
   }
 
   // Enterprise Security and Compliance Methods
-  
+
   /**
    * Initialize Security Framework (OWASP AI Security compliance)
    */
   async initializeSecurityFramework() {
     // Initialize authentication and authorization
     this.authenticationEnabled = process.env.AI_FABRIC_AUTH_ENABLED !== 'false';
-    this.encryptionKey = process.env.AI_FABRIC_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
-    
+    this.encryptionKey =
+      process.env.AI_FABRIC_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
+
     // Set up rate limiting per NIST guidelines
     this.rateLimits.set('global', { requests: 1000, window: 3600000 }); // 1000 per hour
     this.rateLimits.set('per_user', { requests: 100, window: 3600000 }); // 100 per hour per user
-    
+
     // Initialize circuit breakers for resilience
     this.circuitBreakers.set('external_providers', { failureThreshold: 5, timeout: 30000 });
     this.circuitBreakers.set('internal_processing', { failureThreshold: 3, timeout: 15000 });
-    
+
     logger.info('AI Fabric security framework initialized');
   }
 
@@ -343,13 +345,13 @@ class AIFabric extends EventEmitter {
   async enforceRateLimits(request) {
     const userId = request.userId || 'anonymous';
     const now = Date.now();
-    
+
     // Check global rate limit
     const globalLimit = this.rateLimits.get('global');
     if (!this.checkRateLimit('global', globalLimit, now)) {
       throw new Error('Global rate limit exceeded');
     }
-    
+
     // Check per-user rate limit
     const userLimit = this.rateLimits.get('per_user');
     if (!this.checkRateLimit(`user_${userId}`, userLimit, now)) {
@@ -363,7 +365,7 @@ class AIFabric extends EventEmitter {
   async checkCircuitBreakers(request) {
     const providerType = request.providerType || 'external_providers';
     const breaker = this.circuitBreakers.get(providerType);
-    
+
     if (breaker && breaker.isOpen && Date.now() < breaker.nextAttempt) {
       throw new Error(`Circuit breaker open for ${providerType}`);
     }
@@ -375,32 +377,32 @@ class AIFabric extends EventEmitter {
   async executeWithMonitoring(request, provider) {
     const startTime = Date.now();
     const monitoringId = crypto.randomUUID();
-    
+
     try {
       // Start monitoring session
       await this.monitoringSystem.startSession(monitoringId, request, provider);
-      
+
       // Execute the actual AI request
       const response = await this.execute(request, provider);
-      
+
       // Calculate performance metrics
       response.processingTime = Date.now() - startTime;
       response.id = crypto.randomUUID();
       response.requestId = request.id;
       response.timestamp = new Date();
       response.provider = provider.id;
-      
+
       // End monitoring session with success
       await this.monitoringSystem.endSession(monitoringId, response);
-      
+
       return response;
     } catch (error) {
       // Handle circuit breaker logic
       await this.handleCircuitBreakerFailure(provider, error);
-      
+
       // End monitoring session with error
       await this.monitoringSystem.endSession(monitoringId, null, error);
-      
+
       throw error;
     }
   }
@@ -411,14 +413,16 @@ class AIFabric extends EventEmitter {
   async validateResponse(response, request) {
     // Check for sensitive data leakage
     await this.securityGuard.scanForDataLeakage(response);
-    
+
     // Validate response against compliance requirements
     const complianceValidation = await this.complianceEngine.validateOutput(response, request);
-    
+
     if (!complianceValidation.isValid) {
-      throw new Error(`Response compliance validation failed: ${complianceValidation.violations.join(', ')}`);
+      throw new Error(
+        `Response compliance validation failed: ${complianceValidation.violations.join(', ')}`,
+      );
     }
-    
+
     // Add compliance metadata to response
     response.complianceValidation = complianceValidation;
     response.securityValidation = await this.securityGuard.validateOutput(response);
@@ -429,14 +433,14 @@ class AIFabric extends EventEmitter {
    */
   async escalateHighRiskRequest(request, riskScore) {
     logger.warn(`High risk AI request detected: ${request.id}, risk score: ${riskScore}`);
-    
+
     // Add to audit trail
     await this.auditHighRiskEvent(request, riskScore);
-    
+
     // Apply additional security measures
     request.requiresEnhancedValidation = true;
     request.riskScore = riskScore;
-    
+
     // Notify governance framework
     await this.governanceFramework.handleHighRiskRequest(request);
   }
@@ -630,7 +634,7 @@ class AIFabric extends EventEmitter {
     }
 
     const monitoring = this.securityMonitoring.get(key);
-    
+
     if (now > monitoring.resetTime) {
       monitoring.count = 0;
       monitoring.resetTime = now + limit.window;
@@ -647,10 +651,10 @@ class AIFabric extends EventEmitter {
   async handleCircuitBreakerFailure(provider, _error) {
     const key = provider.type || 'default';
     const breaker = this.circuitBreakers.get(key);
-    
+
     if (breaker) {
       breaker.failures = (breaker.failures || 0) + 1;
-      
+
       if (breaker.failures >= breaker.failureThreshold) {
         breaker.isOpen = true;
         breaker.nextAttempt = Date.now() + breaker.timeout;
@@ -814,16 +818,16 @@ class ExternalAIProviders {
         data: {
           message: `AI response for: ${request.input}`,
           model: provider.config.model,
-          provider: 'openai'
+          provider: 'openai',
         },
-        confidence: 0.9
+        confidence: 0.9,
       };
     }
 
     return {
       success: true,
       data: { message: `External AI processed: ${request.input}` },
-      provider: providerId
+      provider: providerId,
     };
   }
 
@@ -847,13 +851,13 @@ class InternalAIProviders {
 
   async initialize() {
     logger.info('Initializing Internal AI Providers...');
-    
+
     // Initialize Nova's internal RAG engine
     await this.initializeRAGEngine();
-    
+
     // Initialize Nova's ML pipeline
     await this.initializeMLPipeline();
-    
+
     // Register default Nova AI models
     await this.registerDefaultModels();
   }
@@ -870,10 +874,10 @@ class InternalAIProviders {
         documentation: true,
         procedures: true,
         userProfiles: true,
-        assetInventory: true
-      }
+        assetInventory: true,
+      },
     });
-    
+
     await this.ragEngine.initialize();
     logger.info('Nova RAG Engine initialized successfully');
   }
@@ -885,20 +889,20 @@ class InternalAIProviders {
         sentiment: 'nova-sentiment-v1',
         extraction: 'nova-ner-v1',
         summarization: 'nova-summarizer-v1',
-        recommendation: 'nova-recommender-v1'
+        recommendation: 'nova-recommender-v1',
       },
       preprocessing: {
         tokenization: true,
         normalization: true,
-        deduplication: true
+        deduplication: true,
       },
       postprocessing: {
         confidence_filtering: 0.7,
         result_ranking: true,
-        explanation_generation: true
-      }
+        explanation_generation: true,
+      },
     });
-    
+
     await this.mlPipeline.initialize();
     logger.info('Nova ML Pipeline initialized successfully');
   }
@@ -914,10 +918,10 @@ class InternalAIProviders {
           model: 'nova-general-v1',
           maxTokens: 4096,
           temperature: 0.7,
-          topP: 0.9
+          topP: 0.9,
         },
         isDefault: true,
-        priority: 1
+        priority: 1,
       },
       {
         id: 'nova-ai-itsm',
@@ -928,10 +932,10 @@ class InternalAIProviders {
           model: 'nova-itsm-v2',
           maxTokens: 2048,
           temperature: 0.3,
-          specialization: 'itsm'
+          specialization: 'itsm',
         },
         isDefault: false,
-        priority: 2
+        priority: 2,
       },
       {
         id: 'nova-ai-knowledge',
@@ -941,11 +945,11 @@ class InternalAIProviders {
         config: {
           model: 'nova-knowledge-v1',
           ragEngine: this.ragEngine,
-          retrievalDepth: 'comprehensive'
+          retrievalDepth: 'comprehensive',
         },
         isDefault: false,
-        priority: 3
-      }
+        priority: 3,
+      },
     ];
 
     for (const model of defaultModels) {
@@ -959,7 +963,7 @@ class InternalAIProviders {
       ...provider,
       lastUsed: null,
       usage: { requests: 0, errors: 0, avgResponseTime: 0 },
-      status: 'active'
+      status: 'active',
     });
     logger.info(`Registered internal provider: ${provider.id}`);
   }
@@ -1003,16 +1007,15 @@ class InternalAIProviders {
         provider: 'nova-internal',
         model: provider.id,
         processingTime: Date.now() - startTime,
-        capabilities: provider.capabilities
+        capabilities: provider.capabilities,
       };
-
     } catch (error) {
       // Update error statistics
       const model = this.models.get(providerId);
       if (model) {
         model.usage.errors++;
       }
-      
+
       logger.error(`Nova internal model ${providerId} execution failed:`, error);
       throw error;
     }
@@ -1028,8 +1031,8 @@ class InternalAIProviders {
       parameters: {
         maxTokens: provider.config.maxTokens,
         temperature: provider.config.temperature,
-        topP: provider.config.topP
-      }
+        topP: provider.config.topP,
+      },
     });
 
     return {
@@ -1040,8 +1043,8 @@ class InternalAIProviders {
       explanation: response.explanation,
       metadata: {
         model: provider.config.model,
-        processingSteps: response.steps
-      }
+        processingSteps: response.steps,
+      },
     };
   }
 
@@ -1050,7 +1053,7 @@ class InternalAIProviders {
     if (provider.config.specialization === 'itsm') {
       return await this.executeITSMModel(provider, request);
     }
-    
+
     return await this.executeGeneralModel(provider, request);
   }
 
@@ -1060,7 +1063,7 @@ class InternalAIProviders {
       type: request.type,
       context: request.context,
       ticketData: request.ticketData,
-      userProfile: request.userProfile
+      userProfile: request.userProfile,
     });
 
     return {
@@ -1074,8 +1077,8 @@ class InternalAIProviders {
       confidence: response.confidence,
       metadata: {
         model: 'nova-itsm-v2',
-        analysisDepth: 'comprehensive'
-      }
+        analysisDepth: 'comprehensive',
+      },
     };
   }
 
@@ -1085,7 +1088,7 @@ class InternalAIProviders {
       query: request.input,
       context: request.context,
       filters: request.filters,
-      retrievalType: request.retrievalType || 'comprehensive'
+      retrievalType: request.retrievalType || 'comprehensive',
     });
 
     return {
@@ -1098,8 +1101,8 @@ class InternalAIProviders {
       metadata: {
         retrievalK: response.retrievalK,
         totalDocuments: response.totalDocuments,
-        searchStrategy: response.searchStrategy
-      }
+        searchStrategy: response.searchStrategy,
+      },
     };
   }
 
@@ -1109,7 +1112,7 @@ class InternalAIProviders {
       text: `Nova AI processed: ${request.input}`,
       classification: request.type === 'classification' ? 'general' : 'processed',
       confidence: 0.85,
-      provider: 'nova-internal-default'
+      provider: 'nova-internal-default',
     };
   }
 
@@ -1122,7 +1125,7 @@ class InternalAIProviders {
       await this.execute(providerId, {
         input: 'health check test',
         type: 'health_check',
-        context: { test: true }
+        context: { test: true },
       });
       return true;
     } catch (error) {
@@ -1132,29 +1135,31 @@ class InternalAIProviders {
   }
 
   getModelStats() {
-    return Array.from(this.models.values()).map(model => ({
+    return Array.from(this.models.values()).map((model) => ({
       id: model.id,
       name: model.name,
       type: model.type,
       status: model.status,
       usage: model.usage,
       lastUsed: model.lastUsed,
-      isDefault: model.isDefault
+      isDefault: model.isDefault,
     }));
   }
 
   getDefaultModel() {
-    return Array.from(this.providers.values()).find(p => p.isDefault) || 
-           Array.from(this.providers.values())[0];
+    return (
+      Array.from(this.providers.values()).find((p) => p.isDefault) ||
+      Array.from(this.providers.values())[0]
+    );
   }
 
   async shutdown() {
     logger.info('Shutting down Internal AI Providers...');
-    
+
     if (this.ragEngine) {
       await this.ragEngine.shutdown();
     }
-    
+
     if (this.mlPipeline) {
       await this.mlPipeline.shutdown();
     }
@@ -1179,7 +1184,7 @@ class MCPProviders {
     return {
       success: true,
       data: { mcp_response: `MCP processed: ${request.input}` },
-      provider: 'mcp'
+      provider: 'mcp',
     };
   }
 
@@ -1206,7 +1211,7 @@ class RAGEngine {
     return {
       isInitialized: this.isInitialized,
       documentsIndexed: 0,
-      queriesProcessed: 0
+      queriesProcessed: 0,
     };
   }
 
@@ -1214,7 +1219,7 @@ class RAGEngine {
     return {
       success: true,
       data: { rag_response: `RAG processed: ${request.input}` },
-      provider: 'rag'
+      provider: 'rag',
     };
   }
 
@@ -1240,7 +1245,7 @@ class CustomModelManager {
   async execute(providerId, request) {
     return {
       success: true,
-      data: { custom_response: `Custom model processed: ${request.input}` }
+      data: { custom_response: `Custom model processed: ${request.input}` },
     };
   }
 
@@ -1264,7 +1269,7 @@ class AIMonitoringSystem {
       timestamp: new Date(),
       requestId: request.id,
       processingTime: response.processingTime,
-      provider: response.provider
+      provider: response.provider,
     });
   }
 
@@ -1275,10 +1280,11 @@ class AIMonitoringSystem {
   getDashboardData() {
     return {
       totalRequests: this.metrics.length,
-      avgProcessingTime: this.metrics.length > 0 
-        ? this.metrics.reduce((sum, m) => sum + (m.processingTime || 0), 0) / this.metrics.length 
-        : 0,
-      auditEvents: this.auditEvents.length
+      avgProcessingTime:
+        this.metrics.length > 0
+          ? this.metrics.reduce((sum, m) => sum + (m.processingTime || 0), 0) / this.metrics.length
+          : 0,
+      auditEvents: this.auditEvents.length,
     };
   }
 
@@ -1353,7 +1359,7 @@ class AISecurityGuard {
       sanitizeHtml: true,
       blockSqlInjection: true,
     });
-    
+
     this.securityPolicies.set('output_filtering', {
       removePII: true,
       maskSensitiveData: true,
@@ -1512,21 +1518,23 @@ class NovaRAGEngine {
 
   async initialize() {
     logger.info('Initializing Nova RAG Engine...');
-    
+
     // Initialize vector store (in production, use actual vector DB)
     this.vectorStore = new Map();
-    
+
     // Initialize embedding model (simplified implementation)
     this.embeddingModel = {
       embed: async (_text) => {
         // Simplified embedding - in production use actual embedding model
-        return Array(384).fill(0).map(() => Math.random() - 0.5);
-      }
+        return Array(384)
+          .fill(0)
+          .map(() => Math.random() - 0.5);
+      },
     };
-    
+
     // Load knowledge base
     await this.loadKnowledgeBase();
-    
+
     this.initialized = true;
     logger.info('Nova RAG Engine initialized successfully');
   }
@@ -1538,20 +1546,20 @@ class NovaRAGEngine {
         id: 'nova-procedures',
         type: 'procedures',
         content: 'Standard Nova ITSM procedures and workflows...',
-        metadata: { category: 'procedures', priority: 'high' }
+        metadata: { category: 'procedures', priority: 'high' },
       },
       {
         id: 'nova-troubleshooting',
         type: 'troubleshooting',
         content: 'Common troubleshooting steps and solutions...',
-        metadata: { category: 'troubleshooting', priority: 'high' }
+        metadata: { category: 'troubleshooting', priority: 'high' },
       },
       {
         id: 'nova-documentation',
         type: 'documentation',
         content: 'Nova system documentation and user guides...',
-        metadata: { category: 'documentation', priority: 'medium' }
-      }
+        metadata: { category: 'documentation', priority: 'medium' },
+      },
     ];
 
     for (const source of knowledgeSources) {
@@ -1564,7 +1572,7 @@ class NovaRAGEngine {
     this.vectorStore.set(document.id, {
       ...document,
       embedding,
-      indexed: new Date()
+      indexed: new Date(),
     });
     this.documents.set(document.id, document);
   }
@@ -1592,20 +1600,20 @@ class NovaRAGEngine {
     const response = await this.generateResponse(query, topDocs);
 
     return {
-      documents: topDocs.map(d => ({
+      documents: topDocs.map((d) => ({
         id: d.id,
         content: d.document.content,
         metadata: d.document.metadata,
-        relevanceScore: d.similarity
+        relevanceScore: d.similarity,
       })),
       answer: response.answer,
-      sources: topDocs.map(d => d.id),
+      sources: topDocs.map((d) => d.id),
       confidence: response.confidence,
-      relevanceScores: topDocs.map(d => d.similarity),
+      relevanceScores: topDocs.map((d) => d.similarity),
       generatedResponse: response.text,
       retrievalK: topDocs.length,
       totalDocuments: this.documents.size,
-      searchStrategy: 'vector_similarity'
+      searchStrategy: 'vector_similarity',
     };
   }
 
@@ -1613,24 +1621,24 @@ class NovaRAGEngine {
     let dotProduct = 0;
     let normA = 0;
     let normB = 0;
-    
+
     for (let i = 0; i < a.length; i++) {
       dotProduct += a[i] * b[i];
       normA += a[i] * a[i];
       normB += b[i] * b[i];
     }
-    
+
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
   async generateResponse(query, topDocs) {
-    const _context = topDocs.map(d => d.document.content).join('\n\n');
-    
+    const _context = topDocs.map((d) => d.document.content).join('\n\n');
+
     // Generate response based on retrieved context
     return {
       answer: `Based on Nova's knowledge base: ${query.query}`,
       text: `Nova AI Response: Using retrieved context to answer: ${query.query}`,
-      confidence: Math.max(...topDocs.map(d => d.similarity))
+      confidence: Math.max(...topDocs.map((d) => d.similarity)),
     };
   }
 
@@ -1656,31 +1664,31 @@ class NovaMLPipeline {
 
   async initialize() {
     logger.info('Initializing Nova ML Pipeline...');
-    
+
     // Initialize preprocessing pipeline
     await this.initializePreprocessors();
-    
+
     // Initialize ML models
     await this.initializeModels();
-    
+
     // Initialize postprocessors
     await this.initializePostprocessors();
-    
+
     this.initialized = true;
     logger.info('Nova ML Pipeline initialized successfully');
   }
 
   async initializePreprocessors() {
     this.preprocessors.set('tokenizer', {
-      process: (text) => text.toLowerCase().split(/\s+/)
+      process: (text) => text.toLowerCase().split(/\s+/),
     });
-    
+
     this.preprocessors.set('normalizer', {
-      process: (text) => text.replace(/[^\w\s]/g, '').trim()
+      process: (text) => text.replace(/[^\w\s]/g, '').trim(),
     });
-    
+
     this.preprocessors.set('deduplicator', {
-      process: (items) => [...new Set(items)]
+      process: (items) => [...new Set(items)],
     });
   }
 
@@ -1692,9 +1700,9 @@ class NovaMLPipeline {
         const categories = ['incident', 'request', 'change', 'problem'];
         const category = categories[Math.floor(Math.random() * categories.length)];
         return { category, confidence: 0.85 };
-      }
+      },
     });
-    
+
     this.models.set('sentiment', {
       predict: async (_input) => {
         // Basic sentiment analysis
@@ -1702,33 +1710,33 @@ class NovaMLPipeline {
         const sentiment = sentiments[Math.floor(Math.random() * sentiments.length)];
         const score = Math.random();
         return { sentiment, score, confidence: 0.82 };
-      }
+      },
     });
-    
+
     this.models.set('extraction', {
       predict: async (_input) => {
         // Basic named entity recognition
         return {
           entities: [
             { text: 'user', type: 'PERSON', confidence: 0.9 },
-            { text: 'system', type: 'SYSTEM', confidence: 0.85 }
-          ]
+            { text: 'system', type: 'SYSTEM', confidence: 0.85 },
+          ],
         };
-      }
+      },
     });
   }
 
   async initializePostprocessors() {
     this.postprocessors.set('confidence_filter', {
       process: (results, threshold = 0.7) => {
-        return results.filter(r => r.confidence >= threshold);
-      }
+        return results.filter((r) => r.confidence >= threshold);
+      },
     });
-    
+
     this.postprocessors.set('result_ranker', {
       process: (results) => {
         return results.sort((a, b) => b.confidence - a.confidence);
-      }
+      },
     });
   }
 
@@ -1738,7 +1746,7 @@ class NovaMLPipeline {
     }
 
     const startTime = Date.now();
-    
+
     // Preprocessing
     let processedInput = request.input;
     if (this.config.preprocessing.normalization) {
@@ -1747,15 +1755,15 @@ class NovaMLPipeline {
 
     // Model processing
     const results = {};
-    
+
     if (request.type === 'classification' || !request.type) {
       results.classification = await this.models.get('classification').predict(processedInput);
     }
-    
+
     if (request.type === 'sentiment' || !request.type) {
       results.sentiment = await this.models.get('sentiment').predict(processedInput);
     }
-    
+
     if (request.type === 'extraction' || !request.type) {
       results.extraction = await this.models.get('extraction').predict(processedInput);
     }
@@ -1767,15 +1775,15 @@ class NovaMLPipeline {
       sentiment: results.sentiment?.sentiment || 'neutral',
       confidence: Math.max(
         results.classification?.confidence || 0,
-        results.sentiment?.confidence || 0
+        results.sentiment?.confidence || 0,
       ),
       explanation: 'Processed through Nova ML Pipeline',
       steps: ['preprocessing', 'classification', 'sentiment_analysis', 'postprocessing'],
       processingTime: Date.now() - startTime,
       metadata: {
         models_used: Object.keys(results),
-        pipeline_version: '1.0.0'
-      }
+        pipeline_version: '1.0.0',
+      },
     };
 
     return response;
@@ -1795,7 +1803,7 @@ class NovaMLPipeline {
       suggestedResolution: 'Follow standard troubleshooting procedure',
       similarTickets: [],
       estimatedResolutionTime: '4 hours',
-      confidence: 0.85
+      confidence: 0.85,
     };
 
     return analysis;
@@ -1863,7 +1871,7 @@ class AIRiskManager {
     }
 
     const averageRisk = riskCount > 0 ? totalRisk / riskCount : 0;
-    
+
     // Log risk assessment
     this.riskHistory.push({
       requestId: request.id,
@@ -1878,20 +1886,28 @@ class AIRiskManager {
   async calculateSpecificRisk(request, riskType, _model) {
     // Simplified risk calculation - in production this would be more sophisticated
     let score = 0;
-    
+
     if (riskType === 'bias_risk') {
       score = request.userDemographics ? 0.3 : 0.1;
     } else if (riskType === 'privacy_risk') {
       score = request.containsPII ? 0.8 : 0.2;
     }
-    
+
     return Math.min(1, score);
   }
 
   async getRiskBreakdown(request) {
     return {
-      bias_risk: await this.calculateSpecificRisk(request, 'bias_risk', this.riskModels.get('bias_risk')),
-      privacy_risk: await this.calculateSpecificRisk(request, 'privacy_risk', this.riskModels.get('privacy_risk')),
+      bias_risk: await this.calculateSpecificRisk(
+        request,
+        'bias_risk',
+        this.riskModels.get('bias_risk'),
+      ),
+      privacy_risk: await this.calculateSpecificRisk(
+        request,
+        'privacy_risk',
+        this.riskModels.get('privacy_risk'),
+      ),
       security_risk: request.isExternal ? 0.4 : 0.1,
     };
   }

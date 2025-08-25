@@ -337,9 +337,10 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (reason, promise) => {
   // Only log unhandled rejections that aren't related to DB unavailability in degraded mode
-  const isDbUnavailableError = reason?.message === 'DB unavailable' || 
-                               reason?.message?.includes('Database factory not initialized');
-  
+  const isDbUnavailableError =
+    reason?.message === 'DB unavailable' ||
+    reason?.message?.includes('Database factory not initialized');
+
   if (isDbUnavailableError && process.env.ALLOW_START_WITHOUT_DB === 'true') {
     // Silently handle DB unavailable errors in degraded mode unless debug mode is on
     if (process.env.DEBUG_UNHANDLED_REJECTIONS === 'true') {

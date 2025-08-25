@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { useReportsStore } from '@stores/reports'
+import React, { useEffect, useState } from 'react';
+import { useReportsStore } from '@stores/reports';
 import {
   ChartBarIcon,
   ArrowDownTrayIcon,
@@ -12,9 +12,9 @@ import {
   ArrowTrendingDownIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline'
-import { LoadingSpinner } from '@components/common/LoadingSpinner'
+  ExclamationTriangleIcon,
+} from '@heroicons/react/24/outline';
+import { LoadingSpinner } from '@components/common/LoadingSpinner';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -26,10 +26,10 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-  Filler
-} from 'chart.js'
-import { Line, Bar, Doughnut } from 'react-chartjs-2'
-import type { MetricData } from '@services/reports'
+  Filler,
+} from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import type { MetricData } from '@services/reports';
 
 // Register Chart.js components
 ChartJS.register(
@@ -42,8 +42,8 @@ ChartJS.register(
   Tooltip,
   Legend,
   ArcElement,
-  Filler
-)
+  Filler,
+);
 
 const ReportsPage: React.FC = () => {
   const {
@@ -69,63 +69,76 @@ const ReportsPage: React.FC = () => {
     loadUserData,
     loadSpaceData,
     exportReport,
-    loadAllReportData
-  } = useReportsStore()
+    loadAllReportData,
+  } = useReportsStore();
 
-  const [chartType, setChartType] = useState<'line' | 'bar' | 'doughnut'>('line')
+  const [chartType, setChartType] = useState<'line' | 'bar' | 'doughnut'>('line');
 
   // Load initial data
   useEffect(() => {
-    loadOverviewData()
-  }, [loadOverviewData])
+    loadOverviewData();
+  }, [loadOverviewData]);
 
   // Load data when report type changes
   useEffect(() => {
     switch (selectedReport) {
       case 'overview':
-        loadOverviewData()
-        break
+        loadOverviewData();
+        break;
       case 'tickets':
-        loadTicketData()
-        break
+        loadTicketData();
+        break;
       case 'assets':
-        loadAssetData()
-        break
+        loadAssetData();
+        break;
       case 'users':
-        loadUserData()
-        break
+        loadUserData();
+        break;
       case 'spaces':
-        loadSpaceData()
-        break
+        loadSpaceData();
+        break;
     }
-  }, [selectedReport, filters, loadOverviewData, loadTicketData, loadAssetData, loadUserData, loadSpaceData])
+  }, [
+    selectedReport,
+    filters,
+    loadOverviewData,
+    loadTicketData,
+    loadAssetData,
+    loadUserData,
+    loadSpaceData,
+  ]);
 
   const handlePeriodChange = (period: '24h' | '7d' | '30d' | '90d' | '1y') => {
-    setFilters({ period })
-  }
+    setFilters({ period });
+  };
 
   const handleExport = async (format: 'pdf' | 'excel' | 'csv') => {
     try {
-      await exportReport(format)
-    } catch (error) {
-      console.error('Export failed:', error)
+      await exportReport(format);
+    } catch (_error) {
+      console.error('Export failed:', error);
     }
-  }
+  };
 
   const handleRefresh = () => {
-    loadAllReportData()
-  }
+    loadAllReportData();
+  };
 
   const renderMetricCard = (metric: MetricData, IconComponent: any) => {
-    const isPositiveChange = metric.change >= 0
-    const changeIcon = isPositiveChange ? ArrowTrendingUpIcon : ArrowTrendingDownIcon
-    const changeColor = metric.trend === 'up' ? 'text-green-600' : metric.trend === 'down' ? 'text-red-600' : 'text-gray-600'
-    
+    const isPositiveChange = metric.change >= 0;
+    const changeIcon = isPositiveChange ? ArrowTrendingUpIcon : ArrowTrendingDownIcon;
+    const changeColor =
+      metric.trend === 'up'
+        ? 'text-green-600'
+        : metric.trend === 'down'
+          ? 'text-red-600'
+          : 'text-gray-600';
+
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
+      <div className="rounded-xl border border-gray-200 bg-white p-6 transition-shadow hover:shadow-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-50 rounded-lg">
+            <div className="rounded-lg bg-blue-50 p-2">
               <IconComponent className="h-6 w-6 text-blue-600" />
             </div>
             <div>
@@ -138,16 +151,16 @@ const ReportsPage: React.FC = () => {
             <span className="text-sm font-medium">{Math.abs(metric.change)}%</span>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mt-2">{metric.period}</p>
+        <p className="mt-2 text-xs text-gray-500">{metric.period}</p>
       </div>
-    )
-  }
+    );
+  };
 
   const renderOverviewMetrics = () => {
-    if (!overviewMetrics) return null
+    if (!overviewMetrics) return null;
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {renderMetricCard(overviewMetrics.totalTickets, TicketIcon)}
         {renderMetricCard(overviewMetrics.activeAssets, CpuChipIcon)}
         {renderMetricCard(overviewMetrics.activeUsers, UserGroupIcon)}
@@ -155,15 +168,15 @@ const ReportsPage: React.FC = () => {
         {renderMetricCard(overviewMetrics.assetValue, ChartBarIcon)}
         {renderMetricCard(overviewMetrics.spaceUtilization, BuildingOfficeIcon)}
       </div>
-    )
-  }
+    );
+  };
 
   const renderTicketMetrics = () => {
-    if (!ticketMetrics) return null
+    if (!ticketMetrics) return null;
 
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {renderMetricCard(ticketMetrics.totalTickets, TicketIcon)}
           {renderMetricCard(ticketMetrics.openTickets, ExclamationTriangleIcon)}
           {renderMetricCard(ticketMetrics.resolvedTickets, CheckCircleIcon)}
@@ -171,21 +184,21 @@ const ReportsPage: React.FC = () => {
           {renderMetricCard(ticketMetrics.escalatedTickets, ArrowTrendingUpIcon)}
           {renderMetricCard(ticketMetrics.customerSatisfaction, ChartBarIcon)}
         </div>
-        
+
         {ticketTrends && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="rounded-xl border border-gray-200 bg-white p-6">
+            <div className="mb-6 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Ticket Trends</h3>
               <div className="flex space-x-2">
                 <button
                   onClick={() => setChartType('line')}
-                  className={`px-3 py-1 rounded text-sm ${chartType === 'line' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`rounded px-3 py-1 text-sm ${chartType === 'line' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-gray-900'}`}
                 >
                   Line
                 </button>
                 <button
                   onClick={() => setChartType('bar')}
-                  className={`px-3 py-1 rounded text-sm ${chartType === 'bar' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`rounded px-3 py-1 text-sm ${chartType === 'bar' ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-gray-900'}`}
                 >
                   Bar
                 </button>
@@ -244,15 +257,15 @@ const ReportsPage: React.FC = () => {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   const renderAssetMetrics = () => {
-    if (!assetMetrics) return null
+    if (!assetMetrics) return null;
 
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {renderMetricCard(assetMetrics.totalAssets, CpuChipIcon)}
           {renderMetricCard(assetMetrics.totalValue, ChartBarIcon)}
           {renderMetricCard(assetMetrics.avgAge, CalendarIcon)}
@@ -262,9 +275,9 @@ const ReportsPage: React.FC = () => {
         </div>
 
         {assetReportData && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Asset Distribution</h3>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">Asset Distribution</h3>
               <div className="h-64">
                 <Doughnut
                   data={assetReportData.byCategory}
@@ -280,8 +293,8 @@ const ReportsPage: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Asset Value Trends</h3>
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">Asset Value Trends</h3>
               <div className="h-64">
                 <Line
                   data={assetReportData.valueOverTime}
@@ -308,15 +321,15 @@ const ReportsPage: React.FC = () => {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   const renderUserMetrics = () => {
-    if (!userMetrics) return null
+    if (!userMetrics) return null;
 
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {renderMetricCard(userMetrics.totalUsers, UserGroupIcon)}
           {renderMetricCard(userMetrics.activeUsers, ArrowTrendingUpIcon)}
           {renderMetricCard(userMetrics.newUsers, ChartBarIcon)}
@@ -326,9 +339,9 @@ const ReportsPage: React.FC = () => {
         </div>
 
         {userReportData && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">User Activity</h3>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">User Activity</h3>
               <div className="h-64">
                 <Bar
                   data={userReportData.activityLevels}
@@ -344,8 +357,8 @@ const ReportsPage: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Department Distribution</h3>
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">Department Distribution</h3>
               <div className="h-64">
                 <Doughnut
                   data={userReportData.departmentBreakdown}
@@ -364,15 +377,15 @@ const ReportsPage: React.FC = () => {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   const renderSpaceMetrics = () => {
-    if (!spaceMetrics) return null
+    if (!spaceMetrics) return null;
 
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {renderMetricCard(spaceMetrics.totalSpaces, BuildingOfficeIcon)}
           {renderMetricCard(spaceMetrics.occupiedSpaces, ArrowTrendingUpIcon)}
           {renderMetricCard(spaceMetrics.utilizationRate, CalendarIcon)}
@@ -382,9 +395,9 @@ const ReportsPage: React.FC = () => {
         </div>
 
         {spaceReportData && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Space Utilization</h3>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">Space Utilization</h3>
               <div className="h-64">
                 <Line
                   data={spaceReportData.utilizationTrends}
@@ -409,8 +422,8 @@ const ReportsPage: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Space Types</h3>
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">Space Types</h3>
               <div className="h-64">
                 <Doughnut
                   data={spaceReportData.occupancyRates}
@@ -429,48 +442,48 @@ const ReportsPage: React.FC = () => {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   const renderCurrentReport = () => {
     switch (selectedReport) {
       case 'overview':
-        return renderOverviewMetrics()
+        return renderOverviewMetrics();
       case 'tickets':
-        return renderTicketMetrics()
+        return renderTicketMetrics();
       case 'assets':
-        return renderAssetMetrics()
+        return renderAssetMetrics();
       case 'users':
-        return renderUserMetrics()
+        return renderUserMetrics();
       case 'spaces':
-        return renderSpaceMetrics()
+        return renderSpaceMetrics();
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to load reports</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <ExclamationTriangleIcon className="mx-auto mb-4 h-12 w-12 text-red-500" />
+          <h2 className="mb-2 text-xl font-semibold text-gray-900">Failed to load reports</h2>
+          <p className="mb-4 text-gray-600">{error}</p>
           <button
             onClick={handleRefresh}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
           >
             Try Again
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="border-b border-gray-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="py-6">
             <div className="flex items-center justify-between">
               <div>
@@ -481,7 +494,9 @@ const ReportsPage: React.FC = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
-                  <label htmlFor="period-select" className="text-sm font-medium text-gray-700">Period:</label>
+                  <label htmlFor="period-select" className="text-sm font-medium text-gray-700">
+                    Period:
+                  </label>
                   <select
                     id="period-select"
                     value={filters.period}
@@ -499,23 +514,23 @@ const ReportsPage: React.FC = () => {
                   <button
                     onClick={() => handleExport('pdf')}
                     disabled={isExporting}
-                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-4 font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                   >
-                    <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                    <ArrowDownTrayIcon className="mr-2 h-4 w-4" />
                     PDF
                   </button>
                   <button
                     onClick={() => handleExport('excel')}
                     disabled={isExporting}
-                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-4 font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                   >
-                    <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                    <ArrowDownTrayIcon className="mr-2 h-4 w-4" />
                     Excel
                   </button>
                   <button
                     onClick={handleRefresh}
                     disabled={isLoading}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                   >
                     {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
                     Refresh
@@ -527,7 +542,7 @@ const ReportsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Report Type Navigation */}
         <div className="mb-8">
           <nav className="flex space-x-8" aria-label="Report types">
@@ -541,10 +556,10 @@ const ReportsPage: React.FC = () => {
               <button
                 key={key}
                 onClick={() => setSelectedReport(key as any)}
-                className={`group inline-flex items-center py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`group inline-flex items-center border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
                   selectedReport === key
                     ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
                 <Icon
@@ -569,10 +584,10 @@ const ReportsPage: React.FC = () => {
         ) : (
           renderCurrentReport()
         )}
-        
+
         {/* No Data State */}
         {!isLoading && !renderCurrentReport() && (
-          <div className="text-center py-12">
+          <div className="py-12 text-center">
             <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No data available</h3>
             <p className="mt-1 text-sm text-gray-500">
@@ -581,7 +596,7 @@ const ReportsPage: React.FC = () => {
             <div className="mt-6">
               <button
                 onClick={handleRefresh}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
               >
                 <ArrowDownTrayIcon className="mr-2 h-4 w-4" />
                 Refresh Data
@@ -591,7 +606,7 @@ const ReportsPage: React.FC = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ReportsPage
+export default ReportsPage;

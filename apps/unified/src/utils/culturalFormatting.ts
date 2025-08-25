@@ -10,7 +10,7 @@ export interface FormatOptions {
 // Default locales mapping
 export const LOCALE_MAPPING = {
   en: 'en-US',
-  es: 'es-ES', 
+  es: 'es-ES',
   fr: 'fr-FR',
   ar: 'ar-SA',
 } as const;
@@ -19,21 +19,21 @@ export const LOCALE_MAPPING = {
 export const CURRENCY_MAPPING = {
   en: 'USD',
   es: 'EUR',
-  fr: 'EUR', 
+  fr: 'EUR',
   ar: 'SAR',
 } as const;
 
 // Date formatting utility
 export function formatDate(
   date: Date | string | number,
-  options: FormatOptions & Intl.DateTimeFormatOptions = {}
+  options: FormatOptions & Intl.DateTimeFormatOptions = {},
 ): string {
   const { locale, ...intlOptions } = options;
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
-  
+
   // Use provided locale or fall back to browser locale
   const formatLocale = locale || navigator.language;
-  
+
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'long',
@@ -43,7 +43,7 @@ export function formatDate(
 
   try {
     return new Intl.DateTimeFormat(formatLocale, defaultOptions).format(dateObj);
-  } catch (error) {
+  } catch (_error) {
     // Fallback to English if locale is not supported
     return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObj);
   }
@@ -52,13 +52,13 @@ export function formatDate(
 // Time formatting utility
 export function formatTime(
   date: Date | string | number,
-  options: FormatOptions & Intl.DateTimeFormatOptions = {}
+  options: FormatOptions & Intl.DateTimeFormatOptions = {},
 ): string {
   const { locale, timeZone, ...intlOptions } = options;
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
-  
+
   const formatLocale = locale || navigator.language;
-  
+
   const defaultOptions: Intl.DateTimeFormatOptions = {
     hour: '2-digit',
     minute: '2-digit',
@@ -68,7 +68,7 @@ export function formatTime(
 
   try {
     return new Intl.DateTimeFormat(formatLocale, defaultOptions).format(dateObj);
-  } catch (error) {
+  } catch (_error) {
     return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObj);
   }
 }
@@ -76,13 +76,13 @@ export function formatTime(
 // DateTime formatting utility
 export function formatDateTime(
   date: Date | string | number,
-  options: FormatOptions & Intl.DateTimeFormatOptions = {}
+  options: FormatOptions & Intl.DateTimeFormatOptions = {},
 ): string {
   const { locale, timeZone, ...intlOptions } = options;
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
-  
+
   const formatLocale = locale || navigator.language;
-  
+
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'short',
@@ -95,7 +95,7 @@ export function formatDateTime(
 
   try {
     return new Intl.DateTimeFormat(formatLocale, defaultOptions).format(dateObj);
-  } catch (error) {
+  } catch (_error) {
     return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObj);
   }
 }
@@ -103,7 +103,7 @@ export function formatDateTime(
 // Relative time formatting utility (e.g., "2 hours ago")
 export function formatRelativeTime(
   date: Date | string | number,
-  options: FormatOptions = {}
+  options: FormatOptions = {},
 ): string {
   const { locale } = options;
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
@@ -128,7 +128,7 @@ export function formatRelativeTime(
     } else {
       return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year');
     }
-  } catch (error) {
+  } catch (_error) {
     // Fallback to English
     const rtf = new Intl.RelativeTimeFormat('en-US', { numeric: 'auto' });
     if (Math.abs(diffInSeconds) < 60) {
@@ -144,14 +144,14 @@ export function formatRelativeTime(
 // Number formatting utility
 export function formatNumber(
   number: number,
-  options: FormatOptions & Intl.NumberFormatOptions = {}
+  options: FormatOptions & Intl.NumberFormatOptions = {},
 ): string {
   const { locale, ...intlOptions } = options;
   const formatLocale = locale || navigator.language;
 
   try {
     return new Intl.NumberFormat(formatLocale, intlOptions).format(number);
-  } catch (error) {
+  } catch (_error) {
     return new Intl.NumberFormat('en-US', intlOptions).format(number);
   }
 }
@@ -159,11 +159,11 @@ export function formatNumber(
 // Currency formatting utility
 export function formatCurrency(
   amount: number,
-  options: FormatOptions & Intl.NumberFormatOptions = {}
+  options: FormatOptions & Intl.NumberFormatOptions = {},
 ): string {
   const { locale, currency, ...intlOptions } = options;
   const formatLocale = locale || navigator.language;
-  
+
   // Determine currency from locale if not provided
   const currencyCode = currency || getCurrencyForLocale(formatLocale);
 
@@ -175,7 +175,7 @@ export function formatCurrency(
 
   try {
     return new Intl.NumberFormat(formatLocale, defaultOptions).format(amount);
-  } catch (error) {
+  } catch (_error) {
     // Fallback
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -188,7 +188,7 @@ export function formatCurrency(
 // Percentage formatting utility
 export function formatPercentage(
   value: number,
-  options: FormatOptions & Intl.NumberFormatOptions = {}
+  options: FormatOptions & Intl.NumberFormatOptions = {},
 ): string {
   const { locale, ...intlOptions } = options;
   const formatLocale = locale || navigator.language;
@@ -202,16 +202,13 @@ export function formatPercentage(
 
   try {
     return new Intl.NumberFormat(formatLocale, defaultOptions).format(value);
-  } catch (error) {
+  } catch (_error) {
     return new Intl.NumberFormat('en-US', defaultOptions).format(value);
   }
 }
 
 // File size formatting utility
-export function formatFileSize(
-  bytes: number,
-  options: FormatOptions = {}
-): string {
+export function formatFileSize(bytes: number, options: FormatOptions = {}): string {
   const { locale } = options;
   const formatLocale = locale || navigator.language;
 
@@ -227,7 +224,7 @@ export function formatFileSize(
       maximumFractionDigits: 2,
     });
     return `${formatter.format(value)} ${sizes[i]}`;
-  } catch (error) {
+  } catch (_error) {
     return `${value.toFixed(2)} ${sizes[i]}`;
   }
 }
@@ -241,33 +238,33 @@ function getCurrencyForLocale(locale: string): string {
 // Hook to use cultural formatting with current i18n locale
 export function useCulturalFormatting() {
   const { i18n } = useTranslation();
-  const currentLocale = LOCALE_MAPPING[i18n.language as keyof typeof LOCALE_MAPPING] || i18n.language;
+  const currentLocale =
+    LOCALE_MAPPING[i18n.language as keyof typeof LOCALE_MAPPING] || i18n.language;
 
   return {
     formatDate: (date: Date | string | number, options?: Intl.DateTimeFormatOptions) =>
       formatDate(date, { locale: currentLocale, ...options }),
-      
+
     formatTime: (date: Date | string | number, options?: Intl.DateTimeFormatOptions) =>
       formatTime(date, { locale: currentLocale, ...options }),
-      
+
     formatDateTime: (date: Date | string | number, options?: Intl.DateTimeFormatOptions) =>
       formatDateTime(date, { locale: currentLocale, ...options }),
-      
+
     formatRelativeTime: (date: Date | string | number) =>
       formatRelativeTime(date, { locale: currentLocale }),
-      
+
     formatNumber: (number: number, options?: Intl.NumberFormatOptions) =>
       formatNumber(number, { locale: currentLocale, ...options }),
-      
+
     formatCurrency: (amount: number, currency?: string, options?: Intl.NumberFormatOptions) =>
       formatCurrency(amount, { locale: currentLocale, currency, ...options }),
-      
+
     formatPercentage: (value: number, options?: Intl.NumberFormatOptions) =>
       formatPercentage(value, { locale: currentLocale, ...options }),
-      
-    formatFileSize: (bytes: number) =>
-      formatFileSize(bytes, { locale: currentLocale }),
-      
+
+    formatFileSize: (bytes: number) => formatFileSize(bytes, { locale: currentLocale }),
+
     locale: currentLocale,
     language: i18n.language,
   };
@@ -276,17 +273,26 @@ export function useCulturalFormatting() {
 // Predefined format configurations
 export const FORMAT_PRESETS = {
   shortDate: { month: 'short', day: 'numeric', year: 'numeric' } as Intl.DateTimeFormatOptions,
-  longDate: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' } as Intl.DateTimeFormatOptions,
+  longDate: {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  } as Intl.DateTimeFormatOptions,
   shortTime: { hour: '2-digit', minute: '2-digit' } as Intl.DateTimeFormatOptions,
   longTime: { hour: '2-digit', minute: '2-digit', second: '2-digit' } as Intl.DateTimeFormatOptions,
   compactNumber: { notation: 'compact', maximumFractionDigits: 1 } as Intl.NumberFormatOptions,
   currency: { style: 'currency', minimumFractionDigits: 2 } as Intl.NumberFormatOptions,
-  percentage: { style: 'percent', minimumFractionDigits: 0, maximumFractionDigits: 2 } as Intl.NumberFormatOptions,
+  percentage: {
+    style: 'percent',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  } as Intl.NumberFormatOptions,
 };
 
 export default {
   formatDate,
-  formatTime, 
+  formatTime,
   formatDateTime,
   formatRelativeTime,
   formatNumber,

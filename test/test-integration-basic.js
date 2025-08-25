@@ -17,14 +17,26 @@ async function testBasicConnectorStructure() {
   try {
     // Test importing connector classes individually
     const connectorTests = [
-      { name: 'OktaConnector', path: './packages/integrations/integration/connectors/okta-connector.js' },
-      { name: 'JamfConnector', path: './packages/integrations/integration/connectors/jamf-connector.js' },
+      {
+        name: 'OktaConnector',
+        path: './packages/integrations/integration/connectors/okta-connector.js',
+      },
+      {
+        name: 'JamfConnector',
+        path: './packages/integrations/integration/connectors/jamf-connector.js',
+      },
       {
         name: 'CrowdStrikeConnector',
         path: './packages/integrations/integration/connectors/crowdstrike-connector.js',
       },
-      { name: 'IntuneConnector', path: './packages/integrations/integration/connectors/intune-connector.js' },
-      { name: 'SlackConnector', path: './packages/integrations/integration/connectors/slack-connector.js' },
+      {
+        name: 'IntuneConnector',
+        path: './packages/integrations/integration/connectors/intune-connector.js',
+      },
+      {
+        name: 'SlackConnector',
+        path: './packages/integrations/integration/connectors/slack-connector.js',
+      },
     ];
 
     for (const test of connectorTests) {
@@ -77,7 +89,9 @@ async function testIntegrationLayerBasics() {
     const { execSync } = await import('child_process');
 
     console.log('  📝 Testing integration layer syntax...');
-    execSync('node -c packages/integrations/integration/nova-integration-layer.js', { stdio: 'pipe' });
+    execSync('node -c packages/integrations/integration/nova-integration-layer.js', {
+      stdio: 'pipe',
+    });
     console.log('    ✅ Syntax check: PASS');
 
     console.log('  📝 Testing API routes syntax...');

@@ -556,7 +556,9 @@ router.post(
       );
 
       // Update user last login
-      await db.query('UPDATE users SET "lastLoginAt" = CURRENT_TIMESTAMP WHERE id = $1', [user.db_id]);
+      await db.query('UPDATE users SET "lastLoginAt" = CURRENT_TIMESTAMP WHERE id = $1', [
+        user.db_id,
+      ]);
 
       res.json({
         success: true,

@@ -23,7 +23,7 @@ describe('Nova Comms Integration', () => {
       delete process.env.SLACK_SIGNING_SECRET;
       delete process.env.SLACK_BOT_TOKEN;
       delete process.env.JWT_SECRET;
-      
+
       expect(() => validateSlackEnv()).toThrow(/Missing required Slack environment variables/);
     });
 
@@ -40,7 +40,7 @@ describe('Nova Comms Integration', () => {
       process.env.COMMS_TENANT_ID = 'test-tenant';
 
       const config = validateSlackEnv();
-      
+
       expect(config).toEqual({
         port: 3001,
         jwtExpiresIn: '1h',
@@ -60,7 +60,7 @@ describe('Nova Comms Integration', () => {
       process.env.JWT_SECRET = 'test-jwt-secret';
 
       const config = validateSlackEnv();
-      
+
       expect(config.port).toBe(3001);
       expect(config.jwtExpiresIn).toBe('1h');
       expect(config.serviceUserId).toBe('comms-service');
@@ -96,7 +96,7 @@ describe('Nova Comms Integration', () => {
       process.env.API_URL = 'http://api.example.com';
 
       const config = validateSlackEnv();
-      
+
       expect(config.port).toBe(4000);
       expect(config.jwtExpiresIn).toBe('2h');
       expect(config.adminUrl).toBe('http://admin.example.com');

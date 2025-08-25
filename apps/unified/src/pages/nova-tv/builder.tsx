@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Type, 
-  BarChart3, 
-  Image, 
-  Clock, 
+import {
+  Type,
+  BarChart3,
+  Image,
+  Clock,
   Megaphone,
   Settings,
   Layout,
@@ -11,7 +11,7 @@ import {
   Save,
   Plus,
   Trash2,
-  GripVertical
+  GripVertical,
 } from 'lucide-react';
 import { novaTVService, Dashboard } from '../../services/nova-tv';
 
@@ -44,8 +44,8 @@ const DashboardBuilder: React.FC = () => {
       configuration: {
         refreshInterval: 30,
         theme: 'light',
-        layout: 'grid'
-      }
+        layout: 'grid',
+      },
     });
     setLoading(false);
   };
@@ -56,20 +56,27 @@ const DashboardBuilder: React.FC = () => {
       type,
       title: getDefaultTitle(type),
       config: getDefaultConfig(type),
-      displayOrder: contentBlocks.length
+      displayOrder: contentBlocks.length,
     };
     setContentBlocks([...contentBlocks, newBlock]);
   };
 
   const getDefaultTitle = (type: string): string => {
     switch (type) {
-      case 'text': return 'Text Block';
-      case 'metrics': return 'Live Metrics';
-      case 'announcements': return 'Announcements';
-      case 'clock': return 'Current Time';
-      case 'image': return 'Image Display';
-      case 'chart': return 'Chart Widget';
-      default: return 'Content Block';
+      case 'text':
+        return 'Text Block';
+      case 'metrics':
+        return 'Live Metrics';
+      case 'announcements':
+        return 'Announcements';
+      case 'clock':
+        return 'Current Time';
+      case 'image':
+        return 'Image Display';
+      case 'chart':
+        return 'Chart Widget';
+      default:
+        return 'Content Block';
     }
   };
 
@@ -80,42 +87,42 @@ const DashboardBuilder: React.FC = () => {
           content: 'Enter your text here...',
           fontSize: 'medium',
           alignment: 'left',
-          color: '#000000'
+          color: '#000000',
         };
       case 'metrics':
         return {
           dataSource: 'tickets',
           department: 'all',
           metricType: 'count',
-          refreshInterval: 60
+          refreshInterval: 60,
         };
       case 'announcements':
         return {
           department: 'all',
           priority: 'all',
           maxItems: 5,
-          autoScroll: true
+          autoScroll: true,
         };
       case 'clock':
         return {
           format: '12hour',
           showDate: true,
           timezone: 'local',
-          style: 'digital'
+          style: 'digital',
         };
       case 'image':
         return {
           url: '',
           alt: 'Dashboard image',
           fit: 'cover',
-          autoRotate: false
+          autoRotate: false,
         };
       case 'chart':
         return {
           chartType: 'bar',
           dataSource: 'tickets',
           timeRange: '24h',
-          groupBy: 'department'
+          groupBy: 'department',
         };
       default:
         return {};
@@ -123,34 +130,36 @@ const DashboardBuilder: React.FC = () => {
   };
 
   const removeContentBlock = (id: string) => {
-    setContentBlocks(contentBlocks.filter(block => block.id !== id));
+    setContentBlocks(contentBlocks.filter((block) => block.id !== id));
   };
 
   const editContentBlock = (id: string) => {
-    const block = contentBlocks.find(b => b.id === id);
+    const block = contentBlocks.find((b) => b.id === id);
     if (block) {
       // For now, we'll just show the block title for editing
       // In a full implementation, this would open a modal with the block's configuration
       const newTitle = prompt('Edit block title:', block.title);
       if (newTitle && newTitle.trim()) {
-        setContentBlocks(contentBlocks.map(b => 
-          b.id === id ? { ...b, title: newTitle.trim() } : b
-        ));
+        setContentBlocks(
+          contentBlocks.map((b) => (b.id === id ? { ...b, title: newTitle.trim() } : b)),
+        );
       }
     }
   };
 
   const saveDashboard = async () => {
     if (!dashboard) return;
-    
+
     try {
       setLoading(true);
-      
+
       // Create or update dashboard
-      const savedDashboard = dashboard.id 
+      const savedDashboard = dashboard.id
         ? await novaTVService.updateDashboard(dashboard.id, dashboard)
-        : await novaTVService.createDashboard(dashboard as Omit<Dashboard, 'id' | 'createdAt' | 'updatedAt'>);
-      
+        : await novaTVService.createDashboard(
+            dashboard as Omit<Dashboard, 'id' | 'createdAt' | 'updatedAt'>,
+          );
+
       // Save content blocks
       for (const block of contentBlocks) {
         const contentData = {
@@ -160,17 +169,17 @@ const DashboardBuilder: React.FC = () => {
           contentData: block.config,
           displayOrder: block.displayOrder,
           isActive: true,
-          metadata: {}
+          metadata: {},
         };
-        
+
         await novaTVService.createContent(contentData);
       }
-      
+
       setDashboard(savedDashboard);
-      
+
       // Show success message (you could add a toast notification here)
       alert('Dashboard saved successfully!');
-    } catch (error) {
+    } catch (_error) {
       console.error('Error saving dashboard:', error);
       alert('Failed to save dashboard. Please try again.');
     } finally {
@@ -184,24 +193,24 @@ const DashboardBuilder: React.FC = () => {
     { type: 'announcements', icon: Megaphone, label: 'Announcements' },
     { type: 'clock', icon: Clock, label: 'Clock Widget' },
     { type: 'image', icon: Image, label: 'Image Display' },
-    { type: 'chart', icon: BarChart3, label: 'Chart Widget' }
+    { type: 'chart', icon: BarChart3, label: 'Chart Widget' },
   ];
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="flex h-screen flex-col bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4">
+      <div className="border-b bg-white px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Layout className="w-6 h-6 text-blue-600" />
+            <Layout className="h-6 w-6 text-blue-600" />
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
                 {dashboard?.name || 'Dashboard Builder'}
@@ -211,61 +220,61 @@ const DashboardBuilder: React.FC = () => {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <button
               onClick={() => setPreviewMode(!previewMode)}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 previewMode
                   ? 'bg-blue-100 text-blue-800'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              <Eye className="w-4 h-4 inline mr-1" />
+              <Eye className="mr-1 inline h-4 w-4" />
               {previewMode ? 'Exit Preview' : 'Preview'}
             </button>
-            
+
             <button
               onClick={saveDashboard}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
             >
-              <Save className="w-4 h-4 inline mr-1" />
+              <Save className="mr-1 inline h-4 w-4" />
               Save Dashboard
             </button>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - Content Types */}
         {!previewMode && (
-          <div className="w-64 bg-white border-r p-4 overflow-y-auto">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Dashboard Settings</h3>
-            
+          <div className="w-64 overflow-y-auto border-r bg-white p-4">
+            <h3 className="mb-3 text-sm font-semibold text-gray-900">Dashboard Settings</h3>
+
             {/* Basic Settings */}
-            <div className="space-y-4 mb-6 pb-6 border-b">
+            <div className="mb-6 space-y-4 border-b pb-6">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="mb-1 block text-xs font-medium text-gray-700">
                   Dashboard Name
                 </label>
                 <input
                   type="text"
                   value={dashboard?.name || ''}
-                  onChange={(e) => setDashboard(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) => setDashboard((prev) => ({ ...prev, name: e.target.value }))}
+                  className="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter dashboard name"
                   aria-label="Dashboard name"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Department
-                </label>
+                <label className="mb-1 block text-xs font-medium text-gray-700">Department</label>
                 <select
                   value={dashboard?.department || 'IT'}
-                  onChange={(e) => setDashboard(prev => ({ ...prev, department: e.target.value }))}
-                  className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) =>
+                    setDashboard((prev) => ({ ...prev, department: e.target.value }))
+                  }
+                  className="w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                   aria-label="Select department"
                 >
                   <option value="IT">IT</option>
@@ -277,17 +286,17 @@ const DashboardBuilder: React.FC = () => {
               </div>
             </div>
 
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Add Content</h3>
-            
+            <h3 className="mb-3 text-sm font-semibold text-gray-900">Add Content</h3>
+
             {/* Content Types */}
             <div className="space-y-2">
               {contentTypes.map(({ type, icon: Icon, label }) => (
                 <button
                   key={type}
                   onClick={() => addContentBlock(type)}
-                  className="w-full flex items-center gap-3 p-3 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors border border-gray-200"
+                  className="flex w-full items-center gap-3 rounded-md border border-gray-200 p-3 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
                 >
-                  <Icon className="w-4 h-4 text-gray-500" />
+                  <Icon className="h-4 w-4 text-gray-500" />
                   {label}
                 </button>
               ))}
@@ -296,76 +305,74 @@ const DashboardBuilder: React.FC = () => {
         )}
 
         {/* Main Canvas */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-6xl mx-auto">
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="mx-auto max-w-6xl">
             {/* Dashboard Preview */}
-            <div className="bg-white rounded-lg shadow-sm border min-h-96">
+            <div className="min-h-96 rounded-lg border bg-white shadow-sm">
               {contentBlocks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-96 text-center">
-                  <Layout className="w-16 h-16 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <div className="flex h-96 flex-col items-center justify-center text-center">
+                  <Layout className="mb-4 h-16 w-16 text-gray-400" />
+                  <h3 className="mb-2 text-lg font-medium text-gray-900">
                     Start Building Your Dashboard
                   </h3>
-                  <p className="text-gray-600 mb-6">
+                  <p className="mb-6 text-gray-600">
                     Add content blocks from the sidebar to create your digital signage display.
                   </p>
                   {!previewMode && (
                     <button
                       onClick={() => addContentBlock('text')}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                      className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
                     >
-                      <Plus className="w-4 h-4 inline mr-1" />
+                      <Plus className="mr-1 inline h-4 w-4" />
                       Add First Block
                     </button>
                   )}
                 </div>
               ) : (
-                <div className="p-6 space-y-4">
+                <div className="space-y-4 p-6">
                   {contentBlocks.map((block) => (
                     <div
                       key={block.id}
-                      className={`relative border-2 border-dashed border-gray-200 rounded-lg p-4 ${
+                      className={`relative rounded-lg border-2 border-dashed border-gray-200 p-4 ${
                         previewMode ? 'border-transparent' : 'hover:border-gray-300'
                       }`}
                     >
                       {/* Content Block Header */}
                       {!previewMode && (
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="mb-3 flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <GripVertical className="w-4 h-4 text-gray-400 cursor-grab" />
-                            <span className="text-sm font-medium text-gray-700">
-                              {block.title}
-                            </span>
-                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                            <GripVertical className="h-4 w-4 cursor-grab text-gray-400" />
+                            <span className="text-sm font-medium text-gray-700">{block.title}</span>
+                            <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-500">
                               {block.type}
                             </span>
                           </div>
-                          
+
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => editContentBlock(block.id)}
-                              className="p-1 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                              className="rounded p-1 text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
                               title="Edit block"
                               aria-label="Edit block"
                             >
-                              <Settings className="w-4 h-4" />
+                              <Settings className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => removeContentBlock(block.id)}
-                              className="p-1 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                              className="rounded p-1 text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600"
                               title="Remove block"
                               aria-label="Remove block"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         </div>
                       )}
 
                       {/* Content Block Preview */}
-                      <div className="min-h-24 bg-gray-50 rounded border flex items-center justify-center">
+                      <div className="flex min-h-24 items-center justify-center rounded border bg-gray-50">
                         <div className="text-center text-gray-600">
-                          <div className="text-lg font-medium mb-1">{block.title}</div>
+                          <div className="mb-1 text-lg font-medium">{block.title}</div>
                           <div className="text-sm opacity-75">
                             {block.type === 'text' && block.config.content}
                             {block.type === 'metrics' && `Live ${block.config.dataSource} metrics`}
