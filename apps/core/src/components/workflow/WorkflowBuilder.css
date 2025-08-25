@@ -1,0 +1,551 @@
+/* Nova Workflow Builder - CSS Styles */
+/* ServiceNow-style workflow automation builder */
+
+.workflow-builder {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background-color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Toolbar Styles */
+.workflow-builder__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbar-section h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-draft {
+  background-color: rgba(156, 163, 175, 0.2);
+  color: #9ca3af;
+  border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+.status-published {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-archived {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Button Styles */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+}
+
+.btn-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* Content Layout */
+.workflow-builder__content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar Styles */
+.workflow-builder__sidebar {
+  width: 280px;
+  background-color: white;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+  padding: 20px;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.workflow-builder__sidebar h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+}
+
+/* Node Palette */
+.node-palette {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.palette-node {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: grab;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  color: white;
+  font-weight: 500;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.palette-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.palette-node:active {
+  cursor: grabbing;
+  transform: scale(0.95);
+}
+
+.node-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.node-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Workflow Info */
+.workflow-info {
+  background-color: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.workflow-info h4 {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.info-item {
+  margin-bottom: 16px;
+}
+
+.info-item label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-item input,
+.info-item textarea,
+.info-item select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+  transition: border-color 0.2s ease;
+}
+
+.info-item input:focus,
+.info-item textarea:focus,
+.info-item select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.info-item textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* Canvas Styles */
+.workflow-builder__canvas {
+  flex: 1;
+  position: relative;
+  background-color: #f8fafc;
+  overflow: hidden;
+}
+
+.canvas-grid {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.grid-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Canvas Node Styles */
+.canvas-node {
+  position: absolute;
+  width: 180px;
+  min-height: 80px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: move;
+  -webkit-user-select: none;
+  user-select: none;
+  z-index: 10;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.canvas-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.canvas-node.selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  color: white;
+  font-weight: 500;
+  border-radius: 6px 6px 0 0;
+}
+
+.node-title {
+  font-size: 14px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.node-ports {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 0 0 6px 6px;
+}
+
+.input-port,
+.output-port {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #6b7280;
+  border: 2px solid white;
+  cursor: crosshair;
+  transition: all 0.2s ease;
+}
+
+.input-port:hover,
+.output-port:hover {
+  background-color: #3b82f6;
+  transform: scale(1.2);
+}
+
+/* Connection SVG */
+.connection-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Properties Panel */
+.workflow-builder__properties {
+  width: 320px;
+  background-color: white;
+  border-left: 1px solid #e5e7eb;
+  padding: 20px;
+  overflow-y: auto;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.workflow-builder__properties h3 {
+  margin: 0 0 20px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+}
+
+.property-group {
+  margin-bottom: 20px;
+}
+
+.property-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.property-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+  transition: border-color 0.2s ease;
+}
+
+.property-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.property-group span {
+  padding: 10px 12px;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #6b7280;
+  display: block;
+}
+
+.property-actions {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+/* Color Classes for Node Types */
+.node-type-trigger {
+  background-color: #10b981;
+}
+
+.node-type-action {
+  background-color: #3b82f6;
+}
+
+.node-type-condition {
+  background-color: #f59e0b;
+}
+
+.node-type-integration {
+  background-color: #8b5cf6;
+}
+
+.node-type-approval {
+  background-color: #ef4444;
+}
+
+.node-type-decision {
+  background-color: #06b6d4;
+}
+
+.node-type-notification {
+  background-color: #84cc16;
+}
+
+.node-type-delay {
+  background-color: #6b7280;
+}
+
+.node-type-end {
+  background-color: #6b7280;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .workflow-builder__sidebar {
+    width: 240px;
+  }
+
+  .workflow-builder__properties {
+    width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .workflow-builder__content {
+    flex-direction: column;
+  }
+
+  .workflow-builder__sidebar,
+  .workflow-builder__properties {
+    width: 100%;
+    height: 200px;
+  }
+
+  .toolbar-section {
+    gap: 8px;
+  }
+
+  .toolbar-section h2 {
+    font-size: 16px;
+  }
+
+  .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Animation Utilities */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Accessibility Improvements */
+.workflow-builder *:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.workflow-builder button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+}
+
+/* Print Styles */
+@media print {
+  .workflow-builder__sidebar,
+  .workflow-builder__properties,
+  .workflow-builder__toolbar {
+    display: none;
+  }
+
+  .workflow-builder__canvas {
+    width: 100%;
+    height: auto;
+  }
+}

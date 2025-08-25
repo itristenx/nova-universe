@@ -201,8 +201,8 @@ router.post(
           }
 
           // Debug logging
-          console.log('User object keys:', Object.keys(user));
-          console.log('User password_hash:', user.password_hash);
+          logger.debug(`User object keys: ${Object.keys(user).join(', ')}`);
+          logger.debug(`User password_hash exists: ${!!user.password_hash}`);
 
           // Check password
           const isValidPassword = await bcrypt.compare(password, user.password_hash);
@@ -1142,25 +1142,21 @@ router.put(
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            error: 'Invalid input',
-            details: errors.array(),
-            errorCode: 'VALIDATION_ERROR',
-          });
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid input',
+          details: errors.array(),
+          errorCode: 'VALIDATION_ERROR',
+        });
       }
 
       const adminRoles = req.user?.roles || [];
       if (!adminRoles.includes('admin') && !adminRoles.includes('superadmin')) {
-        return res
-          .status(403)
-          .json({
-            success: false,
-            error: 'Admin access required',
-            errorCode: 'ADMIN_ACCESS_REQUIRED',
-          });
+        return res.status(403).json({
+          success: false,
+          error: 'Admin access required',
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
+        });
       }
 
       const { id } = req.params;

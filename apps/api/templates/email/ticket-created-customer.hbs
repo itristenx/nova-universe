@@ -1,0 +1,156 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Support Ticket Created</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #374151;
+        margin: 0;
+        padding: 0;
+        background-color: #f9fafb;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .content {
+        padding: 32px 24px;
+      }
+      .ticket-id {
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 16px;
+      }
+      .btn-primary {
+        display: inline-block;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        margin: 16px 8px 16px 0;
+      }
+      .footer {
+        background: #f8fafc;
+        text-align: center;
+        padding: 24px;
+        color: #64748b;
+        font-size: 12px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .footer a {
+        color: #3b82f6;
+        text-decoration: none;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        padding: 32px 24px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .ticket-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 24px;
+        margin: 24px 0;
+      }
+      .ticket-id {
+        background: #3b82f6;
+      }
+      .detail-row {
+        display: flex;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 8px;
+      }
+      .detail-label {
+        font-weight: 600;
+        width: 120px;
+        color: #64748b;
+      }
+      .detail-value {
+        flex: 1;
+      }
+      .expectation-box {
+        background: #eff6ff;
+        border-left: 4px solid #3b82f6;
+        padding: 16px;
+        margin: 24px 0;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>🎫 Support Ticket Created</h1>
+      </div>
+      <div class='content'>
+        <p>Hello {{customer.name}},</p>
+        <p>Thank you for contacting our support team. We've received your request and created a
+          support ticket for you.</p>
+
+        <div class='ticket-card'>
+          <div class='ticket-id'>Ticket #{{ticket.id}}</div>
+
+          <div class='detail-row'>
+            <div class='detail-label'>Subject:</div>
+            <div class='detail-value'>{{ticket.title}}</div>
+          </div>
+
+          <div class='detail-row'>
+            <div class='detail-label'>Priority:</div>
+            <div class='detail-value'>{{upperCase ticket.priority}}</div>
+          </div>
+
+          <div class='detail-row'>
+            <div class='detail-label'>Status:</div>
+            <div class='detail-value'>{{upperCase ticket.status}}</div>
+          </div>
+
+          <div class='detail-row'>
+            <div class='detail-label'>Created:</div>
+            <div class='detail-value'>{{formatDateTime ticket.createdAt}}</div>
+          </div>
+        </div>
+
+        <div class='expectation-box'>
+          <strong>📅 What to expect:</strong><br />
+          Based on your ticket priority, you can expect a response within
+          <strong>{{responseTime}}</strong>. We'll keep you updated via email as our team works on
+          your request.
+        </div>
+
+        <a href='{{baseUrl}}/tickets/{{ticket.id}}' class='btn-primary'>View Ticket Details</a>
+
+        <p><strong>🔗 Tracking your ticket:</strong><br />
+          Save this email for your records. You can always check your ticket status using ticket #{{ticket.id}}.</p>
+      </div>
+      <div class='footer'>
+        <p>This message was sent from {{companyName}} Support</p>
+        <p>To reply to this ticket, please email
+          <a href='mailto:{{supportEmail}}'>{{supportEmail}}</a></p>
+      </div>
+    </div>
+  </body>
+</html>

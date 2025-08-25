@@ -20,7 +20,10 @@ async function getPrisma() {
       datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
     });
   } catch (e) {
-    logger.warn('Prisma unavailable in pulse-inventory routes', { error: e?.message });
+    // Only log Prisma unavailability in debug mode to reduce startup noise
+    if (process.env.DEBUG_PRISMA === 'true') {
+      logger.warn('Prisma unavailable in pulse-inventory routes', { error: e?.message });
+    }
     return null;
   }
 }

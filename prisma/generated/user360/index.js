@@ -33,12 +33,12 @@ exports.Prisma = Prisma;
 exports.$Enums = {};
 
 /**
- * Prisma Client JS version: 6.13.0
- * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
+ * Prisma Client JS version: 6.14.0
+ * Query Engine version: 717184b7b35ea05dfa71a3236b7af656013e1e49
  */
 Prisma.prismaVersion = {
-  client: '6.13.0',
-  engine: '361e86d0ea4987e9f53a565309b3eed797a6bcbd',
+  client: '6.14.0',
+  engine: '717184b7b35ea05dfa71a3236b7af656013e1e49',
 };
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -357,7 +357,7 @@ const config = {
       value: 'prisma-client-js',
     },
     output: {
-      value: '/workspace/prisma/generated/user360',
+      value: '/Users/tneibarger/Documents/GitHub/nova-universe/prisma/generated/user360',
       fromEnvVar: null,
     },
     config: {
@@ -366,7 +366,7 @@ const config = {
     binaryTargets: [
       {
         fromEnvVar: null,
-        value: 'debian-openssl-3.0.x',
+        value: 'darwin-arm64',
         native: true,
       },
       {
@@ -375,15 +375,15 @@ const config = {
       },
     ],
     previewFeatures: [],
-    sourceFilePath: '/workspace/prisma/user360/schema.prisma',
+    sourceFilePath: '/Users/tneibarger/Documents/GitHub/nova-universe/prisma/user360/schema.prisma',
     isCustomOutput: true,
   },
   relativeEnvPaths: {
     rootEnvPath: null,
   },
   relativePath: '../../user360',
-  clientVersion: '6.13.0',
-  engineVersion: '361e86d0ea4987e9f53a565309b3eed797a6bcbd',
+  clientVersion: '6.14.0',
+  engineVersion: '717184b7b35ea05dfa71a3236b7af656013e1e49',
   datasourceNames: ['user360_db'],
   activeProvider: 'postgresql',
   postinstall: false,
@@ -437,6 +437,10 @@ warnEnvConflicts({
 const PrismaClient = getPrismaClient(config);
 exports.PrismaClient = PrismaClient;
 Object.assign(exports, Prisma);
+
+// file annotations for bundling tools to include these files
+path.join(__dirname, 'libquery_engine-darwin-arm64.dylib.node');
+path.join(process.cwd(), 'prisma/generated/user360/libquery_engine-darwin-arm64.dylib.node');
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, 'libquery_engine-debian-openssl-3.0.x.so.node');

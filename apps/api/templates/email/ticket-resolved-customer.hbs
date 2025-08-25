@@ -1,0 +1,143 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Ticket Resolved</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #374151;
+        margin: 0;
+        padding: 0;
+        background-color: #f9fafb;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .content {
+        padding: 32px 24px;
+      }
+      .ticket-id {
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 16px;
+      }
+      .btn-primary {
+        display: inline-block;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        margin: 16px 8px 16px 0;
+      }
+      .footer {
+        background: #f8fafc;
+        text-align: center;
+        padding: 24px;
+        color: #64748b;
+        font-size: 12px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .footer a {
+        color: #3b82f6;
+        text-decoration: none;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        color: white;
+        padding: 32px 24px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .success-banner {
+        background: #f0fdf4;
+        border: 2px solid #16a34a;
+        border-radius: 8px;
+        padding: 24px;
+        text-align: center;
+        margin: 24px 0;
+      }
+      .success-icon {
+        font-size: 48px;
+        color: #16a34a;
+        margin-bottom: 16px;
+      }
+      .feedback-section {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 24px;
+        margin: 24px 0;
+        text-align: center;
+      }
+      .rating-buttons {
+        margin: 16px 0;
+      }
+      .rating-btn {
+        display: inline-block;
+        margin: 0 4px;
+        padding: 8px 16px;
+        border: 2px solid #f59e0b;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #92400e;
+        font-weight: 600;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>✅ Ticket Resolved</h1>
+      </div>
+      <div class='content'>
+        <div class='success-banner'>
+          <div class='success-icon'>🎉</div>
+          <h2>Your issue has been resolved!</h2>
+          <p>Ticket #{{ticket.id}} has been successfully closed by our support team.</p>
+        </div>
+
+        <div class='feedback-section'>
+          <h3>⭐ How was your experience?</h3>
+          <p>Your feedback helps us improve our support quality.</p>
+          <div class='rating-buttons'>
+            <a href='{{baseUrl}}/feedback/{{ticket.id}}?rating=5' class='rating-btn'>😊 Excellent</a>
+            <a href='{{baseUrl}}/feedback/{{ticket.id}}?rating=4' class='rating-btn'>👍 Good</a>
+            <a href='{{baseUrl}}/feedback/{{ticket.id}}?rating=3' class='rating-btn'>😐 Okay</a>
+            <a href='{{baseUrl}}/feedback/{{ticket.id}}?rating=2' class='rating-btn'>👎 Poor</a>
+          </div>
+        </div>
+
+        <a href='{{baseUrl}}/tickets/{{ticket.id}}' class='btn-primary'>View Ticket Details</a>
+
+        <p><strong>❓ Need help with something else?</strong><br />
+          If you have a new issue, please
+          <a href='{{baseUrl}}/tickets/new'>submit a new ticket</a>.</p>
+      </div>
+      <div class='footer'>
+        <p>Thank you for using {{companyName}} Support!</p>
+        <p>Ticket #{{ticket.id}}
+          •
+          <a href='{{baseUrl}}/feedback/{{ticket.id}}'>Rate Your Experience</a></p>
+      </div>
+    </div>
+  </body>
+</html>

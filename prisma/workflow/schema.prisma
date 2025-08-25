@@ -1,0 +1,758 @@
+// Nova Workflow Automation Schema
+// ServiceNow-style workflow builder, process automation, and decision engine
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/workflow"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core Workflow Models
+model Workflow {
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  version          String            @default("1.0.0")
+  status           WorkflowStatus    @default(DRAFT)
+  type             WorkflowType      @default(PROCESS)
+  category         String?
+  tags             String[]
+  
+  // Design Properties
+  canvas           Json              // Visual designer canvas data
+  trigger          Json?             // Trigger configuration
+  variables        Json              @default("{}")
+  settings         Json              @default("{}")
+  
+  // Metadata
+  createdBy        String
+  updatedBy        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  publishedAt      DateTime?
+  archivedAt       DateTime?
+  
+  // Relationships
+  nodes            WorkflowNode[]
+  connections      WorkflowConnection[]
+  executions       WorkflowExecution[]
+  templates        WorkflowTemplate[]
+  permissions      WorkflowPermission[]
+  analytics        WorkflowAnalytics[]
+  
+  @@map("workflows")
+}
+
+model WorkflowNode {
+  id               String            @id @default(cuid())
+  workflowId       String
+  nodeId           String            // Unique within workflow
+  type             NodeType
+  category         String
+  name             String
+  description      String?
+  
+  // Position and styling
+  position         Json              // {x, y}
+  dimensions       Json?             // {width, height}
+  styling          Json              @default("{}")
+  
+  // Configuration
+  config           Json              @default("{}")
+  inputs           Json              @default("{}")
+  outputs          Json              @default("{}")
+  
+  // Conditional logic
+  conditions       Json?
+  errorHandling    Json?
+  timeout          Int?              // Seconds
+  retryPolicy      Json?
+  
+  // Status tracking
+  isActive         Boolean           @default(true)
+  executionCount   Int               @default(0)
+  lastExecuted     DateTime?
+  
+  // Metadata
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  workflow         Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  fromConnections  WorkflowConnection[] @relation("FromNode")
+  toConnections    WorkflowConnection[] @relation("ToNode")
+  executions       NodeExecution[]
+  
+  @@unique([workflowId, nodeId])
+  @@map("workflow_nodes")
+}
+
+model WorkflowConnection {
+  id               String            @id @default(cuid())
+  workflowId       String
+  connectionId     String            // Unique within workflow
+  
+  fromNodeId       String
+  fromPort         String?           // Output port
+  toNodeId         String
+  toPort           String?           // Input port
+  
+  // Connection properties
+  label            String?
+  conditions       Json?             // Conditional routing
+  priority         Int               @default(0)
+  styling          Json              @default("{}")
+  
+  // Status
+  isActive         Boolean           @default(true)
+  executionCount   Int               @default(0)
+  
+  // Metadata
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  workflow         Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  fromNode         WorkflowNode      @relation("FromNode", fields: [fromNodeId], references: [nodeId])
+  toNode           WorkflowNode      @relation("ToNode", fields: [toNodeId], references: [nodeId])
+  
+  @@unique([workflowId, connectionId])
+  @@map("workflow_connections")
+}
+
+// Workflow Execution Engine
+model WorkflowExecution {
+  id               String            @id @default(cuid())
+  workflowId       String
+  executionId      String            @unique // Human-readable ID
+  
+  // Execution context
+  triggeredBy      String?           // User or system
+  trigger          Json?             // Trigger data
+  input            Json              @default("{}")
+  output           Json?
+  context          Json              @default("{}")
+  
+  // Status tracking
+  status           ExecutionStatus   @default(PENDING)
+  priority         ExecutionPriority @default(NORMAL)
+  progress         Float             @default(0.0)
+  currentNodeId    String?
+  
+  // Timing
+  startedAt        DateTime?
+  completedAt      DateTime?
+  pausedAt         DateTime?
+  timeoutAt        DateTime?
+  duration         Int?              // Milliseconds
+  
+  // Error handling
+  error            Json?
+  errorNodeId      String?
+  retryCount       Int               @default(0)
+  maxRetries       Int               @default(3)
+  
+  // Metadata
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  workflow         Workflow          @relation(fields: [workflowId], references: [id])
+  nodeExecutions   NodeExecution[]
+  logs             ExecutionLog[]
+  
+  @@map("workflow_executions")
+}
+
+model NodeExecution {
+  id               String            @id @default(cuid())
+  executionId      String
+  nodeId           String
+  
+  // Execution data
+  input            Json              @default("{}")
+  output           Json?
+  context          Json              @default("{}")
+  
+  // Status tracking
+  status           ExecutionStatus   @default(PENDING)
+  attempt          Int               @default(1)
+  
+  // Timing
+  startedAt        DateTime?
+  completedAt      DateTime?
+  duration         Int?              // Milliseconds
+  
+  // Error handling
+  error            Json?
+  stackTrace       String?
+  
+  // Metadata
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  execution        WorkflowExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  node             WorkflowNode      @relation(fields: [nodeId], references: [nodeId])
+  logs             ExecutionLog[]
+  
+  @@map("node_executions")
+}
+
+model ExecutionLog {
+  id               String            @id @default(cuid())
+  executionId      String
+  nodeExecutionId  String?
+  
+  // Log data
+  level            LogLevel          @default(INFO)
+  message          String
+  details          Json?
+  nodeId           String?
+  
+  // Timing
+  timestamp        DateTime          @default(now())
+  
+  // Relationships
+  execution        WorkflowExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  nodeExecution    NodeExecution?    @relation(fields: [nodeExecutionId], references: [id], onDelete: Cascade)
+  
+  @@map("execution_logs")
+}
+
+// Decision Tables and Rules Engine
+model DecisionTable {
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  version          String            @default("1.0.0")
+  
+  // Table structure
+  inputs           Json              // Input column definitions
+  outputs          Json              // Output column definitions
+  rules            Json              // Decision rules
+  
+  // Configuration
+  hitPolicy        HitPolicy         @default(FIRST)
+  priority         Int               @default(0)
+  isActive         Boolean           @default(true)
+  
+  // Metadata
+  createdBy        String
+  updatedBy        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  publishedAt      DateTime?
+  
+  // Relationships
+  executions       DecisionExecution[]
+  workflowNodes    WorkflowNode[]    // Nodes using this table
+  
+  @@map("decision_tables")
+}
+
+model DecisionExecution {
+  id               String            @id @default(cuid())
+  decisionTableId  String
+  
+  // Execution data
+  input            Json
+  output           Json?
+  matchedRules     String[]          // Rule IDs that matched
+  
+  // Context
+  executedBy       String?
+  context          Json              @default("{}")
+  
+  // Timing
+  executedAt       DateTime          @default(now())
+  duration         Int?              // Milliseconds
+  
+  // Error handling
+  error            Json?
+  
+  // Relationships
+  decisionTable    DecisionTable     @relation(fields: [decisionTableId], references: [id])
+  
+  @@map("decision_executions")
+}
+
+// Process Automation (Kanban-style)
+model Process {
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  category         String?
+  
+  // Process configuration
+  stages           Json              // Process stages/columns
+  rules            Json              @default("{}")
+  automation       Json              @default("{}")
+  
+  // Status
+  isActive         Boolean           @default(true)
+  isTemplate       Boolean           @default(false)
+  
+  // Metadata
+  createdBy        String
+  updatedBy        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  activities       ProcessActivity[]
+  instances        ProcessInstance[]
+  
+  @@map("processes")
+}
+
+model ProcessActivity {
+  id               String            @id @default(cuid())
+  processId        String
+  name             String
+  description      String?
+  type             ActivityType
+  
+  // Configuration
+  config           Json              @default("{}")
+  inputs           Json              @default("{}")
+  outputs          Json              @default("{}")
+  
+  // Automation
+  triggers         Json              @default("{}")
+  actions          Json              @default("{}")
+  conditions       Json?
+  
+  // Position in process
+  stage            String
+  order            Int               @default(0)
+  
+  // Status
+  isActive         Boolean           @default(true)
+  isMandatory      Boolean           @default(false)
+  
+  // Metadata
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  process          Process           @relation(fields: [processId], references: [id], onDelete: Cascade)
+  executions       ActivityExecution[]
+  
+  @@map("process_activities")
+}
+
+model ProcessInstance {
+  id               String            @id @default(cuid())
+  processId        String
+  instanceId       String            @unique // Human-readable ID
+  
+  // Instance data
+  title            String
+  description      String?
+  currentStage     String
+  priority         ProcessPriority   @default(NORMAL)
+  
+  // Status tracking
+  status           ProcessStatus     @default(ACTIVE)
+  progress         Float             @default(0.0)
+  
+  // Context
+  data             Json              @default("{}")
+  variables        Json              @default("{}")
+  
+  // Assignment
+  assignedTo       String?
+  assignedTeam     String?
+  
+  // Timing
+  startedAt        DateTime          @default(now())
+  dueAt            DateTime?
+  completedAt      DateTime?
+  pausedAt         DateTime?
+  
+  // Metadata
+  createdBy        String
+  updatedBy        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  process          Process           @relation(fields: [processId], references: [id])
+  activities       ActivityExecution[]
+  
+  @@map("process_instances")
+}
+
+model ActivityExecution {
+  id               String            @id @default(cuid())
+  processInstanceId String
+  activityId       String
+  
+  // Execution data
+  input            Json              @default("{}")
+  output           Json?
+  
+  // Status tracking
+  status           ExecutionStatus   @default(PENDING)
+  attempt          Int               @default(1)
+  
+  // Assignment
+  assignedTo       String?
+  completedBy      String?
+  
+  // Timing
+  startedAt        DateTime?
+  completedAt      DateTime?
+  dueAt            DateTime?
+  duration         Int?              // Milliseconds
+  
+  // Error handling
+  error            Json?
+  
+  // Metadata
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  processInstance  ProcessInstance   @relation(fields: [processInstanceId], references: [id], onDelete: Cascade)
+  activity         ProcessActivity   @relation(fields: [activityId], references: [id])
+  
+  @@map("activity_executions")
+}
+
+// Integration Hub
+model Integration {
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  type             IntegrationType
+  category         String?
+  
+  // Connection details
+  config           Json              // Connection configuration
+  credentials      Json?             // Encrypted credentials
+  endpoints        Json              @default("{}")
+  
+  // Status
+  status           IntegrationStatus @default(INACTIVE)
+  isActive         Boolean           @default(true)
+  lastTestAt       DateTime?
+  lastSuccessAt    DateTime?
+  
+  // Rate limiting
+  rateLimit        Int?              // Requests per minute
+  rateLimitWindow  Int?              // Window in seconds
+  
+  // Metadata
+  createdBy        String
+  updatedBy        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  actions          IntegrationAction[]
+  executions       IntegrationExecution[]
+  
+  @@map("integrations")
+}
+
+model IntegrationAction {
+  id               String            @id @default(cuid())
+  integrationId    String
+  name             String
+  description      String?
+  method           String            // HTTP method or action type
+  
+  // Configuration
+  endpoint         String?
+  headers          Json              @default("{}")
+  parameters       Json              @default("{}")
+  requestSchema    Json?
+  responseSchema   Json?
+  
+  // Behavior
+  timeout          Int               @default(30000) // Milliseconds
+  retryPolicy      Json?
+  
+  // Status
+  isActive         Boolean           @default(true)
+  
+  // Metadata
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  integration      Integration       @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  executions       IntegrationExecution[]
+  
+  @@map("integration_actions")
+}
+
+model IntegrationExecution {
+  id               String            @id @default(cuid())
+  integrationId    String
+  actionId         String?
+  
+  // Execution data
+  request          Json
+  response         Json?
+  
+  // Status tracking
+  status           ExecutionStatus   @default(PENDING)
+  statusCode       Int?
+  
+  // Timing
+  startedAt        DateTime          @default(now())
+  completedAt      DateTime?
+  duration         Int?              // Milliseconds
+  
+  // Error handling
+  error            Json?
+  
+  // Context
+  executedBy       String?
+  context          Json              @default("{}")
+  
+  // Relationships
+  integration      Integration       @relation(fields: [integrationId], references: [id])
+  action           IntegrationAction? @relation(fields: [actionId], references: [id])
+  
+  @@map("integration_executions")
+}
+
+// Templates and Blueprints
+model WorkflowTemplate {
+  id               String            @id @default(cuid())
+  workflowId       String?           // Source workflow
+  name             String
+  description      String?
+  category         String?
+  tags             String[]
+  
+  // Template data
+  template         Json              // Workflow definition
+  variables        Json              @default("{}")
+  instructions     String?
+  
+  // Metadata
+  isPublic         Boolean           @default(false)
+  downloadCount    Int               @default(0)
+  rating           Float?
+  
+  // Publishing
+  createdBy        String
+  publishedBy      String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  publishedAt      DateTime?
+  
+  // Relationships
+  workflow         Workflow?         @relation(fields: [workflowId], references: [id])
+  
+  @@map("workflow_templates")
+}
+
+// Access Control
+model WorkflowPermission {
+  id               String            @id @default(cuid())
+  workflowId       String
+  
+  // Subject (who)
+  subjectType      SubjectType       // USER, ROLE, TEAM
+  subjectId        String
+  
+  // Permission level
+  permission       WorkflowPermission @default(READ)
+  
+  // Metadata
+  grantedBy        String
+  grantedAt        DateTime          @default(now())
+  expiresAt        DateTime?
+  
+  // Relationships
+  workflow         Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  
+  @@unique([workflowId, subjectType, subjectId])
+  @@map("workflow_permissions")
+}
+
+// Analytics and Monitoring
+model WorkflowAnalytics {
+  id               String            @id @default(cuid())
+  workflowId       String
+  date             DateTime          @db.Date
+  
+  // Execution metrics
+  executionCount   Int               @default(0)
+  successCount     Int               @default(0)
+  errorCount       Int               @default(0)
+  avgDuration      Float?            // Milliseconds
+  
+  // Performance metrics
+  throughput       Float?            // Executions per hour
+  errorRate        Float?            // Percentage
+  
+  // Resource usage
+  cpuUsage         Float?
+  memoryUsage      Float?
+  
+  // Metadata
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relationships
+  workflow         Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  
+  @@unique([workflowId, date])
+  @@map("workflow_analytics")
+}
+
+// Enums
+enum WorkflowStatus {
+  DRAFT
+  PUBLISHED
+  ACTIVE
+  PAUSED
+  ARCHIVED
+  DEPRECATED
+}
+
+enum WorkflowType {
+  PROCESS
+  INTEGRATION
+  AUTOMATION
+  APPROVAL
+  NOTIFICATION
+  DECISION
+  SCHEDULED
+}
+
+enum NodeType {
+  TRIGGER
+  ACTION
+  CONDITION
+  LOOP
+  PARALLEL
+  SEQUENTIAL
+  DECISION
+  INTEGRATION
+  NOTIFICATION
+  APPROVAL
+  DELAY
+  SCRIPT
+  FORM
+  API_CALL
+  DATABASE
+  FILE_OPERATION
+  EMAIL
+  SMS
+  WEBHOOK
+  TRANSFORMATION
+  VALIDATION
+  END
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  PAUSED
+  TIMEOUT
+  RETRY
+}
+
+enum ExecutionPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+  CRITICAL
+}
+
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+  FATAL
+}
+
+enum HitPolicy {
+  FIRST
+  ANY
+  PRIORITY
+  COLLECT
+  RULE_ORDER
+  OUTPUT_ORDER
+}
+
+enum ActivityType {
+  MANUAL
+  AUTOMATED
+  APPROVAL
+  NOTIFICATION
+  INTEGRATION
+  DECISION
+  FORM
+  REVIEW
+}
+
+enum ProcessStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  ON_HOLD
+  ESCALATED
+}
+
+enum ProcessPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+  CRITICAL
+}
+
+enum IntegrationType {
+  REST_API
+  SOAP
+  DATABASE
+  FILE_SYSTEM
+  EMAIL
+  FTP
+  LDAP
+  WEBHOOK
+  MESSAGE_QUEUE
+  THIRD_PARTY
+}
+
+enum IntegrationStatus {
+  INACTIVE
+  ACTIVE
+  ERROR
+  TESTING
+  DEPRECATED
+}
+
+enum SubjectType {
+  USER
+  ROLE
+  TEAM
+  DEPARTMENT
+  ORGANIZATION
+}
+
+enum WorkflowPermissionLevel {
+  READ
+  WRITE
+  EXECUTE
+  ADMIN
+  OWNER
+}

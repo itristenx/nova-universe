@@ -1,7 +1,0 @@
-.card {
-  background-color: var(--card-bg, #f9fafb);
-  color: var(--card-color, #1f2937);
-  font-family: var(--card-font, 'Inter, system-ui, sans-serif');
-  padding: var(--card-padding, 1rem);
-  border-radius: var(--card-radius, 0.5rem);
-}

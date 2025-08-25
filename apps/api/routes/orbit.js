@@ -263,14 +263,12 @@ router.post(
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            error: 'Invalid input',
-            details: errors.array(),
-            errorCode: 'VALIDATION_ERROR',
-          });
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid input',
+          details: errors.array(),
+          errorCode: 'VALIDATION_ERROR',
+        });
       }
 
       const {
@@ -438,13 +436,11 @@ router.post(
       res.status(201).json({ success: true, ticket });
     } catch (error) {
       logger.error('Error creating ticket:', error);
-      res
-        .status(500)
-        .json({
-          success: false,
-          error: 'Failed to create ticket',
-          errorCode: 'TICKET_CREATE_ERROR',
-        });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create ticket',
+        errorCode: 'TICKET_CREATE_ERROR',
+      });
     }
   },
 );

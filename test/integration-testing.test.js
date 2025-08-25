@@ -5,6 +5,10 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { spawn } from 'child_process';
 import fetch from 'node-fetch';
+import { registerCleanupHandlers, performCleanup } from './test-cleanup.js';
+
+// Register cleanup handlers immediately
+registerCleanupHandlers();
 
 // Test Configuration
 const CONFIG = {
@@ -14,6 +18,41 @@ const CONFIG = {
   testDatabase:
     process.env.TEST_DATABASE_URL || 'postgresql://test_user:test_pass@localhost:5432/nova_test',
 };
+
+// Global test tracking for cleanup
+global.testStartTime = Date.now();
+const activeConnections = new Set();
+const activeTimeouts = new Set();
+
+// Graceful cleanup handler
+function gracefulCleanup() {
+  console.log('🧹 Cleaning up integration test resources...');
+
+  // Clear all timeouts
+  for (const timeoutId of activeTimeouts) {
+    clearTimeout(timeoutId);
+  }
+  activeTimeouts.clear();
+
+  // Close any active connections
+  for (const connection of activeConnections) {
+    if (connection && typeof connection.close === 'function') {
+      try {
+        connection.close();
+      } catch (error) {
+        console.warn('Warning: Error closing connection:', error.message);
+      }
+    }
+  }
+  activeConnections.clear();
+
+  console.log('✅ Integration test cleanup completed');
+}
+
+// Register cleanup handlers
+process.on('SIGINT', gracefulCleanup);
+process.on('SIGTERM', gracefulCleanup);
+process.on('exit', gracefulCleanup);
 
 // Test Utilities
 class TestHelper {
@@ -26,7 +65,14 @@ class TestHelper {
       } catch (error) {
         // Service not ready yet
       }
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const timeoutId = setTimeout(() => {}, 1000);
+      activeTimeouts.add(timeoutId);
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          activeTimeouts.delete(timeoutId);
+          resolve();
+        }, 1000);
+      });
     }
     throw new Error(`Service at ${url} not ready after ${timeout}ms`);
   }
@@ -490,3 +536,10 @@ test('Cleanup and Teardown', async (t) => {
 
 console.log('✅ Integration Testing Suite Completed');
 console.log(`Total test execution time: ${Date.now() - global.testStartTime}ms`);
+
+// Final cleanup and exit
+process.nextTick(async () => {
+  await performCleanup();
+  console.log('🎯 Integration tests finished - exiting gracefully');
+  process.exit(0);
+});

@@ -72,15 +72,19 @@ class PostgreSQLManager {
       return true;
     } catch (error) {
       this.connectionAttempts++;
-      logger.error(
-        `❌ PostgreSQL initialization failed (attempt ${this.connectionAttempts}):`,
-        error.message,
-      );
+
+      // Only log the first attempt and final failure to reduce noise
+      if (this.connectionAttempts === 1) {
+        logger.error(`❌ PostgreSQL initialization failed:`, error.message);
+      }
 
       if (this.connectionAttempts < this.maxConnectionAttempts) {
-        logger.info(
-          `🔄 Retrying PostgreSQL connection in ${this.reconnectDelay / 1000} seconds...`,
-        );
+        // Only log retry info in debug mode or for the first few attempts
+        if (process.env.DEBUG_DB_CONNECTION === 'true' || this.connectionAttempts <= 2) {
+          logger.info(
+            `🔄 Retrying PostgreSQL connection in ${this.reconnectDelay / 1000} seconds... (attempt ${this.connectionAttempts}/${this.maxConnectionAttempts})`,
+          );
+        }
         // Use a non-recursive approach for retries
         await new Promise((resolve) => setTimeout(resolve, this.reconnectDelay));
         return this.initialize();
@@ -104,37 +108,41 @@ class PostgreSQLManager {
    * Set up pool event handlers for monitoring
    */
   setupPoolEventHandlers() {
-    this.pool.on('connect', (client) => {
-      if (process.env.NODE_ENV === 'development') {
+    // Only log connection events in production or when explicitly requested
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+
+    this.pool.on('connect', (_client) => {
+      if (verboseLogging) {
         logger.debug('🔗 New PostgreSQL client connected');
       }
     });
 
-    this.pool.on('acquire', (client) => {
-      if (process.env.NODE_ENV === 'development') {
+    this.pool.on('acquire', (_client) => {
+      if (verboseLogging) {
         logger.debug('🎯 PostgreSQL client acquired from pool');
       }
     });
 
-    this.pool.on('release', (client) => {
-      if (process.env.NODE_ENV === 'development') {
+    this.pool.on('release', (_client) => {
+      if (verboseLogging) {
         logger.debug('↩️  PostgreSQL client released back to pool');
       }
     });
 
-    this.pool.on('remove', (client) => {
-      if (process.env.NODE_ENV === 'development') {
+    this.pool.on('remove', (_client) => {
+      if (verboseLogging) {
         logger.debug('🗑️  PostgreSQL client removed from pool');
       }
     });
 
-    this.pool.on('error', (error, client) => {
+    this.pool.on('error', (error, _client) => {
       logger.error('💥 PostgreSQL pool error:', error.message);
       this.isConnected = false;
 
       // Don't automatically reinitialize on error to prevent stack overflow
       // Let the application handle reconnection logic externally
-      logger.warn('� PostgreSQL connection lost. Manual reconnection required.');
+      logger.warn('🔌 PostgreSQL connection lost. Manual reconnection required.');
     });
   }
 
@@ -166,22 +174,35 @@ class PostgreSQLManager {
 
     const startTime = Date.now();
     const client = options.client || null;
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
     let shouldReleaseClient = false;
     let activeClient;
+
     try {
       if (client) {
         activeClient = client;
       } else {
-        logger.debug('Attempting to acquire client from pool...');
+        if (verboseLogging) {
+          logger.debug('Attempting to acquire client from pool...');
+        }
         activeClient = await this.pool.connect();
-        logger.debug('Client acquired from pool.');
+        if (verboseLogging) {
+          logger.debug('Client acquired from pool.');
+        }
         shouldReleaseClient = true;
       }
 
-      logger.debug('Executing query:', text.substring(0, 100));
+      if (verboseLogging) {
+        logger.debug('Executing query:', text.substring(0, 100));
+      }
       const result = await activeClient.query(text, params);
-      logger.debug('Query executed successfully.');
+      if (verboseLogging) {
+        logger.debug('Query executed successfully.');
+      }
+
       const duration = Date.now() - startTime;
+      // Always log slow queries regardless of verbosity
       if (duration > 1000) {
         logger.warn(`🐌 Slow PostgreSQL query (${duration}ms):`, text.substring(0, 100));
       }
@@ -198,7 +219,9 @@ class PostgreSQLManager {
       throw error;
     } finally {
       if (shouldReleaseClient && activeClient) {
-        logger.debug('Releasing client back to pool.');
+        if (verboseLogging) {
+          logger.debug('Releasing client back to pool.');
+        }
         activeClient.release();
       }
     }

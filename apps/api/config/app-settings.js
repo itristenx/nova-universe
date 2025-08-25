@@ -439,7 +439,14 @@ class ConfigurationManager {
 
       logger.info('Configuration management system initialized');
     } catch (error) {
-      logger.error('Failed to initialize configuration system:', error);
+      // Only log configuration system errors in debug mode when DB is unavailable
+      if (error.message === 'DB unavailable') {
+        if (process.env.DEBUG_CONFIG_SYSTEM === 'true') {
+          logger.error('Failed to initialize configuration system:', error);
+        }
+      } else {
+        logger.error('Failed to initialize configuration system:', error);
+      }
     }
   }
 

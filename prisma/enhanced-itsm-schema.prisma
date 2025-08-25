@@ -1,0 +1,680 @@
+// Enhanced ITSM Schema - Production Ready Ticket Management
+// This extends the core schema with comprehensive ITSM capabilities
+
+// Enhanced SupportTicket model with industry-standard fields
+model EnhancedSupportTicket {
+  id                    Int                     @id @default(autoincrement())
+  ticketNumber         String                  @unique @map("ticket_number") // Generated: INC0001234, REQ0001234, etc.
+  
+  // Basic Information
+  title                String                  @db.VarChar(255)
+  description          String                  @db.Text
+  shortDescription     String?                 @db.VarChar(160) @map("short_description") // Brief summary for lists
+  
+  // Classification
+  type                 TicketTypeEnum          @default(INCIDENT) // INC, REQ, PRB, CHG, TASK, HR, OPS, ISAC, FB
+  category             String?                 @db.VarChar(100)
+  subcategory          String?                 @db.VarChar(100)
+  businessService      String?                 @map("business_service") @db.VarChar(100)
+  configurationItem    String?                 @map("configuration_item") @db.VarChar(100)
+  
+  // Status and Priority
+  state                TicketStateEnum         @default(NEW)
+  priority             PriorityEnum            @default(MEDIUM)
+  urgency             UrgencyEnum             @default(MEDIUM)
+  impact              ImpactEnum              @default(MEDIUM)
+  
+  // Assignment
+  userId              String?                 @map("user_id") // Requester
+  assignedToUserId    String?                 @map("assigned_to_user_id") // Individual assignee
+  assignedToGroupId   String?                 @map("assigned_to_group_id") // Group assignment
+  assignedToQueueId   String?                 @map("assigned_to_queue_id") // Queue assignment
+  
+  // Workflow and Approval
+  workflowStage       String?                 @map("workflow_stage")
+  approvalStatus      ApprovalStatusEnum?     @map("approval_status")
+  approvedBy          String?                 @map("approved_by")
+  approvedAt          DateTime?               @map("approved_at")
+  
+  // SLA Management
+  slaId               String?                 @map("sla_id")
+  responseTimeTarget  Int?                    @map("response_time_target") // minutes
+  resolutionTimeTarget Int?                   @map("resolution_time_target") // minutes
+  responseTimeBreached Boolean                @default(false) @map("response_time_breached")
+  resolutionTimeBreached Boolean             @default(false) @map("resolution_time_breached")
+  responseTime        Int?                    @map("response_time") // actual response time in minutes
+  resolutionTime      Int?                    @map("resolution_time") // actual resolution time in minutes
+  
+  // Timestamps
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
+  closedAt            DateTime?               @map("closed_at")
+  resolvedAt          DateTime?               @map("resolved_at")
+  firstResponseAt     DateTime?               @map("first_response_at")
+  lastActivityAt      DateTime?               @map("last_activity_at")
+  dueDate             DateTime?               @map("due_date")
+  
+  // Additional Fields
+  source              SourceEnum              @default(PORTAL)
+  channel             String?                 @db.VarChar(50) // Web, Email, Phone, Slack, etc.
+  location            String?                 @db.VarChar(100)
+  costCenter          String?                 @map("cost_center") @db.VarChar(50)
+  businessJustification String?              @map("business_justification") @db.Text
+  resolution          String?                 @db.Text
+  closeNotes          String?                 @map("close_notes") @db.Text
+  parentTicketId      Int?                    @map("parent_ticket_id")
+  
+  // Flags and Metadata
+  isVip               Boolean                 @default(false) @map("is_vip")
+  isUrgent            Boolean                 @default(false) @map("is_urgent")
+  isEscalated         Boolean                 @default(false) @map("is_escalated")
+  isWatched           Boolean                 @default(false) @map("is_watched")
+  tags                String[]                @default([])
+  customFields        Json?                   @map("custom_fields")
+  
+  // Customer Satisfaction
+  satisfactionRating  Int?                    @map("satisfaction_rating") // 1-5
+  satisfactionComment String?                 @map("satisfaction_comment") @db.Text
+  satisfactionSurveyedAt DateTime?            @map("satisfaction_surveyed_at")
+  
+  // Security and Compliance
+  confidentialityLevel String?               @map("confidentiality_level") @db.VarChar(20) // Public, Internal, Confidential, Restricted
+  complianceRequired  Boolean                @default(false) @map("compliance_required")
+  dataClassification  String?                @map("data_classification") @db.VarChar(50)
+  
+  // Relationships
+  requester           User?                   @relation("TicketRequester", fields: [userId], references: [id])
+  assignedUser        User?                   @relation("TicketAssignedUser", fields: [assignedToUserId], references: [id])
+  assignedGroup       Group?                  @relation("TicketAssignedGroup", fields: [assignedToGroupId], references: [id])
+  assignedQueue       Queue?                  @relation("TicketAssignedQueue", fields: [assignedToQueueId], references: [id])
+  parentTicket        EnhancedSupportTicket?  @relation("TicketParent", fields: [parentTicketId], references: [id])
+  childTickets        EnhancedSupportTicket[] @relation("TicketParent")
+  sla                 SLA?                    @relation(fields: [slaId], references: [id])
+  
+  // Related Records
+  comments            TicketComment[]
+  attachments         TicketAttachment[]
+  watchers            TicketWatcher[]
+  history             TicketHistory[]
+  timeEntries         TicketTimeEntry[]
+  linkedTickets       TicketLink[]            @relation("SourceTicketLinks")
+  linkedFromTickets   TicketLink[]            @relation("TargetTicketLinks")
+  escalations         TicketEscalation[]
+  workNotes           TicketWorkNote[]
+  approvals           TicketApproval[]
+  slaBreaches         SLABreach[]
+  
+  @@map("enhanced_support_tickets")
+  @@index([ticketNumber])
+  @@index([state, priority])
+  @@index([assignedToUserId])
+  @@index([assignedToGroupId])
+  @@index([assignedToQueueId])
+  @@index([createdAt])
+  @@index([dueDate])
+  @@index([type, category])
+  @@index([userId, state])
+}
+
+// Ticket Comments
+model TicketComment {
+  id              String                 @id @default(uuid())
+  ticketId        Int                    @map("ticket_id")
+  userId          String                 @map("user_id")
+  content         String                 @db.Text
+  isInternal      Boolean                @default(false) @map("is_internal")
+  isSystem        Boolean                @default(false) @map("is_system")
+  isEmailSent     Boolean                @default(false) @map("is_email_sent")
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+  editedAt        DateTime?              @map("edited_at")
+  editedBy        String?                @map("edited_by")
+  
+  ticket          EnhancedSupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user            User                   @relation("CommentUser", fields: [userId], references: [id])
+  editor          User?                  @relation("CommentEditor", fields: [editedBy], references: [id])
+  attachments     CommentAttachment[]
+  
+  @@map("ticket_comments")
+  @@index([ticketId, createdAt])
+}
+
+// Ticket Attachments
+model TicketAttachment {
+  id              String                 @id @default(uuid())
+  ticketId        Int                    @map("ticket_id")
+  uploadedBy      String                 @map("uploaded_by")
+  filename        String                 @db.VarChar(255)
+  originalName    String                 @map("original_name") @db.VarChar(255)
+  fileSize        Int                    @map("file_size")
+  mimeType        String                 @map("mime_type") @db.VarChar(100)
+  fileUrl         String                 @map("file_url")
+  thumbnailUrl    String?                @map("thumbnail_url")
+  isConfidential  Boolean                @default(false) @map("is_confidential")
+  scanStatus      String                 @default("pending") @map("scan_status") // pending, clean, infected, error
+  createdAt       DateTime               @default(now()) @map("created_at")
+  
+  ticket          EnhancedSupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploader        User                   @relation("AttachmentUploader", fields: [uploadedBy], references: [id])
+  
+  @@map("ticket_attachments")
+  @@index([ticketId])
+}
+
+// Comment Attachments
+model CommentAttachment {
+  id              String         @id @default(uuid())
+  commentId       String         @map("comment_id")
+  filename        String         @db.VarChar(255)
+  originalName    String         @map("original_name") @db.VarChar(255)
+  fileSize        Int            @map("file_size")
+  mimeType        String         @map("mime_type") @db.VarChar(100)
+  fileUrl         String         @map("file_url")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  
+  comment         TicketComment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@map("comment_attachments")
+}
+
+// Ticket Watchers
+model TicketWatcher {
+  id              String                 @id @default(uuid())
+  ticketId        Int                    @map("ticket_id")
+  userId          String                 @map("user_id")
+  addedBy         String?                @map("added_by")
+  watchType       WatchTypeEnum          @default(MANUAL) @map("watch_type")
+  createdAt       DateTime               @default(now()) @map("created_at")
+  
+  ticket          EnhancedSupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user            User                   @relation("WatcherUser", fields: [userId], references: [id])
+  addedByUser     User?                  @relation("WatcherAddedBy", fields: [addedBy], references: [id])
+  
+  @@unique([ticketId, userId])
+  @@map("ticket_watchers")
+}
+
+// Ticket History/Audit Trail
+model TicketHistory {
+  id              String                 @id @default(uuid())
+  ticketId        Int                    @map("ticket_id")
+  userId          String?                @map("user_id")
+  action          String                 @db.VarChar(100)
+  fieldName       String?                @map("field_name") @db.VarChar(100)
+  oldValue        String?                @map("old_value") @db.Text
+  newValue        String?                @map("new_value") @db.Text
+  description     String?                @db.Text
+  systemGenerated Boolean                @default(false) @map("system_generated")
+  ipAddress       String?                @map("ip_address") @db.VarChar(45)
+  userAgent       String?                @map("user_agent") @db.VarChar(500)
+  createdAt       DateTime               @default(now()) @map("created_at")
+  
+  ticket          EnhancedSupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user            User?                  @relation("HistoryUser", fields: [userId], references: [id])
+  
+  @@map("ticket_history")
+  @@index([ticketId, createdAt])
+}
+
+// Time Tracking
+model TicketTimeEntry {
+  id              String                 @id @default(uuid())
+  ticketId        Int                    @map("ticket_id")
+  userId          String                 @map("user_id")
+  duration        Int                    // minutes
+  description     String?                @db.Text
+  billable        Boolean                @default(false)
+  timeType        TimeTypeEnum           @default(WORK) @map("time_type")
+  startTime       DateTime               @map("start_time")
+  endTime         DateTime?              @map("end_time")
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+  
+  ticket          EnhancedSupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user            User                   @relation("TimeEntryUser", fields: [userId], references: [id])
+  
+  @@map("ticket_time_entries")
+  @@index([ticketId])
+  @@index([userId, startTime])
+}
+
+// Ticket Links/Relationships
+model TicketLink {
+  id              String                 @id @default(uuid())
+  sourceTicketId  Int                    @map("source_ticket_id")
+  targetTicketId  Int                    @map("target_ticket_id")
+  relationshipType LinkTypeEnum          @map("relationship_type")
+  createdBy       String                 @map("created_by")
+  createdAt       DateTime               @default(now()) @map("created_at")
+  
+  sourceTicket    EnhancedSupportTicket  @relation("SourceTicketLinks", fields: [sourceTicketId], references: [id], onDelete: Cascade)
+  targetTicket    EnhancedSupportTicket  @relation("TargetTicketLinks", fields: [targetTicketId], references: [id], onDelete: Cascade)
+  creator         User                   @relation("LinkCreator", fields: [createdBy], references: [id])
+  
+  @@unique([sourceTicketId, targetTicketId, relationshipType])
+  @@map("ticket_links")
+}
+
+// Escalations
+model TicketEscalation {
+  id              String                 @id @default(uuid())
+  ticketId        Int                    @map("ticket_id")
+  escalationLevel Int                    @map("escalation_level")
+  escalatedBy     String?                @map("escalated_by")
+  escalatedTo     String?                @map("escalated_to")
+  escalatedToGroup String?               @map("escalated_to_group")
+  reason          String                 @db.Text
+  status          EscalationStatusEnum   @default(ACTIVE)
+  escalatedAt     DateTime               @default(now()) @map("escalated_at")
+  resolvedAt      DateTime?              @map("resolved_at")
+  resolutionNotes String?                @map("resolution_notes") @db.Text
+  
+  ticket          EnhancedSupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  escalatingUser  User?                  @relation("EscalatingUser", fields: [escalatedBy], references: [id])
+  escalatedToUser User?                  @relation("EscalatedToUser", fields: [escalatedTo], references: [id])
+  escalatedToGroupRel Group?             @relation("EscalatedToGroup", fields: [escalatedToGroup], references: [id])
+  
+  @@map("ticket_escalations")
+  @@index([ticketId, escalationLevel])
+}
+
+// Work Notes (Internal Notes)
+model TicketWorkNote {
+  id              String                 @id @default(uuid())
+  ticketId        Int                    @map("ticket_id")
+  userId          String                 @map("user_id")
+  content         String                 @db.Text
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+  
+  ticket          EnhancedSupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user            User                   @relation("WorkNoteUser", fields: [userId], references: [id])
+  
+  @@map("ticket_work_notes")
+  @@index([ticketId, createdAt])
+}
+
+// Approval Process
+model TicketApproval {
+  id              String                 @id @default(uuid())
+  ticketId        Int                    @map("ticket_id")
+  approverId      String                 @map("approver_id")
+  status          ApprovalStatusEnum     @default(PENDING)
+  comments        String?                @db.Text
+  requestedAt     DateTime               @default(now()) @map("requested_at")
+  respondedAt     DateTime?              @map("responded_at")
+  expiresAt       DateTime?              @map("expires_at")
+  approvalOrder   Int                    @default(1) @map("approval_order")
+  isRequired      Boolean                @default(true) @map("is_required")
+  
+  ticket          EnhancedSupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  approver        User                   @relation("ApprovalUser", fields: [approverId], references: [id])
+  
+  @@map("ticket_approvals")
+  @@index([ticketId, approvalOrder])
+  @@index([approverId, status])
+}
+
+// Groups/Teams
+model Group {
+  id              String                 @id @default(uuid())
+  name            String                 @unique @db.VarChar(100)
+  description     String?                @db.Text
+  managerId       String?                @map("manager_id")
+  isActive        Boolean                @default(true) @map("is_active")
+  groupType       GroupTypeEnum          @default(FUNCTIONAL) @map("group_type")
+  parentGroupId   String?                @map("parent_group_id")
+  costCenter      String?                @map("cost_center") @db.VarChar(50)
+  location        String?                @db.VarChar(100)
+  timeZone        String?                @map("time_zone") @db.VarChar(50)
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+  
+  manager         User?                  @relation("GroupManager", fields: [managerId], references: [id])
+  parentGroup     Group?                 @relation("GroupParent", fields: [parentGroupId], references: [id])
+  childGroups     Group[]                @relation("GroupParent")
+  members         GroupMember[]
+  tickets         EnhancedSupportTicket[] @relation("TicketAssignedGroup")
+  escalations     TicketEscalation[]     @relation("EscalatedToGroup")
+  queueMemberships QueueGroupMember[]
+  
+  @@map("groups")
+}
+
+// Group Membership
+model GroupMember {
+  id              String                 @id @default(uuid())
+  groupId         String                 @map("group_id")
+  userId          String                 @map("user_id")
+  role            GroupRoleEnum          @default(MEMBER)
+  isActive        Boolean                @default(true) @map("is_active")
+  joinedAt        DateTime               @default(now()) @map("joined_at")
+  leftAt          DateTime?              @map("left_at")
+  
+  group           Group                  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user            User                   @relation("GroupMemberUser", fields: [userId], references: [id])
+  
+  @@unique([groupId, userId])
+  @@map("group_members")
+}
+
+// Queues
+model Queue {
+  id              String                 @id @default(uuid())
+  name            String                 @unique @db.VarChar(100)
+  description     String?                @db.Text
+  isActive        Boolean                @default(true) @map("is_active")
+  maxCapacity     Int                    @default(100) @map("max_capacity")
+  currentLoad     Int                    @default(0) @map("current_load")
+  priority        Int                    @default(0) // Higher numbers = higher priority
+  businessHours   Json?                  @map("business_hours") // Business hours config
+  slaId           String?                @map("sla_id")
+  autoAssignment  Boolean                @default(false) @map("auto_assignment")
+  escalationRules Json?                  @map("escalation_rules")
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+  
+  sla             SLA?                   @relation(fields: [slaId], references: [id])
+  tickets         EnhancedSupportTicket[] @relation("TicketAssignedQueue")
+  userMembers     QueueUserMember[]
+  groupMembers    QueueGroupMember[]
+  
+  @@map("queues")
+}
+
+// Queue User Membership
+model QueueUserMember {
+  id              String                 @id @default(uuid())
+  queueId         String                 @map("queue_id")
+  userId          String                 @map("user_id")
+  role            QueueRoleEnum          @default(AGENT)
+  isActive        Boolean                @default(true) @map("is_active")
+  capacity        Int                    @default(10) // How many tickets this user can handle
+  skillLevel      Int                    @default(1) @map("skill_level") // 1-5 scale
+  joinedAt        DateTime               @default(now()) @map("joined_at")
+  leftAt          DateTime?              @map("left_at")
+  
+  queue           Queue                  @relation(fields: [queueId], references: [id], onDelete: Cascade)
+  user            User                   @relation("QueueMemberUser", fields: [userId], references: [id])
+  
+  @@unique([queueId, userId])
+  @@map("queue_user_members")
+}
+
+// Queue Group Membership
+model QueueGroupMember {
+  id              String                 @id @default(uuid())
+  queueId         String                 @map("queue_id")
+  groupId         String                 @map("group_id")
+  role            QueueRoleEnum          @default(AGENT)
+  isActive        Boolean                @default(true) @map("is_active")
+  joinedAt        DateTime               @default(now()) @map("joined_at")
+  leftAt          DateTime?              @map("left_at")
+  
+  queue           Queue                  @relation(fields: [queueId], references: [id], onDelete: Cascade)
+  group           Group                  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  @@unique([queueId, groupId])
+  @@map("queue_group_members")
+}
+
+// SLA Definitions
+model SLA {
+  id              String                 @id @default(uuid())
+  name            String                 @unique @db.VarChar(100)
+  description     String?                @db.Text
+  isActive        Boolean                @default(true) @map("is_active")
+  priority        PriorityEnum?
+  urgency         UrgencyEnum?
+  impact          ImpactEnum?
+  ticketType      TicketTypeEnum?        @map("ticket_type")
+  category        String?                @db.VarChar(100)
+  
+  // Time targets in minutes
+  responseTime    Int                    @map("response_time") // First response time
+  resolutionTime  Int                    @map("resolution_time") // Resolution time
+  
+  // Business hours
+  businessHoursOnly Boolean              @default(true) @map("business_hours_only")
+  timeZone        String                 @default("UTC") @map("time_zone") @db.VarChar(50)
+  
+  // Escalation
+  escalationEnabled Boolean              @default(false) @map("escalation_enabled")
+  escalationTime  Int?                   @map("escalation_time") // minutes before escalation
+  
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+  
+  tickets         EnhancedSupportTicket[]
+  queues          Queue[]
+  breaches        SLABreach[]
+  
+  @@map("slas")
+}
+
+// SLA Breaches
+model SLABreach {
+  id              String                 @id @default(uuid())
+  ticketId        Int                    @map("ticket_id")
+  slaId           String                 @map("sla_id")
+  breachType      SLABreachTypeEnum      @map("breach_type")
+  targetTime      Int                    @map("target_time") // Target time in minutes
+  actualTime      Int?                   @map("actual_time") // Actual time taken
+  breachedAt      DateTime               @map("breached_at")
+  isResolved      Boolean                @default(false) @map("is_resolved")
+  resolvedAt      DateTime?              @map("resolved_at")
+  
+  ticket          EnhancedSupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sla             SLA                    @relation(fields: [slaId], references: [id])
+  
+  @@map("sla_breaches")
+  @@index([ticketId])
+  @@index([slaId, breachedAt])
+}
+
+// Additional User relations needed for the enhanced system
+model UserExtended {
+  // This extends the core User model with additional fields
+  userId          String                 @id @map("user_id")
+  employeeId      String?                @unique @map("employee_id") @db.VarChar(50)
+  managerId       String?                @map("manager_id")
+  costCenter      String?                @map("cost_center") @db.VarChar(50)
+  location        String?                @db.VarChar(100)
+  timeZone        String?                @map("time_zone") @db.VarChar(50)
+  workPhone       String?                @map("work_phone") @db.VarChar(20)
+  mobilePhone     String?                @map("mobile_phone") @db.VarChar(20)
+  jobTitle        String?                @map("job_title") @db.VarChar(100)
+  
+  // VIP settings
+  vipLevel        Int                    @default(0) @map("vip_level") // 0=Normal, 1-5=VIP levels
+  vipSlaOverride  String?                @map("vip_sla_override")
+  
+  // User preferences
+  preferences     Json?                  @default("{}")
+  notificationSettings Json?             @map("notification_settings") @default("{}")
+  
+  user            User                   @relation("UserExtended", fields: [userId], references: [id], onDelete: Cascade)
+  manager         User?                  @relation("UserManager", fields: [managerId], references: [id])
+  directReports   UserExtended[]         @relation("UserManager")
+  
+  @@map("user_extended")
+}
+
+// Extend core User model with new relations
+model UserRelations {
+  userId                  String                   @id @map("user_id")
+  
+  // Ticket relations
+  requestedTickets        EnhancedSupportTicket[]  @relation("TicketRequester")
+  assignedTickets         EnhancedSupportTicket[]  @relation("TicketAssignedUser")
+  
+  // Comment relations
+  comments                TicketComment[]          @relation("CommentUser")
+  editedComments          TicketComment[]          @relation("CommentEditor")
+  
+  // Attachment relations
+  attachments             TicketAttachment[]       @relation("AttachmentUploader")
+  
+  // Watcher relations
+  watchedTickets          TicketWatcher[]          @relation("WatcherUser")
+  addedWatchers           TicketWatcher[]          @relation("WatcherAddedBy")
+  
+  // History relations
+  historyEntries          TicketHistory[]          @relation("HistoryUser")
+  
+  // Time entry relations
+  timeEntries             TicketTimeEntry[]        @relation("TimeEntryUser")
+  
+  // Link relations
+  createdLinks            TicketLink[]             @relation("LinkCreator")
+  
+  // Escalation relations
+  escalatedTickets        TicketEscalation[]       @relation("EscalatingUser")
+  escalatedToTickets      TicketEscalation[]       @relation("EscalatedToUser")
+  
+  // Work note relations
+  workNotes               TicketWorkNote[]         @relation("WorkNoteUser")
+  
+  // Approval relations
+  approvals               TicketApproval[]         @relation("ApprovalUser")
+  
+  // Group relations
+  managedGroups           Group[]                  @relation("GroupManager")
+  groupMemberships        GroupMember[]            @relation("GroupMemberUser")
+  
+  // Queue relations
+  queueMemberships        QueueUserMember[]        @relation("QueueMemberUser")
+  
+  user                    User                     @relation("UserRelations", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_relations")
+}
+
+// Enums for the enhanced system
+enum TicketTypeEnum {
+  INCIDENT     // INC - Unplanned interruption
+  REQUEST      // REQ - Service request  
+  PROBLEM      // PRB - Root cause investigation
+  CHANGE       // CHG - Change request
+  TASK         // TASK - Work item
+  HR           // HR - Human resources
+  OPS          // OPS - Operations
+  ISAC         // ISAC - Information security
+  FEEDBACK     // FB - User feedback
+}
+
+enum TicketStateEnum {
+  NEW
+  ASSIGNED
+  IN_PROGRESS
+  PENDING
+  ON_HOLD
+  RESOLVED
+  CLOSED
+  CANCELLED
+  REOPENED
+}
+
+enum PriorityEnum {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum UrgencyEnum {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ImpactEnum {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum SourceEnum {
+  PORTAL
+  EMAIL
+  PHONE
+  SLACK
+  CHAT
+  API
+  KIOSK
+  WALK_IN
+}
+
+enum ApprovalStatusEnum {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  NOT_REQUIRED
+}
+
+enum WatchTypeEnum {
+  MANUAL
+  AUTO_ASSIGNEE
+  AUTO_REQUESTER
+  AUTO_GROUP
+  AUTO_ESCALATION
+}
+
+enum TimeTypeEnum {
+  WORK
+  RESEARCH
+  TRAVEL
+  TRAINING
+  DOCUMENTATION
+  TESTING
+  BREAK
+}
+
+enum LinkTypeEnum {
+  BLOCKS
+  IS_BLOCKED_BY
+  DUPLICATES
+  IS_DUPLICATED_BY
+  RELATES_TO
+  PARENT_OF
+  CHILD_OF
+  CAUSED_BY
+  CAUSES
+}
+
+enum EscalationStatusEnum {
+  ACTIVE
+  RESOLVED
+  CANCELLED
+  SUPERSEDED
+}
+
+enum GroupTypeEnum {
+  FUNCTIONAL
+  PROJECT
+  REGION
+  DEPARTMENT
+  SKILL_BASED
+}
+
+enum GroupRoleEnum {
+  MANAGER
+  LEAD
+  MEMBER
+  OBSERVER
+}
+
+enum QueueRoleEnum {
+  MANAGER
+  SUPERVISOR
+  SENIOR_AGENT
+  AGENT
+  OBSERVER
+}
+
+enum SLABreachTypeEnum {
+  RESPONSE_TIME
+  RESOLUTION_TIME
+  ESCALATION_TIME
+}

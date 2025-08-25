@@ -46,7 +46,7 @@ ON CONFLICT DO NOTHING;
 
 -- Insert default configuration
 INSERT INTO config (key, value, value_type, description, is_public, category) VALUES 
-('organization_name', COALESCE(NULLIF(current_setting('app.organization_name', true), ''), 'Your Organization'), 'string', 'Organization name displayed throughout the application', true, 'general'),
+('organization_name', COALESCE(NULLIF(current_setting('app.organization_name', true), ''), 'Nova ITSM'), 'string', 'Organization name displayed throughout the application', true, 'general'),
 ('logo_url', COALESCE(NULLIF(current_setting('app.logo_url', true), ''), '/logo.png'), 'string', 'URL to organization logo', true, 'branding'),
 ('favicon_url', COALESCE(NULLIF(current_setting('app.favicon_url', true), ''), '/vite.svg'), 'string', 'URL to site favicon', true, 'branding'),
 ('primary_color', COALESCE(NULLIF(current_setting('app.primary_color', true), ''), '#1D4ED8'), 'string', 'Primary theme color', true, 'branding'),

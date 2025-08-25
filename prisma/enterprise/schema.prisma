@@ -1,0 +1,1413 @@
+// Nova Enterprise Platform Database Schema
+// ServiceNow-equivalent Enterprise Asset Management, Service Operations, Security Operations, CMDB, Employee Center, ITSM, HR Service Delivery
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/.prisma/enterprise"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("ENTERPRISE_DATABASE_URL")
+}
+
+// =============================================================================
+// ENTERPRISE ASSET MANAGEMENT (EAM)
+// Based on ServiceNow EAM industry standards and asset lifecycle management
+// =============================================================================
+
+model AssetCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  code        String   @unique
+  parent_id   String?
+  parent      AssetCategory? @relation("CategoryHierarchy", fields: [parent_id], references: [id])
+  children    AssetCategory[] @relation("CategoryHierarchy")
+  assets      Asset[]
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("asset_categories")
+}
+
+model Asset {
+  id                String           @id @default(cuid())
+  asset_tag         String           @unique
+  serial_number     String?
+  name              String
+  description       String?
+  category_id       String
+  category          AssetCategory    @relation(fields: [category_id], references: [id])
+  model             String?
+  manufacturer      String?
+  location          String?
+  cost              Decimal?
+  purchase_date     DateTime?
+  warranty_date     DateTime?
+  lifecycle_stage   AssetLifecycleStage @default(PLANNING)
+  operational_status AssetOperationalStatus @default(OPERATIONAL)
+  risk_score        Int              @default(0)
+  owner_id          String?
+  owner             User?            @relation("AssetOwner", fields: [owner_id], references: [id])
+  assigned_to_id    String?
+  assigned_to       User?            @relation("AssetAssignee", fields: [assigned_to_id], references: [id])
+  department        String?
+  business_unit     String?
+  
+  // Asset relationships and dependencies
+  parent_asset_id   String?
+  parent_asset      Asset?           @relation("AssetHierarchy", fields: [parent_asset_id], references: [id])
+  child_assets      Asset[]          @relation("AssetHierarchy")
+  
+  // Configuration Item relationships
+  configuration_items ConfigurationItem[]
+  
+  // Maintenance and service records
+  maintenance_records MaintenanceRecord[]
+  service_requests   ServiceRequest[]
+  incidents          Incident[]
+  
+  // Audit and tracking
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+  created_by_id     String
+  created_by        User             @relation("AssetCreator", fields: [created_by_id], references: [id])
+  
+  // Software specific fields
+  software_license_id String?
+  software_license   SoftwareLicense? @relation(fields: [software_license_id], references: [id])
+  
+  // Hardware specific fields
+  specifications    Json?            // CPU, RAM, Storage, etc.
+  
+  @@map("assets")
+}
+
+enum AssetLifecycleStage {
+  PLANNING
+  PROCUREMENT
+  DEPLOYMENT
+  OPERATIONAL
+  MAINTENANCE
+  DISPOSAL
+}
+
+enum AssetOperationalStatus {
+  OPERATIONAL
+  NON_OPERATIONAL
+  UNDER_MAINTENANCE
+  RETIRED
+  MISSING
+  BROKEN
+}
+
+model SoftwareLicense {
+  id              String   @id @default(cuid())
+  name            String
+  vendor          String
+  license_type    SoftwareLicenseType
+  total_licenses  Int
+  used_licenses   Int      @default(0)
+  cost_per_license Decimal?
+  renewal_date    DateTime?
+  assets          Asset[]
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@map("software_licenses")
+}
+
+enum SoftwareLicenseType {
+  PERPETUAL
+  SUBSCRIPTION
+  VOLUME
+  OEM
+  CONCURRENT
+}
+
+model MaintenanceRecord {
+  id             String   @id @default(cuid())
+  asset_id       String
+  asset          Asset    @relation(fields: [asset_id], references: [id])
+  maintenance_type MaintenanceType
+  scheduled_date DateTime
+  completed_date DateTime?
+  technician_id  String?
+  technician     User?    @relation(fields: [technician_id], references: [id])
+  cost           Decimal?
+  description    String?
+  notes          String?
+  status         MaintenanceStatus @default(SCHEDULED)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@map("maintenance_records")
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+  EMERGENCY
+  UPGRADE
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// =============================================================================
+// SERVICE OPERATIONS WORKSPACE (SOW)
+// Unified ITSM workflows based on ServiceNow Service Operations patterns
+// =============================================================================
+
+model ServiceRequest {
+  id                String               @id @default(cuid())
+  number            String               @unique
+  short_description String
+  description       String?
+  state             ServiceRequestState  @default(NEW)
+  priority          Priority             @default(MEDIUM)
+  urgency           Urgency              @default(MEDIUM)
+  impact            Impact               @default(MEDIUM)
+  category          String?
+  subcategory       String?
+  
+  // Requestor and assignment
+  requested_by_id   String
+  requested_by      User                 @relation("ServiceRequestor", fields: [requested_by_id], references: [id])
+  assigned_to_id    String?
+  assigned_to       User?                @relation("ServiceRequestAssignee", fields: [assigned_to_id], references: [id])
+  assignment_group  String?
+  
+  // Service details
+  service_offering_id String?
+  service_offering  ServiceOffering?     @relation(fields: [service_offering_id], references: [id])
+  
+  // Related records
+  asset_id          String?
+  asset             Asset?               @relation(fields: [asset_id], references: [id])
+  configuration_item_id String?
+  configuration_item ConfigurationItem?  @relation(fields: [configuration_item_id], references: [id])
+  
+  // SLA tracking
+  sla_due_date      DateTime?
+  response_time     Int?                 // in minutes
+  resolution_time   Int?                 // in minutes
+  
+  // Audit fields
+  opened_at         DateTime             @default(now())
+  closed_at         DateTime?
+  resolved_at       DateTime?
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  
+  // Related records
+  incidents         Incident[]
+  changes           Change[]
+  knowledge_articles KnowledgeArticle[]
+  attachments       Attachment[]
+  work_notes        WorkNote[]
+
+  @@map("service_requests")
+}
+
+enum ServiceRequestState {
+  NEW
+  IN_PROGRESS
+  AWAITING_APPROVAL
+  APPROVED
+  REJECTED
+  RESOLVED
+  CLOSED
+  CANCELLED
+}
+
+model Incident {
+  id                String               @id @default(cuid())
+  number            String               @unique
+  short_description String
+  description       String?
+  state             IncidentState        @default(NEW)
+  priority          Priority             @default(MEDIUM)
+  urgency           Urgency              @default(MEDIUM)
+  impact            Impact               @default(MEDIUM)
+  category          String?
+  subcategory       String?
+  
+  // Assignment
+  assigned_to_id    String?
+  assigned_to       User?                @relation("IncidentAssignee", fields: [assigned_to_id], references: [id])
+  assignment_group  String?
+  caller_id         String
+  caller            User                 @relation("IncidentCaller", fields: [caller_id], references: [id])
+  
+  // Service details
+  service_offering_id String?
+  service_offering  ServiceOffering?     @relation(fields: [service_offering_id], references: [id])
+  
+  // Related records
+  asset_id          String?
+  asset             Asset?               @relation(fields: [asset_id], references: [id])
+  configuration_item_id String?
+  configuration_item ConfigurationItem?  @relation(fields: [configuration_item_id], references: [id])
+  
+  // Problem management
+  problem_id        String?
+  problem           Problem?             @relation(fields: [problem_id], references: [id])
+  
+  // SLA tracking
+  sla_due_date      DateTime?
+  response_time     Int?                 // in minutes
+  resolution_time   Int?                 // in minutes
+  
+  // Resolution details
+  resolution_code   String?
+  resolution_notes  String?
+  root_cause        String?
+  
+  // Audit fields
+  opened_at         DateTime             @default(now())
+  closed_at         DateTime?
+  resolved_at       DateTime?
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  
+  // Related records
+  service_requests  ServiceRequest[]
+  changes           Change[]
+  knowledge_articles KnowledgeArticle[]
+  attachments       Attachment[]
+  work_notes        WorkNote[]
+
+  @@map("incidents")
+}
+
+enum IncidentState {
+  NEW
+  IN_PROGRESS
+  ON_HOLD
+  RESOLVED
+  CLOSED
+  CANCELLED
+}
+
+model Problem {
+  id                String               @id @default(cuid())
+  number            String               @unique
+  short_description String
+  description       String?
+  state             ProblemState         @default(NEW)
+  priority          Priority             @default(MEDIUM)
+  impact            Impact               @default(MEDIUM)
+  category          String?
+  subcategory       String?
+  
+  // Assignment
+  assigned_to_id    String?
+  assigned_to       User?                @relation("ProblemAssignee", fields: [assigned_to_id], references: [id])
+  assignment_group  String?
+  
+  // Root cause analysis
+  root_cause        String?
+  workaround        String?
+  solution          String?
+  
+  // Related records
+  configuration_item_id String?
+  configuration_item ConfigurationItem?  @relation(fields: [configuration_item_id], references: [id])
+  
+  // Audit fields
+  opened_at         DateTime             @default(now())
+  closed_at         DateTime?
+  resolved_at       DateTime?
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  
+  // Related records
+  incidents         Incident[]
+  changes           Change[]
+  knowledge_articles KnowledgeArticle[]
+  attachments       Attachment[]
+  work_notes        WorkNote[]
+
+  @@map("problems")
+}
+
+enum ProblemState {
+  NEW
+  INVESTIGATION
+  ROOT_CAUSE_ANALYSIS
+  AWAITING_VENDOR
+  RESOLVED
+  CLOSED
+}
+
+model Change {
+  id                String               @id @default(cuid())
+  number            String               @unique
+  short_description String
+  description       String?
+  state             ChangeState          @default(NEW)
+  priority          Priority             @default(MEDIUM)
+  risk              ChangeRisk           @default(MODERATE)
+  impact            Impact               @default(MEDIUM)
+  category          String?
+  type              ChangeType           @default(NORMAL)
+  
+  // Assignment
+  assigned_to_id    String?
+  assigned_to       User?                @relation("ChangeAssignee", fields: [assigned_to_id], references: [id])
+  assignment_group  String?
+  requested_by_id   String
+  requested_by      User                 @relation("ChangeRequestor", fields: [requested_by_id], references: [id])
+  
+  // Scheduling
+  planned_start_date DateTime?
+  planned_end_date  DateTime?
+  actual_start_date DateTime?
+  actual_end_date   DateTime?
+  
+  // Approval workflow
+  approval_state    ApprovalState        @default(NOT_REQUESTED)
+  
+  // Implementation details
+  implementation_plan String?
+  backout_plan      String?
+  test_plan         String?
+  
+  // Related records
+  configuration_items ConfigurationItem[]
+  
+  // Audit fields
+  opened_at         DateTime             @default(now())
+  closed_at         DateTime?
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  
+  // Related records
+  incidents         Incident[]
+  service_requests  ServiceRequest[]
+  problems          Problem[]
+  attachments       Attachment[]
+  work_notes        WorkNote[]
+  approvals         ChangeApproval[]
+
+  @@map("changes")
+}
+
+enum ChangeState {
+  NEW
+  ASSESSMENT
+  AUTHORIZATION
+  SCHEDULED
+  IMPLEMENTATION
+  REVIEW
+  CLOSED
+  CANCELLED
+}
+
+enum ChangeType {
+  STANDARD
+  NORMAL
+  EMERGENCY
+}
+
+enum ChangeRisk {
+  HIGH
+  MODERATE
+  LOW
+}
+
+model ChangeApproval {
+  id               String           @id @default(cuid())
+  change_id        String
+  change           Change           @relation(fields: [change_id], references: [id])
+  approver_id      String
+  approver         User             @relation(fields: [approver_id], references: [id])
+  state            ApprovalState    @default(REQUESTED)
+  comments         String?
+  approved_at      DateTime?
+  rejected_at      DateTime?
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
+
+  @@map("change_approvals")
+}
+
+enum ApprovalState {
+  NOT_REQUESTED
+  REQUESTED
+  APPROVED
+  REJECTED
+}
+
+// =============================================================================
+// SECURITY OPERATIONS CENTER (SOC)
+// SOAR capabilities based on ServiceNow Security Operations patterns
+// =============================================================================
+
+model SecurityIncident {
+  id                String               @id @default(cuid())
+  number            String               @unique
+  short_description String
+  description       String?
+  state             SecurityIncidentState @default(NEW)
+  priority          Priority             @default(MEDIUM)
+  severity          SecuritySeverity     @default(MEDIUM)
+  category          SecurityCategory
+  
+  // Assignment
+  assigned_to_id    String?
+  assigned_to       User?                @relation("SecurityIncidentAssignee", fields: [assigned_to_id], references: [id])
+  assignment_group  String?
+  
+  // Security specific fields
+  source            String?              // SIEM, EDR, Manual, etc.
+  attack_vector     String?
+  threat_actor      String?
+  affected_users    String[]
+  affected_systems  String[]
+  
+  // MITRE ATT&CK Framework
+  mitre_tactics     String[]
+  mitre_techniques  String[]
+  
+  // Response details
+  containment_actions String?
+  eradication_actions String?
+  recovery_actions   String?
+  lessons_learned    String?
+  
+  // Related records
+  configuration_items ConfigurationItem[]
+  vulnerabilities    Vulnerability[]
+  
+  // Audit fields
+  detected_at       DateTime?
+  opened_at         DateTime             @default(now())
+  closed_at         DateTime?
+  resolved_at       DateTime?
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  
+  // Related records
+  attachments       Attachment[]
+  work_notes        WorkNote[]
+  playbook_executions PlaybookExecution[]
+
+  @@map("security_incidents")
+}
+
+enum SecurityIncidentState {
+  NEW
+  INVESTIGATION
+  CONTAINMENT
+  ERADICATION
+  RECOVERY
+  LESSONS_LEARNED
+  CLOSED
+}
+
+enum SecuritySeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFORMATIONAL
+}
+
+enum SecurityCategory {
+  MALWARE
+  PHISHING
+  DATA_BREACH
+  UNAUTHORIZED_ACCESS
+  DDoS
+  INSIDER_THREAT
+  APT
+  VULNERABILITY_EXPLOITATION
+  OTHER
+}
+
+model Vulnerability {
+  id                String               @id @default(cuid())
+  number            String               @unique
+  cve_id            String?              // CVE identifier
+  title             String
+  description       String?
+  severity          VulnerabilitySeverity
+  cvss_score        Decimal?
+  state             VulnerabilityState   @default(NEW)
+  
+  // Assignment
+  assigned_to_id    String?
+  assigned_to       User?                @relation("VulnerabilityAssignee", fields: [assigned_to_id], references: [id])
+  assignment_group  String?
+  
+  // Vulnerability details
+  affected_software String?
+  affected_version  String?
+  exploit_available Boolean              @default(false)
+  patch_available   Boolean              @default(false)
+  patch_details     String?
+  
+  // Risk assessment
+  business_impact   Impact               @default(MEDIUM)
+  exploitability    VulnerabilityExploitability @default(MEDIUM)
+  
+  // Remediation
+  remediation_plan  String?
+  workaround        String?
+  due_date          DateTime?
+  
+  // Related records
+  configuration_items ConfigurationItem[]
+  security_incidents SecurityIncident[]
+  
+  // Audit fields
+  discovered_at     DateTime?
+  opened_at         DateTime             @default(now())
+  closed_at         DateTime?
+  resolved_at       DateTime?
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  
+  // Related records
+  attachments       Attachment[]
+  work_notes        WorkNote[]
+
+  @@map("vulnerabilities")
+}
+
+enum VulnerabilityState {
+  NEW
+  ASSESSMENT
+  REMEDIATION
+  TESTING
+  CLOSED
+  ACCEPTED_RISK
+}
+
+enum VulnerabilitySeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum VulnerabilityExploitability {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model SecurityPlaybook {
+  id                String               @id @default(cuid())
+  name              String               @unique
+  description       String?
+  category          SecurityCategory
+  trigger_conditions Json                // Conditions that trigger this playbook
+  automation_level  AutomationLevel      @default(SEMI_AUTOMATED)
+  steps             PlaybookStep[]
+  
+  // Audit fields
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  created_by_id     String
+  created_by        User                 @relation(fields: [created_by_id], references: [id])
+  
+  // Executions
+  executions        PlaybookExecution[]
+
+  @@map("security_playbooks")
+}
+
+model PlaybookStep {
+  id                String               @id @default(cuid())
+  playbook_id       String
+  playbook          SecurityPlaybook     @relation(fields: [playbook_id], references: [id])
+  step_number       Int
+  name              String
+  description       String?
+  action_type       PlaybookActionType
+  action_config     Json                 // Configuration for the action
+  is_automated      Boolean              @default(false)
+  requires_approval Boolean              @default(false)
+  
+  @@map("playbook_steps")
+}
+
+model PlaybookExecution {
+  id                String               @id @default(cuid())
+  playbook_id       String
+  playbook          SecurityPlaybook     @relation(fields: [playbook_id], references: [id])
+  security_incident_id String
+  security_incident SecurityIncident     @relation(fields: [security_incident_id], references: [id])
+  status            ExecutionStatus      @default(PENDING)
+  started_at        DateTime             @default(now())
+  completed_at      DateTime?
+  executed_by_id    String
+  executed_by       User                 @relation(fields: [executed_by_id], references: [id])
+  
+  // Step executions
+  step_executions   PlaybookStepExecution[]
+
+  @@map("playbook_executions")
+}
+
+model PlaybookStepExecution {
+  id                String               @id @default(cuid())
+  execution_id      String
+  execution         PlaybookExecution    @relation(fields: [execution_id], references: [id])
+  step_number       Int
+  status            ExecutionStatus      @default(PENDING)
+  started_at        DateTime?
+  completed_at      DateTime?
+  result            Json?                // Execution result data
+  error_message     String?
+
+  @@map("playbook_step_executions")
+}
+
+enum AutomationLevel {
+  MANUAL
+  SEMI_AUTOMATED
+  FULLY_AUTOMATED
+}
+
+enum PlaybookActionType {
+  ISOLATE_ENDPOINT
+  BLOCK_IP
+  QUARANTINE_FILE
+  RESET_PASSWORD
+  DISABLE_ACCOUNT
+  SEND_NOTIFICATION
+  CREATE_TICKET
+  UPDATE_FIREWALL
+  RUN_SCAN
+  COLLECT_EVIDENCE
+  CUSTOM_SCRIPT
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// =============================================================================
+// CONFIGURATION MANAGEMENT DATABASE (CMDB)
+// Enhanced CMDB with ITIL 4 compliance and relationship mapping
+// =============================================================================
+
+model ConfigurationItem {
+  id                String               @id @default(cuid())
+  name              String
+  ci_class          String               // Computer, Server, Application, Service, etc.
+  operational_status CIOperationalStatus @default(OPERATIONAL)
+  lifecycle_stage   CILifecycleStage    @default(OPERATIONAL)
+  environment       String?              // Production, Development, Test, etc.
+  
+  // Business information
+  business_service  String?
+  business_owner_id String?
+  business_owner    User?                @relation("CIBusinessOwner", fields: [business_owner_id], references: [id])
+  technical_owner_id String?
+  technical_owner   User?                @relation("CITechnicalOwner", fields: [technical_owner_id], references: [id])
+  
+  // Technical details
+  manufacturer      String?
+  model             String?
+  version           String?
+  serial_number     String?
+  ip_address        String?
+  hostname          String?
+  location          String?
+  
+  // Discovery and monitoring
+  discovery_source  String?              // Manual, Automated, Import, etc.
+  last_discovered   DateTime?
+  monitoring_enabled Boolean             @default(false)
+  
+  // Relationships - using self-referencing many-to-many
+  upstream_cis      CIRelationship[]     @relation("UpstreamCI")
+  downstream_cis    CIRelationship[]     @relation("DownstreamCI")
+  
+  // Related records
+  asset_id          String?
+  asset             Asset?               @relation(fields: [asset_id], references: [id])
+  incidents         Incident[]
+  problems          Problem[]
+  changes           Change[]
+  service_requests  ServiceRequest[]
+  security_incidents SecurityIncident[]
+  vulnerabilities   Vulnerability[]
+  
+  // Audit fields
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  discovered_at     DateTime?
+
+  @@map("configuration_items")
+}
+
+model CIRelationship {
+  id                String               @id @default(cuid())
+  upstream_ci_id    String
+  upstream_ci       ConfigurationItem    @relation("UpstreamCI", fields: [upstream_ci_id], references: [id])
+  downstream_ci_id  String
+  downstream_ci     ConfigurationItem    @relation("DownstreamCI", fields: [downstream_ci_id], references: [id])
+  relationship_type CIRelationshipType
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+
+  @@unique([upstream_ci_id, downstream_ci_id, relationship_type])
+  @@map("ci_relationships")
+}
+
+enum CIOperationalStatus {
+  OPERATIONAL
+  NON_OPERATIONAL
+  UNDER_MAINTENANCE
+  REPAIR_IN_PROGRESS
+  RETIRED
+}
+
+enum CILifecycleStage {
+  PLANNING
+  DEVELOPMENT
+  TESTING
+  OPERATIONAL
+  RETIRING
+  RETIRED
+}
+
+enum CIRelationshipType {
+  DEPENDS_ON
+  USED_BY
+  RUNS_ON
+  HOSTED_ON
+  CONTAINS
+  MEMBER_OF
+  CONNECTS_TO
+  MANAGES
+}
+
+// =============================================================================
+// EMPLOYEE CENTER & EXPERIENCE
+// Self-service portal based on ServiceNow Employee Center patterns
+// =============================================================================
+
+model EmployeeProfile {
+  id                String               @id @default(cuid())
+  user_id           String               @unique
+  user              User                 @relation(fields: [user_id], references: [id])
+  employee_id       String?              @unique
+  badge_number      String?
+  hire_date         DateTime?
+  termination_date  DateTime?
+  job_title         String?
+  department        String?
+  business_unit     String?
+  location          String?
+  manager_id        String?
+  manager           EmployeeProfile?     @relation("ManagerReports", fields: [manager_id], references: [id])
+  direct_reports    EmployeeProfile[]    @relation("ManagerReports")
+  cost_center       String?
+  work_phone        String?
+  mobile_phone      String?
+  
+  // Emergency contact
+  emergency_contact_name String?
+  emergency_contact_phone String?
+  emergency_contact_relationship String?
+  
+  // Preferences
+  preferred_language String?             @default("en")
+  timezone          String?
+  notification_preferences Json?
+  
+  // Access and services
+  service_requests  ServiceRequest[]     @relation("EmployeeServiceRequests")
+  incidents         Incident[]           @relation("EmployeeIncidents")
+  
+  // Audit fields
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+
+  @@map("employee_profiles")
+}
+
+model ServiceOffering {
+  id                String               @id @default(cuid())
+  name              String               @unique
+  description       String?
+  category          String
+  subcategory       String?
+  short_description String?
+  
+  // Availability
+  is_active         Boolean              @default(true)
+  available_for     String[]             // Roles, departments, or "ALL"
+  
+  // Service details
+  fulfillment_group String?
+  estimated_delivery String?             // "2-3 business days", etc.
+  cost              Decimal?
+  requires_approval Boolean              @default(false)
+  approval_workflow Json?
+  
+  // Service form configuration
+  form_fields       ServiceFormField[]
+  
+  // SLA information
+  response_time_sla Int?                 // in minutes
+  resolution_time_sla Int?               // in minutes
+  
+  // Knowledge and documentation
+  knowledge_articles KnowledgeArticle[]
+  
+  // Related records
+  service_requests  ServiceRequest[]
+  incidents         Incident[]
+  
+  // Audit fields
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  created_by_id     String
+  created_by        User                 @relation(fields: [created_by_id], references: [id])
+
+  @@map("service_offerings")
+}
+
+model ServiceFormField {
+  id                String               @id @default(cuid())
+  service_offering_id String
+  service_offering  ServiceOffering      @relation(fields: [service_offering_id], references: [id])
+  field_name        String
+  field_label       String
+  field_type        FormFieldType
+  is_required       Boolean              @default(false)
+  field_options     Json?                // For dropdown, radio, checkbox options
+  validation_rules  Json?
+  order_index       Int                  @default(0)
+
+  @@map("service_form_fields")
+}
+
+enum FormFieldType {
+  TEXT
+  TEXTAREA
+  EMAIL
+  PHONE
+  NUMBER
+  DATE
+  DATETIME
+  DROPDOWN
+  RADIO
+  CHECKBOX
+  FILE_UPLOAD
+  BOOLEAN
+}
+
+model CompanyEvent {
+  id                String               @id @default(cuid())
+  title             String
+  description       String?
+  event_type        EventType
+  start_date        DateTime
+  end_date          DateTime?
+  location          String?
+  is_virtual        Boolean              @default(false)
+  virtual_link      String?
+  organizer_id      String
+  organizer         User                 @relation(fields: [organizer_id], references: [id])
+  
+  // Registration
+  requires_registration Boolean           @default(false)
+  max_attendees     Int?
+  registration_deadline DateTime?
+  
+  // Visibility
+  is_public         Boolean              @default(true)
+  target_audience   String[]             // Departments, roles, or "ALL"
+  
+  // Content
+  agenda            Json?
+  attachments       Attachment[]
+  
+  // Tracking
+  attendees         EventAttendee[]
+  
+  // Audit fields
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+
+  @@map("company_events")
+}
+
+model EventAttendee {
+  id                String               @id @default(cuid())
+  event_id          String
+  event             CompanyEvent         @relation(fields: [event_id], references: [id])
+  user_id           String
+  user              User                 @relation(fields: [user_id], references: [id])
+  status            AttendeeStatus       @default(REGISTERED)
+  registered_at     DateTime             @default(now())
+  attended_at       DateTime?
+
+  @@unique([event_id, user_id])
+  @@map("event_attendees")
+}
+
+enum EventType {
+  MEETING
+  TRAINING
+  CONFERENCE
+  WORKSHOP
+  SOCIAL
+  ANNOUNCEMENT
+  OTHER
+}
+
+enum AttendeeStatus {
+  REGISTERED
+  ATTENDED
+  NO_SHOW
+  CANCELLED
+}
+
+model Appointment {
+  id                String               @id @default(cuid())
+  title             String
+  description       String?
+  appointment_type  String               // "IT Support", "HR Consultation", etc.
+  start_time        DateTime
+  end_time          DateTime
+  location          String?
+  is_virtual        Boolean              @default(false)
+  virtual_link      String?
+  
+  // Participants
+  requester_id      String
+  requester         User                 @relation("AppointmentRequester", fields: [requester_id], references: [id])
+  provider_id       String
+  provider          User                 @relation("AppointmentProvider", fields: [provider_id], references: [id])
+  
+  // Status
+  status            AppointmentStatus    @default(SCHEDULED)
+  cancellation_reason String?
+  
+  // Related records
+  service_request_id String?
+  service_request   ServiceRequest?      @relation(fields: [service_request_id], references: [id])
+  
+  // Audit fields
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+
+  @@map("appointments")
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// =============================================================================
+// KNOWLEDGE MANAGEMENT
+// Comprehensive knowledge base for self-service and agent support
+// =============================================================================
+
+model KnowledgeArticle {
+  id                String               @id @default(cuid())
+  number            String               @unique
+  title             String
+  short_description String?
+  content           String
+  article_type      ArticleType          @default(HOW_TO)
+  category          String
+  subcategory       String?
+  tags              String[]
+  
+  // Workflow and approval
+  workflow_state    ArticleWorkflowState @default(DRAFT)
+  published_at      DateTime?
+  expires_at        DateTime?
+  review_date       DateTime?
+  
+  // Authoring
+  author_id         String
+  author            User                 @relation("ArticleAuthor", fields: [author_id], references: [id])
+  reviewer_id       String?
+  reviewer          User?                @relation("ArticleReviewer", fields: [reviewer_id], references: [id])
+  
+  // Usage tracking
+  view_count        Int                  @default(0)
+  helpful_count     Int                  @default(0)
+  not_helpful_count Int                  @default(0)
+  
+  // Related records
+  service_offerings ServiceOffering[]
+  incidents         Incident[]
+  service_requests  ServiceRequest[]
+  problems          Problem[]
+  security_incidents SecurityIncident[]
+  attachments       Attachment[]
+  
+  // Audit fields
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+
+  @@map("knowledge_articles")
+}
+
+enum ArticleType {
+  HOW_TO
+  TROUBLESHOOTING
+  FAQ
+  REFERENCE
+  POLICY
+  PROCEDURE
+}
+
+enum ArticleWorkflowState {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  RETIRED
+}
+
+// =============================================================================
+// WORKFLOW AUTOMATION & ORCHESTRATION
+// Data fabric for workflow automation based on ServiceNow patterns
+// =============================================================================
+
+model WorkflowDefinition {
+  id                String               @id @default(cuid())
+  name              String               @unique
+  description       String?
+  category          String
+  trigger_type      WorkflowTriggerType
+  trigger_conditions Json                // Conditions that start this workflow
+  is_active         Boolean              @default(true)
+  
+  // Workflow steps
+  steps             WorkflowStep[]
+  
+  // Execution tracking
+  executions        WorkflowExecution[]
+  
+  // Audit fields
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+  created_by_id     String
+  created_by        User                 @relation(fields: [created_by_id], references: [id])
+  version           Int                  @default(1)
+
+  @@map("workflow_definitions")
+}
+
+model WorkflowStep {
+  id                String               @id @default(cuid())
+  workflow_id       String
+  workflow          WorkflowDefinition   @relation(fields: [workflow_id], references: [id])
+  step_number       Int
+  name              String
+  description       String?
+  step_type         WorkflowStepType
+  action_config     Json                 // Configuration for the step action
+  condition_config  Json?                // Conditions for conditional steps
+  is_automated      Boolean              @default(true)
+  requires_approval Boolean              @default(false)
+  approver_role     String?
+  timeout_minutes   Int?
+  retry_count       Int                  @default(0)
+
+  @@map("workflow_steps")
+}
+
+model WorkflowExecution {
+  id                String               @id @default(cuid())
+  workflow_id       String
+  workflow          WorkflowDefinition   @relation(fields: [workflow_id], references: [id])
+  trigger_record_id String               // ID of the record that triggered this workflow
+  trigger_table     String               // Table name of the triggering record
+  status            WorkflowExecutionStatus @default(RUNNING)
+  started_at        DateTime             @default(now())
+  completed_at      DateTime?
+  error_message     String?
+  
+  // Step executions
+  step_executions   WorkflowStepExecution[]
+  
+  // Context data
+  execution_context Json?                // Data available to all steps
+
+  @@map("workflow_executions")
+}
+
+model WorkflowStepExecution {
+  id                String               @id @default(cuid())
+  execution_id      String
+  execution         WorkflowExecution    @relation(fields: [execution_id], references: [id])
+  step_number       Int
+  status            WorkflowExecutionStatus @default(PENDING)
+  started_at        DateTime?
+  completed_at      DateTime?
+  result_data       Json?
+  error_message     String?
+  retry_attempt     Int                  @default(0)
+
+  @@map("workflow_step_executions")
+}
+
+enum WorkflowTriggerType {
+  RECORD_INSERT
+  RECORD_UPDATE
+  RECORD_DELETE
+  SCHEDULED
+  MANUAL
+  API_CALL
+  EVENT_DRIVEN
+}
+
+enum WorkflowStepType {
+  CONDITION
+  ASSIGNMENT
+  NOTIFICATION
+  APPROVAL
+  INTEGRATION_CALL
+  SCRIPT_EXECUTION
+  WAIT
+  LOOP
+  SUBPROCESS
+}
+
+enum WorkflowExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  WAITING_FOR_APPROVAL
+}
+
+// =============================================================================
+// SHARED MODELS & UTILITIES
+// Common models used across all enterprise modules
+// =============================================================================
+
+model User {
+  id                String               @id @default(cuid())
+  email             String               @unique
+  username          String?              @unique
+  first_name        String
+  last_name         String
+  display_name      String?
+  title             String?
+  department        String?
+  location          String?
+  phone             String?
+  mobile            String?
+  is_active         Boolean              @default(true)
+  last_login_at     DateTime?
+  
+  // Roles and permissions
+  roles             String[]
+  permissions       String[]
+  
+  // Profile and employee information
+  employee_profile  EmployeeProfile?
+  
+  // Asset relationships
+  owned_assets      Asset[]              @relation("AssetOwner")
+  assigned_assets   Asset[]              @relation("AssetAssignee")
+  created_assets    Asset[]              @relation("AssetCreator")
+  
+  // ITSM relationships
+  requested_service_requests ServiceRequest[] @relation("ServiceRequestor")
+  assigned_service_requests ServiceRequest[] @relation("ServiceRequestAssignee")
+  called_incidents  Incident[]           @relation("IncidentCaller")
+  assigned_incidents Incident[]          @relation("IncidentAssignee")
+  assigned_problems Problem[]            @relation("ProblemAssignee")
+  requested_changes Change[]             @relation("ChangeRequestor")
+  assigned_changes  Change[]             @relation("ChangeAssignee")
+  
+  // Security relationships
+  assigned_security_incidents SecurityIncident[] @relation("SecurityIncidentAssignee")
+  assigned_vulnerabilities Vulnerability[] @relation("VulnerabilityAssignee")
+  created_playbooks SecurityPlaybook[]
+  executed_playbooks PlaybookExecution[]
+  
+  // CMDB relationships
+  business_owned_cis ConfigurationItem[] @relation("CIBusinessOwner")
+  technical_owned_cis ConfigurationItem[] @relation("CITechnicalOwner")
+  
+  // Employee Center relationships
+  employee_service_requests ServiceRequest[] @relation("EmployeeServiceRequests")
+  employee_incidents Incident[]           @relation("EmployeeIncidents")
+  organized_events  CompanyEvent[]
+  event_attendances EventAttendee[]
+  requested_appointments Appointment[]    @relation("AppointmentRequester")
+  provided_appointments Appointment[]     @relation("AppointmentProvider")
+  
+  // Knowledge relationships
+  authored_articles KnowledgeArticle[]   @relation("ArticleAuthor")
+  reviewed_articles KnowledgeArticle[]   @relation("ArticleReviewer")
+  
+  // Workflow relationships
+  created_workflows WorkflowDefinition[]
+  
+  // Maintenance relationships
+  maintenance_records MaintenanceRecord[]
+  
+  // Approvals
+  change_approvals  ChangeApproval[]
+  
+  // Service catalog
+  created_service_offerings ServiceOffering[]
+  
+  // Common utilities
+  attachments       Attachment[]
+  work_notes        WorkNote[]
+  
+  // Audit fields
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+
+  @@map("users")
+}
+
+model Attachment {
+  id                String               @id @default(cuid())
+  filename          String
+  original_filename String
+  file_size         Int
+  mime_type         String
+  file_path         String
+  description       String?
+  
+  // Related records (polymorphic relationships)
+  asset_id          String?
+  asset             Asset?               @relation(fields: [asset_id], references: [id])
+  incident_id       String?
+  incident          Incident?            @relation(fields: [incident_id], references: [id])
+  service_request_id String?
+  service_request   ServiceRequest?      @relation(fields: [service_request_id], references: [id])
+  problem_id        String?
+  problem           Problem?             @relation(fields: [problem_id], references: [id])
+  change_id         String?
+  change            Change?              @relation(fields: [change_id], references: [id])
+  security_incident_id String?
+  security_incident SecurityIncident?    @relation(fields: [security_incident_id], references: [id])
+  vulnerability_id  String?
+  vulnerability     Vulnerability?       @relation(fields: [vulnerability_id], references: [id])
+  knowledge_article_id String?
+  knowledge_article KnowledgeArticle?    @relation(fields: [knowledge_article_id], references: [id])
+  company_event_id  String?
+  company_event     CompanyEvent?        @relation(fields: [company_event_id], references: [id])
+  
+  // Audit fields
+  uploaded_by_id    String
+  uploaded_by       User                 @relation(fields: [uploaded_by_id], references: [id])
+  uploaded_at       DateTime             @default(now())
+
+  @@map("attachments")
+}
+
+model WorkNote {
+  id                String               @id @default(cuid())
+  content           String
+  is_internal       Boolean              @default(true)
+  
+  // Related records (polymorphic relationships)
+  incident_id       String?
+  incident          Incident?            @relation(fields: [incident_id], references: [id])
+  service_request_id String?
+  service_request   ServiceRequest?      @relation(fields: [service_request_id], references: [id])
+  problem_id        String?
+  problem           Problem?             @relation(fields: [problem_id], references: [id])
+  change_id         String?
+  change            Change?              @relation(fields: [change_id], references: [id])
+  security_incident_id String?
+  security_incident SecurityIncident?    @relation(fields: [security_incident_id], references: [id])
+  vulnerability_id  String?
+  vulnerability     Vulnerability?       @relation(fields: [vulnerability_id], references: [id])
+  
+  // Audit fields
+  created_by_id     String
+  created_by        User                 @relation(fields: [created_by_id], references: [id])
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+
+  @@map("work_notes")
+}
+
+// Common enums used across multiple models
+enum Priority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum Urgency {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum Impact {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+// =============================================================================
+// INDEXES AND CONSTRAINTS
+// Performance optimization for enterprise-scale operations
+// =============================================================================
+
+// Asset indexes
+@@index([asset_tag], map: "idx_assets_asset_tag")
+@@index([category_id], map: "idx_assets_category")
+@@index([owner_id], map: "idx_assets_owner")
+@@index([lifecycle_stage], map: "idx_assets_lifecycle")
+
+// Service Request indexes
+@@index([number], map: "idx_service_requests_number")
+@@index([requested_by_id], map: "idx_service_requests_requestor")
+@@index([assigned_to_id], map: "idx_service_requests_assignee")
+@@index([state], map: "idx_service_requests_state")
+
+// Incident indexes
+@@index([number], map: "idx_incidents_number")
+@@index([caller_id], map: "idx_incidents_caller")
+@@index([assigned_to_id], map: "idx_incidents_assignee")
+@@index([state], map: "idx_incidents_state")
+
+// Configuration Item indexes
+@@index([name], map: "idx_configuration_items_name")
+@@index([ci_class], map: "idx_configuration_items_class")
+@@index([operational_status], map: "idx_configuration_items_status")
+
+// Security Incident indexes
+@@index([number], map: "idx_security_incidents_number")
+@@index([assigned_to_id], map: "idx_security_incidents_assignee")
+@@index([state], map: "idx_security_incidents_state")
+@@index([category], map: "idx_security_incidents_category")
+
+// User indexes
+@@index([email], map: "idx_users_email")
+@@index([username], map: "idx_users_username")
+@@index([department], map: "idx_users_department")

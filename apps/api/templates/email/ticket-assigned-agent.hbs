@@ -1,0 +1,142 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Ticket Assigned</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #374151;
+        margin: 0;
+        padding: 0;
+        background-color: #f9fafb;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .content {
+        padding: 32px 24px;
+      }
+      .ticket-id {
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 16px;
+      }
+      .btn-primary {
+        display: inline-block;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        margin: 16px 8px 16px 0;
+      }
+      .footer {
+        background: #f8fafc;
+        text-align: center;
+        padding: 24px;
+        color: #64748b;
+        font-size: 12px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .footer a {
+        color: #3b82f6;
+        text-decoration: none;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 32px 24px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .ticket-id {
+        background: #f59e0b;
+      }
+      .priority-critical {
+        color: #dc2626;
+        font-weight: 600;
+      }
+      .priority-high {
+        color: #ea580c;
+        font-weight: 600;
+      }
+      .priority-medium {
+        color: #ca8a04;
+        font-weight: 600;
+      }
+      .priority-low {
+        color: #16a34a;
+        font-weight: 600;
+      }
+      .customer-info {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>📋 New Ticket Assigned</h1>
+      </div>
+      <div class='content'>
+        <p>Hello {{assignee.name}},</p>
+        <p>A new support ticket has been assigned to you. Please review and take action.</p>
+
+        <div class='ticket-id'>Ticket #{{ticket.id}}</div>
+
+        <div class='customer-info'>
+          <h3>Customer Information</h3>
+          <p><strong>Name:</strong> {{ticket.customer.name}}</p>
+          <p><strong>Email:</strong> {{ticket.customer.email}}</p>
+          <p><strong>Priority:</strong>
+            <span class='priority-{{lowerCase ticket.priority}}'>{{upperCase
+                ticket.priority
+              }}</span></p>
+          <p><strong>Subject:</strong> {{ticket.title}}</p>
+        </div>
+
+        {{#if ticket.description}}
+          <div style='background: #f8fafc; padding: 16px; border-radius: 6px; margin: 16px 0;'>
+            <strong>Customer Message:</strong><br />
+            {{ticket.description}}
+          </div>
+        {{/if}}
+
+        <a href='{{baseUrl}}/tickets/{{ticket.id}}' class='btn-primary'>Start Working on Ticket</a>
+
+        <p><strong>⏰ SLA Reminder:</strong><br />
+          Please respond within
+          {{responseTime}}
+          based on the ticket priority.</p>
+      </div>
+      <div class='footer'>
+        <p>{{companyName}} Agent Dashboard</p>
+        <p>Ticket #{{ticket.id}}
+          •
+          <a href='{{baseUrl}}/tickets/{{ticket.id}}'>View in Dashboard</a></p>
+      </div>
+    </div>
+  </body>
+</html>

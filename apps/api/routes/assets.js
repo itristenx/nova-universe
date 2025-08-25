@@ -2,40 +2,45 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import fileStorage from '../lib/file-storage.js';
 import db from '../db.js';
+import { logger } from '../logger.js';
+
 const router = express.Router();
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  },
-});
-
+// Configure multer for file uploads (using memory storage for flexibility)
 const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|svg|ico/;
+    // Allow more file types for general asset storage
+    const allowedTypes = /jpeg|jpg|png|gif|svg|ico|pdf|txt|json|zip|doc|docx|xls|xlsx|ppt|pptx/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    const allowedMimes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/svg+xml',
+      'image/x-icon',
+      'application/pdf',
+      'text/plain',
+      'application/json',
+      'application/zip',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    ];
+    const mimetype = allowedMimes.includes(file.mimetype);
 
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new Error('File type not supported'));
     }
   },
 });
@@ -126,7 +131,7 @@ router.get('/', (req, res) => {
  *                 errorCode:
  *                   type: string
  */
-router.post('/', upload.single('file'), (req, res) => {
+router.post('/', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded', errorCode: 'NO_FILE_UPLOADED' });
   }
@@ -138,48 +143,243 @@ router.post('/', upload.single('file'), (req, res) => {
       .json({ error: 'Name and type are required', errorCode: 'NAME_TYPE_REQUIRED' });
   }
 
-  const url = `/uploads/${req.file.filename}`;
+  try {
+    // Upload file using storage service
+    const uploadResult = await fileStorage.upload(req.file, {
+      uploadedBy: req.user?.id || 'anonymous',
+      assetName: name,
+      assetType: type,
+    });
 
-  db.run(
-    'INSERT INTO assets (name, type, filename, url) VALUES ($1, $2, $3, $4)',
-    [name, type, req.file.filename, url],
-    function (err) {
-      if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
-
-      res.json({
-        id: this.lastID,
+    // Store asset metadata in database
+    db.run(
+      'INSERT INTO assets (name, type, filename, url, file_key, storage_type, file_size, content_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [
         name,
         type,
-        filename: req.file.filename,
-        url,
-        uploaded_at: new Date().toISOString(),
-      });
-    },
-  );
+        req.file.originalname,
+        uploadResult.url,
+        uploadResult.key,
+        fileStorage.getStorageType(),
+        uploadResult.size,
+        uploadResult.contentType,
+      ],
+      function (err) {
+        if (err) {
+          logger.error('Database error:', err);
+          return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+        }
+
+        res.json({
+          id: this.lastID,
+          name,
+          type,
+          filename: req.file.originalname,
+          url: uploadResult.url,
+          key: uploadResult.key,
+          size: uploadResult.size,
+          contentType: uploadResult.contentType,
+          storageType: fileStorage.getStorageType(),
+          uploaded_at: new Date().toISOString(),
+        });
+      },
+    );
+  } catch (error) {
+    logger.error('Upload error:', error);
+    res.status(500).json({
+      error: 'Upload failed',
+      errorCode: 'UPLOAD_FAILED',
+      details: error.message,
+    });
+  }
 });
 
 // Delete asset
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
-  // Get asset info first
-  db.get('SELECT * FROM assets WHERE id = $1', [id], (err, row) => {
-    if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
-    if (!row)
-      return res.status(404).json({ error: 'Asset not found', errorCode: 'ASSET_NOT_FOUND' });
+  try {
+    // Get asset info first
+    db.get('SELECT * FROM assets WHERE id = $1', [id], async (err, row) => {
+      if (err) {
+        logger.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+      }
 
-    // Delete file from disk
-    const filePath = path.join(uploadsDir, row.filename);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+      if (!row) {
+        return res.status(404).json({ error: 'Asset not found', errorCode: 'ASSET_NOT_FOUND' });
+      }
 
-    // Delete from database
-    db.run('DELETE FROM assets WHERE id = $1', [id], (err) => {
-      if (err) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
-      res.json({ message: 'Asset deleted' });
+      try {
+        // Delete file from storage
+        if (row.file_key) {
+          // New format with storage key
+          await fileStorage.delete(row.file_key);
+        } else if (row.filename) {
+          // Legacy format - try to delete local file
+          const uploadsDir = path.join(process.cwd(), 'uploads');
+          const filePath = path.join(uploadsDir, row.filename);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        }
+
+        // Delete from database
+        db.run('DELETE FROM assets WHERE id = $1', [id], (deleteErr) => {
+          if (deleteErr) {
+            logger.error('Database delete error:', deleteErr);
+            return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+          }
+          res.json({ message: 'Asset deleted successfully' });
+        });
+      } catch (storageError) {
+        logger.error('Storage delete error:', storageError);
+        // Still try to delete from database even if storage deletion fails
+        db.run('DELETE FROM assets WHERE id = $1', [id], (deleteErr) => {
+          if (deleteErr) {
+            logger.error('Database delete error:', deleteErr);
+            return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+          }
+          res.json({
+            message: 'Asset deleted from database (storage deletion failed)',
+            warning: storageError.message,
+          });
+        });
+      }
     });
-  });
+  } catch (error) {
+    logger.error('Delete error:', error);
+    res.status(500).json({
+      error: 'Delete failed',
+      errorCode: 'DELETE_FAILED',
+      details: error.message,
+    });
+  }
+});
+
+// Download/serve asset file
+router.get('/:id/download', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Get asset info
+    db.get('SELECT * FROM assets WHERE id = $1', [id], async (err, row) => {
+      if (err) {
+        logger.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+      }
+
+      if (!row) {
+        return res.status(404).json({ error: 'Asset not found', errorCode: 'ASSET_NOT_FOUND' });
+      }
+
+      try {
+        let fileData;
+
+        if (row.file_key) {
+          // New format with storage key
+          fileData = await fileStorage.download(row.file_key);
+        } else if (row.filename) {
+          // Legacy format - serve from local uploads
+          const uploadsDir = path.join(process.cwd(), 'uploads');
+          const filePath = path.join(uploadsDir, row.filename);
+
+          if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ error: 'File not found', errorCode: 'FILE_NOT_FOUND' });
+          }
+
+          const buffer = fs.readFileSync(filePath);
+          const stats = fs.statSync(filePath);
+          fileData = {
+            buffer,
+            contentType: row.content_type || 'application/octet-stream',
+            size: stats.size,
+            lastModified: stats.mtime,
+          };
+        } else {
+          return res
+            .status(404)
+            .json({ error: 'File reference not found', errorCode: 'NO_FILE_REFERENCE' });
+        }
+
+        // Set appropriate headers
+        res.set({
+          'Content-Type': fileData.contentType,
+          'Content-Length': fileData.size,
+          'Content-Disposition': `attachment; filename="${row.filename}"`,
+          'Last-Modified': fileData.lastModified?.toUTCString(),
+        });
+
+        res.send(fileData.buffer);
+      } catch (storageError) {
+        logger.error('File retrieval error:', storageError);
+        res.status(500).json({
+          error: 'File retrieval failed',
+          errorCode: 'FILE_RETRIEVAL_FAILED',
+          details: storageError.message,
+        });
+      }
+    });
+  } catch (error) {
+    logger.error('Download error:', error);
+    res.status(500).json({
+      error: 'Download failed',
+      errorCode: 'DOWNLOAD_FAILED',
+      details: error.message,
+    });
+  }
+});
+
+// Get signed URL for asset (useful for S3)
+router.get('/:id/url', async (req, res) => {
+  const { id } = req.params;
+  const { expiresIn = 3600 } = req.query;
+
+  try {
+    // Get asset info
+    db.get('SELECT * FROM assets WHERE id = $1', [id], async (err, row) => {
+      if (err) {
+        logger.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+      }
+
+      if (!row) {
+        return res.status(404).json({ error: 'Asset not found', errorCode: 'ASSET_NOT_FOUND' });
+      }
+
+      try {
+        let url;
+
+        if (row.file_key) {
+          // Get URL from storage service
+          url = await fileStorage.getUrl(row.file_key, parseInt(expiresIn));
+        } else {
+          // Legacy format - return existing URL
+          url = row.url;
+        }
+
+        res.json({
+          url,
+          expiresIn: parseInt(expiresIn),
+          expiresAt: new Date(Date.now() + parseInt(expiresIn) * 1000).toISOString(),
+        });
+      } catch (storageError) {
+        logger.error('URL generation error:', storageError);
+        res.status(500).json({
+          error: 'URL generation failed',
+          errorCode: 'URL_GENERATION_FAILED',
+          details: storageError.message,
+        });
+      }
+    });
+  } catch (error) {
+    logger.error('URL generation error:', error);
+    res.status(500).json({
+      error: 'URL generation failed',
+      errorCode: 'URL_GENERATION_FAILED',
+      details: error.message,
+    });
+  }
 });
 
 export default router;

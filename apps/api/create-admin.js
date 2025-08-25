@@ -51,9 +51,9 @@ const passwordHash = bcrypt.hashSync(password, 12); // Increase salt rounds for 
 
 (async () => {
   try {
-    // Try to update existing admin (isDefault = true)
+    // Try to update existing admin (is_default = true)
     const updateRes = await db.query(
-      'UPDATE users SET "passwordHash" = $1 WHERE email = $2 AND "isDefault" = true',
+      'UPDATE users SET "password_hash" = $1 WHERE email = $2 AND "is_default" = true',
       [passwordHash, email],
     );
     if (updateRes.rowCount > 0) {
@@ -65,7 +65,7 @@ const passwordHash = bcrypt.hashSync(password, 12); // Increase salt rounds for 
     const userId = uuidv4();
     const now = new Date().toISOString();
     await db.query(
-      'INSERT INTO users (id, name, email, "passwordHash", "isDefault", "createdAt", "updatedAt") VALUES ($1, $2, $3, $4, true, $5, $6)',
+      'INSERT INTO users (uuid, name, email, "password_hash", "is_default", "created_at", "updated_at") VALUES ($1, $2, $3, $4, true, $5, $6)',
       [userId, name, email, passwordHash, now, now],
     );
     console.log(`✅ Created new admin user: ${email}`);
@@ -82,10 +82,10 @@ async function assignAdminRole(userId = null) {
     if (!id) {
       const res = await db.query('SELECT id FROM users WHERE email = $1', [email]);
       if (!res.rows.length) throw new Error('User not found');
-      id = res.rows[0].id;
+      id = res.rows[0].id; // This will be the integer ID
     }
     await db.query(
-      'INSERT INTO user_roles ("userId", "roleId") VALUES ($1, 1) ON CONFLICT DO NOTHING',
+      'INSERT INTO user_roles (user_id, role_id) VALUES ($1, 1) ON CONFLICT DO NOTHING',
       [id],
     );
     console.log('✅ Admin role assigned');

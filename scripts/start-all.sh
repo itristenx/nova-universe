@@ -8,7 +8,7 @@ get_dir() {
     api) echo "nova-api" ;;
     core) echo "nova-core" ;;
     comms) echo "nova-comms" ;;
-    pulse) echo "nova-pulse" ;;
+    unified) echo "unified" ;;
     *) return 1 ;;
   esac
 }
@@ -18,14 +18,14 @@ get_cmd() {
     api) echo "npm --prefix nova-api start" ;;
     core) echo "npm --prefix nova-core run dev" ;;
     comms) echo "npm --prefix nova-comms start" ;;
-    pulse) echo "npm --prefix nova-pulse run dev" ;;
+    unified) echo "npm --prefix unified run dev" ;;
     *) return 1 ;;
   esac
 }
 
-read -rp "Apps to start (api,core,comms,pulse or all) [all]: " INPUT
+read -rp "Apps to start (api,core,comms,unified or all) [all]: " INPUT
 if [[ -z "$INPUT" || "$INPUT" == "all" ]]; then
-  SELECTED=(api core comms pulse)
+  SELECTED=(api core comms unified)
 else
   IFS=',' read -ra SELECTED <<< "$INPUT"
 fi

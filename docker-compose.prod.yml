@@ -87,18 +87,40 @@ services:
           memory: 1G
           cpus: '0.5'
 
-  # Nova Core (Admin UI)
-  nova-core:
+  # Nova Core (Admin UI) - DEPRECATED - Migrated to Nova Unified UI
+  # nova-core:
+  #   build:
+  #     context: ./apps/core
+  #     dockerfile: Dockerfile.prod
+  #   image: nova-universe/core:latest
+  #   container_name: nova-core
+  #   restart: unless-stopped
+  #   environment:
+  #     - NODE_ENV=production
+  #     - NEXT_PUBLIC_API_URL=https://api.novauniverse.com
+  #     - NEXT_PUBLIC_WS_URL=wss://api.novauniverse.com
+  #   ports:
+  #     - '3001:3000'
+  #   networks:
+  #     - nova-network
+  #   healthcheck:
+  #     test: ['CMD', 'curl', '-f', 'http://localhost:3000']
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # Nova Unified UI (Modern Admin Interface)
+  nova-unified:
     build:
-      context: ./apps/core
+      context: ./apps/unified
       dockerfile: Dockerfile.prod
-    image: nova-universe/core:latest
-    container_name: nova-core
+    image: nova-universe/unified:latest
+    container_name: nova-unified
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=https://api.novauniverse.com
-      - NEXT_PUBLIC_WS_URL=wss://api.novauniverse.com
+      - VITE_API_URL=https://api.novauniverse.com
+      - VITE_WS_URL=wss://api.novauniverse.com
     ports:
       - '3001:3000'
     networks:

@@ -1,0 +1,937 @@
+datasource spaces_db {
+  provider = "postgresql"
+  url      = env("SPACES_DATABASE_URL")
+}
+
+generator spacesClient {
+  provider = "prisma-client-js"
+  output   = "../generated/spaces"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+// ==============================
+// BUILDINGS & INFRASTRUCTURE
+// ==============================
+
+model Building {
+  id          String   @id @default(uuid())
+  name        String
+  address     String?
+  city        String?
+  state       String?
+  country     String?
+  postalCode  String?  @map("postal_code")
+  timezone    String   @default("UTC")
+  coordinates Json?    // { lat: number, lng: number }
+  metadata    Json?    // Additional building information
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  floors      Floor[]
+  spaces      Space[]
+  equipment   Equipment[]
+  visitors    Visitor[]
+
+  @@map("buildings")
+}
+
+model Floor {
+  id         String   @id @default(uuid())
+  buildingId String   @map("building_id")
+  number     Int
+  name       String
+  floorPlan  String?  @map("floor_plan") // URL to floor plan image
+  dimensions Json?    // { width: number, height: number }
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  spaces     Space[]
+  equipment  Equipment[]
+
+  @@unique([buildingId, number])
+  @@map("floors")
+}
+
+// ==============================
+// SPACES & ROOMS
+// ==============================
+
+model Space {
+  id                String            @id @default(uuid())
+  buildingId        String            @map("building_id")
+  floorId           String?           @map("floor_id")
+  name              String
+  type              SpaceType
+  category          SpaceCategory     @default(WORKSPACE)
+  capacity          Int               @default(1)
+  area              Float?            // Square footage/meters
+  status            SpaceStatus       @default(AVAILABLE)
+  description       String?
+  images            String[]          // Array of image URLs
+  coordinates       Json?             // { x: number, y: number, width: number, height: number }
+  amenities         String[]          // Array of amenity IDs
+  features          SpaceFeature[]
+  accessibility     AccessibilityFeature[]
+  costCenter        String?           @map("cost_center")
+  department        String?
+  manager           String?           // User ID of space manager
+  bookable          Boolean           @default(true)
+  advanceBookingDays Int             @default(30) @map("advance_booking_days")
+  minBookingDuration Int             @default(15) @map("min_booking_duration") // minutes
+  maxBookingDuration Int             @default(480) @map("max_booking_duration") // minutes
+  autoRelease       Boolean           @default(true) @map("auto_release")
+  autoReleaseTime   Int               @default(15) @map("auto_release_time") // minutes
+  requiresApproval  Boolean           @default(false) @map("requires_approval")
+  metadata          Json?
+  tags              String[]
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  // Relationships
+  building          Building          @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  floor             Floor?            @relation(fields: [floorId], references: [id], onDelete: SetNull)
+  bookings          SpaceBooking[]
+  equipment         Equipment[]
+  sensors           Sensor[]
+  maintenanceRequests MaintenanceRequest[]
+  utilizationLogs   UtilizationLog[]
+  cleaningSchedule  CleaningSchedule[]
+  spaceAssets       SpaceAsset[]
+
+  @@index([buildingId])
+  @@index([floorId])
+  @@index([type])
+  @@index([status])
+  @@map("spaces")
+}
+
+// ==============================
+// BOOKINGS & RESERVATIONS
+// ==============================
+
+model SpaceBooking {
+  id              String        @id @default(uuid())
+  spaceId         String        @map("space_id")
+  userId          String        @map("user_id")
+  title           String
+  description     String?
+  startTime       DateTime      @map("start_time")
+  endTime         DateTime      @map("end_time")
+  allDay          Boolean       @default(false) @map("all_day")
+  status          BookingStatus @default(CONFIRMED)
+  attendeeCount   Int           @default(1) @map("attendee_count")
+  external_attendees Int       @default(0) @map("external_attendees")
+  setupTime       Int           @default(0) @map("setup_time") // minutes before
+  cleanupTime     Int           @default(0) @map("cleanup_time") // minutes after
+  purpose         BookingPurpose?
+  priority        BookingPriority @default(NORMAL)
+  recurring       Boolean       @default(false)
+  recurrenceRule  String?       @map("recurrence_rule") // RRULE format
+  parentBookingId String?       @map("parent_booking_id")
+  approvedBy      String?       @map("approved_by") // User ID
+  approvedAt      DateTime?     @map("approved_at")
+  checkedIn       Boolean       @default(false) @map("checked_in")
+  checkedInAt     DateTime?     @map("checked_in_at")
+  checkedOut      Boolean       @default(false) @map("checked_out")
+  checkedOutAt    DateTime?     @map("checked_out_at")
+  actualStartTime DateTime?     @map("actual_start_time")
+  actualEndTime   DateTime?     @map("actual_end_time")
+  cancelledBy     String?       @map("cancelled_by")
+  cancelledAt     DateTime?     @map("cancelled_at")
+  cancellationReason String?    @map("cancellation_reason")
+  cost            Float?        // Booking cost
+  billingCode     String?       @map("billing_code")
+  externalCalendarId String?    @map("external_calendar_id")
+  meetingUrl      String?       @map("meeting_url") // Zoom/Teams URL
+  dialInInfo      Json?         @map("dial_in_info")
+  requirements    Json?         // Special requirements
+  feedback        Json?         // Post-booking feedback
+  metadata        Json?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // Relationships
+  space           Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  parentBooking   SpaceBooking? @relation("BookingRecurrence", fields: [parentBookingId], references: [id])
+  childBookings   SpaceBooking[] @relation("BookingRecurrence")
+  attendees       BookingAttendee[]
+  serviceRequests ServiceRequest[]
+  logs            BookingLog[]
+
+  @@index([spaceId])
+  @@index([userId])
+  @@index([startTime])
+  @@index([endTime])
+  @@index([status])
+  @@map("space_bookings")
+}
+
+model BookingAttendee {
+  id        String       @id @default(uuid())
+  bookingId String       @map("booking_id")
+  email     String
+  name      String?
+  type      AttendeeType @default(INTERNAL)
+  status    AttendeeStatus @default(PENDING)
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  // Relationships
+  booking   SpaceBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, email])
+  @@map("booking_attendees")
+}
+
+model BookingLog {
+  id        String         @id @default(uuid())
+  bookingId String         @map("booking_id")
+  action    BookingAction
+  userId    String?        @map("user_id")
+  details   Json?
+  timestamp DateTime       @default(now())
+
+  // Relationships
+  booking   SpaceBooking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("booking_logs")
+}
+
+// ==============================
+// EQUIPMENT & ASSETS
+// ==============================
+
+model Equipment {
+  id          String          @id @default(uuid())
+  buildingId  String?         @map("building_id")
+  floorId     String?         @map("floor_id")
+  spaceId     String?         @map("space_id")
+  name        String
+  type        EquipmentType
+  category    String?
+  model       String?
+  manufacturer String?
+  serialNumber String?        @map("serial_number")
+  assetTag    String?         @unique @map("asset_tag")
+  status      EquipmentStatus @default(AVAILABLE)
+  description String?
+  specifications Json?
+  operatingInstructions String? @map("operating_instructions")
+  maintenanceSchedule String? @map("maintenance_schedule")
+  lastMaintenance DateTime?   @map("last_maintenance")
+  nextMaintenance DateTime?   @map("next_maintenance")
+  warrantyExpiry DateTime?    @map("warranty_expiry")
+  purchaseDate DateTime?     @map("purchase_date")
+  purchasePrice Float?       @map("purchase_price")
+  vendor       String?
+  isPortable   Boolean        @default(false) @map("is_portable")
+  bookable     Boolean        @default(false)
+  requiresTraining Boolean    @default(false) @map("requires_training")
+  metadata     Json?
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  // Relationships
+  building     Building?      @relation(fields: [buildingId], references: [id], onDelete: SetNull)
+  floor        Floor?         @relation(fields: [floorId], references: [id], onDelete: SetNull)
+  space        Space?         @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  bookings     EquipmentBooking[]
+  maintenanceRequests MaintenanceRequest[]
+
+  @@index([spaceId])
+  @@index([type])
+  @@index([status])
+  @@map("equipment")
+}
+
+model EquipmentBooking {
+  id          String              @id @default(uuid())
+  equipmentId String              @map("equipment_id")
+  bookingId   String?             @map("booking_id") // Optional space booking
+  userId      String              @map("user_id")
+  startTime   DateTime            @map("start_time")
+  endTime     DateTime            @map("end_time")
+  status      EquipmentBookingStatus @default(CONFIRMED)
+  purpose     String?
+  notes       String?
+  checkedOut  Boolean             @default(false) @map("checked_out")
+  checkedIn   Boolean             @default(false) @map("checked_in")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  // Relationships
+  equipment   Equipment           @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  spaceBooking SpaceBooking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@map("equipment_bookings")
+}
+
+// ==============================
+// SENSORS & IOT
+// ==============================
+
+model Sensor {
+  id          String       @id @default(uuid())
+  spaceId     String       @map("space_id")
+  type        SensorType
+  name        String
+  deviceId    String       @unique @map("device_id")
+  location    Json?        // { x: number, y: number }
+  status      SensorStatus @default(ACTIVE)
+  lastReading DateTime?    @map("last_reading")
+  batteryLevel Float?      @map("battery_level")
+  firmware    String?
+  calibratedAt DateTime?   @map("calibrated_at")
+  metadata    Json?
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  // Relationships
+  space       Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  readings    SensorReading[]
+
+  @@index([spaceId])
+  @@index([type])
+  @@map("sensors")
+}
+
+model SensorReading {
+  id        String   @id @default(uuid())
+  sensorId  String   @map("sensor_id")
+  value     Float
+  unit      String?
+  quality   Float?   // 0-1 reading quality score
+  timestamp DateTime @default(now())
+  metadata  Json?
+
+  // Relationships
+  sensor    Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+
+  @@index([sensorId])
+  @@index([timestamp])
+  @@map("sensor_readings")
+}
+
+// ==============================
+// VISITORS & ACCESS
+// ==============================
+
+model Visitor {
+  id              String        @id @default(uuid())
+  firstName       String        @map("first_name")
+  lastName        String        @map("last_name")
+  email           String?
+  phone           String?
+  company         String?
+  purpose         String?
+  hostUserId      String        @map("host_user_id")
+  buildingId      String        @map("building_id")
+  expectedArrival DateTime      @map("expected_arrival")
+  expectedDeparture DateTime?   @map("expected_departure")
+  actualArrival   DateTime?     @map("actual_arrival")
+  actualDeparture DateTime?     @map("actual_departure")
+  status          VisitorStatus @default(EXPECTED)
+  badgeNumber     String?       @unique @map("badge_number")
+  photo           String?       // URL to visitor photo
+  identification  Json?         // ID verification details
+  accessLevel     String        @default("visitor") @map("access_level")
+  escortRequired  Boolean       @default(true) @map("escort_required")
+  preRegistered   Boolean       @default(false) @map("pre_registered")
+  ndaSigned       Boolean       @default(false) @map("nda_signed")
+  healthScreening Json?         @map("health_screening")
+  emergencyContact Json?        @map("emergency_contact")
+  visitReason     String?       @map("visit_reason")
+  metadata        Json?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // Relationships
+  building        Building      @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  accessLogs      AccessLog[]
+  spaceAccess     VisitorSpaceAccess[]
+
+  @@index([buildingId])
+  @@index([hostUserId])
+  @@index([status])
+  @@map("visitors")
+}
+
+model VisitorSpaceAccess {
+  id        String   @id @default(uuid())
+  visitorId String   @map("visitor_id")
+  spaceId   String   @map("space_id")
+  grantedAt DateTime @default(now()) @map("granted_at")
+  expiresAt DateTime @map("expires_at")
+  
+  // Relationships
+  visitor   Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@unique([visitorId, spaceId])
+  @@map("visitor_space_access")
+}
+
+model AccessLog {
+  id        String      @id @default(uuid())
+  visitorId String?     @map("visitor_id")
+  userId    String?     @map("user_id") // For employees
+  spaceId   String?     @map("space_id")
+  entryPoint String?    @map("entry_point")
+  action    AccessAction
+  method    AccessMethod
+  timestamp DateTime    @default(now())
+  success   Boolean     @default(true)
+  metadata  Json?
+
+  // Relationships
+  visitor   Visitor?    @relation(fields: [visitorId], references: [id], onDelete: SetNull)
+
+  @@index([visitorId])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("access_logs")
+}
+
+// ==============================
+// MAINTENANCE & SERVICES
+// ==============================
+
+model MaintenanceRequest {
+  id          String              @id @default(uuid())
+  spaceId     String?             @map("space_id")
+  equipmentId String?             @map("equipment_id")
+  title       String
+  description String
+  priority    MaintenancePriority @default(MEDIUM)
+  status      MaintenanceStatus   @default(OPEN)
+  category    String?
+  reportedBy  String              @map("reported_by") // User ID
+  assignedTo  String?             @map("assigned_to") // User ID
+  dueDate     DateTime?           @map("due_date")
+  scheduledDate DateTime?         @map("scheduled_date")
+  completedAt DateTime?           @map("completed_at")
+  estimatedCost Float?            @map("estimated_cost")
+  actualCost  Float?              @map("actual_cost")
+  vendor      String?
+  workOrder   String?             @map("work_order")
+  images      String[]            // Before/after photos
+  notes       String?
+  metadata    Json?
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  // Relationships
+  space       Space?              @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  equipment   Equipment?          @relation(fields: [equipmentId], references: [id], onDelete: SetNull)
+
+  @@index([spaceId])
+  @@index([equipmentId])
+  @@index([status])
+  @@map("maintenance_requests")
+}
+
+model ServiceRequest {
+  id          String            @id @default(uuid())
+  bookingId   String?           @map("booking_id")
+  type        ServiceType
+  title       String
+  description String?
+  status      ServiceStatus     @default(PENDING)
+  priority    ServicePriority   @default(NORMAL)
+  requestedBy String            @map("requested_by") // User ID
+  assignedTo  String?           @map("assigned_to") // User ID
+  requestedFor DateTime?        @map("requested_for")
+  completedAt DateTime?         @map("completed_at")
+  cost        Float?
+  vendor      String?
+  notes       String?
+  metadata    Json?
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  // Relationships
+  booking     SpaceBooking?     @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId])
+  @@index([type])
+  @@index([status])
+  @@map("service_requests")
+}
+
+model CleaningSchedule {
+  id          String          @id @default(uuid())
+  spaceId     String          @map("space_id")
+  frequency   CleaningFrequency
+  dayOfWeek   Int?            @map("day_of_week") // 0-6 (Sunday-Saturday)
+  timeOfDay   String?         @map("time_of_day") // HH:MM format
+  duration    Int             @default(30) // minutes
+  assignedTo  String?         @map("assigned_to") // User/Team ID
+  instructions String?
+  lastCleaned DateTime?       @map("last_cleaned")
+  nextScheduled DateTime?     @map("next_scheduled")
+  active      Boolean         @default(true)
+  metadata    Json?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  // Relationships
+  space       Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  logs        CleaningLog[]
+
+  @@map("cleaning_schedules")
+}
+
+model CleaningLog {
+  id         String           @id @default(uuid())
+  scheduleId String           @map("schedule_id")
+  cleanedBy  String           @map("cleaned_by") // User ID
+  startTime  DateTime         @map("start_time")
+  endTime    DateTime?        @map("end_time")
+  status     CleaningStatus   @default(COMPLETED)
+  quality    Float?           // 1-5 rating
+  notes      String?
+  images     String[]         // Photo documentation
+  supplies   Json?            // Supplies used
+  metadata   Json?
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  // Relationships
+  schedule   CleaningSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@map("cleaning_logs")
+}
+
+// ==============================
+// ANALYTICS & UTILIZATION
+// ==============================
+
+model UtilizationLog {
+  id          String    @id @default(uuid())
+  spaceId     String    @map("space_id")
+  date        DateTime  @db.Date
+  hour        Int       // 0-23
+  occupancy   Int       @default(0)
+  capacity    Int
+  utilization Float     // 0.0-1.0
+  temperature Float?
+  humidity    Float?
+  co2Level    Float?    @map("co2_level")
+  noiseLevel  Float?    @map("noise_level")
+  lightLevel  Float?    @map("light_level")
+  metadata    Json?
+  timestamp   DateTime  @default(now())
+
+  // Relationships
+  space       Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, date, hour])
+  @@index([spaceId])
+  @@index([date])
+  @@map("utilization_logs")
+}
+
+// ==============================
+// INTEGRATIONS & EXTERNAL SYSTEMS
+// ==============================
+
+model CalendarIntegration {
+  id               String                 @id @default(uuid())
+  userId           String                 @map("user_id")
+  provider         CalendarProvider
+  externalId       String                 @map("external_id") // Calendar ID in external system
+  accessToken      String                 @map("access_token")
+  refreshToken     String?                @map("refresh_token")
+  tokenExpiry      DateTime?              @map("token_expiry")
+  syncEnabled      Boolean                @default(true) @map("sync_enabled")
+  lastSync         DateTime?              @map("last_sync")
+  syncDirection    CalendarSyncDirection  @default(BIDIRECTIONAL) @map("sync_direction")
+  defaultPrivacy   CalendarPrivacy        @default(PRIVATE) @map("default_privacy")
+  syncConflicts    Boolean                @default(true) @map("sync_conflicts")
+  metadata         Json?
+  createdAt        DateTime               @default(now()) @map("created_at")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+
+  @@unique([userId, provider, externalId])
+  @@map("calendar_integrations")
+}
+
+model SpaceAsset {
+  id          String     @id @default(uuid())
+  spaceId     String     @map("space_id")
+  assetType   AssetType
+  name        String
+  description String?
+  value       Float?
+  condition   AssetCondition @default(GOOD)
+  location    Json?      // Specific location within space
+  qrCode      String?    @unique @map("qr_code")
+  barcode     String?    @unique
+  lastAudit   DateTime?  @map("last_audit")
+  metadata    Json?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relationships
+  space       Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@map("space_assets")
+}
+
+// ==============================
+// ENUMERATIONS
+// ==============================
+
+enum SpaceType {
+  CONFERENCE_ROOM
+  MEETING_ROOM
+  PHONE_BOOTH
+  FOCUS_ROOM
+  HOT_DESK
+  ASSIGNED_DESK
+  OFFICE
+  COLLABORATION_SPACE
+  BREAK_ROOM
+  KITCHEN
+  LOUNGE
+  RECEPTION
+  TRAINING_ROOM
+  AUDITORIUM
+  STORAGE
+  PARKING_SPOT
+  OUTDOOR_SPACE
+  EVENT_SPACE
+  WELLNESS_ROOM
+  PHONE_ROOM
+  QUIET_ZONE
+  GAME_ROOM
+  LIBRARY
+  WORKSHOP
+  STUDIO
+  SERVER_ROOM
+  UTILITY
+  OTHER
+}
+
+enum SpaceCategory {
+  WORKSPACE
+  MEETING
+  COLLABORATION
+  AMENITY
+  INFRASTRUCTURE
+  RECREATION
+  WELLNESS
+  STORAGE
+  PARKING
+  OUTDOOR
+}
+
+enum SpaceStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+  OUT_OF_SERVICE
+  CLEANING
+  SETUP
+  BLOCKED
+}
+
+enum SpaceFeature {
+  PROJECTOR
+  TV_SCREEN
+  WHITEBOARD
+  FLIP_CHART
+  VIDEO_CONFERENCING
+  PHONE_CONFERENCING
+  WIRELESS_PRESENTATION
+  ETHERNET
+  POWER_OUTLETS
+  USB_CHARGING
+  NATURAL_LIGHT
+  BLACKOUT_CURTAINS
+  AIR_CONDITIONING
+  HEATING
+  COFFEE_MACHINE
+  WATER_COOLER
+  REFRIGERATOR
+  MICROWAVE
+  PRINTER
+  SCANNER
+  STANDING_DESK
+  ERGONOMIC_CHAIR
+  MONITOR
+  KEYBOARD_MOUSE
+  WEBCAM
+  SPEAKERS
+  PIANO
+  YOGA_MATS
+  SHOWER
+  LOCKER
+  BIKE_STORAGE
+  EV_CHARGING
+}
+
+enum AccessibilityFeature {
+  WHEELCHAIR_ACCESSIBLE
+  HEARING_LOOP
+  BRAILLE_SIGNAGE
+  ACCESSIBLE_PARKING
+  ELEVATOR_ACCESS
+  ACCESSIBLE_RESTROOM
+  ADJUSTABLE_FURNITURE
+  VISUAL_ALERTS
+  AUDIO_ALERTS
+  SCREEN_READER_COMPATIBLE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  ENDED_EARLY
+}
+
+enum BookingPurpose {
+  MEETING
+  PRESENTATION
+  INTERVIEW
+  TRAINING
+  WORKSHOP
+  SOCIAL_EVENT
+  PERSONAL_WORK
+  PHONE_CALL
+  VIDEO_CALL
+  BREAK
+  LUNCH
+  OTHER
+}
+
+enum BookingPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum AttendeeType {
+  INTERNAL
+  EXTERNAL
+  VENDOR
+  CLIENT
+  GUEST
+}
+
+enum AttendeeStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  TENTATIVE
+  NO_RESPONSE
+}
+
+enum BookingAction {
+  CREATED
+  UPDATED
+  CANCELLED
+  CHECKED_IN
+  CHECKED_OUT
+  APPROVED
+  REJECTED
+  EXTENDED
+  ENDED_EARLY
+  NO_SHOW
+}
+
+enum EquipmentType {
+  AV_EQUIPMENT
+  COMPUTING
+  FURNITURE
+  APPLIANCE
+  TOOL
+  VEHICLE
+  CLEANING
+  SAFETY
+  NETWORKING
+  TELECOMMUNICATION
+  LIGHTING
+  HVAC
+  SECURITY
+  OTHER
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+  OUT_OF_SERVICE
+  RESERVED
+}
+
+enum EquipmentBookingStatus {
+  CONFIRMED
+  CHECKED_OUT
+  RETURNED
+  OVERDUE
+  CANCELLED
+}
+
+enum SensorType {
+  OCCUPANCY
+  TEMPERATURE
+  HUMIDITY
+  CO2
+  NOISE
+  LIGHT
+  AIR_QUALITY
+  MOTION
+  DOOR_CONTACT
+  SMOKE
+  FLOOD
+  ENERGY
+}
+
+enum SensorStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  BATTERY_LOW
+  ERROR
+}
+
+enum VisitorStatus {
+  EXPECTED
+  ARRIVED
+  DEPARTED
+  CANCELLED
+  NO_SHOW
+  EXTENDED
+}
+
+enum AccessAction {
+  ENTRY
+  EXIT
+  DENIED
+  GRANTED
+}
+
+enum AccessMethod {
+  BADGE
+  BIOMETRIC
+  KEYPAD
+  MOBILE
+  MANUAL
+  ESCORT
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+  EMERGENCY
+}
+
+enum MaintenanceStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ON_HOLD
+}
+
+enum ServiceType {
+  CATERING
+  CLEANING
+  AV_SUPPORT
+  IT_SUPPORT
+  SECURITY
+  SETUP
+  BREAKDOWN
+  DELIVERY
+  MAINTENANCE
+  OTHER
+}
+
+enum ServiceStatus {
+  PENDING
+  APPROVED
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ServicePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum CleaningFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  AS_NEEDED
+  AFTER_USE
+}
+
+enum CleaningStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+  CANCELLED
+}
+
+enum CalendarProvider {
+  GOOGLE
+  MICROSOFT
+  OUTLOOK
+  APPLE
+  ZIMBRA
+  OTHER
+}
+
+enum CalendarSyncDirection {
+  IMPORT_ONLY
+  EXPORT_ONLY
+  BIDIRECTIONAL
+}
+
+enum CalendarPrivacy {
+  PUBLIC
+  PRIVATE
+  SHARED
+}
+
+enum AssetType {
+  FURNITURE
+  ELECTRONICS
+  ARTWORK
+  PLANTS
+  SUPPLIES
+  TOOLS
+  BOOKS
+  EQUIPMENT
+  DECORATION
+  OTHER
+}
+
+enum AssetCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+  MISSING
+}

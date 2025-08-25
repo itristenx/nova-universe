@@ -16,18 +16,24 @@ async function testConnectorClasses() {
 
   try {
     // Test importing connector classes
-    const { OktaConnector } = await import('../apps/lib/integration/connectors/okta-connector.js');
-    const { JamfConnector } = await import('../apps/lib/integration/connectors/jamf-connector.js');
+    const { OktaConnector } = await import(
+      '../packages/integrations/integration/connectors/okta-connector.js'
+    );
+    const { JamfConnector } = await import(
+      '../packages/integrations/integration/connectors/jamf-connector.js'
+    );
     const { CrowdStrikeConnector } = await import(
-      '../apps/lib/integration/connectors/crowdstrike-connector.js'
+      '../packages/integrations/integration/connectors/crowdstrike-connector.js'
     );
     const { IntuneConnector } = await import(
-      '../apps/lib/integration/connectors/intune-connector.js'
+      '../packages/integrations/integration/connectors/intune-connector.js'
     );
     const { SlackConnector } = await import(
-      '../apps/lib/integration/connectors/slack-connector.js'
+      '../packages/integrations/integration/connectors/slack-connector.js'
     );
-    const { ZoomConnector } = await import('../apps/lib/integration/connectors/zoom-connector.js');
+    const { ZoomConnector } = await import(
+      '../packages/integrations/integration/connectors/zoom-connector.js'
+    );
 
     console.log('  ✅ OktaConnector imported successfully');
     console.log('  ✅ JamfConnector imported successfully');
@@ -182,12 +188,12 @@ async function testIntegrationLayerStructure() {
     // Try importing the integration layer (might fail due to Prisma dependencies)
     try {
       const { IConnector: _IConnector } = await import(
-        '../apps/lib/integration/nova-integration-layer.js'
+        '../packages/integrations/integration/nova-integration-layer.js'
       );
       console.log('  ✅ IConnector base class imported');
 
       const { NovaIntegrationLayer: _NovaIntegrationLayer } = await import(
-        '../apps/lib/integration/nova-integration-layer.js'
+        '../packages/integrations/integration/nova-integration-layer.js'
       );
       console.log('  ✅ NovaIntegrationLayer class imported');
     } catch (importError) {

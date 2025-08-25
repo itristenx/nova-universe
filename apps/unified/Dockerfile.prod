@@ -1,0 +1,57 @@
+# Nova Unified UI - Production Dockerfile
+FROM node:20-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies for building
+RUN apk add --no-cache libc6-compat
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build application
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine AS production
+
+# Create app user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Install production dependencies
+RUN apk add --no-cache \
+    dumb-init \
+    curl \
+    && rm -rf /var/cache/apk/*
+
+# Copy built application
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
+
+# Install serve to serve static files
+RUN npm install -g serve
+
+# Expose port
+EXPOSE 3000
+
+# Switch to non-root user
+USER nodejs
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000 || exit 1
+
+# Start application
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["serve", "-s", "dist", "-l", "3000"]

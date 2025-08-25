@@ -4,7 +4,7 @@
  * Tests the integration of Nova Synth for data matching and transformation
  */
 
-import { NovaIntegrationLayer } from '../apps/lib/integration/nova-integration-layer.js';
+import { NovaIntegrationLayer } from '../packages/integrations/integration/nova-integration-layer.js';
 
 const testConfig = {
   tenantId: 'test-tenant',
@@ -31,7 +31,8 @@ async function testNovaSynthIntegration() {
     console.log('\n📋 Test 1: Checking DATA_INTELLIGENCE connector type...');
     const connectorTypes =
       nil.constructor.ConnectorType ||
-      (await import('../apps/lib/integration/nova-integration-layer.js')).ConnectorType;
+      (await import('../packages/integrations/integration/nova-integration-layer.js'))
+        .ConnectorType;
 
     if (connectorTypes.DATA_INTELLIGENCE) {
       console.log('✅ DATA_INTELLIGENCE connector type found');
@@ -134,7 +135,7 @@ async function testNovaSynthIntegration() {
     console.log('\n📋 Test 6: Testing Nova Synth connector...');
     try {
       const NovaSynthConnector = (
-        await import('../apps/lib/integration/connectors/nova-synth-connector.js')
+        await import('../packages/integrations/integration/connectors/nova-synth-connector.js')
       ).NovaSynthConnector;
       const synthConnector = new NovaSynthConnector();
 

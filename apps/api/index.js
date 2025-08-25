@@ -20,6 +20,7 @@ import helpscoutRouter from './routes/helpscout.js';
 import analyticsRouter from './routes/analytics.js';
 import monitoringRouter from './routes/monitoring.js';
 import aiFabricRouter from './routes/ai-fabric.js';
+import mcpServerRouter from './routes/mcp-server.js';
 import setupRouter from './routes/setup.js';
 import coreRouter from './routes/core.js';
 import statusSummaryRouter from './routes/status.js';
@@ -27,14 +28,34 @@ import announcementsRouter from './routes/announcements.js';
 import cosmoRouter from './routes/cosmo.js';
 import beaconRouter from './routes/beacon.js';
 import goalertProxyRouter from './routes/goalert-proxy.js';
+import uptimeKumaProxyRouter from './routes/uptime-kuma-proxy.js';
+import uptimeKumaWebSocketRouter from './routes/uptime-kuma-websocket.js';
 import alertsRouter from './routes/alerts.js';
 import cmdbRouter from './routes/cmdb.js';
 import cmdbExtendedRouter from './routes/cmdbExtended.js';
 import notificationsRouter from './routes/notifications.js'; // Universal Notification Platform
 import user360Router from './routes/user360.js'; // User 360 API
+import appSwitcherRouter from './routes/app-switcher.js'; // Enhanced App Switcher API
+import aiControlTowerRouter from './routes/ai-control-tower.js'; // AI Control Tower API
 import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
+import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
+import spacesRouter from './routes/spaces.js';
+import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
+import novaTVRouter from './src/routes/nova-tv.js'; // Nova TV - Channel Management
+import customerActivityRouter from './routes/customer-activity.js'; // Customer Activity & Email Communication Tracking
+// Service Catalog API routes
+import serviceCatalogRouter from './routes/serviceCatalog.js';
+import serviceCatalogRequestsRouter from './routes/serviceCatalogRequests.js';
+import rbacRouter from './routes/rbac.js';
+import approvalsRouter from './routes/approvals.js';
+import featureFlagsRouter from './routes/featureFlags.js';
+import emailIntegrationRouter from './routes/email-integration.js';
+import emailTemplatesRouter from './routes/email-templates.js';
+import abTestingRouter from './routes/abTesting.js';
+import costCentersRouter from './routes/costCenters.js';
 // Nova module routes
+import { createUploadsMiddleware } from './middleware/uploads.js';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import axios from 'axios';
 import bcrypt from 'bcryptjs';
@@ -57,10 +78,7 @@ import { sign, verify } from './jwt.js';
 import { authRateLimit } from './middleware/rateLimiter.js';
 import { requestLogger, securityHeaders } from './middleware/security.js';
 import { configureCORS, sanitizeInput } from './middleware/security.js';
-import {
-  validateEmail,
-  validateKioskRegistration,
-} from './middleware/validation.js';
+import { validateEmail, validateKioskRegistration } from './middleware/validation.js';
 import helixRouter from './routes/helix.js';
 import helixUniversalLoginRouter from './routes/helix-universal-login.js';
 import loreRouter from './routes/lore.js';
@@ -72,6 +90,9 @@ import scimMonitorRouter from './routes/scimMonitor.js';
 import synthRouter from './routes/synth.js';
 import synthV2Router from './routes/synth-v2.js';
 import { setupGraphQL } from './graphql.js';
+import { initializeSlackApp, startSlackApp } from './services/nova-comms.js';
+import { validateProductionEnvironment } from './config/production-validation.js';
+import PerformanceMonitor from './middleware/performance-monitor.js';
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -79,6 +100,12 @@ const __dirname = path.dirname(__filename);
 
 // Configure environment
 dotenv.config();
+
+// Validate production environment early in startup
+validateProductionEnvironment();
+
+// Initialize performance monitoring
+const performanceMonitor = new PerformanceMonitor();
 
 // Authentication/feature flags must be defined before any middleware uses them
 const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
@@ -182,6 +209,7 @@ io.on('connection', (socket) => {
       'notifications',
       'system_status',
       'modules',
+      'uptime-kuma',
     ];
 
     if (allowedSubscriptions.includes(dataType)) {
@@ -208,6 +236,28 @@ app.io = io;
 import WebSocketManager from './websocket/events.js';
 const wsManager = new WebSocketManager(io);
 app.wsManager = wsManager;
+
+// Initialize Uptime Kuma WebSocket handler
+import {
+  initializeUptimeKumaWebSocket,
+  shutdownUptimeKumaWebSocket,
+} from './websocket/uptime-kuma-handler.js';
+initializeUptimeKumaWebSocket().catch((error) => {
+  logger.error('Failed to initialize Uptime Kuma WebSocket handler', { error: error.message });
+});
+
+// Graceful shutdown handler
+process.on('SIGTERM', () => {
+  logger.info('Received SIGTERM, shutting down gracefully');
+  shutdownUptimeKumaWebSocket();
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  logger.info('Received SIGINT, shutting down gracefully');
+  shutdownUptimeKumaWebSocket();
+  process.exit(0);
+});
 // --- Version helpers ---
 function getApiVersion() {
   try {
@@ -238,27 +288,137 @@ function getCliVersion() {
   }
 }
 
-// Swagger/OpenAPI setup
-let swaggerJSDoc, swaggerUi;
+// Swagger/OpenAPI setup with comprehensive API documentation
+let swaggerJSDoc, swaggerUi, yaml;
 if (process.env.NODE_ENV !== 'test' || process.env.FORCE_LISTEN === 'true') {
   swaggerJSDoc = (await import('swagger-jsdoc')).default;
   swaggerUi = (await import('swagger-ui-express')).default;
+  yaml = (await import('js-yaml')).default;
 } else {
   // Jest/test mode: provide a no-op function to avoid import errors
   swaggerJSDoc = () => ({ openapi: '3.0.0', info: {}, paths: {} });
   swaggerUi = { serve: (req, res, next) => next(), setup: () => (req, res, next) => next() };
+  yaml = { load: () => ({}) };
 }
 
+// Load comprehensive OpenAPI v3 specification
+let comprehensiveSpec = {};
+try {
+  const specPath = path.join(__dirname, 'openapi_spec_v3.yaml');
+  if (fs.existsSync(specPath)) {
+    const specContent = fs.readFileSync(specPath, 'utf8');
+    comprehensiveSpec = yaml.load(specContent);
+    logger.info('📋 Loaded comprehensive OpenAPI v3 specification');
+  }
+} catch (error) {
+  logger.warn('Failed to load comprehensive OpenAPI spec:', error.message);
+}
+
+// Enhanced Swagger definition with proper versioning
 const swaggerDefinition = {
-  openapi: '3.0.0',
+  openapi: '3.0.3',
   info: {
-    title: 'Nova Universe API',
-    version: '1.0.0',
-    description: 'API documentation for Nova Universe backend',
+    title: 'Nova Universe Platform API',
+    version: getApiVersion(),
+    description: `
+# Nova Universe IT Service Management Platform API
+
+A comprehensive API for managing IT service operations, including ticket management, 
+asset tracking, knowledge base, user directory, AI-powered automation, and more.
+
+## 🔐 Authentication
+
+This API uses **Bearer token authentication**. Include your API token in the Authorization header:
+
+\`\`\`
+Authorization: Bearer your-jwt-token-here
+\`\`\`
+
+Tokens can be obtained through the \`/auth/login\` endpoint.
+
+## 📦 API Versioning
+
+This API follows **semantic versioning** with **URI-based versioning**:
+
+- **v2 (Current)**: Latest stable version with all new features
+- **v1 (Legacy)**: Deprecated version maintained for backward compatibility
+
+### Version Migration
+- Breaking changes increment the major version (v1 → v2)
+- Non-breaking changes (new endpoints, optional parameters) may be added to existing versions
+- Deprecated endpoints include sunset dates in response headers
+
+## 🚦 Rate Limiting
+
+API requests are rate limited to ensure fair usage:
+
+- **Authenticated requests**: 1000 requests per hour
+- **Unauthenticated requests**: 100 requests per hour
+
+Rate limit information is included in response headers:
+- \`X-RateLimit-Limit\`: Request limit per window
+- \`X-RateLimit-Remaining\`: Requests remaining
+- \`X-RateLimit-Reset\`: Unix timestamp when window resets
+
+## 📊 Response Format
+
+All API responses follow a consistent format:
+
+\`\`\`json
+{
+  "success": true,
+  "data": { ... },
+  "pagination": { ... },  // For paginated responses
+  "meta": { ... }         // Additional metadata
+}
+\`\`\`
+
+Error responses include detailed error information:
+
+\`\`\`json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable error message",
+    "details": [ ... ],    // Validation errors, if applicable
+    "timestamp": "2024-01-15T10:30:00Z",
+    "requestId": "req_123456"
+  }
+}
+\`\`\`
+
+## 🔍 Filtering and Pagination
+
+Most list endpoints support filtering and pagination:
+
+- **Pagination**: Use \`page\` and \`limit\` query parameters
+- **Filtering**: Use specific filter parameters (documented per endpoint)
+- **Sorting**: Use \`sort\` and \`order\` parameters
+- **Search**: Use \`search\` parameter for full-text search
+
+## 📡 WebSocket Support
+
+Real-time updates are available via WebSocket connections at \`/socket.io\`.
+Subscribe to specific data types for live updates on tickets, system status, and more.
+    `,
+    contact: {
+      name: 'Nova Universe API Support',
+      email: 'api-support@nova-universe.com',
+      url: 'https://docs.nova-universe.com',
+    },
+    license: {
+      name: 'MIT',
+      url: 'https://opensource.org/licenses/MIT',
+    },
+    termsOfService: 'https://nova-universe.com/terms',
   },
   servers: [
-    { url: '/api/v2', description: 'Nova Platform API server (v2)' },
-    { url: '/api/v1', description: 'Nova Platform API server (v1, legacy)' },
+    { url: '/api/v2', description: 'Current API (v2) - Latest features and improvements' },
+    {
+      url: '/api/v1',
+      description: 'Legacy API (v1) - Deprecated, maintained for backward compatibility',
+    },
   ],
   components: {
     securitySchemes: {
@@ -266,36 +426,176 @@ const swaggerDefinition = {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
+        description: 'JWT token obtained from /auth/login endpoint',
+      },
+      ApiKeyAuth: {
+        type: 'apiKey',
+        in: 'header',
+        name: 'X-API-Key',
+        description: 'API key for service-to-service authentication',
+      },
+    },
+    parameters: {
+      PageParam: {
+        name: 'page',
+        in: 'query',
+        description: 'Page number for pagination (1-based)',
+        schema: { type: 'integer', minimum: 1, default: 1 },
+      },
+      LimitParam: {
+        name: 'limit',
+        in: 'query',
+        description: 'Number of items per page',
+        schema: { type: 'integer', minimum: 1, maximum: 100, default: 25 },
+      },
+      SortParam: {
+        name: 'sort',
+        in: 'query',
+        description: 'Field to sort by',
+        schema: { type: 'string' },
+      },
+      OrderParam: {
+        name: 'order',
+        in: 'query',
+        description: 'Sort order',
+        schema: { type: 'string', enum: ['asc', 'desc'], default: 'desc' },
+      },
+    },
+    responses: {
+      UnauthorizedError: {
+        description: 'Authentication required',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: false },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: { type: 'string', example: 'UNAUTHORIZED' },
+                    message: { type: 'string', example: 'Authentication required' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      ForbiddenError: {
+        description: 'Insufficient permissions',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: false },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: { type: 'string', example: 'FORBIDDEN' },
+                    message: { type: 'string', example: 'Insufficient permissions' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      NotFoundError: {
+        description: 'Resource not found',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: false },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: { type: 'string', example: 'NOT_FOUND' },
+                    message: { type: 'string', example: 'Resource not found' },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     },
   },
+  security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
 };
 
+// Combine JSDoc-generated spec with comprehensive YAML spec
 const swaggerOptions = {
   swaggerDefinition,
   apis: [
     path.join(__dirname, 'routes', '*.js'),
-    path.join(__dirname, 'routes', 'server.js'),
-    path.join(__dirname, 'routes', 'organizations.js'),
-    path.join(__dirname, 'routes', 'directory.js'),
-    path.join(__dirname, 'routes', 'roles.js'),
-    path.join(__dirname, 'routes', 'assets.js'),
-    path.join(__dirname, 'routes', 'integrations.js'),
-    // Nova module routes
-    path.join(__dirname, 'routes', 'helix.js'),
-    path.join(__dirname, 'routes', 'lore.js'),
-    path.join(__dirname, 'routes', 'pulse.js'),
-    path.join(__dirname, 'routes', 'orbit.js'),
-    path.join(__dirname, 'routes', 'synth.js'),
+    path.join(__dirname, 'routes', 'nova-modules', '*.js'),
     path.join(__dirname, 'openapi_spec.yaml'),
+    path.join(__dirname, 'openapi_spec_v3.yaml'),
   ],
 };
 
-const swaggerSpec = swaggerJSDoc(swaggerOptions);
+let swaggerSpec = swaggerJSDoc(swaggerOptions);
+
+// Merge with comprehensive specification if available and update server URLs
+if (comprehensiveSpec && comprehensiveSpec.paths) {
+  swaggerSpec = {
+    ...swaggerSpec,
+    ...comprehensiveSpec,
+    info: {
+      ...swaggerSpec.info,
+      ...comprehensiveSpec.info,
+      version: getApiVersion(), // Ensure version is from package.json
+    },
+    paths: {
+      ...swaggerSpec.paths,
+      ...comprehensiveSpec.paths,
+    },
+    components: {
+      ...swaggerSpec.components,
+      ...comprehensiveSpec.components,
+      securitySchemes: {
+        ...swaggerSpec.components?.securitySchemes,
+        ...comprehensiveSpec.components?.securitySchemes,
+      },
+    },
+  };
+  logger.info('📋 Merged comprehensive OpenAPI specification with JSDoc spec');
+}
+
+// Helper function to update server URLs after PORT is defined
+function updateSwaggerServerUrls() {
+  const PORT = Number(process.env.API_PORT || process.env.PORT || 3000);
+  const baseUrl =
+    process.env.NODE_ENV === 'production'
+      ? process.env.API_BASE_URL || process.env.BASE_URL || 'https://api.nova-universe.com'
+      : process.env.API_BASE_URL || process.env.BASE_URL || `http://localhost:${PORT}`;
+
+  const servers = [
+    {
+      url: `${baseUrl}/api/v2`,
+      description: 'Current API (v2) - Latest features and improvements',
+    },
+    {
+      url: `${baseUrl}/api/v1`,
+      description: 'Legacy API (v1) - Deprecated, maintained for backward compatibility',
+    },
+  ];
+
+  swaggerSpec.servers = servers;
+
+  if (process.env.NODE_ENV === 'development') {
+    logger.debug('📋 Updated Swagger server URLs:', servers);
+  }
+}
 
 // Debug: Log the swagger spec to see if it's being generated
 if (process.env.NODE_ENV === 'development') {
-  console.log('📋 Swagger spec generated with paths:', Object.keys(swaggerSpec.paths || {}));
+  logger.debug('📋 Swagger spec generated with paths:', Object.keys(swaggerSpec.paths || {}));
+  logger.debug('📋 API version:', swaggerSpec.info?.version);
 }
 
 // Environment variable validation helper
@@ -338,9 +638,12 @@ function validateEnv() {
       hasError = true;
     }
   }
-  for (const key of optionalVars) {
-    if (!process.env[key]) {
-      logger.warn(`Optional environment variable not set: ${key}`);
+  // Only log missing optional variables if in debug mode
+  if (process.env.DEBUG_ENV_VARS === 'true') {
+    for (const key of optionalVars) {
+      if (!process.env[key]) {
+        logger.warn(`Optional environment variable not set: ${key}`);
+      }
     }
   }
   if (hasError) {
@@ -354,7 +657,7 @@ validateEnv();
 // Configure CORS origins
 const originList = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : null;
 if (process.env.DEBUG_CORS === 'true') {
-  console.log('🔧 CORS Debug - originList:', originList);
+  logger.debug('🔧 CORS Debug - originList:', originList);
 }
 
 // Apply security middleware
@@ -362,6 +665,9 @@ app.use(securityHeaders());
 app.use(requestLogger);
 app.use(configureCORS());
 app.use(sanitizeInput);
+
+// Add performance monitoring middleware
+app.use(performanceMonitor.requestTracking());
 
 // Disable CSP entirely for Swagger UI routes (must be after helmet)
 app.use('/api-docs', (req, res, next) => {
@@ -372,7 +678,7 @@ app.use('/api-docs', (req, res, next) => {
 // Add custom CORS debugging middleware (only when DEBUG_CORS is true)
 if (process.env.DEBUG_CORS === 'true') {
   app.use((req, res, next) => {
-    console.log('🔍 Request received:', {
+    logger.debug('🔍 Request received:', {
       method: req.method,
       url: req.url,
       origin: req.headers.origin,
@@ -384,7 +690,7 @@ if (process.env.DEBUG_CORS === 'true') {
 
 // Optional CORS debug toggle
 if (process.env.DEBUG_CORS === 'true') {
-  console.log('🔧 CORS Debug enabled');
+  logger.debug('🔧 CORS Debug enabled');
 }
 
 // Add post-CORS middleware to log headers (only in debug mode)
@@ -392,7 +698,7 @@ if (process.env.DEBUG_CORS === 'true') {
   app.use((req, res, next) => {
     const originalSend = res.send;
     res.send = function (data) {
-      console.log('📤 Response headers:', {
+      logger.debug('📤 Response headers:', {
         'access-control-allow-origin': res.getHeader('access-control-allow-origin'),
         'access-control-allow-credentials': res.getHeader('access-control-allow-credentials'),
         vary: res.getHeader('vary'),
@@ -406,6 +712,9 @@ if (process.env.DEBUG_CORS === 'true') {
 // Ensure JSON body parsing before routers
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Add uploads middleware for serving local files
+app.use('/uploads', createUploadsMiddleware());
 
 // ---
 // NOTE: Periodically review these rate limiting settings to ensure they are effective for your current usage and threat model.
@@ -669,8 +978,66 @@ if (!DISABLE_AUTH) {
   });
 }
 
-// Create a v1Router to wrap all direct /api/* endpoints
+// Create a v1Router to wrap all direct /api/* endpoints with deprecation warnings
 const v1Router = express.Router();
+
+// Add deprecation middleware for v1 API
+const addDeprecationHeaders = (req, res, next) => {
+  // Add deprecation warning headers for v1 API
+  res.set({
+    Deprecation: 'true',
+    Sunset: '2024-12-31T23:59:59Z', // RFC 8594 compliant sunset date
+    Link: '</api/v2>; rel="successor-version"; type="application/json"',
+    Warning:
+      '299 "This API version is deprecated. Please migrate to v2. See https://docs.nova-universe.com/api/migration"',
+    'X-API-Version': 'v1',
+    'X-API-Deprecation-Notice': 'This version will be sunset on 2024-12-31. Please upgrade to v2.',
+  });
+  next();
+};
+
+// Apply deprecation middleware to v1 router
+v1Router.use(addDeprecationHeaders);
+
+// Version validation middleware
+const validateApiVersion = (req, res, next) => {
+  const apiVersion = req.path.match(/^\/api\/(v\d+)/)?.[1];
+
+  if (apiVersion) {
+    // Add version information to response headers
+    res.set('X-API-Version', apiVersion);
+
+    // Log version usage for analytics
+    if (process.env.NODE_ENV !== 'test') {
+      logger.debug(`API ${apiVersion} accessed: ${req.method} ${req.path}`, {
+        userAgent: req.headers['user-agent'],
+        ip: req.ip,
+        endpoint: req.path,
+      });
+    }
+  }
+
+  next();
+};
+
+// Apply version validation to all API routes
+app.use('/api', validateApiVersion);
+
+// Create v2Router for current API version
+const v2Router = express.Router();
+
+// Add current version headers for v2 API
+const addCurrentVersionHeaders = (req, res, next) => {
+  res.set({
+    'X-API-Version': 'v2',
+    'X-API-Status': 'stable',
+    'Cache-Control': 'public, max-age=300', // Cache responses for 5 minutes
+    'X-Rate-Limit-Policy': 'https://docs.nova-universe.com/api/rate-limits',
+  });
+  next();
+};
+
+v2Router.use(addCurrentVersionHeaders);
 
 // Create kiosksRouter for kiosk management endpoints
 const kiosksRouter = express.Router();
@@ -685,7 +1052,7 @@ v1Router.get('/config', ensureAuth, (req, res) => {
     const defaults = {
       logoUrl: '/logo.png',
       faviconUrl: '/vite.svg',
-      organizationName: 'Your Organization',
+      organizationName: 'Nova ITSM',
       welcomeMessage: 'Welcome to the Help Desk',
       helpMessage: 'Need to report an issue?',
       statusOpenMsg: 'Open',
@@ -741,7 +1108,7 @@ v1Router.put('/api/config', ensureAuth, (req, res) => {
         const defaults = {
           logoUrl: '/logo.png',
           faviconUrl: '/vite.svg',
-          organizationName: 'Your Organization',
+          organizationName: 'Nova ITSM',
           welcomeMessage: 'Welcome to the Help Desk',
           helpMessage: 'Need to report an issue?',
           statusOpenMsg: 'Open',
@@ -1184,9 +1551,23 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Root health endpoint
+// Root health endpoint with performance monitoring
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+  const health = performanceMonitor.getHealthStatus();
+  res
+    .status(health.status === 'healthy' ? 200 : health.status === 'warning' ? 200 : 503)
+    .json(health);
+});
+
+// Metrics endpoint (admin only)
+app.get('/metrics', ensureAuth, (req, res) => {
+  const userRoles = req.user?.roles || [];
+  if (!userRoles.includes('admin') && !userRoles.includes('superadmin')) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+
+  const metrics = performanceMonitor.getMetrics();
+  res.json(metrics);
 });
 
 // Readiness probe for UAT/Prod deployments
@@ -1280,7 +1661,7 @@ app.post('/api/kiosks/activate', (req, res) => {
     [kioskId, '/logo.png', '', new Date().toISOString()],
     function (err) {
       if (err) {
-        console.error('Kiosk activation error:', err);
+        logger.error('Kiosk activation error:', err);
         return res.status(500).json({ error: 'Database error' });
       }
 
@@ -1380,7 +1761,7 @@ app.put('/api/kiosks/:id/status', (req, res) => {
     [status, timestamp || new Date().toISOString(), kioskId],
     function (err) {
       if (err) {
-        console.error('Kiosk status update error:', err);
+        logger.error('Kiosk status update error:', err);
         return res.status(500).json({ error: 'Database error' });
       }
 
@@ -1671,64 +2052,187 @@ app.use('/api/v1/kiosks', kiosksRouter);
 app.use('/api/kiosks', kiosksRouter);
 app.use('/api/v1/kiosks', kiosksRouter);
 
-// Setup API routes
+// Register v1 router for legacy API endpoints
+app.use('/api/v1', v1Router);
+
+// Enhanced Swagger UI setup with comprehensive documentation
 const docsRequireAuth =
   process.env.NODE_ENV === 'production' && process.env.ENABLE_PUBLIC_DOCS !== 'true';
 const docsAuth = docsRequireAuth ? ensureAuth : (req, res, next) => next();
+
+// API Documentation JSON endpoint
 app.get('/api-docs/swagger.json', docsAuth, (req, res) => {
   res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
   res.send(swaggerSpec);
 });
 
-// Simple test page to debug Swagger UI
+// API version information endpoint
+app.get('/api/version', (req, res) => {
+  res.json({
+    api: {
+      version: getApiVersion(),
+      name: 'Nova Universe Platform API',
+    },
+    versions: {
+      supported: ['v2', 'v1'],
+      current: 'v2',
+      deprecated: ['v1'],
+      sunset: {
+        v1: '2024-12-31T23:59:59Z', // Example sunset date for v1
+      },
+    },
+    ui: {
+      version: getUiVersion(),
+    },
+    cli: {
+      version: getCliVersion(),
+    },
+    deprecationPolicy: {
+      notice: 'Deprecated versions will be supported for 12 months after deprecation announcement',
+      migration: 'See migration guide at https://docs.nova-universe.com/api/migration',
+    },
+  });
+});
+
+// API health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: getApiVersion(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    node: process.version,
+  });
+});
+
+// Simple test page to debug Swagger UI with enhanced debugging
 app.get('/api-docs/test', (req, res) => {
+  const pathCount = Object.keys(swaggerSpec.paths || {}).length;
+  const componentCount = Object.keys(swaggerSpec.components?.schemas || {}).length;
+
   res.send(`
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Swagger UI Test</title>
+        <title>Nova Universe API Documentation Debug</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
-            .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
-            .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .status { padding: 15px; margin: 15px 0; border-radius: 6px; border-left: 4px solid; }
+            .success { background: #d4edda; border-left-color: #28a745; color: #155724; }
+            .info { background: #d1ecf1; border-left-color: #17a2b8; color: #0c5460; }
+            .warning { background: #fff3cd; border-left-color: #ffc107; color: #856404; }
+            h1 { color: #333; margin-bottom: 30px; }
+            h2 { color: #555; margin-top: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+            .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }
+            .metric { background: #f8f9fa; padding: 20px; border-radius: 6px; text-align: center; }
+            .metric-value { font-size: 2em; font-weight: bold; color: #007bff; }
+            .metric-label { color: #666; margin-top: 5px; }
+            pre { background: #f8f9fa; padding: 15px; border-radius: 6px; overflow-x: auto; }
+            code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; }
+            .endpoint-list { max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 15px; border-radius: 6px; }
+            .btn { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin: 5px; }
+            .btn:hover { background: #0056b3; }
         </style>
     </head>
     <body>
-        <h1>Swagger UI Debug</h1>
-        <div class="status success">✅ Server is running</div>
-        <div class="status info">📋 JSON Spec available at: <a href="/api-docs/swagger.json">/api-docs/swagger.json</a></div>
-        <div class="status info">📖 Swagger UI at: <a href="/api-docs/">/api-docs/</a></div>
-        
-        <h2>API Endpoints Found:</h2>
-        <ul>
-          ${Object.keys(swaggerSpec.paths || {})
-            .map((path) => `<li><code>${path}</code></li>`)
-            .join('')}
-        </ul>
-        
-        <h2>Debug Info:</h2>
-        <pre>Swagger spec paths: ${JSON.stringify(Object.keys(swaggerSpec.paths || {}), null, 2)}</pre>
+        <div class="container">
+            <h1>🚀 Nova Universe API Documentation Debug</h1>
+            
+            <div class="status success">✅ API Server is running successfully</div>
+            <div class="status info">📋 OpenAPI v3 specification loaded and processed</div>
+            <div class="status info">🔒 Authentication: ${docsRequireAuth ? 'Required' : 'Public Access'}</div>
+            
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value">${pathCount}</div>
+                    <div class="metric-label">API Endpoints</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${componentCount}</div>
+                    <div class="metric-label">Data Schemas</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${swaggerSpec.info?.version || 'unknown'}</div>
+                    <div class="metric-label">API Version</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${swaggerSpec.servers?.length || 0}</div>
+                    <div class="metric-label">Server Environments</div>
+                </div>
+            </div>
+            
+            <h2>📡 Quick Links</h2>
+            <a href="/api-docs/" class="btn">📖 Full API Documentation</a>
+            <a href="/api-docs/swagger.json" class="btn">📋 OpenAPI JSON Spec</a>
+            <a href="/api/version" class="btn">ℹ️ Version Information</a>
+            <a href="/api/health" class="btn">💚 Health Check</a>
+            
+            <h2>🛠️ Available API Endpoints</h2>
+            <div class="endpoint-list">
+                ${Object.keys(swaggerSpec.paths || {})
+                  .sort()
+                  .map((path) => {
+                    const methods = Object.keys(swaggerSpec.paths[path]).join(', ').toUpperCase();
+                    return `<div><code>${path}</code> - ${methods}</div>`;
+                  })
+                  .join('')}
+            </div>
+            
+            <h2>🔧 Server Configuration</h2>
+            <div class="status info">
+                <strong>Servers:</strong><br>
+                ${swaggerSpec.servers?.map((s) => `• ${s.url} - ${s.description}`).join('<br>') || 'None configured'}
+            </div>
+            
+            <h2>🐞 Debug Information</h2>
+            <pre id="debug-info">Loading debug information...</pre>
+            
+            <div id="swagger-status" class="status info">🔄 Testing OpenAPI specification loading...</div>
+        </div>
         
         <script>
-          console.log('Test page loaded successfully');
+          console.log('API Documentation debug page loaded');
+          
+          // Test OpenAPI JSON loading
           fetch('/api-docs/swagger.json')
             .then(response => response.json())
             .then(data => {
-              console.log('Swagger JSON loaded:', data);
-              document.getElementById('swagger-status').textContent = '✅ Swagger JSON loads correctly';
+              console.log('OpenAPI specification loaded successfully:', data);
+              document.getElementById('swagger-status').textContent = '✅ OpenAPI specification loads correctly';
+              document.getElementById('swagger-status').className = 'status success';
+              
+              // Update debug info
+              document.getElementById('debug-info').textContent = JSON.stringify({
+                openApiVersion: data.openapi,
+                title: data.info?.title,
+                version: data.info?.version,
+                pathCount: Object.keys(data.paths || {}).length,
+                componentCount: Object.keys(data.components?.schemas || {}).length,
+                serverCount: data.servers?.length || 0,
+                securitySchemes: Object.keys(data.components?.securitySchemes || {})
+              }, null, 2);
             })
             .catch(error => {
-              console.error('Error loading Swagger JSON:', error);
-              document.getElementById('swagger-status').textContent = '❌ Error loading Swagger JSON';
+              console.error('Error loading OpenAPI specification:', error);
+              document.getElementById('swagger-status').textContent = '❌ Error loading OpenAPI specification: ' + error.message;
+              document.getElementById('swagger-status').className = 'status warning';
             });
+            
+          // Test API health
+          fetch('/api/health')
+            .then(response => response.json())
+            .then(data => console.log('API Health Check:', data))
+            .catch(error => console.error('Health check failed:', error));
         </script>
-        <div id="swagger-status" class="status info">🔄 Testing Swagger JSON loading...</div>
     </body>
     </html>
   `);
 });
 
+// Enhanced Swagger UI with custom styling and configuration
 app.use(
   '/api-docs',
   docsAuth,
@@ -1736,94 +2240,230 @@ app.use(
   swaggerUi.setup(null, {
     swaggerOptions: {
       url: '/api-docs/swagger.json',
+      deepLinking: true,
+      displayOperationId: false,
+      defaultModelsExpandDepth: 2,
+      defaultModelExpandDepth: 2,
+      docExpansion: 'none',
+      filter: true,
+      showExtensions: true,
+      showCommonExtensions: true,
+      tryItOutEnabled: true,
+      requestInterceptor: (req) => {
+        // Add custom headers or modify requests
+        req.headers['X-Client'] = 'SwaggerUI';
+        return req;
+      },
     },
-    customCss: '.swagger-ui .topbar { display: none }',
+    customCss: `
+      .swagger-ui .topbar { display: none; }
+      .swagger-ui .info { margin: 20px 0; }
+      .swagger-ui .info .title { font-size: 36px; color: #333; }
+      .swagger-ui .info .description { font-size: 14px; line-height: 1.6; }
+      .swagger-ui .scheme-container { background: #f7f7f7; padding: 15px; border-radius: 4px; margin: 20px 0; }
+      .swagger-ui .servers { background: #e8f4f8; padding: 15px; border-radius: 4px; margin: 20px 0; }
+      .swagger-ui .opblock.opblock-deprecated { opacity: 0.6; border-left: 4px solid #ff6b6b; }
+      .swagger-ui .opblock-summary-description { font-weight: normal; }
+      .swagger-ui .btn.try-out__btn { background: #007bff; border-color: #007bff; }
+      .swagger-ui .btn.execute { background: #28a745; border-color: #28a745; }
+    `,
     customSiteTitle: 'Nova Universe API Documentation',
+    customfavIcon: '/favicon.ico',
+    swaggerUrl: '/api-docs/swagger.json',
   }),
 );
 
-// Initialize configuration management system
-ConfigurationManager.initialize().catch((err) => {
-  logger.error('Failed to initialize configuration manager:', err);
-});
+// === API VERSION ROUTING STRATEGY ===
+//
+// This API follows semantic versioning with URI-based versioning:
+// - v2: Current stable version with latest features (default for new endpoints)
+// - v1: Legacy version with deprecation warnings (maintained for backward compatibility)
+//
+// Route organization:
+// 1. v2 routes: /api/v2/* - Latest features and improvements
+// 2. v1 routes: /api/v1/* - Legacy routes with deprecation headers
+// 3. Backward compatibility: Legacy unversioned routes (/api/*) map to v1
+//
+// Migration strategy:
+// - New features are added to v2 only
+// - v1 receives only critical security fixes
+// - Breaking changes require a new major version
+// - Deprecation notices are sent via response headers
 
-// Initialize Elasticsearch
-import elasticManager from './database/elastic.js';
-elasticManager.initialize().catch((err) => {
-  logger.error('Failed to initialize Elasticsearch:', err);
-});
+// Register versioned routers first
+app.use('/api/v1', v1Router);
+app.use('/api/v2', v2Router);
 
-app.use('/api/v1/organizations', organizationsRouter);
-app.use('/api/v1/directory', directoryRouter);
-app.use('/api/v1/roles', rolesRouter);
-app.use('/api/v1/assets', assetsRouter);
-app.use('/api/v1/inventory', inventoryRouter);
-app.use('/api/v1/cmdb', cmdbRouter);
-app.use('/api/v1/cmdb', cmdbExtendedRouter);
-app.use('/api/v1/integrations', integrationsRouter);
-app.use('/api/v2/user360', user360Router); // User 360 API
+// === API v2 ROUTES (Current Stable Version) ===
+
+// Core v2 endpoints
+v2Router.use('/user360', user360Router); // User 360 API (v2 only)
+v2Router.use('/mcp', mcpServerRouter); // MCP Server Control Tower API (v2 only)
+v2Router.use('/synth', synthV2Router); // Nova Synth - AI Engine v2 (Enhanced)
+v2Router.use('/alerts', alertsRouter); // Unified Alerts facade (Nova Alert)
+v2Router.use('/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
+v2Router.use('/beacon', beaconRouter); // Nova Beacon - Kiosk Management v2
+v2Router.use('/goalert', goalertProxyRouter); // GoAlert Proxy for alerting
+
+// v2 aliases for monitoring (backward compatibility)
+v2Router.use('/monitoring', monitoringRouter);
+v2Router.use('/sentinel', monitoringRouter);
+
+// === API v1 ROUTES (Legacy/Deprecated Version) ===
+
+// Legacy configuration and core endpoints
+v1Router.use('/organizations', organizationsRouter);
+v1Router.use('/directory', directoryRouter);
+v1Router.use('/roles', rolesRouter);
+v1Router.use('/assets', assetsRouter);
+v1Router.use('/inventory', inventoryRouter);
+v1Router.use('/cmdb', cmdbRouter);
+v1Router.use('/cmdb', cmdbExtendedRouter);
+v1Router.use('/integrations', integrationsRouter);
+v1Router.use('/catalog-items', catalogItemsRouter);
+v1Router.use('/search', searchRouter);
+v1Router.use('/configuration', configurationRouter);
+v1Router.use('/', serverRouter); // Handles /api/v1/server-info
+v1Router.use('/logs', logsRouter);
+v1Router.use('/reports', reportsRouter);
+v1Router.use('/vip', vipRouter);
+v1Router.use('/workflows', workflowsRouter);
+v1Router.use('/modules', modulesRouter);
+v1Router.use('/api-keys', apiKeysRouter);
+v1Router.use('/websocket', websocketRouter);
+v1Router.use('/helpscout', helpscoutRouter);
+v1Router.use('/analytics', analyticsRouter);
+v1Router.use('/monitoring', monitoringRouter);
+v1Router.use('/uptime-kuma', uptimeKumaProxyRouter);
+v1Router.use('/websocket/uptime-kuma', uptimeKumaWebSocketRouter);
+v1Router.use('/auth', authRouter);
+v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
+v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - Enterprise AI/ML/RAG Management
+v1Router.use('/tickets', ticketsRouter);
+v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
+v1Router.use('/spaces', spacesRouter);
+v1Router.use('/ai-fabric', aiFabricRouter);
+v1Router.use('/setup', setupRouter);
+v1Router.use('/comms', commsRouter); // Nova Comms - Slack integration
+v1Router.use('/nova-tv', novaTVRouter); // Nova TV - Channel Management
+v1Router.use('/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
+v1Router.use('/core', coreRouter);
+v1Router.use('/status', statusSummaryRouter);
+v1Router.use('/announcements', announcementsRouter);
+v1Router.use('/cosmo', cosmoRouter);
+
+// Nova module routes (v1)
+v1Router.use('/helix', helixRouter); // Nova Helix - Identity Engine
+v1Router.use('/helix/login', helixUniversalLoginRouter); // Nova Helix - Universal Login
+v1Router.use('/lore', loreRouter); // Nova Lore - Knowledge Base
+v1Router.use('/pulse', pulseRouter); // Nova Pulse - Technician Portal
+v1Router.use('/orbit', orbitRouter); // Nova Orbit - End-User Portal
+v1Router.use('/synth', synthRouter); // Nova Synth - AI Engine (Legacy v1)
+
+// Kiosk management (available in both versions)
+v1Router.use('/kiosks', kiosksRouter);
+v2Router.use('/kiosks', kiosksRouter);
+
+// === BACKWARD COMPATIBILITY ROUTES ===
+// Map legacy unversioned routes to v1 for backward compatibility
+// These routes include deprecation warnings via the v1Router middleware
+
 app.use('/api/catalog-items', catalogItemsRouter);
-app.use('/api/v1/search', searchRouter);
-app.use('/api/v1/configuration', configurationRouter);
-app.use('/api/v1', serverRouter); // Handles /api/v1/server-info
-app.use('/api/v1/logs', logsRouter); // Register logsRouter
 app.use('/api/reports', reportsRouter);
-app.use('/api/v1/vip', vipRouter);
 app.use('/api/workflows', workflowsRouter);
-app.use('/api/v1/modules', modulesRouter);
-app.use('/api/v1/api-keys', apiKeysRouter);
-app.use('/api/v1/websocket', websocketRouter);
 app.use('/api/helpscout', helpscoutRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/monitoring', monitoringRouter);
-// Back-compat alias for components expecting v2 namespace for Sentinel
-app.use('/api/v2/monitoring', monitoringRouter);
-app.use('/api/v2/sentinel', monitoringRouter);
-app.use('/api/v2/goalert', goalertProxyRouter);
-// Unified Alerts facade (Nova Alert) wrapping GoAlert operations
-app.use('/api/v2/alerts', alertsRouter);
-app.use('/api/v2/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
 app.use('/api/auth', authRouter);
 app.use('/api/tickets', ticketsRouter);
+app.use('/api/spaces', spacesRouter);
 app.use('/api/ai-fabric', aiFabricRouter);
 app.use('/api/setup', setupRouter);
+app.use('/api/nova-tv', novaTVRouter);
+app.use('/api/kiosks', kiosksRouter);
 
-// Nova module routes
-app.use('/api/v1/helix', helixRouter); // Nova Helix - Identity Engine
-app.use('/api/v1/helix/login', helixUniversalLoginRouter); // Nova Helix - Universal Login
-app.use('/api/v1/lore', loreRouter); // Nova Lore - Knowledge Base
-app.use('/api/v1/pulse', pulseRouter); // Nova Pulse - Technician Portal
-app.use('/api/v1/orbit', orbitRouter); // Nova Orbit - End-User Portal
-app.use('/api/v1/synth', synthRouter); // Nova Synth - AI Engine (Legacy)
-app.use('/api/v2/synth', synthV2Router); // Nova Synth - AI Engine (v2 - Full Spec)
+// Service Catalog API routes
+app.use('/api/service-catalog', serviceCatalogRouter);
+app.use('/api/service-catalog-requests', serviceCatalogRequestsRouter);
+app.use('/api/rbac', rbacRouter);
+app.use('/api/approvals', approvalsRouter);
+app.use('/api/feature-flags', featureFlagsRouter);
+app.use('/api/ab-testing', abTestingRouter);
+app.use('/api/cost-centers', costCentersRouter);
+app.use('/api/email', emailIntegrationRouter);
+app.use('/api/email-templates', emailTemplatesRouter);
+app.use('/api/customer-activity', customerActivityRouter);
+
+// Special routes that maintain their own paths
 app.use('/scim/v2', scimRouter); // SCIM 2.0 Provisioning API
-app.use('/api/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
-app.use('/api/v1/core', coreRouter);
 app.use('/core', coreRouter);
-// Gate status pages behind feature flag (env or config)
+
+// Feature-gated status pages
 const featureStatusPagesEnv = process.env.FEATURE_STATUS_PAGES === 'true';
 let featureStatusPagesConfig = false;
 try {
   featureStatusPagesConfig = await ConfigurationManager.get('features.statusPages', false);
 } catch {}
+
 if (featureStatusPagesEnv || featureStatusPagesConfig) {
-  app.use('/api/v1/status', statusSummaryRouter);
   app.use('/status', statusSummaryRouter);
 } else {
   // Still expose summary for legacy clients without pages
-  app.use('/api/v1/status', statusSummaryRouter);
+  v1Router.use('/status', statusSummaryRouter);
 }
-app.use('/api/v1/announcements', announcementsRouter);
+
 app.use('/announcements', announcementsRouter);
-app.use('/api/v1/cosmo', cosmoRouter);
-app.use('/api/v2/beacon', beaconRouter);
 
 // Wrap all app setup in an async function
 export async function createApp() {
-  // All the above setup code remains as is
-  // (from dotenv.config() through all middleware, routers, etc.)
+  // Update Swagger server URLs now that PORT is available
+  updateSwaggerServerUrls();
+
+  // Initialize configuration management system
+  try {
+    await ConfigurationManager.initialize();
+    logger.info('Configuration management system initialized');
+  } catch (err) {
+    logger.error('Failed to initialize configuration manager:', err);
+  }
+
+  // Initialize Elasticsearch
+  try {
+    const elasticManager = (await import('./database/elastic.js')).default;
+    await elasticManager.initialize();
+    logger.info('Elasticsearch initialized successfully');
+  } catch (err) {
+    logger.error('Failed to initialize Elasticsearch:', err);
+  }
+
   // Setup Apollo GraphQL server
-  await setupGraphQL(app);
+  try {
+    await setupGraphQL(app);
+    logger.info('GraphQL server setup complete');
+  } catch (err) {
+    logger.error('Failed to setup GraphQL server:', err);
+  }
+
+  // Initialize Nova Comms Slack integration (if configured)
+  try {
+    if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_SIGNING_SECRET) {
+      logger.info('Initializing Nova Comms Slack integration...');
+      initializeSlackApp();
+      logger.info('Nova Comms Slack integration initialized successfully');
+    } else {
+      logger.info('Slack credentials not found - Slack integration disabled');
+    }
+  } catch (slackError) {
+    logger.warn('Failed to initialize Slack integration:', slackError.message);
+  }
+
+  // Log API versioning information
+  logger.info('🔗 API Versioning Strategy:');
+  logger.info('  • v2 (Current): /api/v2/* - Latest features and improvements');
+  logger.info('  • v1 (Deprecated): /api/v1/* - Legacy version with sunset warnings');
+  logger.info('  • Backward compatibility: /api/* routes map to v1 with deprecation headers');
+  logger.info(`📋 API Documentation available at http://localhost:${PORT}/api-docs`);
+
   // Do not call server.listen here
   return { app, server, io };
 }
@@ -1834,12 +2474,22 @@ if (
   process.env.FORCE_LISTEN === 'true' ||
   process.env.API_PORT
 ) {
-  createApp().then(({ app, server, io }) => {
-    server.listen(PORT, () => {
-      console.log(`🚀 Nova Universe API Server running on port ${PORT}`);
-      console.log(`📊 Admin interface: http://localhost:${PORT}/admin`);
-      console.log(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
-      console.log(`⚡ WebSocket server ready for real-time updates`);
+  createApp().then(async ({ app, server, io }) => {
+    server.listen(PORT, async () => {
+      logger.info(`🚀 Nova Universe API Server running on port ${PORT}`);
+      logger.info(`📊 Admin interface: http://localhost:${PORT}/admin`);
+      logger.info(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
+      logger.info(`⚡ WebSocket server ready for real-time updates`);
+
+      // Start Slack app if configured
+      try {
+        if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_SIGNING_SECRET) {
+          const slackPort = parseInt(process.env.SLACK_PORT) || 3001;
+          await startSlackApp(slackPort);
+        }
+      } catch (slackError) {
+        logger.warn('Failed to start Slack app:', slackError.message);
+      }
     });
   });
 }
@@ -1856,13 +2506,13 @@ const shutdownSignals = ['SIGINT', 'SIGTERM'];
 for (const sig of shutdownSignals) {
   process.on(sig, async () => {
     try {
-      console.log(`\n🛑 Received ${sig}. Shutting down gracefully...`);
+      logger.info(`\n🛑 Received ${sig}. Shutting down gracefully...`);
       server.close(() => {
-        console.log('HTTP server closed');
+        logger.info('HTTP server closed');
       });
       await closeDatabase();
     } catch (e) {
-      console.error('Error during shutdown:', e);
+      logger.error('Error during shutdown:', e);
     } finally {
       process.exit(0);
     }

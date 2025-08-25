@@ -1,0 +1,33 @@
+{
+  "name": "@nova-universe/integrations",
+  "version": "1.0.0",
+  "description": "Nova Universe integration layer and connectors",
+  "type": "module",
+  "main": "./integration/nova-integration-layer.js",
+  "exports": {
+    ".": "./integration/nova-integration-layer.js",
+    "./notification": "./notification/nova-notification-platform.js",
+    "./connectors/*": "./integration/connectors/*.js"
+  },
+  "files": [
+    "integration/",
+    "notification/"
+  ],
+  "dependencies": {
+    "axios": "^1.6.0",
+    "express-rate-limit": "^7.1.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "node-fetch": "^3.3.0"
+  },
+  "keywords": [
+    "integration",
+    "connectors",
+    "notifications",
+    "enterprise",
+    "nova-universe"
+  ],
+  "author": "Nova Team",
+  "license": "MIT"
+}

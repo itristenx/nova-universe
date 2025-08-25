@@ -5,12 +5,115 @@ import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
-import nodemailer from 'nodemailer';
+import _nodemailer from 'nodemailer';
 import fetch from 'node-fetch';
+import crypto from 'crypto';
+import SetupWizardService from '../services/setup-wizard.js';
 
 const router = express.Router();
+const setupWizard = new SetupWizardService();
 
-// Test connection endpoints for setup wizard
+// Initialize WebSocket server if server instance is available
+router.setupWebSocket = (httpServer) => {
+  setupWizard.initializeWebSocketServer(httpServer);
+};
+
+// Get setup wizard configuration and steps
+router.get('/wizard/config', async (req, res) => {
+  try {
+    const sessionId = req.headers['x-session-id'] || req.query.sessionId;
+
+    res.json({
+      success: true,
+      data: {
+        steps: setupWizard.getStepsForClient(),
+        sessionId: sessionId || 'new',
+        websocketUrl: `ws://${req.get('host')}/setup-wizard/ws`,
+        supportedFormats: ['json', 'yaml', 'env'],
+        features: {
+          realTimeValidation: true,
+          progressSaving: true,
+          rollbackSupport: true,
+          configExport: true,
+          dependencyChecking: true,
+        },
+      },
+    });
+  } catch (error) {
+    logger.error('Setup wizard config error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get setup configuration',
+    });
+  }
+});
+
+// Create new setup session
+router.post('/wizard/session', async (req, res) => {
+  try {
+    const sessionId = crypto.randomUUID();
+
+    // Initialize session in setup wizard service
+    setupWizard.sessions.set(sessionId, {
+      clients: new Set(),
+      currentStep: 'welcome',
+      configuration: {},
+      startTime: new Date(),
+      progress: 0,
+      status: 'created',
+    });
+
+    res.json({
+      success: true,
+      data: {
+        sessionId,
+        websocketUrl: `ws://${req.get('host')}/setup-wizard/ws?sessionId=${sessionId}`,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      },
+    });
+  } catch (error) {
+    logger.error('Setup session creation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create setup session',
+    });
+  }
+});
+
+// Resume existing setup session
+router.get('/wizard/session/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const session = setupWizard.sessions.get(sessionId);
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: 'Session not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        sessionId,
+        currentStep: session.currentStep,
+        progress: session.progress,
+        startTime: session.startTime,
+        configuration: session.configuration,
+        status: session.status,
+      },
+    });
+  } catch (error) {
+    logger.error('Setup session retrieval error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get setup session',
+    });
+  }
+});
+
+// Enhanced test connection endpoints for setup wizard
 router.post(
   '/test-slack',
   [
@@ -26,7 +129,7 @@ router.post(
 
       const { slackToken, slackChannel = '#general' } = req.body;
 
-      // Test Slack API connection
+      // Test Slack API connection with enhanced validation
       const response = await fetch('https://slack.com/api/auth.test', {
         method: 'POST',
         headers: {
@@ -41,10 +144,15 @@ router.post(
         return res.status(400).json({
           success: false,
           error: data.error || 'Slack authentication failed',
+          suggestions: [
+            'Verify the Slack token is valid and has not expired',
+            'Ensure the token has the required permissions (chat:write, channels:read)',
+            'Check if the Slack workspace is active',
+          ],
         });
       }
 
-      // Test sending a message
+      // Test sending a message to verify permissions
       const testResponse = await fetch('https://slack.com/api/chat.postMessage', {
         method: 'POST',
         headers: {
@@ -53,27 +161,47 @@ router.post(
         },
         body: JSON.stringify({
           channel: slackChannel,
-          text: 'Test message from Nova Universe setup wizard',
-          username: 'Nova Setup',
+          text: '🔧 Nova Universe Setup Test - Connection successful!',
+          as_user: true,
         }),
       });
 
       const testData = await testResponse.json();
 
-      if (testData.ok) {
-        logger.info('Slack connection test successful');
-        res.json({ success: true, message: 'Slack connection successful' });
-      } else {
-        res.status(400).json({
+      if (!testData.ok) {
+        return res.status(400).json({
           success: false,
-          error: testData.error || 'Failed to send test message',
+          error: `Failed to send test message: ${testData.error}`,
+          suggestions: [
+            'Ensure the channel exists and the bot has access',
+            'Verify chat:write permissions are granted',
+            'Check if the channel is public or the bot is invited to private channels',
+          ],
         });
       }
+
+      logger.info('Slack connection test successful');
+      res.json({
+        success: true,
+        message: 'Slack connection successful',
+        data: {
+          team: data.team,
+          user: data.user,
+          teamId: data.team_id,
+          userId: data.user_id,
+          testMessage: testData.ts,
+        },
+      });
     } catch (error) {
       logger.error('Slack connection test failed:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to test Slack connection',
+        error: 'Failed to test Slack connection: ' + error.message,
+        suggestions: [
+          'Check your internet connection',
+          'Verify Slack API is accessible from your server',
+          'Ensure firewall allows outbound HTTPS connections',
+        ],
       });
     }
   },
@@ -260,7 +388,7 @@ router.post(
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const _data = await response.json();
         logger.info('Sentinel connection test successful');
         res.json({
           success: true,
@@ -309,7 +437,7 @@ router.post(
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const _data = await response.json();
         logger.info('GoAlert connection test successful');
         res.json({
           success: true,

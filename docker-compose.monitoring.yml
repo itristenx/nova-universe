@@ -58,10 +58,10 @@ services:
       timeout: 10s
       retries: 5
 
-  # Uptime Kuma - Monitoring backend
-  nova-sentinel-kuma:
+  # Uptime Kuma - Monitoring backend (embedded in Nova)
+  nova-uptime-kuma-backend:
     image: louislam/uptime-kuma:1
-    container_name: nova-sentinel-kuma
+    container_name: nova-uptime-kuma-backend
     restart: unless-stopped
     ports:
       - '3001:3001'
@@ -73,6 +73,9 @@ services:
       - UPTIME_KUMA_PORT=3001
       - NODE_ENV=production
       - UPTIME_KUMA_CLOUDFLARED_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:-}
+      # Disable direct UI access - Nova handles all frontend
+      - UPTIME_KUMA_DISABLE_LOGIN=0
+      - UPTIME_KUMA_API_KEYS_ENABLED=1
     networks:
       - nova-network
     healthcheck:
@@ -82,7 +85,7 @@ services:
       retries: 3
       start_period: 40s
     labels:
-      - 'traefik.enable=false' # No direct access, proxy through Nova API only
+      - 'traefik.enable=false' # No direct external access - proxy through Nova only
 
   # Redis for caching monitoring data
   nova-sentinel-redis:
@@ -173,48 +176,6 @@ services:
     networks:
       - nova-network
 
-  # Nova Sentinel - Complete Uptime Kuma Integration Service
-  nova-sentinel:
-    build: ./apps/sentinel/nova-sentinel
-    container_name: nova-sentinel
-    restart: unless-stopped
-    ports:
-      - '3002:3002'
-    environment:
-      - NODE_ENV=production
-      - SENTINEL_PORT=3002
-      - UPTIME_KUMA_URL=http://nova-sentinel-kuma:3001
-      - UPTIME_KUMA_ENABLED=true
-      - UPTIME_KUMA_API_KEY=${UPTIME_KUMA_API_KEY:-}
-      - HELIX_URL=http://nova-api:3000/api/v1/helix
-      - HELIX_API_KEY=${HELIX_API_KEY:-nova-sentinel-key}
-      - DATABASE_PATH=/data/sentinel.db
-      - REDIS_URL=redis://nova-sentinel-redis:6379
-      - REDIS_ENABLED=true
-      - LOG_LEVEL=info
-      - CORS_ORIGIN=${CORS_ORIGIN:-*}
-    volumes:
-      - sentinel-data:/data
-      - ./monitoring/sentinel-config:/config
-    networks:
-      - nova-network
-    depends_on:
-      nova-sentinel-kuma:
-        condition: service_healthy
-      nova-sentinel-redis:
-        condition: service_healthy
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3002/health']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.sentinel.rule=Host(`sentinel.nova.local`)'
-      - 'traefik.http.routers.sentinel.tls=true'
-      - 'traefik.http.services.sentinel.loadbalancer.server.port=3002'
-
 volumes:
   goalert-postgres-data:
     driver: local
@@ -226,9 +187,8 @@ volumes:
     driver: local
   prometheus-data:
     driver: local
-  sentinel-data:
-    driver: local
 
 networks:
   nova-network:
     external: true
+    name: nova-universe_nova-network

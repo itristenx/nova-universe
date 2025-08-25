@@ -6,7 +6,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { spawn } from 'child_process';
-import { existsSync, readdirSync, statSync } from 'fs';
+import { existsSync } from 'fs';
 import path from 'path';
 import Table from 'cli-table3';
 import {
@@ -199,7 +199,7 @@ async function startDevelopment(options) {
   }
 
   // Set up process monitoring
-  for (const { name, process: proc, port } of processes) {
+  for (const { name, process: proc, port: _port } of processes) {
     proc.stdout.on('data', (data) => {
       const output = data.toString().trim();
       if (output) {
@@ -898,7 +898,7 @@ function displayServiceStatus(status) {
     colWidths: [15, 15, 10],
   });
 
-  for (const [key, service] of Object.entries(status)) {
+  for (const [_key, service] of Object.entries(status)) {
     const statusColor = service.status === 'running' ? chalk.green : chalk.red;
     const statusIcon = service.status === 'running' ? '🟢' : '🔴';
 

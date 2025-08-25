@@ -19,7 +19,13 @@ export const databaseConfig = {
     password: (() => {
       const password = process.env.CORE_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
-        logger.error('POSTGRES_PASSWORD is not set. Using nova_password.');
+        logger.error(
+          'CRITICAL: CORE_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment',
+        );
+        if (process.env.NODE_ENV === 'production') {
+          throw new Error('Database password is required in production environment');
+        }
+        logger.warn('Using fallback password for development only');
         return 'nova_password';
       }
       return password;
@@ -62,7 +68,13 @@ export const databaseConfig = {
     password: (() => {
       const password = process.env.AUTH_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
-        logger.error('AUTH_DB_PASSWORD is not set. Using nova_password.');
+        logger.error(
+          'CRITICAL: AUTH_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment',
+        );
+        if (process.env.NODE_ENV === 'production') {
+          throw new Error('Auth database password is required in production environment');
+        }
+        logger.warn('Using fallback password for development only');
         return 'nova_password';
       }
       return password;
@@ -95,7 +107,17 @@ export const databaseConfig = {
     // Connection configuration
     uri: process.env.AUDIT_DATABASE_URL || 'mongodb://localhost:27017/nova_audit',
     username: process.env.AUDIT_DB_USER || 'nova_admin',
-    password: process.env.AUDIT_DB_PASSWORD || generateSecurePassword(),
+    password: (() => {
+      const password = process.env.AUDIT_DB_PASSWORD;
+      if (!password) {
+        if (process.env.NODE_ENV === 'production') {
+          throw new Error('AUDIT_DB_PASSWORD is required in production environment');
+        }
+        logger.warn('Using fallback password for MongoDB in development');
+        return generateSecurePassword();
+      }
+      return password;
+    })(),
 
     // Build connection URI with SSL options for production
     get connectionUri() {
@@ -141,8 +163,13 @@ function generateSecurePassword() {
     return 'dev_password_123!';
   }
 
-  // In production, this should be provided via environment variables
-  // This is just a fallback that generates a random password
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'CRITICAL: Database passwords must be explicitly set in production via environment variables',
+    );
+  }
+
+  // In non-production environments, generate a random password
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   let password = '';
   for (let i = 0; i < 32; i++) {

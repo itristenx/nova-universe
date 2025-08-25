@@ -55,18 +55,20 @@ function validateByType(value, valueType) {
   }
 
   switch (valueType) {
-    case 'string':
+    case 'string': {
       if (typeof value !== 'string') {
         return { valid: false, error: 'Value must be a string' };
       }
       break;
+    }
 
-    case 'number':
+    case 'number': {
       const num = Number(value);
       if (isNaN(num) || !isFinite(num)) {
         return { valid: false, error: 'Value must be a valid number' };
       }
       break;
+    }
 
     case 'boolean':
       if (typeof value !== 'boolean' && value !== 'true' && value !== 'false') {

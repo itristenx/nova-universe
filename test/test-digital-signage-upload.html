@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova TV Digital Signage - File Upload Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .upload-form {
+        border: 2px dashed #ccc;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 20px;
+        transition: border-color 0.3s ease;
+      }
+
+      .upload-form:hover {
+        border-color: #007bff;
+      }
+
+      .file-input {
+        margin: 20px 0;
+      }
+
+      .file-input input[type='file'] {
+        display: none;
+      }
+
+      .file-input label {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #007bff;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .file-input label:hover {
+        background: #0056b3;
+      }
+
+      .form-group {
+        margin: 15px 0;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .form-group textarea {
+        height: 80px;
+        resize: vertical;
+      }
+
+      .upload-button {
+        background: #28a745;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      .upload-button:hover {
+        background: #218838;
+      }
+
+      .upload-button:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+      }
+
+      .file-list {
+        margin-top: 20px;
+      }
+
+      .file-item {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 5px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .file-item .file-info {
+        flex: 1;
+      }
+
+      .file-item .file-size {
+        color: #666;
+        font-size: 12px;
+      }
+
+      .remove-file {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .supported-formats {
+        background: #e9ecef;
+        padding: 20px;
+        border-radius: 4px;
+        margin-top: 20px;
+      }
+
+      .supported-formats h3 {
+        margin-top: 0;
+        color: #495057;
+      }
+
+      .format-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+
+      .format-category {
+        background: white;
+        padding: 15px;
+        border-radius: 4px;
+      }
+
+      .format-category h4 {
+        margin: 0 0 10px 0;
+        color: #007bff;
+      }
+
+      .format-category ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .format-category ul li {
+        margin: 5px 0;
+      }
+
+      .results {
+        margin-top: 30px;
+        padding: 20px;
+        border-radius: 4px;
+        display: none;
+      }
+
+      .results.success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+      }
+
+      .results.error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .loading.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎬 Nova TV Digital Signage</h1>
+      <p style="text-align: center; color: #666; margin-bottom: 30px">
+        Upload media files for your digital signage channels following industry standards
+      </p>
+
+      <form id="uploadForm" class="upload-form">
+        <div class="file-input">
+          <label for="mediaFiles"> 📁 Choose Media Files </label>
+          <input
+            type="file"
+            id="mediaFiles"
+            name="mediaFiles"
+            multiple
+            accept="video/mp4,video/webm,video/avi,video/mov,image/png,image/jpeg,image/jpg,image/gif,image/webp,audio/mp3,audio/mpeg,audio/wav,text/html,application/pdf"
+          />
+        </div>
+
+        <div class="file-list" id="fileList"></div>
+
+        <div class="form-group">
+          <label for="dashboardId">Channel/Dashboard ID:</label>
+          <input
+            type="text"
+            id="dashboardId"
+            name="dashboardId"
+            placeholder="e.g., dashboard-lobby-main"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="contentId">Content ID (optional):</label>
+          <input
+            type="text"
+            id="contentId"
+            name="contentId"
+            placeholder="e.g., content-announcements"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description:</label>
+          <textarea
+            id="description"
+            name="description"
+            placeholder="Describe the content and its intended use..."
+          ></textarea>
+        </div>
+
+        <button type="submit" class="upload-button" id="uploadButton" disabled>
+          🚀 Upload Media Files
+        </button>
+      </form>
+
+      <div class="loading" id="loading">
+        <p>⏳ Uploading and processing files...</p>
+      </div>
+
+      <div class="results" id="results"></div>
+
+      <div class="supported-formats">
+        <h3>📋 Supported File Formats</h3>
+        <p>
+          Following digital signage industry standards for optimal compatibility and performance:
+        </p>
+
+        <div class="format-list">
+          <div class="format-category">
+            <h4>🎥 Video</h4>
+            <ul>
+              <li><strong>MP4</strong> (Recommended)</li>
+              <li>WebM</li>
+              <li>AVI</li>
+              <li>MOV</li>
+            </ul>
+            <small>Max size: 500MB</small>
+          </div>
+
+          <div class="format-category">
+            <h4>🖼️ Images</h4>
+            <ul>
+              <li><strong>PNG</strong> (Graphics)</li>
+              <li><strong>JPG</strong> (Photos)</li>
+              <li>GIF (Animations)</li>
+              <li>WebP</li>
+            </ul>
+            <small>Max size: 50MB</small>
+          </div>
+
+          <div class="format-category">
+            <h4>🎵 Audio</h4>
+            <ul>
+              <li><strong>MP3</strong> (Recommended)</li>
+              <li>WAV (High quality)</li>
+            </ul>
+            <small>Max size: 100MB</small>
+          </div>
+
+          <div class="format-category">
+            <h4>📄 Documents</h4>
+            <ul>
+              <li><strong>HTML</strong> (Interactive)</li>
+              <li>PDF (Static)</li>
+            </ul>
+            <small>Max size: 25MB</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const fileInput = document.getElementById('mediaFiles');
+      const fileList = document.getElementById('fileList');
+      const uploadButton = document.getElementById('uploadButton');
+      const uploadForm = document.getElementById('uploadForm');
+      const loading = document.getElementById('loading');
+      const results = document.getElementById('results');
+
+      let selectedFiles = [];
+
+      fileInput.addEventListener('change', function (e) {
+        const files = Array.from(e.target.files);
+        selectedFiles = [...selectedFiles, ...files];
+        updateFileList();
+        updateUploadButton();
+      });
+
+      function updateFileList() {
+        fileList.innerHTML = '';
+
+        selectedFiles.forEach((file, index) => {
+          const fileItem = document.createElement('div');
+          fileItem.className = 'file-item';
+
+          const fileInfo = document.createElement('div');
+          fileInfo.className = 'file-info';
+
+          const fileName = document.createElement('div');
+          fileName.textContent = file.name;
+
+          const fileSize = document.createElement('div');
+          fileSize.className = 'file-size';
+          fileSize.textContent = formatFileSize(file.size) + ' • ' + file.type;
+
+          fileInfo.appendChild(fileName);
+          fileInfo.appendChild(fileSize);
+
+          const removeButton = document.createElement('button');
+          removeButton.className = 'remove-file';
+          removeButton.textContent = '✕';
+          removeButton.type = 'button';
+          removeButton.onclick = () => removeFile(index);
+
+          fileItem.appendChild(fileInfo);
+          fileItem.appendChild(removeButton);
+          fileList.appendChild(fileItem);
+        });
+      }
+
+      function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        updateFileList();
+        updateUploadButton();
+      }
+
+      function updateUploadButton() {
+        uploadButton.disabled = selectedFiles.length === 0;
+        uploadButton.textContent =
+          selectedFiles.length > 0
+            ? `🚀 Upload ${selectedFiles.length} File${selectedFiles.length > 1 ? 's' : ''}`
+            : '🚀 Upload Media Files';
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+
+      uploadForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        if (selectedFiles.length === 0) {
+          showResults('Please select at least one file to upload.', 'error');
+          return;
+        }
+
+        const formData = new FormData();
+
+        // Add files
+        selectedFiles.forEach((file) => {
+          formData.append('mediaFiles', file);
+        });
+
+        // Add form data
+        const dashboardId = document.getElementById('dashboardId').value;
+        const contentId = document.getElementById('contentId').value;
+        const description = document.getElementById('description').value;
+
+        if (dashboardId) formData.append('dashboardId', dashboardId);
+        if (contentId) formData.append('contentId', contentId);
+        if (description) formData.append('description', description);
+
+        // Show loading
+        loading.classList.add('show');
+        uploadButton.disabled = true;
+        results.style.display = 'none';
+
+        try {
+          const response = await fetch('/api/v1/nova-tv/digital-signage/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            showResults(
+              `✅ ${result.message}\n\nUpload Results:\n` +
+                result.results
+                  .map((r) =>
+                    r.success
+                      ? `✓ ${r.file.originalName} - Uploaded successfully${r.warnings.length > 0 ? ' (with warnings)' : ''}`
+                      : `✗ ${r.filename} - ${r.error}`,
+                  )
+                  .join('\n') +
+                (result.results.some((r) => r.warnings && r.warnings.length > 0)
+                  ? '\n\nWarnings:\n' +
+                    result.results
+                      .filter((r) => r.warnings)
+                      .flatMap((r) => r.warnings)
+                      .join('\n')
+                  : ''),
+              'success',
+            );
+
+            // Clear form on success
+            selectedFiles = [];
+            updateFileList();
+            updateUploadButton();
+            document.getElementById('dashboardId').value = '';
+            document.getElementById('contentId').value = '';
+            document.getElementById('description').value = '';
+          } else {
+            showResults(`❌ Upload failed: ${result.error}`, 'error');
+          }
+        } catch (error) {
+          showResults(`❌ Network error: ${error.message}`, 'error');
+        } finally {
+          loading.classList.remove('show');
+          uploadButton.disabled = false;
+        }
+      });
+
+      function showResults(message, type) {
+        results.textContent = message;
+        results.className = `results ${type}`;
+        results.style.display = 'block';
+        results.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      // Test API connection on load
+      window.addEventListener('load', async function () {
+        try {
+          const response = await fetch('/api/v1/nova-tv/digital-signage/formats');
+          const data = await response.json();
+          console.log('✅ Digital Signage API is available', data);
+        } catch (error) {
+          console.warn('⚠️ Digital Signage API connection failed:', error);
+          showResults(
+            '⚠️ API connection failed. Please ensure the Nova TV API server is running.',
+            'error',
+          );
+        }
+      });
+    </script>
+  </body>
+</html>

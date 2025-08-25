@@ -9,7 +9,7 @@ import express from 'express';
 import { body, query, param, validationResult } from 'express-validator';
 import { authenticateJWT, requirePermission } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
-import { novaNotificationPlatform } from '../lib/notification/nova-notification-platform.js';
+import { novaNotificationPlatform } from '../../../packages/integrations/notification/nova-notification-platform.js';
 import { logger } from '../logger.js';
 import db from '../db.js';
 

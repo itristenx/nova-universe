@@ -256,10 +256,10 @@ Test individual components:
 
 ```bash
 # Test syntax
-node -c apps/lib/integration/nova-integration-layer.js
+node -c packages/integrations/integration/nova-integration-layer.js
 
 # Test connectors
-node -c apps/lib/integration/connectors/*.js
+node -c packages/integrations/integration/connectors/*.js
 
 # Test API routes
 node -c apps/api/routes/user360.js

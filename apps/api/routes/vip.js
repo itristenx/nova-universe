@@ -28,14 +28,12 @@ router.post(
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            error: 'Invalid input',
-            details: errors.array(),
-            errorCode: 'VALIDATION_ERROR',
-          });
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid input',
+          details: errors.array(),
+          errorCode: 'VALIDATION_ERROR',
+        });
       }
       const { vipId, proxyId, expiresAt } = req.body;
       await db.none(

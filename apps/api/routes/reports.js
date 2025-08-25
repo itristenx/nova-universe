@@ -1,5 +1,6 @@
 import express from 'express';
 import db from '../db.js';
+import { logger } from '../logger.js';
 
 const router = express.Router();
 
@@ -102,7 +103,7 @@ async function generateSystemInsights() {
 
     return insights;
   } catch (error) {
-    console.error('Error generating insights:', error);
+    logger.error('Error generating insights:', error);
     return [
       {
         id: Date.now(),
@@ -146,7 +147,7 @@ router.get('/usage', async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    console.error('Database query error:', err);
+    logger.error('Database query error:', err);
     res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
   }
 });
@@ -182,7 +183,7 @@ router.get('/insights', async (req, res) => {
     const insights = await generateSystemInsights();
     res.json(insights);
   } catch (error) {
-    console.error('Error fetching insights:', error);
+    logger.error('Error fetching insights:', error);
     res.status(500).json({ error: 'Failed to generate insights', errorCode: 'INSIGHTS_ERROR' });
   }
 });

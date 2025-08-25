@@ -1,0 +1,124 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Ticket Escalated</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #374151;
+        margin: 0;
+        padding: 0;
+        background-color: #f9fafb;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .content {
+        padding: 32px 24px;
+      }
+      .ticket-id {
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 16px;
+      }
+      .btn-primary {
+        display: inline-block;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        margin: 16px 8px 16px 0;
+      }
+      .footer {
+        background: #f8fafc;
+        text-align: center;
+        padding: 24px;
+        color: #64748b;
+        font-size: 12px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .footer a {
+        color: #3b82f6;
+        text-decoration: none;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+        padding: 32px 24px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .ticket-id {
+        background: #dc2626;
+      }
+      .escalation-alert {
+        background: #fef2f2;
+        border: 2px solid #dc2626;
+        border-radius: 8px;
+        padding: 24px;
+        margin: 24px 0;
+        text-align: center;
+      }
+      .escalation-reason {
+        background: #fff1f2;
+        border-left: 4px solid #dc2626;
+        padding: 16px;
+        margin: 16px 0;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>🚨 Ticket Escalated</h1>
+      </div>
+      <div class='content'>
+        <div class='escalation-alert'>
+          <h2>⚠️ URGENT ATTENTION REQUIRED</h2>
+          <p>This ticket has been escalated and requires immediate attention.</p>
+        </div>
+
+        <div class='ticket-id'>Ticket #{{ticket.id}}</div>
+
+        <div class='escalation-reason'>
+          <h3>Escalation Details</h3>
+          <p><strong>Escalated by:</strong> {{escalation.escalatedBy.name}}</p>
+          <p><strong>Escalation time:</strong> {{formatDateTime escalation.escalatedAt}}</p>
+          <p><strong>Reason:</strong> {{escalation.reason}}</p>
+        </div>
+
+        <p><strong>Customer:</strong> {{ticket.customer.name}} ({{ticket.customer.email}})</p>
+        <p><strong>Original assignment:</strong> {{ticket.assignee.name}}</p>
+        <p><strong>Time since creation:</strong> {{ticket.age}}</p>
+
+        <a href='{{baseUrl}}/tickets/{{ticket.id}}' class='btn-primary'>Take Immediate Action</a>
+
+        <p><strong>🎯 Required Action:</strong><br />
+          Please review this ticket immediately and provide an update within 1 hour.</p>
+      </div>
+      <div class='footer'>
+        <p>{{companyName}} Escalation Management</p>
+        <p>Escalated Ticket #{{ticket.id}}</p>
+      </div>
+    </div>
+  </body>
+</html>

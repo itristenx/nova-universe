@@ -68,7 +68,7 @@ async function runUITests() {
       const healthResponse = await fetch('/api/health');
       const health = await healthResponse.json();
       console.log('✅ API Health Check:', health);
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`API connectivity failed: ${error.message}`);
     }
 
@@ -93,7 +93,7 @@ async function runUITests() {
 
       // Store token for subsequent tests
       localStorage.setItem('auth_token', loginResult.token);
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Login API test failed: ${error.message}`);
     }
 
@@ -109,7 +109,7 @@ async function runUITests() {
       // Check if we're still on login page or redirected
       const currentUrl = window.location.pathname;
       console.log('✅ Form submitted, current path:', currentUrl);
-    } catch (error) {
+    } catch (_error) {
       console.warn('⚠️ Form submission test had issues:', error.message);
     }
 
@@ -133,7 +133,7 @@ async function runUITests() {
         } else {
           console.warn('⚠️ Profile API failed');
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn('⚠️ Profile test failed:', error.message);
       }
     } else {
@@ -175,7 +175,7 @@ async function runUITests() {
     console.log('2. Check browser Network tab for failed requests');
     console.log('3. Look for JavaScript errors in Console');
     console.log('4. Verify the page redirects after successful login');
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ UI Test Failed:', error.message);
     console.log('\n🔍 Debugging Info:');
     console.log('- Current URL:', window.location.href);

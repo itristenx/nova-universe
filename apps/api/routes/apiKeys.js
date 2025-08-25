@@ -12,13 +12,11 @@ const router = express.Router();
 router.get('/', authenticateJWT, createRateLimit(15 * 60 * 1000, 30), async (req, res) => {
   try {
     if (!req.user?.roles?.includes('admin') && !req.user?.roles?.includes('superadmin')) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED',
-        });
+      return res.status(403).json({
+        success: false,
+        error: 'Admin access required',
+        errorCode: 'ADMIN_ACCESS_REQUIRED',
+      });
     }
     const apiKeys = await ConfigurationManager.get('apiKeys', []);
     res.json({ success: true, apiKeys });
@@ -39,24 +37,20 @@ router.post(
   async (req, res) => {
     try {
       if (!req.user?.roles?.includes('admin') && !req.user?.roles?.includes('superadmin')) {
-        return res
-          .status(403)
-          .json({
-            success: false,
-            error: 'Admin access required',
-            errorCode: 'ADMIN_ACCESS_REQUIRED',
-          });
+        return res.status(403).json({
+          success: false,
+          error: 'Admin access required',
+          errorCode: 'ADMIN_ACCESS_REQUIRED',
+        });
       }
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            error: 'Invalid input',
-            details: errors.array(),
-            errorCode: 'VALIDATION_ERROR',
-          });
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid input',
+          details: errors.array(),
+          errorCode: 'VALIDATION_ERROR',
+        });
       }
       const key = uuidv4();
       const createdAt = new Date().toISOString();
@@ -64,13 +58,11 @@ router.post(
       apiKeys.push({ key, description: req.body.description || '', createdAt });
       const success = await ConfigurationManager.set('apiKeys', apiKeys, req.user.id);
       if (!success) {
-        return res
-          .status(500)
-          .json({
-            success: false,
-            error: 'Failed to save API key',
-            errorCode: 'API_KEYS_SAVE_ERROR',
-          });
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to save API key',
+          errorCode: 'API_KEYS_SAVE_ERROR',
+        });
       }
       res.json({
         success: true,
@@ -89,13 +81,11 @@ router.post(
 router.delete('/:key', authenticateJWT, createRateLimit(15 * 60 * 1000, 10), async (req, res) => {
   try {
     if (!req.user?.roles?.includes('admin') && !req.user?.roles?.includes('superadmin')) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          error: 'Admin access required',
-          errorCode: 'ADMIN_ACCESS_REQUIRED',
-        });
+      return res.status(403).json({
+        success: false,
+        error: 'Admin access required',
+        errorCode: 'ADMIN_ACCESS_REQUIRED',
+      });
     }
     const apiKeys = await ConfigurationManager.get('apiKeys', []);
     const filtered = apiKeys.filter((k) => k.key !== req.params.key);
@@ -106,13 +96,11 @@ router.delete('/:key', authenticateJWT, createRateLimit(15 * 60 * 1000, 10), asy
     }
     const success = await ConfigurationManager.set('apiKeys', filtered, req.user.id);
     if (!success) {
-      return res
-        .status(500)
-        .json({
-          success: false,
-          error: 'Failed to delete API key',
-          errorCode: 'API_KEYS_SAVE_ERROR',
-        });
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to delete API key',
+        errorCode: 'API_KEYS_SAVE_ERROR',
+      });
     }
     res.json({ success: true, message: 'API key deleted' });
   } catch (err) {

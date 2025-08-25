@@ -728,7 +728,7 @@ async function exportLogs(options) {
       const content = readFileSync(file.path, 'utf8');
 
       switch (options.format) {
-        case 'json':
+        case 'json': {
           // Convert each line to JSON object
           const lines = content.split('\n').filter((line) => line.trim());
           for (const line of lines) {
@@ -740,8 +740,9 @@ async function exportLogs(options) {
             exportData += JSON.stringify(logEntry) + '\n';
           }
           break;
+        }
 
-        case 'csv':
+        case 'csv': {
           // CSV format
           if (!exportData) {
             exportData = 'timestamp,service,level,message\n';
@@ -752,12 +753,15 @@ async function exportLogs(options) {
             exportData += `"${new Date().toISOString()}","${file.service}","${level}","${line.replace(/"/g, '""')}"\n`;
           }
           break;
+        }
 
         case 'txt':
-        default:
+        default: {
           // Plain text with service headers
           exportData += `\n=== ${file.service.toUpperCase()} ===\n`;
           exportData += content + '\n';
+          break;
+        }
           break;
       }
     }

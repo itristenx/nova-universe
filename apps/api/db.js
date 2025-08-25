@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 // import { PrismaClient } from '../../prisma/generated/core/index.js';
 
 // Keep filename for potential future use
- 
+
 const __filename = fileURLToPath(import.meta.url);
 
 // Initialize database factory
@@ -27,13 +27,21 @@ let isInitialized = false;
 async function initializeDatabase() {
   if (isInitialized) return db;
   try {
-    logger.info('Initializing database factory...');
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+
+    if (verboseLogging) {
+      logger.info('Initializing database factory...');
+    }
     await dbFactory.initialize();
     db = dbFactory;
     await setupSchemas();
     await setupInitialData();
     isInitialized = true;
-    logger.info('Database factory initialized successfully');
+
+    if (verboseLogging) {
+      logger.info('Database factory initialized successfully');
+    }
     return db;
   } catch (error) {
     logger.error('Failed to initialize database factory:', error);
@@ -339,11 +347,39 @@ async function setupSchemas() {
         catalog_item_id INT REFERENCES request_catalog_items(id),
         status VARCHAR(20) DEFAULT 'open'
       );
+      
+      -- Assets table for file storage management
+      CREATE TABLE IF NOT EXISTS assets (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        type VARCHAR(100) NOT NULL,
+        filename VARCHAR(255) NOT NULL,
+        url TEXT,
+        file_key TEXT,
+        storage_type VARCHAR(50) DEFAULT 'local',
+        file_size INTEGER,
+        content_type VARCHAR(255),
+        uploaded_by_id TEXT,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
-    logger.info('Database schemas verified and updated');
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+    if (verboseLogging) {
+      logger.info('Database schemas verified and updated');
+    }
   } catch (error) {
-    logger.error('Error setting up schemas:', error);
+    // Only log schema errors in debug mode when DB is unavailable
+    if (error.message.includes('Database factory not initialized')) {
+      if (process.env.DEBUG_DB_SCHEMAS === 'true') {
+        logger.error('Error setting up schemas:', error);
+      }
+    } else {
+      logger.error('Error setting up schemas:', error);
+    }
     throw error;
   }
 }
@@ -353,6 +389,9 @@ async function setupSchemas() {
  */
 async function setupInitialData() {
   try {
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+
     await setupRolesAndPermissions();
     await setupDefaultConfig();
     await setupDefaultAdmin();
@@ -360,7 +399,7 @@ async function setupInitialData() {
     // Ensure minimum admin role/user linkage
     try {
       await db.query(
-        `INSERT INTO user_roles (user_id, role_id, created_at)
+        `INSERT INTO user_roles (user_id, role_id, assigned_at)
                       SELECT u.id, 1, CURRENT_TIMESTAMP FROM users u
                       LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role_id = 1
                       WHERE u.email = $1 AND ur.user_id IS NULL`,
@@ -369,7 +408,10 @@ async function setupInitialData() {
     } catch {
       // Ignore if admin user already exists
     }
-    logger.info('Initial data setup completed');
+
+    if (verboseLogging) {
+      logger.info('Initial data setup completed');
+    }
   } catch (error) {
     logger.error('Error setting up initial data:', error);
     throw error;
@@ -450,7 +492,11 @@ async function setupRolesAndPermissions() {
       );
     }
 
-    logger.info('Roles and permissions setup completed');
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+    if (verboseLogging) {
+      logger.info('Roles and permissions setup completed');
+    }
   } catch (error) {
     logger.error('Error setting up roles and permissions:', error);
     throw error;
@@ -486,7 +532,12 @@ async function setupDefaultSlaPolicies() {
         [c.type, c.urgency, c.impact, c.response, c.resolution],
       );
     }
-    logger.info('Default SLA policies seeded');
+
+    const verboseLogging =
+      process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
+    if (verboseLogging) {
+      logger.info('Default SLA policies seeded');
+    }
   } catch (error) {
     logger.warn('Failed to seed default SLA policies', { error: error.message });
   }
@@ -581,7 +632,7 @@ async function setupDefaultAdmin() {
 
       // Assign superadmin role
       await client.query(
-        'INSERT INTO user_roles (user_id, role_id, created_at) VALUES ($1, $2, CURRENT_TIMESTAMP)',
+        'INSERT INTO user_roles (user_id, role_id, assigned_at) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (user_id, role_id) DO NOTHING',
         [adminId, 1], // superadmin role
       );
 
@@ -699,7 +750,14 @@ class DatabaseWrapper {
       if (cb) cb(null, result);
       return result;
     } catch (error) {
-      logger.error('Failed to purge old logs:', error);
+      // Only log purge errors in debug mode when DB is unavailable
+      if (error.message === 'DB unavailable') {
+        if (process.env.DEBUG_DB_MAINTENANCE === 'true') {
+          logger.error('Failed to purge old logs:', error);
+        }
+      } else {
+        logger.error('Failed to purge old logs:', error);
+      }
       if (cb) cb(error);
       throw error;
     }

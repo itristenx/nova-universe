@@ -1,0 +1,1582 @@
+{
+  "app": {
+    "name": "Nova Universe",
+    "tagline": "Unified ITSM Platform",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "pwa": {
+      "installTitle": "Install Nova Universe",
+      "installDescription": "Get faster access and work offline with our app",
+      "install": "Install App",
+      "installing": "Installing...",
+      "updateAvailable": "A new version is available. Reload to update?"
+    },
+    "offline": {
+      "title": "You're offline",
+      "description": "Check your connection and try again. Some features may be available offline.",
+      "noConnection": "No internet connection",
+      "backOnline": "You're back online!",
+      "connectionRestored": "Your internet connection has been restored.",
+      "continue": "Continue",
+      "tryAgain": "Try Again",
+      "retryAttempts": "Retry attempts: {{count}}",
+      "lastTrySeconds": "Last attempt {{seconds}} seconds ago",
+      "lastTryMinutes": "Last attempt {{minutes}} minutes ago",
+      "availableFeatures": "Available offline:",
+      "feature": {
+        "viewCachedData": "View cached data",
+        "readKnowledgeBase": "Read knowledge articles",
+        "submitFormsOffline": "Submit forms (queued)",
+        "realTimeUpdates": "Real-time updates unavailable"
+      },
+      "tip": "Your work will be saved and synced when you're back online"
+    },
+    "kiosk": {
+      "modeActive": "Kiosk Mode Active",
+      "sessionTimeout": "Session will timeout in {{minutes}} minutes",
+      "extendSession": "Extend Session",
+      "autoLogout": "Auto-logout due to inactivity",
+      "touchOptimized": "Touch-optimized interface enabled"
+    },
+    "mobile": {
+      "pullToRefresh": "Pull to refresh",
+      "releaseToRefresh": "Release to refresh",
+      "refreshing": "Refreshing...",
+      "cameraPermissionRequired": "Camera permission is required to take photos",
+      "enableLocationServices": "Enable location services for enhanced features"
+    },
+    "camera": {
+      "title": "Camera",
+      "takePhoto": "Take Photo",
+      "selectFile": "Select File",
+      "switchCamera": "Switch Camera",
+      "noCameraAvailable": "No camera available",
+      "fileSizeExceeded": "File size exceeds {{size}}MB limit",
+      "invalidFileType": "Invalid file type",
+      "permissionDenied": "Camera permission denied",
+      "capturePhoto": "Capture Photo",
+      "retake": "Retake"
+    },
+    "gestures": {
+      "swipeLeft": "Swipe left for actions",
+      "swipeRight": "Swipe right for options",
+      "tapToSelect": "Tap to select",
+      "longPressForMenu": "Long press for menu",
+      "pinchToZoom": "Pinch to zoom",
+      "doubleTagToAction": "Double tap for quick action"
+    }
+  },
+  "apps": {
+    "novaUnified": "Nova Unified",
+    "novaUnifiedDesc": "Unified ITSM Platform",
+    "novaCore": "Nova Core",
+    "novaCoreDesc": "Admin Portal",
+    "novaAtlas": "Nova Atlas",
+    "novaAtlasDesc": "Space Management",
+    "novaInventory": "Nova Inventory",
+    "novaInventoryDesc": "Asset Management",
+    "novaPulse": "Nova Pulse",
+    "novaPulseDesc": "Agent Portal",
+    "novaLore": "Nova Lore",
+    "novaLoreDesc": "Knowledge Base",
+    "novaSentinel": "Nova Sentinel",
+    "novaSentinelDesc": "Uptime Monitoring",
+    "novaAlert": "Nova Alert",
+    "novaAlertDesc": "GoAlert",
+    "novaSynth": "Nova Synth",
+    "novaSynthDesc": "AI / ML / Workflows",
+    "novaHelix": "Nova Helix",
+    "novaHelixDesc": "User Management",
+    "novaCMDB": "Nova CMDB",
+    "novaCMDBDesc": "Configuration Management Database",
+    "novaUser360": "Nova User360",
+    "novaUser360Desc": "Unified User Profiles",
+    "novaAccend": "Nova Accend",
+    "novaAccendDesc": "Gamification",
+    "novaCourier": "Nova Courier",
+    "novaCourierDesc": "Package & Mailroom Management"
+  },
+  "auth": {
+    "welcomeTitle": "Welcome to Nova Universe",
+    "steps": {
+      "emailStep": "Enter your email to continue",
+      "authStep": "Sign in to {{tenantName}}",
+      "mfaStep": "Enter verification code"
+    },
+    "form": {
+      "workEmail": "Work Email",
+      "emailPlaceholder": "Enter your work email address",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "rememberMe": "Remember me",
+      "mfaCode": "Verification Code",
+      "mfaCodePlaceholder": "Enter the 6-digit code"
+    },
+    "buttons": {
+      "continue": "Continue",
+      "signIn": "Sign In",
+      "verifyCode": "Verify Code",
+      "discovering": "Discovering organization...",
+      "signingIn": "Signing in...",
+      "verifying": "Verifying...",
+      "backToEmail": "Back to email entry",
+      "tryAgain": "Try Again",
+      "forgotPassword": "Forgot password?",
+      "signInWith": "Sign in with {{provider}}"
+    },
+    "validation": {
+      "emailRequired": "Please enter a valid email address",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "mfaRequired": "Please enter the verification code"
+    },
+    "messages": {
+      "loginSuccess": "Welcome back!",
+      "loginFailed": "Login failed. Please check your credentials.",
+      "discoveryFailed": "Failed to discover organization",
+      "tenantRequired": "Tenant discovery required",
+      "invalidMfaCode": "Invalid verification code. Please try again.",
+      "ssoLoginFailed": "Failed to initiate SSO login"
+    },
+    "sso": {
+      "title": "Or continue with",
+      "google": "Google",
+      "microsoft": "Microsoft",
+      "saml": "SAML"
+    },
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "login": {
+      "welcome": "Welcome to Nova Universe",
+      "welcomeBack": "Welcome back!",
+      "title": "Sign In",
+      "signInTo": "Sign in to {{tenantName}}",
+      "enterEmailToContinue": "Enter your email to continue",
+      "enterVerificationCode": "Enter verification code",
+      "workEmail": "Work Email",
+      "emailPlaceholder": "Enter your work email address",
+      "passwordPlaceholder": "Enter your password",
+      "discovering": "Discovering organization...",
+      "findOrganizationHelp": "Enter your work email to find your organization",
+      "organizationFound": "Organization found: {{organization}}",
+      "discoveryFailed": "Failed to discover organization",
+      "tenantDiscoveryRequired": "Please enter your email to find your organization",
+      "loginFailed": "Login failed. Please check your credentials.",
+      "ssoInitiateFailed": "Failed to initiate SSO login",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot your password?",
+      "signIn": "Sign In",
+      "signInWith": "Sign in with {{provider}}",
+      "mfaRequired": "Two-factor authentication is required for this account",
+      "poweredBy": "Powered by",
+      "helixBrand": "Nova Helix",
+      "needHelp": "Need help?",
+      "contactSupport": "Contact support"
+    },
+    "mfa": {
+      "enterCodeRequired": "Please enter the verification code",
+      "invalidCode": "Invalid verification code. Please try again.",
+      "title": "Enter verification code",
+      "placeholder": "Enter the 6-digit code",
+      "verificationRequired": "Two-Factor Authentication Required",
+      "enterCode": "Please enter the verification code from your authenticator app",
+      "verificationCode": "Verification Code",
+      "codePlaceholder": "000000",
+      "startOver": "Start Over",
+      "verify": "Verify"
+    },
+    "logout": "Sign Out",
+    "username": "Username",
+    "email": "Email",
+    "forgotPassword": "Forgot Password?",
+    "loginError": "Invalid credentials",
+    "loginRequired": "Please sign in to continue",
+    "resetPassword": "Reset Password",
+    "resetPasswordSent": "Password reset instructions sent to your email"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "tickets": "Tickets",
+    "assets": "Assets",
+    "users": "Users",
+    "reports": "Reports",
+    "settings": "Settings",
+    "admin": "Administration",
+    "profile": "Profile",
+    "help": "Help",
+    "knowledgeBase": "Knowledge Base",
+    "search": "Search",
+    "searchPlaceholder": "Search tickets, assets, spaces...",
+    "notifications": "Notifications",
+    "menu": "Menu",
+    "close": "Close",
+    "back": "Back",
+    "home": "Home",
+    "breadcrumb": "Breadcrumb",
+    "goToDashboard": "Go to Dashboard",
+    "spaces": "Spaces",
+    "commandCenter": {
+      "title": "Command Center",
+      "closeLabel": "Close command center",
+      "scopes": {
+        "all": {
+          "name": "All",
+          "placeholder": "Search everything..."
+        },
+        "tickets": {
+          "name": "Tickets",
+          "placeholder": "Search tickets by ID, title, or description..."
+        },
+        "assets": {
+          "name": "Assets",
+          "placeholder": "Search assets by name, serial, or tag..."
+        },
+        "knowledge": {
+          "name": "Knowledge",
+          "placeholder": "Search articles, guides, and solutions..."
+        },
+        "users": {
+          "name": "Users",
+          "placeholder": "Search users by name or email..."
+        },
+        "spaces": {
+          "name": "Spaces",
+          "placeholder": "Search rooms and locations..."
+        },
+        "ai": {
+          "name": "AI",
+          "placeholder": "Search AI features and capabilities..."
+        }
+      },
+      "quickActions": {
+        "title": "Quick Actions",
+        "createTicket": "Create Ticket",
+        "dashboard": "Dashboard",
+        "knowledgeBase": "Knowledge Base",
+        "assetCheckout": "Asset Checkout",
+        "bookSpace": "Book Space",
+        "aiControlCenter": "AI Control Center",
+        "aiAnalytics": "Predictive Analytics",
+        "aiChatbot": "AI Assistant",
+        "smartKnowledge": "Smart Knowledge",
+        "workflowAutomation": "Workflow Automation"
+      },
+      "recentSearches": {
+        "title": "Recent Searches"
+      },
+      "noResults": "No results found for \"{{query}}\"",
+      "shortcuts": {
+        "navigate": "Navigate",
+        "select": "Select",
+        "close": "Close"
+      },
+      "poweredBy": "Powered by Nova AI",
+      "searchResults": {
+        "aiAnalytics": {
+          "title": "Predictive Analytics Dashboard",
+          "description": "AI-powered insights and predictions for proactive IT service management"
+        },
+        "aiChatbot": {
+          "title": "AI Assistant",
+          "description": "Conversational AI support with natural language processing"
+        },
+        "aiClassification": {
+          "title": "Intelligent Ticket Classification",
+          "description": "Automated ticket categorization and routing using machine learning"
+        },
+        "aiKnowledge": {
+          "title": "Smart Knowledge Base",
+          "description": "AI-enhanced knowledge search with contextual recommendations"
+        },
+        "aiAutomation": {
+          "title": "Workflow Automation Engine",
+          "description": "Intelligent workflow creation and management with AI optimization"
+        },
+        "aiControlCenter": {
+          "title": "AI Control Center",
+          "description": "Central hub for all AI-powered ITSM capabilities"
+        },
+        "status": {
+          "active": "Active",
+          "available": "Available",
+          "available247": "Available 24/7",
+          "learning": "Learning",
+          "enhanced": "Enhanced",
+          "optimizing": "Optimizing"
+        }
+      }
+    },
+    "createTicket": "Create Ticket",
+    "createAsset": "Create Asset",
+    "floorPlan": "Floor Plan",
+    "administration": "Administration",
+    "siteAssets": "Site Assets"
+  },
+  "sidebar": {
+    "serviceDesk": "Service Desk",
+    "myTickets": "My Tickets",
+    "allTickets": "All Tickets",
+    "createTicket": "Create Ticket",
+    "queueManagement": "Queue Management",
+    "slaManagement": "SLA Management",
+    "assetManagement": "Asset Management",
+    "myAssets": "My Assets",
+    "allAssets": "All Assets",
+    "assetCheckInOut": "Asset Check-in/out",
+    "inventoryManagement": "Inventory Management",
+    "assetCategories": "Asset Categories",
+    "maintenanceTracking": "Maintenance Tracking",
+    "spaceManagement": "Space Management",
+    "bookSpace": "Book Space",
+    "myBookings": "My Bookings",
+    "allSpaces": "All Spaces",
+    "spaceAnalytics": "Space Analytics",
+    "floorPlans": "Floor Plans",
+    "novaTV": "Nova TV",
+    "tvDashboard": "TV Dashboard",
+    "deviceManagement": "Device Management",
+    "dashboardBuilder": "Dashboard Builder",
+    "qrAuthentication": "QR Authentication",
+    "knowledgeBase": "Knowledge Base",
+    "browseArticles": "Browse Articles",
+    "searchSolutions": "Search Solutions",
+    "createArticle": "Create Article",
+    "manageCategories": "Manage Categories",
+    "communications": "Communications",
+    "announcements": "Announcements",
+    "teamChat": "Team Chat",
+    "broadcastMessages": "Broadcast Messages",
+    "learning": "Learning",
+    "trainingCourses": "Training Courses",
+    "certifications": "Certifications",
+    "myProgress": "My Progress",
+    "courseManagement": "Course Management",
+    "monitoring": "Monitoring",
+    "systemHealth": "System Health",
+    "alertManagement": "Alert Management",
+    "serviceStatus": "Service Status",
+    "performanceMetrics": "Performance Metrics",
+    "aiAssistant": "AI Assistant & Automation",
+    "cosmoChat": "Cosmo Chat",
+    "smartSuggestions": "Smart Suggestions",
+    "automationHub": "Automation Hub",
+    "mailroomIntegration": "Mailroom Integration",
+    "mobileCompanion": "Mobile Companion",
+    "accessibilityAudit": "Accessibility Audit",
+    "aiAnalytics": "AI Analytics",
+    "modelConfiguration": "Model Configuration",
+    "administration": "Administration",
+    "userManagement": "User Management",
+    "rolePermissions": "Role & Permissions",
+    "organizationSettings": "Organization Settings",
+    "systemConfiguration": "System Configuration",
+    "emailAccounts": "Email Accounts",
+    "notifications": "Notifications",
+    "siteAssetManagement": "Site Asset Management",
+    "integrationManagement": "Integration Management",
+    "offlineManagement": "Offline Management",
+    "auditLogs": "Audit Logs",
+    "analytics": "Analytics",
+    "performanceDashboard": "Performance Dashboard",
+    "serviceReports": "Service Reports",
+    "assetReports": "Asset Reports",
+    "spaceUtilization": "Space Utilization",
+    "customReports": "Custom Reports"
+  },
+  "dashboard": {
+    "welcome": "Welcome to Nova Universe",
+    "overview": "Overview",
+    "recentActivity": "Recent Activity",
+    "quickActions": "Quick Actions",
+    "statistics": "Statistics",
+    "alerts": "Alerts",
+    "performance": "Performance",
+    "newTicket": "Create New Ticket",
+    "myTickets": "My Tickets",
+    "assignedToMe": "Assigned to Me",
+    "totalTickets": "Total Tickets",
+    "openTickets": "Open Tickets",
+    "resolvedTickets": "Resolved Tickets",
+    "pendingTickets": "Pending Tickets",
+    "role": "Role",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "welcomeMessage": {
+      "admin": "Welcome to your Nova Universe admin dashboard. Monitor system health and manage your organization.",
+      "agent": "Welcome to your Nova Pulse agent dashboard. Manage tickets and support your organization.",
+      "user": "Welcome to your Nova Universe portal. Submit requests and track your tickets."
+    },
+    "systemMetrics": {
+      "apiStatus": "API Status",
+      "activeUsers": "Active Users",
+      "systemLoad": "System Load",
+      "dbConnections": "DB Connections",
+      "healthy": "Healthy"
+    },
+    "agentPerformance": {
+      "title": "My Queue Performance",
+      "resolvedToday": "Resolved Today",
+      "avgResponseTime": "Avg Response Time",
+      "customerRating": "Customer Rating"
+    },
+    "userSections": {
+      "myRecentTickets": "My Recent Tickets",
+      "quickSubmit": "Quick Submit",
+      "sampleTicketTitle": "Request for new laptop",
+      "hardwareRequest": "Hardware Request",
+      "hardwareRequestDesc": "Request new equipment",
+      "softwareAccess": "Software Access",
+      "softwareAccessDesc": "Request software license",
+      "reportIssue": "Report Issue",
+      "reportIssueDesc": "Report a problem"
+    },
+    "status": {
+      "inProgress": "In Progress"
+    }
+  },
+  "tickets": {
+    "title": "Tickets",
+    "createNew": "Create New Ticket",
+    "ticketId": "Ticket ID",
+    "subject": "Subject",
+    "description": "Description",
+    "priority": "Priority",
+    "status": "Status",
+    "assignee": "Assignee",
+    "requester": "Requester",
+    "category": "Category",
+    "createdDate": "Created Date",
+    "updatedDate": "Updated Date",
+    "dueDate": "Due Date",
+    "resolution": "Resolution",
+    "comments": "Comments",
+    "attachments": "Attachments",
+    "activities": "Activities",
+    "timeline": "Timeline",
+    "save": "Save",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "close": "Close Ticket",
+    "reopen": "Reopen Ticket",
+    "assign": "Assign",
+    "escalate": "Escalate",
+    "merge": "Merge",
+    "priorities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent",
+      "critical": "Critical"
+    },
+    "statuses": {
+      "new": "New",
+      "open": "Open",
+      "inProgress": "In Progress",
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "closed": "Closed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "assets": {
+    "title": "Assets",
+    "add": "Add Asset",
+    "assetId": "Asset ID",
+    "name": "Asset Name",
+    "type": "Asset Type",
+    "category": "Category",
+    "model": "Model",
+    "manufacturer": "Manufacturer",
+    "serialNumber": "Serial Number",
+    "location": "Location",
+    "owner": "Owner",
+    "status": "Status",
+    "purchaseDate": "Purchase Date",
+    "warrantyExpiry": "Warranty Expiry",
+    "value": "Value",
+    "condition": "Condition",
+    "notes": "Notes",
+    "history": "History",
+    "maintenance": "Maintenance",
+    "relationships": "Relationships",
+    "statuses": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "maintenance": "Under Maintenance",
+      "retired": "Retired",
+      "disposed": "Disposed"
+    }
+  },
+  "users": {
+    "title": "Users",
+    "add": "Add User",
+    "edit": "Edit User",
+    "name": "Name",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone",
+    "department": "Department",
+    "role": "Role",
+    "manager": "Manager",
+    "location": "Location",
+    "timezone": "Timezone",
+    "language": "Language",
+    "status": "Status",
+    "lastLogin": "Last Login",
+    "createdDate": "Created Date",
+    "permissions": "Permissions",
+    "groups": "Groups",
+    "preferences": "Preferences",
+    "statuses": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "suspended": "Suspended",
+      "pending": "Pending"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "lastUpdated": "Last updated",
+      "metrics": {
+        "totalUsers": "Total Users",
+        "activeTickets": "Active Tickets",
+        "systemHealth": "System Health",
+        "serverUptime": "Server Uptime",
+        "completedTasks": "Completed Tasks"
+      },
+      "systemStatus": {
+        "healthy": "Healthy",
+        "warning": "Warning",
+        "critical": "Critical"
+      }
+    },
+    "moduleManagement": {
+      "title": "Module Management",
+      "description": "Manage and configure system modules",
+      "actions": {
+        "enable": "Enable",
+        "disable": "Disable",
+        "configure": "Configure",
+        "refresh": "Refresh",
+        "viewLogs": "View Logs"
+      }
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phoneNumber": "Phone Number",
+    "jobTitle": "Job Title",
+    "department": "Department",
+    "timezone": "Timezone",
+    "bioPlaceholder": "Tell us a bit about yourself...",
+    "editProfile": "Edit Profile",
+    "saveProfile": "Save Profile",
+    "cancelEdit": "Cancel"
+  },
+  "forms": {
+    "required": "This field is required",
+    "invalid": "Invalid input",
+    "email": "Please enter a valid email address",
+    "phone": "Please enter a valid phone number",
+    "password": "Password must be at least 8 characters",
+    "confirmPassword": "Passwords do not match",
+    "save": "Save",
+    "cancel": "Cancel",
+    "reset": "Reset",
+    "clear": "Clear",
+    "submit": "Submit",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "export": "Export",
+    "import": "Import",
+    "print": "Print",
+    "refresh": "Refresh"
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "continue": "Continue",
+    "finish": "Finish",
+    "next": "Next",
+    "previous": "Previous",
+    "first": "First",
+    "last": "Last",
+    "all": "All",
+    "none": "None",
+    "select": "Select",
+    "choose": "Choose",
+    "browse": "Browse",
+    "upload": "Upload",
+    "download": "Download",
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "remove": "Remove",
+    "add": "Add",
+    "create": "Create",
+    "new": "New",
+    "change": "Change",
+    "copy": "Copy",
+    "paste": "Paste",
+    "cut": "Cut",
+    "undo": "Undo",
+    "redo": "Redo",
+    "show": "Show",
+    "hide": "Hide",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "open": "Open",
+    "close": "Close",
+    "dismiss": "Dismiss",
+    "goBack": "Go Back",
+    "openMenu": "Open menu",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "openSidebar": "Open sidebar",
+    "closeSidebar": "Close sidebar",
+    "swipeToCloseSidebar": "Swipe left to close sidebar",
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "errorBoundary": {
+      "title": "Something went wrong",
+      "description": "We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.",
+      "tryAgain": "Try Again",
+      "refreshPage": "Refresh Page",
+      "errorDetails": "Error Details (Development)"
+    },
+    "actions": "Actions",
+    "options": "Options",
+    "preferences": "Preferences",
+    "settings": "Settings",
+    "configuration": "Configuration",
+    "details": "Details",
+    "summary": "Summary",
+    "description": "Description",
+    "comments": "Comments",
+    "notes": "Notes",
+    "tags": "Tags",
+    "categories": "Categories",
+    "types": "Types",
+    "groups": "Groups",
+    "users": "Users",
+    "roles": "Roles",
+    "permissions": "Permissions",
+    "date": "Date",
+    "time": "Time",
+    "datetime": "Date & Time",
+    "name": "Name",
+    "title": "Title",
+    "id": "ID",
+    "status": "Status",
+    "priority": "Priority",
+    "owner": "Owner",
+    "assignee": "Assignee",
+    "created": "Created",
+    "updated": "Updated",
+    "modified": "Modified",
+    "deleted": "Deleted",
+    "active": "Active",
+    "inactive": "Inactive",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "public": "Public",
+    "private": "Private",
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "completed": "Completed",
+    "failed": "Failed",
+    "cancelled": "Cancelled",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting...",
+    "processing": "Processing...",
+    "searching": "Searching...",
+    "noResults": "No results found",
+    "noData": "No data available",
+    "noItems": "No items",
+    "empty": "Empty",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "success": "Success",
+    "required": "Required",
+    "optional": "Optional",
+    "recommended": "Recommended"
+  },
+  "errors": {
+    "general": "An unexpected error occurred",
+    "network": "Network connection error",
+    "notFound": "Page not found",
+    "unauthorized": "You are not authorized to access this resource",
+    "forbidden": "Access denied",
+    "serverError": "Internal server error",
+    "timeout": "Request timeout",
+    "validation": "Validation error",
+    "duplicate": "Duplicate entry",
+    "invalidInput": "Invalid input",
+    "missingRequired": "Missing required field",
+    "fileTooLarge": "File size too large",
+    "fileTypeNotSupported": "File type not supported",
+    "quotaExceeded": "Quota exceeded",
+    "sessionExpired": "Your session has expired. Please log in again."
+  },
+  "language": {
+    "switcher": {
+      "label": "Language",
+      "title": "Select Language",
+      "current": "Current Language"
+    },
+    "names": {
+      "en": "English",
+      "es": "Spanish",
+      "fr": "French",
+      "ar": "Arabic"
+    },
+    "nativeNames": {
+      "en": "English",
+      "es": "Español",
+      "fr": "Français",
+      "ar": "العربية"
+    }
+  },
+  "accessibility": {
+    "skipToContent": "Skip to main content",
+    "skipToNavigation": "Skip to navigation",
+    "skipToSearch": "Skip to search",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "toggleMenu": "Toggle menu",
+    "openDialog": "Open dialog",
+    "closeDialog": "Close dialog",
+    "loading": "Loading content",
+    "sortAscending": "Sort ascending",
+    "sortDescending": "Sort descending",
+    "requiredField": "Required field",
+    "errorMessage": "Error message",
+    "warningMessage": "Warning message",
+    "successMessage": "Success message",
+    "infoMessage": "Information message",
+    "searchResults": "Search results",
+    "noSearchResults": "No search results found",
+    "pageNavigation": "Page navigation",
+    "currentPage": "Current page",
+    "auditTitle": "Accessibility Audit",
+    "auditDescription": "Comprehensive accessibility testing and configuration for WCAG 2.1 AA compliance",
+    "auditScore": "Audit Score",
+    "testsPass": "Tests Passed",
+    "issuesFound": "Issues Found",
+    "runAudit": "Run Accessibility Audit",
+    "auditHelp": "Test the current page for accessibility compliance",
+    "auditing": "Auditing...",
+    "startAudit": "Start Audit",
+    "settings": "Accessibility Settings",
+    "auditResults": "Audit Results",
+    "colorContrast": "Color Contrast Analysis",
+    "highContrast": "High Contrast Mode",
+    "highContrastHelp": "Increases color contrast for better visibility",
+    "largeText": "Large Text Size",
+    "largeTextHelp": "Increases text size for better readability",
+    "reducedMotion": "Reduced Motion",
+    "reducedMotionHelp": "Reduces animations and transitions",
+    "screenReaderOptimized": "Screen Reader Optimized",
+    "screenReaderOptimizedHelp": "Optimizes interface for screen readers",
+    "keyboardNavigation": "Enhanced Keyboard Navigation",
+    "keyboardNavigationHelp": "Improves keyboard navigation experience",
+    "focusIndicators": "Enhanced Focus Indicators",
+    "focusIndicatorsHelp": "Makes focus indicators more visible",
+    "togglehighContrast": "Toggle high contrast mode",
+    "togglelargeText": "Toggle large text size",
+    "togglereducedMotion": "Toggle reduced motion",
+    "togglescreenReaderOptimized": "Toggle screen reader optimization",
+    "togglekeyboardNavigation": "Toggle enhanced keyboard navigation",
+    "togglefocusIndicators": "Toggle enhanced focus indicators",
+    "skipLinks": {
+      "mainContent": "Skip to main content",
+      "navigation": "Skip to navigation",
+      "search": "Skip to search",
+      "help": "Skip to help",
+      "showShortcuts": "Show keyboard shortcuts",
+      "close": "Close",
+      "nextElement": "Next element",
+      "previousElement": "Previous element"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAsRead": "Mark as read",
+    "markAllRead": "Mark all read",
+    "markAsReadError": "Failed to mark notification as read",
+    "markAllAsReadSuccess": "All notifications marked as read",
+    "markAllAsReadError": "Failed to mark all notifications as read",
+    "deleteNotification": "Delete notification",
+    "deleteError": "Failed to delete notification",
+    "settings": "Notification settings",
+    "all": "All",
+    "unread": "Unread",
+    "important": "Important",
+    "noNotifications": "No notifications",
+    "viewAll": "View all notifications",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
+  },
+  "offline": {
+    "onlineTitle": "You're Online",
+    "offlineTitle": "You're Offline",
+    "onlineDescription": "All features are available and data is syncing",
+    "offlineDescription": "Limited functionality available. Your work will sync when connected.",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "allFeaturesAvailable": "All features are available",
+    "limitedFeatures": "Some features may be limited while offline",
+    "lastSync": "Last sync: {{time}}",
+    "retry": "Retry",
+    "pendingActions": "Pending Actions",
+    "retryAttempts": "Retry attempts: {{count}}",
+    "pending": "Pending",
+    "availableFeatures": "Available Offline Features",
+    "viewCachedData": "View Cached Data",
+    "viewCachedDataDesc": "Access previously loaded tickets and information",
+    "submitFormsOffline": "Submit Forms Offline",
+    "submitFormsOfflineDesc": "Create tickets and forms that will sync later",
+    "viewNotifications": "View Notifications",
+    "viewNotificationsDesc": "Read cached notifications and updates",
+    "limitedRealTime": "Limited Real-time Updates",
+    "limitedRealTimeDesc": "Live updates unavailable until reconnected",
+    "cachedData": "Cached Data",
+    "clearCache": "Clear Cache",
+    "tipsTitle": "Offline Tips",
+    "tip1": "Your work will be saved and synced when you're back online",
+    "tip2": "Forms submitted offline will be queued and sent automatically",
+    "tip3": "Cached data is available for viewing but may not be current",
+    "tip4": "Check your connection and try refreshing if issues persist",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hours ago",
+    "daysAgo": "{{count}} days ago"
+  },
+  "enhancedDashboard": {
+    "title": "Enhanced Dashboard",
+    "welcome": "Welcome back, {{name}}!",
+    "quickStats": "Quick Stats",
+    "openTickets": "Open Tickets",
+    "pendingRequests": "Pending Requests",
+    "completedToday": "Completed Today",
+    "averageResolutionTime": "Avg Resolution",
+    "quickActions": "Quick Actions",
+    "submitTicket": "Submit Ticket",
+    "viewTickets": "View Tickets",
+    "browseServices": "Browse Services",
+    "searchKnowledge": "Search Knowledge",
+    "contactSupport": "Contact Support",
+    "viewReports": "View Reports",
+    "recentActivity": "Recent Activity",
+    "personalizedRecommendations": "Personalized Recommendations",
+    "systemHealth": "System Health",
+    "upcomingMaintenance": "Upcoming Maintenance",
+    "refresh": "Refresh",
+    "lastUpdated": "Last updated {{time}}"
+  },
+  "serviceCatalog": {
+    "title": "Service Catalog",
+    "browse": "Browse Services",
+    "search": "Search services...",
+    "categories": "Categories",
+    "allServices": "All Services",
+    "itServices": "IT Services",
+    "hrServices": "HR Services",
+    "facilitiesServices": "Facilities Services",
+    "securityServices": "Security Services",
+    "featuredServices": "Featured Services",
+    "popularServices": "Popular Services",
+    "newServices": "New Services",
+    "requestService": "Request Service",
+    "serviceDetails": "Service Details",
+    "estimatedTime": "Estimated Time",
+    "approvalRequired": "Approval Required",
+    "selfService": "Self Service",
+    "cost": "Cost",
+    "sla": "SLA",
+    "submitRequest": "Submit Request",
+    "viewRequests": "View My Requests",
+    "noServices": "No services found",
+    "searchResults": "Search Results",
+    "filterBy": "Filter by",
+    "sortBy": "Sort by",
+    "relevance": "Relevance",
+    "popularity": "Popularity",
+    "alphabetical": "Alphabetical"
+  },
+  "knowledgeCommunity": {
+    "title": "Knowledge Community",
+    "experts": "Experts",
+    "articles": "Articles",
+    "discussions": "Discussions",
+    "challenges": "Challenges",
+    "leaderboard": "Leaderboard",
+    "expertProfiles": "Expert Profiles",
+    "topContributors": "Top Contributors",
+    "points": "Points",
+    "badges": "Badges",
+    "expertise": "Expertise",
+    "contributions": "Contributions",
+    "reputation": "Reputation",
+    "askExpert": "Ask an Expert",
+    "newArticle": "New Article",
+    "shareKnowledge": "Share Knowledge",
+    "search": "Search community...",
+    "categories": "Categories",
+    "recentActivity": "Recent Activity",
+    "trending": "Trending",
+    "mostViewed": "Most Viewed",
+    "mostLiked": "Most Liked",
+    "newest": "Newest",
+    "communityChallenge": "Community Challenge",
+    "joinChallenge": "Join Challenge",
+    "viewProfile": "View Profile",
+    "contactExpert": "Contact Expert",
+    "readMore": "Read More",
+    "showLess": "Show Less",
+    "likes": "Likes",
+    "views": "Views",
+    "comments": "Comments",
+    "shares": "Shares",
+    "bookmark": "Bookmark",
+    "report": "Report",
+    "helpfulVotes": "Helpful Votes"
+  },
+  "serviceStatus": {
+    "title": "Service Status",
+    "allSystemsOperational": "All systems operational",
+    "someServicesIssues": "Some services are experiencing issues",
+    "minorIssuesDetected": "Minor issues detected",
+    "systemMetrics": "System Metrics",
+    "refresh": "Refresh",
+    "lastUpdated": "Last updated: {{time}}",
+    "cpuUsage": "CPU Usage",
+    "memoryUsage": "Memory Usage",
+    "diskUsage": "Disk Usage",
+    "responseTime": "Response Time",
+    "averageUtilization": "Average utilization across all servers",
+    "averageResponseTime": "Average API response time",
+    "activeIncidents": "Active Incidents",
+    "scheduledMaintenance": "Scheduled Maintenance",
+    "serviceDetails": "Service Details",
+    "uptime": "Uptime",
+    "response": "Response",
+    "affected": "Affected",
+    "started": "Started",
+    "updated": "Updated",
+    "status": {
+      "operational": "Operational",
+      "degraded": "Degraded",
+      "partialOutage": "Partial Outage",
+      "majorOutage": "Major Outage",
+      "underMaintenance": "Under Maintenance"
+    },
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "categories": {
+      "coreServices": "Core Services",
+      "infrastructure": "Infrastructure",
+      "security": "Security",
+      "communication": "Communication"
+    }
+  },
+  "cosmoAI": {
+    "title": "Cosmo AI Assistant",
+    "subtitle": "Your intelligent IT operations companion",
+    "welcome": "Welcome to Cosmo AI",
+    "description": "I'm your intelligent IT operations assistant. I can help you analyze system performance, troubleshoot issues, find documentation, and provide insights to optimize your operations.",
+    "newChat": "New Chat",
+    "sendMessage": "Send message",
+    "thinking": "Cosmo is thinking...",
+    "placeholder": "Ask Cosmo anything about your IT operations...",
+    "pressEnterToSend": "Press Enter to send",
+    "conversationSaved": "Conversation saved",
+    "exportChat": "Export chat",
+    "conversationHistory": "Conversation History",
+    "messages": "messages",
+    "suggestions": "Suggested Actions",
+    "relevant": "relevant",
+    "quickActions": {
+      "analyzeTicket": "Analyze Ticket",
+      "analyzeTicketDesc": "Get insights and resolution suggestions for a support ticket",
+      "systemHealth": "System Health Check",
+      "systemHealthDesc": "Review current system status and performance metrics",
+      "knowledgeSearch": "Knowledge Search",
+      "knowledgeSearchDesc": "Find relevant documentation and best practices",
+      "userInsights": "User Insights",
+      "userInsightsDesc": "Analyze user behavior patterns and feedback",
+      "optimization": "Performance Optimization",
+      "optimizationDesc": "Get recommendations for system improvements",
+      "documentation": "Generate Documentation",
+      "documentationDesc": "Create or update process documentation"
+    },
+    "categories": {
+      "support": "Support",
+      "monitoring": "Monitoring",
+      "knowledge": "Knowledge",
+      "analytics": "Analytics",
+      "optimization": "Optimization",
+      "documentation": "Documentation"
+    },
+    "prompts": {
+      "analyzeTicket": "Help me analyze this support ticket and suggest resolution steps:",
+      "systemHealth": "Perform a comprehensive system health check and highlight any concerns:",
+      "knowledgeSearch": "Search the knowledge base for information about:",
+      "userInsights": "Provide insights on user behavior and engagement patterns for:",
+      "optimization": "Suggest performance optimizations and improvements for:",
+      "documentation": "Help me create comprehensive documentation for:"
+    }
+  },
+  "automation": {
+    "title": "Workflow Automation",
+    "subtitle": "Create, manage, and optimize intelligent workflows",
+    "tabs": {
+      "workflows": "Active Workflows",
+      "templates": "Templates",
+      "analytics": "Analytics"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "draft": "Draft"
+    },
+    "difficulty": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "workflow": {
+      "trigger": "Trigger",
+      "lastModified": "Last modified"
+    },
+    "stats": {
+      "executions": "Executions",
+      "successRate": "Success Rate",
+      "avgTime": "Avg Time",
+      "timeSaved": "Time Saved"
+    },
+    "aiSuggestions": {
+      "title": "AI Suggestions"
+    },
+    "template": {
+      "setupTime": "Setup time",
+      "benefits": "Benefits",
+      "requiredIntegrations": "Required integrations"
+    },
+    "analytics": {
+      "activeWorkflows": "Active Workflows",
+      "totalExecutions": "Total Executions",
+      "timeSavedWeek": "Time Saved/Week",
+      "overallSuccessRate": "Success Rate",
+      "topPerformingWorkflows": "Top Performing Workflows",
+      "executions": "executions"
+    },
+    "actions": {
+      "createWorkflow": "Create Workflow",
+      "pause": "Pause workflow",
+      "start": "Start workflow",
+      "configure": "Configure workflow",
+      "useTemplate": "Use Template"
+    }
+  },
+  "mailroom": {
+    "title": "Mailroom Integration",
+    "subtitle": "Intelligent email processing and automation for IT service management",
+    "unprocessed": "Unprocessed",
+    "processing": "Processing",
+    "processed": "Processed",
+    "needsReview": "Needs Review",
+    "emails": "emails",
+    "incomingEmails": "Incoming Emails",
+    "processedEmails": "Processed Emails",
+    "processingRules": "Processing Rules",
+    "createRule": "Create Rule",
+    "analytics": "Analytics",
+    "automationResults": "Automation Results",
+    "process": "Process",
+    "active": "Active",
+    "inactive": "Inactive",
+    "conditions": "Conditions",
+    "actions": "Actions",
+    "matched": "Matched",
+    "lastTriggered": "Last Triggered",
+    "automationRate": "Automation Rate",
+    "avgProcessingTime": "Avg Processing Time",
+    "accuracyRate": "Accuracy Rate",
+    "from": "From",
+    "received": "Received",
+    "extractedData": "Extracted Data",
+    "priorityLabel": "Priority",
+    "department": "Department",
+    "keywords": "Keywords",
+    "ticketCreated": "Ticket Created",
+    "assignedTo": "Assigned To",
+    "actionsPerformed": "Actions Performed",
+    "tabs": {
+      "inbox": "Inbox",
+      "processed": "Processed",
+      "rules": "Rules",
+      "analytics": "Analytics"
+    },
+    "status": {
+      "unprocessed": "Unprocessed",
+      "processing": "Processing",
+      "processed": "Processed",
+      "failed": "Failed",
+      "manual_review": "Manual Review"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "category": {
+      "incident": "Incident",
+      "request": "Request",
+      "change": "Change",
+      "inquiry": "Inquiry",
+      "spam": "Spam"
+    }
+  },
+  "analytics": {
+    "dashboard": {
+      "title": "AI-Powered Analytics",
+      "subtitle": "Predictive insights and intelligent automation for your ITSM operations",
+      "timeframe": "Timeframe"
+    },
+    "timeframes": {
+      "24h": "Last 24 hours",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "90d": "Last 90 days"
+    },
+    "metrics": {
+      "avgResolutionTime": {
+        "title": "Avg Resolution Time",
+        "prediction": "Predicted to improve by 15% next week"
+      },
+      "ticketVolume": {
+        "title": "Ticket Volume",
+        "prediction": "Expected increase during maintenance window"
+      },
+      "agentUtilization": {
+        "title": "Agent Utilization",
+        "prediction": "Approaching optimal capacity threshold"
+      },
+      "systemHealth": {
+        "title": "System Health",
+        "prediction": "Stable performance expected"
+      }
+    },
+    "insights": {
+      "title": "AI-Powered Insights",
+      "confidence": "Confidence",
+      "capacityPrediction": {
+        "title": "Resource Capacity Alert",
+        "description": "Our AI models predict your team will reach 95% capacity within the next 48 hours based on current ticket trends.",
+        "timeline": "Next 48 hours",
+        "action": "Scale Resources"
+      },
+      "ticketSurge": {
+        "title": "Unusual Ticket Pattern Detected",
+        "description": "There's been a 35% increase in network-related tickets in the past 6 hours. This may indicate a broader infrastructure issue.",
+        "timeline": "Last 6 hours"
+      },
+      "automationOpportunity": {
+        "title": "Automation Opportunity",
+        "description": "78% of password reset tickets follow identical patterns. Consider implementing automated workflows.",
+        "timeline": "Historical analysis",
+        "action": "Create Automation"
+      },
+      "performanceTrend": {
+        "title": "Performance Improvement Trend",
+        "description": "Agent response times have improved by 22% over the past month, exceeding your SLA targets.",
+        "timeline": "Last 30 days"
+      }
+    },
+    "impacts": {
+      "low": "Low Impact",
+      "medium": "Medium Impact",
+      "high": "High Impact",
+      "critical": "Critical Impact"
+    },
+    "actions": {
+      "viewFullReport": "View Full Report",
+      "setupAutomation": "Setup Automation",
+      "customizeMetrics": "Customize Metrics"
+    }
+  },
+  "classification": {
+    "analyzing": {
+      "title": "AI is analyzing your ticket...",
+      "steps": {
+        "content": "Analyzing ticket content and context",
+        "patterns": "Matching patterns with historical data",
+        "routing": "Determining optimal routing and assignment"
+      },
+      "progress": "Analysis in progress..."
+    },
+    "waiting": {
+      "title": "Ready for AI Classification",
+      "description": "Let our AI analyze this ticket to suggest optimal categorization, priority, and routing."
+    },
+    "results": {
+      "title": "Classification Complete",
+      "confidence": "{{confidence}}% confidence"
+    },
+    "fields": {
+      "category": "Category",
+      "priority": "Priority",
+      "urgency": "Urgency",
+      "assignment": "Suggested Assignment",
+      "tags": "Smart Tags"
+    },
+    "priorities": {
+      "low": "Low Priority",
+      "medium": "Medium Priority",
+      "high": "High Priority",
+      "critical": "Critical Priority"
+    },
+    "urgency": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "stats": {
+      "estimatedTime": "Est. Resolution Time",
+      "similarTickets": "Similar Tickets",
+      "confidence": "AI Confidence",
+      "found": "found"
+    },
+    "automation": {
+      "title": "Automation Suggestions",
+      "apply": "Apply"
+    },
+    "actions": {
+      "classify": "Classify with AI",
+      "accept": "Accept Classification",
+      "modify": "Modify",
+      "reclassify": "Re-classify"
+    }
+  },
+  "knowledge": {
+    "search": {
+      "title": "Smart Knowledge Base",
+      "subtitle": "AI-powered search with intelligent content recommendations",
+      "placeholder": "Ask a question or describe your issue..."
+    },
+    "suggestions": {
+      "title": "Popular searches"
+    },
+    "categories": {
+      "all": "All Categories"
+    },
+    "sort": {
+      "label": "Sort by",
+      "relevance": "Most Relevant",
+      "recent": "Most Recent",
+      "popular": "Most Popular"
+    },
+    "insights": {
+      "title": "AI Insights"
+    },
+    "article": {
+      "relevant": "relevant",
+      "aiSummary": "AI Summary",
+      "views": "views"
+    },
+    "noResults": {
+      "title": "No articles found",
+      "description": "Try adjusting your search terms or browse by category.",
+      "createArticle": "Create New Article"
+    }
+  },
+  "ai": {
+    "controlCenter": {
+      "title": "AI Control Center",
+      "subtitle": "Harness the power of artificial intelligence to transform your ITSM operations with predictive insights, intelligent automation, and enhanced productivity.",
+      "explore": "Explore Feature",
+      "stats": {
+        "title": "AI-Powered Excellence",
+        "features": "AI Features",
+        "availability": "AI Availability",
+        "accuracy": "Prediction Accuracy"
+      }
+    },
+    "features": {
+      "analytics": {
+        "title": "Predictive Analytics",
+        "description": "AI-powered insights and predictions to optimize your IT operations and prevent issues before they occur."
+      },
+      "classification": {
+        "title": "Intelligent Classification",
+        "description": "Automated ticket categorization and routing using advanced machine learning algorithms."
+      },
+      "knowledge": {
+        "title": "Smart Knowledge Base",
+        "description": "AI-enhanced knowledge search with contextual recommendations and intelligent content discovery."
+      },
+      "automation": {
+        "title": "Workflow Automation",
+        "description": "Intelligent workflow creation and management with AI-powered optimization and templates."
+      },
+      "chatbot": {
+        "title": "AI Assistant",
+        "description": "Conversational AI support with natural language processing and contextual assistance."
+      }
+    },
+    "analytics": {
+      "dashboard": {
+        "title": "Predictive Analytics Dashboard",
+        "subtitle": "AI-powered insights for proactive IT service management",
+        "lastUpdated": "Last updated: {{timestamp}}"
+      },
+      "predictions": {
+        "title": "Predictions",
+        "incidentVolume": "Incident Volume",
+        "systemHealth": "System Health",
+        "userSatisfaction": "User Satisfaction",
+        "resourceUtilization": "Resource Utilization",
+        "confidence": "Confidence: {{confidence}}%"
+      },
+      "trends": {
+        "title": "Trend Analysis",
+        "weekOverWeek": "Week over week",
+        "monthOverMonth": "Month over month",
+        "yearOverYear": "Year over year"
+      },
+      "insights": {
+        "title": "AI Insights",
+        "recommendations": "Recommendations",
+        "anomalies": "Anomalies Detected",
+        "patterns": "Pattern Analysis"
+      }
+    },
+    "classification": {
+      "title": "Intelligent Ticket Classification",
+      "subtitle": "AI-powered automated categorization and routing",
+      "confidence": {
+        "high": "High Confidence",
+        "medium": "Medium Confidence",
+        "low": "Low Confidence",
+        "score": "{{score}}% confidence"
+      },
+      "categories": {
+        "incident": "Incident",
+        "request": "Service Request",
+        "problem": "Problem",
+        "change": "Change Request"
+      },
+      "priority": {
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "routing": {
+        "title": "Suggested Routing",
+        "assignee": "Recommended Assignee",
+        "team": "Suggested Team"
+      },
+      "automation": {
+        "title": "Automation Opportunities",
+        "autoResolve": "Auto-resolve Candidate",
+        "escalation": "Escalation Pattern",
+        "template": "Template Match"
+      }
+    },
+    "knowledge": {
+      "title": "Smart Knowledge Base",
+      "subtitle": "AI-enhanced knowledge search and recommendations",
+      "search": {
+        "placeholder": "Search with AI assistance...",
+        "noResults": "No articles found",
+        "suggestions": "AI Suggestions",
+        "related": "Related Articles"
+      },
+      "relevance": {
+        "high": "Highly Relevant",
+        "medium": "Moderately Relevant",
+        "low": "Low Relevance",
+        "score": "{{score}}% relevant"
+      },
+      "insights": {
+        "title": "AI Insights",
+        "summary": "Article Summary",
+        "keyPoints": "Key Points",
+        "relatedTopics": "Related Topics"
+      },
+      "feedback": {
+        "helpful": "Was this helpful?",
+        "yes": "Yes",
+        "no": "No",
+        "improve": "How can we improve this article?"
+      }
+    },
+    "automation": {
+      "title": "Workflow Automation Engine",
+      "subtitle": "Intelligent workflow creation and management",
+      "workflows": {
+        "active": "Active Workflows",
+        "draft": "Draft",
+        "paused": "Paused",
+        "completed": "Completed"
+      },
+      "templates": {
+        "title": "AI-Recommended Templates",
+        "incidentResponse": "Incident Response",
+        "changeManagement": "Change Management",
+        "userOnboarding": "User Onboarding",
+        "accessRequest": "Access Request"
+      },
+      "analytics": {
+        "title": "Workflow Analytics",
+        "efficiency": "Efficiency Gain",
+        "timesSaved": "Time Saved",
+        "successRate": "Success Rate",
+        "usage": "Usage Statistics"
+      },
+      "builder": {
+        "title": "Workflow Builder",
+        "dragDrop": "Drag and drop to build workflows",
+        "addStep": "Add Step",
+        "configure": "Configure",
+        "test": "Test Workflow",
+        "deploy": "Deploy"
+      }
+    },
+    "chatbot": {
+      "title": "AI Assistant",
+      "subtitle": "Your intelligent ITSM companion",
+      "inputPlaceholder": "Ask me anything about your IT services...",
+      "voiceInput": "Voice Input",
+      "sendMessage": "Send Message",
+      "suggestedResponses": "Suggested responses",
+      "quickStart": "Quick start",
+      "status": {
+        "online": "Online"
+      },
+      "suggestions": {
+        "passwordReset": "How do I reset my password?",
+        "softwareInstall": "Install software",
+        "networkIssue": "Network connectivity issue",
+        "createTicket": "Create a new ticket",
+        "checkStatus": "Check ticket status",
+        "viewKnowledge": "Browse knowledge base"
+      },
+      "welcome": {
+        "message": "Hello! I'm your AI assistant. How can I help you with your IT services today?",
+        "suggestions": {
+          "help": "How can I help you today?",
+          "ticket": "Create a new service request",
+          "status": "Check the status of my tickets"
+        }
+      },
+      "responses": {
+        "passwordReset": {
+          "content": "I can help you reset your password. I'll guide you through the self-service options or escalate to IT support if needed.",
+          "actions": {
+            "resetNow": "Reset Password Now",
+            "viewGuide": "View Password Guide"
+          },
+          "suggestions": {
+            "mfa": "Set up multi-factor authentication",
+            "account": "Check account security settings"
+          }
+        },
+        "software": {
+          "content": "I can help you with software installation and requests. Let me show you the available options.",
+          "actions": {
+            "browseCatalog": "Browse Software Catalog",
+            "requestSoftware": "Request New Software"
+          }
+        },
+        "network": {
+          "content": "I can help diagnose network connectivity issues. Let's start with some basic troubleshooting steps.",
+          "actions": {
+            "runDiagnostics": "Run Network Diagnostics",
+            "contactSupport": "Contact Network Support"
+          }
+        },
+        "ticket": {
+          "content": "I can help you create a new ticket or check existing ones. What would you like to do?",
+          "actions": {
+            "createTicket": "Create New Ticket",
+            "viewTickets": "View My Tickets"
+          }
+        },
+        "status": {
+          "content": "I can check the status of your tickets and provide updates on any service requests.",
+          "actions": {
+            "checkStatus": "Check Ticket Status"
+          }
+        },
+        "general": {
+          "content": "I'd be happy to help! Could you be more specific about what you need assistance with?",
+          "suggestions": {
+            "specific": "Try asking about a specific issue",
+            "knowledge": "Browse our knowledge base",
+            "agent": "Connect with a live agent"
+          }
+        }
+      },
+      "feedback": {
+        "helpful": "Mark as helpful",
+        "notHelpful": "Mark as not helpful"
+      },
+      "errors": {
+        "responseError": "I'm sorry, I encountered an error. Please try again or contact support if the issue persists."
+      },
+      "examples": {
+        "title": "Try asking:",
+        "status": "What's the status of incident INC-001?",
+        "create": "Create a new service request",
+        "knowledge": "How do I reset my password?",
+        "reports": "Show me this month's incident trends"
+      },
+      "capabilities": {
+        "title": "I can help you with:",
+        "tickets": "Ticket management and status updates",
+        "knowledge": "Knowledge base search and recommendations",
+        "reports": "Generate reports and analytics",
+        "automation": "Workflow automation and suggestions"
+      }
+    }
+  }
+}

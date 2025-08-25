@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 // import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 // import { z } from 'zod'; // Lazy-loaded in registerNovaTools
 import db from '../db.js';
+import { aiFabric } from '../lib/ai-fabric.js';
 import { generateTypedTicketId } from './dbUtils.js';
 import { normalizeTicketType } from './utils.js';
 import { CosmoTicketProcessor } from '../services/cosmo-ticket-processor.js';
@@ -1818,73 +1819,41 @@ export async function handleMCPRequest(userId, tenantId, mcpRequest) {
  */
 async function processMessageWithAI(message, conversation, context) {
   try {
-    // This is where you'd integrate with actual AI providers (OpenAI, Anthropic, etc.)
-    // For now, we'll simulate intelligent responses
+    // Use AI Fabric for intelligent processing instead of simulated responses
+    const response = await aiFabric.processRequest({
+      type: 'chat',
+      input: message,
+      context: {
+        module: 'cosmo-synth',
+        conversationId: conversation.id,
+        userId: conversation.userId,
+        tenantId: conversation.tenantId,
+        messageHistory: conversation.messages.slice(-5), // Last 5 messages for context
+        ...context,
+      },
+      preferences: {
+        enableMCPTools: true,
+        maxTokens: 500,
+        temperature: 0.7,
+      },
+      metadata: {
+        source: 'synth_conversation',
+        tools: ['nova.tickets.create', 'nova.lore.search', 'nova.system.status'],
+      },
+      timestamp: new Date(),
+    });
 
-    const intent = classifyIntent(message);
-    let response = '';
-    let metadata = {};
+    // Parse AI Fabric response and extract actions/metadata
     let actions = [];
+    let metadata = response.metadata || {};
 
-    switch (intent) {
-      case 'create_ticket':
-        response =
-          'I can help you create a ticket! Let me gather some information first. What type of issue are you experiencing?';
-        metadata.actionable = true;
-        metadata.tools = ['nova.tickets.create'];
-        break;
-
-      case 'search_knowledge':
-        const searchQuery = extractSearchQuery(message);
-        if (searchQuery) {
-          response = `I'll search our knowledge base for "${searchQuery}". One moment...`;
-          metadata.tools = ['nova.lore.search'];
-          actions.push({
-            type: 'search_knowledge',
-            payload: { query: searchQuery },
-          });
-        } else {
-          response = 'What would you like me to search for in our knowledge base?';
-        }
-        break;
-
-      case 'system_status':
-        response = 'Let me check the current system status for you...';
-        metadata.tools = ['nova.system.status'];
-        actions.push({
-          type: 'check_status',
-          payload: {},
-        });
-        break;
-
-      case 'escalation_needed':
-        response = 'I understand this issue needs escalation. Let me create an escalation for you.';
-        metadata.escalation = {
-          level: 'medium',
-          reason: 'User requested escalation',
-          suggestedActions: ['Assign to Level 2 support', 'Schedule call with user'],
-        };
-        actions.push({
-          type: 'escalate',
-          payload: {
-            level: 'medium',
-            reason: 'User requested escalation',
-          },
-        });
-        break;
-
-      case 'greeting':
-        response =
-          "Hello! I'm Cosmo, your AI assistant. How can I help you today? I can help with creating tickets, searching our knowledge base, checking system status, and more!";
-        break;
-
-      default:
-        response = generateContextualResponse(message, conversation, context);
-        break;
+    // Check if AI suggested specific actions
+    if (response.actions && Array.isArray(response.actions)) {
+      actions = response.actions;
     }
 
-    // Add personality and XP rewards
-    if (shouldAwardXP(intent, conversation)) {
+    // Award XP for engagement
+    if (shouldAwardXP(message, conversation)) {
       metadata.xpAwarded = 5;
       actions.push({
         type: 'award_xp',
@@ -1897,12 +1866,12 @@ async function processMessageWithAI(message, conversation, context) {
     }
 
     return {
-      message: response,
+      message: response.response || response.message || 'I understand. How can I help you further?',
       metadata,
       actions,
     };
   } catch (error) {
-    logger.error('Error processing message with AI:', error);
+    logger.error('Error processing message with AI Fabric:', error);
     return {
       message:
         "I apologize, but I'm having trouble processing your request right now. Please try again or contact support if the issue persists.",
@@ -1994,12 +1963,12 @@ function generateContextualResponse(message, conversation, context) {
 /**
  * Check if XP should be awarded
  */
-function shouldAwardXP(intent, conversation) {
-  // Award XP for meaningful interactions
+function shouldAwardXP(message, conversation) {
+  // Award XP for meaningful interactions (longer messages, multiple interactions)
   return (
-    ['create_ticket', 'search_knowledge', 'system_status'].includes(intent) &&
-    conversation.messages.length > 2
-  ); // Not on first interaction
+    message.length > 10 && // Meaningful message length
+    conversation.messages.length > 2 // Not on first interaction
+  );
 }
 
 /**

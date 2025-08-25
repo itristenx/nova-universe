@@ -359,12 +359,10 @@ router.post(
         alertData?.service?.integration_keys?.[0]?.key ||
         alertData?.service?.integration_keys?.[0]?.token;
       if (!serviceToken) {
-        return res
-          .status(501)
-          .json({
-            success: false,
-            error: 'Escalation not supported without service integration key',
-          });
+        return res.status(501).json({
+          success: false,
+          error: 'Escalation not supported without service integration key',
+        });
       }
       const payload = {
         summary: `🚨 ESCALATION: ${alertData.summary || 'Alert ' + alertId}`,
