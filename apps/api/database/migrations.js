@@ -55,14 +55,14 @@ class MigrationManager {
       await fs.access(this.migrationsPath);
     } catch (error) {
       await fs.mkdir(this.migrationsPath, { recursive: true });
-      logger.info(`📁 Created migrations directory: ${this.migrationsPath}`);
+      logger.info(`📁 Created migrations directory: ${this.migrationsPath} (${error.code})`);
     }
 
     try {
       await fs.access(this.seedsPath);
     } catch (error) {
       await fs.mkdir(this.seedsPath, { recursive: true });
-      logger.info(`📁 Created seeds directory: ${this.seedsPath}`);
+      logger.info(`📁 Created seeds directory: ${this.seedsPath} (${error.code})`);
     }
   }
 

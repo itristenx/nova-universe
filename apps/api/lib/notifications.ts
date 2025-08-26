@@ -205,8 +205,24 @@ class NotificationService {
 
     const template = this.getEmailTemplate(event);
 
+    // Use channel settings for email customization
+    const fromAddress = channel.settings?.fromAddress || 
+                       process.env.SMTP_FROM || 
+                       'Nova Sentinel <notifications@nova.local>';
+    
+    const subject = channel.settings?.subjectPrefix ? 
+                   `${channel.settings.subjectPrefix} ${template.subject}` : 
+                   template.subject;
+
+    logger.info('Sending email notification via channel:', {
+      channelId: channel.id,
+      channelType: channel.type,
+      recipient: email,
+      subject: subject
+    });
+
     await this.emailTransporter.sendMail({
-      from: process.env.SMTP_FROM || 'Nova Sentinel <notifications@nova.local>',
+      from: fromAddress,
       to: email,
       subject: template.subject,
       html: template.html,
@@ -229,10 +245,22 @@ class NotificationService {
     }
 
     const message = this.getSMSMessage(event);
+    
+    // Use channel settings for SMS customization
+    const fromNumber = channel.settings?.fromNumber || process.env.TWILIO_PHONE_NUMBER;
+    const messagePrefix = channel.settings?.messagePrefix || '';
+    const finalMessage = messagePrefix ? `${messagePrefix} ${message}` : message;
+
+    logger.info('Sending SMS notification via channel:', {
+      channelId: channel.id,
+      channelType: channel.type,
+      recipient: phone.substring(0, 4) + '****', // Privacy protection
+      fromNumber: fromNumber
+    });
 
     await this.twilioClient.messages.create({
-      body: message,
-      from: process.env.TWILIO_PHONE_NUMBER,
+      body: finalMessage,
+      from: fromNumber,
       to: phone,
     });
 
@@ -284,7 +312,22 @@ class NotificationService {
   ): Promise<void> {
     const color = this.getSeverityColor(event.severity);
 
+    // Use channel settings for Slack customization
+    const slackChannel = channel.settings?.slackChannel || undefined;
+    const username = channel.settings?.username || 'Nova Sentinel';
+    const iconEmoji = channel.settings?.iconEmoji || ':warning:';
+    
+    logger.info('Sending Slack notification via channel:', {
+      channelId: channel.id,
+      channelType: channel.type,
+      slackChannel: slackChannel,
+      username: username
+    });
+
     const payload = {
+      channel: slackChannel,
+      username: username,
+      icon_emoji: iconEmoji,
       attachments: [
         {
           color,
@@ -322,7 +365,20 @@ class NotificationService {
   ): Promise<void> {
     const color = this.getSeverityColorHex(event.severity);
 
+    // Use channel settings for Discord customization
+    const username = channel.settings?.username || 'Nova Sentinel';
+    const avatarUrl = channel.settings?.avatarUrl || undefined;
+    
+    logger.info('Sending Discord notification via channel:', {
+      channelId: channel.id,
+      channelType: channel.type,
+      username: username,
+      hasAvatar: !!avatarUrl
+    });
+
     const payload = {
+      username: username,
+      avatar_url: avatarUrl,
       embeds: [
         {
           title: event.title,

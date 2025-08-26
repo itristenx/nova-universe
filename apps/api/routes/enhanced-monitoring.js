@@ -1040,12 +1040,45 @@ router.get('/badge/:statusPageId/:monitorId?', async (req, res) => {
 async function runBasicMonitorCheck(monitor) {
   // This would contain your existing monitor check logic for basic types
   // Implementation depends on your current monitoring logic
-  return {
+  
+  const startTime = Date.now();
+  let result = {
     success: true,
-    responseTime: 100,
+    responseTime: 0,
     message: 'Monitor check completed',
     data: {},
+    monitorId: monitor.id,
+    monitorType: monitor.type,
   };
+
+  try {
+    // Simulate basic check based on monitor type
+    switch (monitor.type) {
+      case 'http':
+        result.message = `HTTP check for ${monitor.url || monitor.target}`;
+        break;
+      case 'tcp':
+        result.message = `TCP check for ${monitor.host}:${monitor.port}`;
+        break;
+      case 'ping':
+        result.message = `Ping check for ${monitor.host}`;
+        break;
+      case 'dns':
+        result.message = `DNS check for ${monitor.hostname}`;
+        break;
+      case 'ssl':
+        result.message = `SSL check for ${monitor.hostname}`;
+        break;
+      default:
+        result.message = `Basic check for monitor ${monitor.id}`;
+    }
+  } catch (error) {
+    result.success = false;
+    result.message = `Monitor check failed: ${error.message}`;
+  }
+
+  result.responseTime = Date.now() - startTime;
+  return result;
 }
 
 // Helper function to update monitor summary for performance

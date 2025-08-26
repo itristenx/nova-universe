@@ -15,27 +15,12 @@ import {
   PencilIcon,
   TrashIcon,
   EyeIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ClockIcon,
-  ArrowUpIcon,
   ArrowRightIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
   ArrowDownTrayIcon,
-  ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline';
 import { useRBACStore } from '../stores/rbacStore';
-import {
-  User,
-  Role,
-  Permission,
-  Group,
-  ApprovalFlow,
-  FeatureFlag,
-  SystemConfiguration,
-  AuditLog,
-} from '../types/rbac';
 
 interface AdminInterfaceProps {
   className?: string;

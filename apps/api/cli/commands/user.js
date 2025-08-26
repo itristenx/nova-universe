@@ -13,7 +13,6 @@ import {
   connectDatabase,
   validateEmail,
   formatDate,
-  sleep,
 } from '../utils/index.js';
 
 export const userCommand = new Command('user').description('Manage Nova Universe users');

@@ -288,17 +288,24 @@ class NovaMCPServer {
       throw new Error('invalid_client');
     }
 
+    // Log token type hint for debugging/audit purposes
+    const tokenType = token_type_hint || 'access_token';
+    logger.info('Token revocation requested', { 
+      clientId: client_id, 
+      tokenType 
+    });
+
     // Revoke access token
     if (this.accessTokens.has(token)) {
       this.accessTokens.delete(token);
-      logger.info('Access token revoked', { clientId: client_id });
+      logger.info('Access token revoked', { clientId: client_id, tokenType });
       return;
     }
 
     // Revoke refresh token
     if (this.refreshTokens.has(token)) {
       this.refreshTokens.delete(token);
-      logger.info('Refresh token revoked', { clientId: client_id });
+      logger.info('Refresh token revoked', { clientId: client_id, tokenType });
       return;
     }
 

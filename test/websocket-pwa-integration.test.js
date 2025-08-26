@@ -163,7 +163,10 @@ describe('PWA Functionality Tests', () => {
 
       // Verify critical assets are cached
       const criticalAssets = ['/manifest.json', '/offline.html', '/app.js', '/app.css'];
-
+      
+      // Test that the service worker would cache these assets
+      expect(mockServiceWorker.cache.addAll).toBeDefined();
+      expect(mockServiceWorker.cache.match).toBeDefined();
       expect(criticalAssets).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/\/manifest\.json/),
@@ -185,10 +188,12 @@ describe('PWA Functionality Tests', () => {
       const isOnline = false;
 
       if (!isOnline) {
+        // Test that cache can handle the request
+        expect(mockCache.match).toBeDefined();
+        expect(mockRequest.url).toBe('/api/tickets');
+        expect(mockRequest.method).toBe('GET');
         expect(mockCache.match).toHaveProperty('mockResolvedValue');
       }
-
-      expect(true).toBe(true); // Test passes for offline handling setup
     });
   });
 });

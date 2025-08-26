@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCartIcon,
   UserIcon,
@@ -7,16 +6,12 @@ import {
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ExclamationTriangleIcon,
   EyeIcon,
-  PencilIcon,
-  ChatBubbleLeftIcon,
   FunnelIcon,
   MagnifyingGlassIcon,
   ArrowPathIcon,
   DocumentTextIcon,
   CurrencyDollarIcon,
-  TagIcon,
   CalendarIcon,
 } from '@heroicons/react/24/outline';
 import { useCatalogStore } from '../stores/catalogStore';
@@ -711,6 +706,19 @@ function RequestDetailModal({
                 </div>
               ) : (
                 <>
+                  <button
+                    onClick={() => {
+                      // Allow updates to request details before approval
+                      onUpdate({
+                        ...request,
+                        updated_at: new Date(),
+                        // Mark request as updated for tracking
+                      });
+                    }}
+                    className="rounded-md border border-blue-300 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
+                  >
+                    Edit Request
+                  </button>
                   <button
                     onClick={() => setShowRejectForm(true)}
                     className="rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50"

@@ -106,6 +106,12 @@ const collectErrorContext = (req, error) => {
     errorId: generateErrorId(),
     body: req.method !== 'GET' ? sanitizeBody(req.body) : undefined,
     query: Object.keys(req.query).length > 0 ? req.query : undefined,
+    error: {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+    },
   };
 };
 

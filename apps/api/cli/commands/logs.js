@@ -233,7 +233,7 @@ async function findLogFiles(projectRoot, service = null) {
           }
         }
       } catch (error) {
-        // Directory not readable, skip
+        console.warn('Directory not readable:', error.message);
       }
     }
   }
@@ -691,7 +691,7 @@ async function showLogStats(options) {
           else if (line.includes('DEBUG') || line.includes('debug')) stats.levels.debug++;
         }
       } catch (error) {
-        // Skip if can't read file
+        console.warn('Cannot read log file:', error.message);
       }
     }
 
@@ -762,7 +762,6 @@ async function exportLogs(options) {
           exportData += content + '\n';
           break;
         }
-          break;
       }
     }
 
@@ -790,7 +789,7 @@ function filterByPattern(output, pattern) {
   return lines.filter((line) => line.includes(pattern)).join('\n');
 }
 
-function filterBySince(output, since) {
+function filterBySince(output, _since) {
   // This is a simplified implementation
   // In practice, you'd parse timestamps from log lines
   return output;
@@ -805,6 +804,7 @@ function formatJsonLogs(output) {
       const parsed = JSON.parse(line);
       formatted += JSON.stringify(parsed, null, 2) + '\n';
     } catch (error) {
+      console.warn('Failed to parse JSON log line:', error.message);
       formatted += line + '\n';
     }
   }

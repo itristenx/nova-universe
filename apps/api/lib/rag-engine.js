@@ -74,12 +74,24 @@ class RAGEngine {
       throw new Error('RAG Engine not initialized');
     }
 
-    logger.info('RAG response generation', { query });
+    logger.info('RAG response generation', { query, context });
+
+    // Use context to enhance the response
+    const enhancedResponse = context.userRole 
+      ? `[As ${context.userRole}] RAG-generated response` 
+      : 'RAG-generated response';
+    
+    const confidenceBoost = context.sessionHistory ? 0.1 : 0;
 
     return {
-      response: 'RAG-generated response',
-      confidence: 0.8,
-      sources: [],
+      response: enhancedResponse,
+      confidence: Math.min(0.8 + confidenceBoost, 1.0),
+      sources: context.sources || [],
+      context: {
+        userRole: context.userRole,
+        sessionId: context.sessionId,
+        hasHistory: Boolean(context.sessionHistory),
+      },
       timestamp: new Date().toISOString(),
     };
   }

@@ -12,7 +12,9 @@ const log = (level, ...args) => {
       console.error(`[${timestamp}] ❌`, ...args);
       try {
         fs.appendFileSync(errorLogPath, msg);
-      } catch (e) {}
+      } catch (e) {
+        console.error('Failed to write to error log:', e.message);
+      }
       break;
     case 'warn':
       console.warn(`[${timestamp}] ⚠️`, ...args);

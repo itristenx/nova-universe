@@ -81,6 +81,15 @@ export default [
       globals: { ...globals.es2024, db: true, print: true },
     },
   },
+  // CommonJS files (Node environment)
+  {
+    files: ['**/*.cjs'],
+    languageOptions: {
+      globals: { ...globals.node },
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+    },
+  },
   // TypeScript specific tweaks
   {
     files: ['**/*.{ts,tsx}'],

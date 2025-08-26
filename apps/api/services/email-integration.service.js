@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '/prisma/generated/core/index.js';
 import logger from '../logger.js';
 import { NotificationService } from './notification.service.js';
 import { EnhancedTicketService } from './enhanced-ticket.service.js';

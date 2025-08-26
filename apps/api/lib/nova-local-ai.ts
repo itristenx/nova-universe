@@ -601,13 +601,55 @@ export class NovaLocalAI extends EventEmitter {
    */
   private async generateExplanation(request: PredictionRequest, result: any): Promise<any> {
     // Simplified explanation - in production, use SHAP, LIME, or similar
+    const featureCount = request.input.length;
+    const confidence = result.confidence || 0.8;
+    const prediction = result.prediction || result;
+    
+    // Analyze result for explanation factors
+    const factors = [];
+    
+    // Primary factor based on confidence
+    if (confidence > 0.9) {
+      factors.push({ feature: 'high_confidence_prediction', importance: 0.8, value: 'high' });
+    } else if (confidence > 0.7) {
+      factors.push({ feature: 'moderate_confidence_prediction', importance: 0.6, value: 'medium' });
+    } else {
+      factors.push({ feature: 'low_confidence_prediction', importance: 0.4, value: 'low' });
+    }
+    
+    // Secondary factor based on input complexity
+    if (featureCount > 10) {
+      factors.push({ feature: 'complex_input_analysis', importance: 0.3, value: 'high' });
+    } else if (featureCount > 5) {
+      factors.push({ feature: 'moderate_input_analysis', importance: 0.2, value: 'medium' });
+    } else {
+      factors.push({ feature: 'simple_input_analysis', importance: 0.1, value: 'low' });
+    }
+    
+    // Result-specific factors
+    if (result.risk_level) {
+      factors.push({ feature: 'risk_assessment', importance: 0.4, value: result.risk_level });
+    }
+    
+    if (result.category) {
+      factors.push({ feature: 'category_classification', importance: 0.3, value: result.category });
+    }
+    
     return {
       method: 'feature_importance',
-      factors: [
-        { feature: 'primary_factor', importance: 0.7, value: 'high' },
-        { feature: 'secondary_factor', importance: 0.3, value: 'medium' },
-      ],
-      reasoning: `Prediction based on ${request.input.length} input features`,
+      factors,
+      reasoning: `Prediction based on ${featureCount} input features with ${(confidence * 100).toFixed(1)}% confidence`,
+      confidence_breakdown: {
+        model_confidence: confidence,
+        input_quality: featureCount > 5 ? 'high' : 'medium',
+        prediction_stability: result.stability || 'stable'
+      },
+      result_analysis: {
+        prediction_type: typeof prediction,
+        has_risk_assessment: !!result.risk_level,
+        has_category: !!result.category,
+        result_complexity: Object.keys(result).length
+      }
     };
   }
 
@@ -696,7 +738,13 @@ export class NovaLocalAI extends EventEmitter {
     await aiMonitoringSystem.recordMetric({
       type: 'model_feedback_accuracy',
       value: accuracy,
-      metadata: { modelId, totalFeedback: feedback.length },
+      metadata: { 
+        modelId, 
+        totalFeedback: feedback.length,
+        correctFeedback,
+        incorrectFeedback,
+        accuracy: accuracy.toFixed(3)
+      },
     });
   }
 

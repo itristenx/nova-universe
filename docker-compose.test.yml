@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  nova-test-postgres:
+    image: postgres:15-alpine
+    container_name: nova-test-postgres
+    environment:
+      POSTGRES_DB: nova_test
+      POSTGRES_USER: nova_user
+      POSTGRES_PASSWORD: nova_pass
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "4132:5432"
+    volumes:
+      - nova-test-postgres-data:/var/lib/postgresql/data
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nova_user -d nova_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - nova-test-network
+
+  # Redis Cache
+  nova-test-redis:
+    image: redis:7-alpine
+    container_name: nova-test-redis
+    ports:
+      - "4179:6379"
+    volumes:
+      - nova-test-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - nova-test-network
+
+  # Real API Service
+  nova-test-api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile.dev
+    container_name: nova-test-api
+    environment:
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_URL: postgresql://nova_user:nova_pass@nova-test-postgres:5432/nova_test
+      REDIS_URL: redis://nova-test-redis:6379
+      JWT_SECRET: test-jwt-secret-key
+      TEST_ENV: integration
+      DISABLE_CLEANUP: "true"
+    ports:
+      - "4102:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      nova-test-postgres:
+        condition: service_healthy
+      nova-test-redis:
+        condition: service_healthy
+    networks:
+      - nova-test-network
+    volumes:
+      - ./apps/api:/app
+      - ./packages:/packages
+      - ./prisma:/prisma
+      - /app/node_modules
+
+volumes:
+  nova-test-postgres-data:
+  nova-test-redis-data:
+
+networks:
+  nova-test-network:
+    external: true

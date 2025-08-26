@@ -5,19 +5,15 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
-  ArrowUpIcon,
   ArrowRightIcon,
   UserIcon,
-  CalendarIcon,
-  ChatBubbleLeftRightIcon,
   ExclamationTriangleIcon,
-  InformationCircleIcon,
   PlusIcon,
   PencilIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
 import { useRBACStore } from '../stores/rbacStore';
-import { ApprovalInstance, ApprovalFlow, ApprovalStep, ApprovalStepInstance } from '../types/rbac';
+import { ApprovalInstance, ApprovalStepInstance } from '../types/rbac';
 
 interface ApprovalWorkflowEngineProps {
   className?: string;
@@ -56,9 +52,27 @@ export default function ApprovalWorkflowEngine({
   // Get relevant approval instances
   const myApprovals = showMyApprovals ? getMyApprovals() : [];
   const historyApprovals = recordId ? getApprovalHistory(recordId) : getApprovalHistory();
-  const pendingApprovals = approvalInstances.filter(
+  
+  // Filter approval instances, optionally by table type
+  let filteredInstances = approvalInstances.filter(
     (instance) => instance.status === 'pending' || instance.status === 'escalated',
   );
+  
+  // Apply recordTable filter if specified
+  if (recordTable) {
+    filteredInstances = filteredInstances.filter(
+      (instance) => instance.record_table === recordTable
+    );
+  }
+  
+  // Apply recordId filter if specified
+  if (recordId) {
+    filteredInstances = filteredInstances.filter(
+      (instance) => instance.record_id === recordId
+    );
+  }
+  
+  const pendingApprovals = filteredInstances;
 
   const handleApprove = (instanceId: string, stepId: string) => {
     if (!selectedInstance) return;

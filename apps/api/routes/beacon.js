@@ -699,6 +699,7 @@ router.post('/activation-codes', createRateLimit(5 * 60 * 1000, 20), async (req,
       },
     );
   } catch (e) {
+    console.error('Failed to create activation code:', e.message);
     res.status(500).json({ success: false, error: 'Failed to create activation code' });
   }
 });
@@ -722,6 +723,7 @@ router.post('/check-in', validateKioskAuth, async (req, res) => {
       res.json({ success: true, kioskId });
     });
   } catch (e) {
+    console.error('Check-in failed:', e.message);
     res.status(500).json({ success: false, error: 'Check-in failed' });
   }
 });

@@ -1,24 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ShieldCheckIcon,
   KeyIcon,
   LockClosedIcon,
   EyeIcon,
-  EyeSlashIcon,
-  CogIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
   UserIcon,
   ComputerDesktopIcon,
   DevicePhoneMobileIcon,
-  GlobeAltIcon,
-  WifiIcon,
   MapPinIcon,
-  CalendarIcon,
-  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import { useRBACStore } from '../stores/rbacStore';
 
@@ -319,8 +312,20 @@ export const SecurityDashboard: React.FC = () => {
           risk_score: 15,
         },
       ]);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to load security data:', error);
+      
+      // Enhanced error handling for security dashboard
+      setSecurityAlerts([]);
+      
+      // Log error details for monitoring
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          timestamp: new Date().toISOString()
+        });
+      }
     } finally {
       setLoading(false);
     }

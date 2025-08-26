@@ -10,9 +10,6 @@
  * - Knowledge base suggestion matching
  */
 
-import { createInterface } from 'readline';
-import fs from 'fs/promises';
-import path from 'path';
 import { EventEmitter } from 'events';
 
 // AI/ML Processing Classes

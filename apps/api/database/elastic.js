@@ -466,17 +466,68 @@ class ElasticsearchManager {
     }
 
     try {
+      // Extract options with defaults
+      const { 
+        includeShards = false, 
+        indexPattern = null,
+        timeRange = null 
+      } = options;
+
       // Get index stats
-      const stats = await this.client.indices.stats({
-        index: Object.values(this.indices),
-      });
+      const statsQuery = {
+        index: indexPattern || Object.values(this.indices),
+      };
+
+      if (includeShards) {
+        statsQuery.level = 'shards';
+      }
+
+      const stats = await this.client.indices.stats(statsQuery);
 
       // Get cluster health
       const health = await this.client.cluster.health();
 
+      // If timeRange is specified, get additional time-based analytics
+      let timeBasedMetrics = {};
+      if (timeRange && timeRange.from && timeRange.to) {
+        try {
+          const searchResponse = await this.client.search({
+            index: indexPattern || Object.values(this.indices),
+            body: {
+              query: {
+                range: {
+                  '@timestamp': {
+                    gte: timeRange.from,
+                    lte: timeRange.to
+                  }
+                }
+              },
+              aggs: {
+                documents_over_time: {
+                  date_histogram: {
+                    field: '@timestamp',
+                    interval: '1h'
+                  }
+                }
+              },
+              size: 0
+            }
+          });
+          
+          timeBasedMetrics = {
+            time_range: timeRange,
+            documents_in_range: searchResponse.body.hits.total.value,
+            histogram: searchResponse.body.aggregations?.documents_over_time?.buckets || []
+          };
+        } catch (timeError) {
+          logger.warn('Failed to get time-based metrics:', timeError.message);
+        }
+      }
+
       return {
         analytics: {
           cluster_health: health.body.status,
+          ...timeBasedMetrics,
           indices: Object.entries(stats.body.indices || {}).map(([name, data]) => ({
             name,
             document_count: data.total?.docs?.count || 0,

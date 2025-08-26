@@ -133,11 +133,11 @@ class TestValidator {
         await fs.access(testPath);
         await this.validateTestFile(testFile);
       } catch (error) {
-        console.log(`   ⏭️  Skipping ${testFile} (file not found)`);
+        console.log(`   ⏭️  Skipping ${testFile} (file not found): ${error.message}`);
         this.results.push({
           file: testFile,
           skipped: true,
-          reason: 'File not found',
+          reason: `File not found: ${error.message}`,
         });
       }
     }

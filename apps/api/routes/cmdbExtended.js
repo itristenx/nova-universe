@@ -24,9 +24,11 @@ router.get('/support-groups', async (req, res) => {
       limit: parseInt(req.query.limit) || 50,
     };
 
+    logger.info('Fetching support groups', { filters, userId: req.user?.id });
     const result = await supportGroupService.listSupportGroups(filters);
     res.json(result);
   } catch (error) {
+    logger.error('Error fetching support groups:', error);
     res.status(500).json({ error: error.message });
   }
 });

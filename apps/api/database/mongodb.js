@@ -102,31 +102,31 @@ class MongoDBManager {
    * Set up event handlers for monitoring
    */
   setupEventHandlers() {
-    this.client.on('connectionPoolCreated', (event) => {
+    this.client.on('connectionPoolCreated', (_event) => {
       if (process.env.NODE_ENV === 'development') {
         logger.debug('🏊 MongoDB connection pool created');
       }
     });
 
-    this.client.on('connectionCreated', (event) => {
+    this.client.on('connectionCreated', (_event) => {
       if (process.env.NODE_ENV === 'development') {
         logger.debug('🔗 New MongoDB connection created');
       }
     });
 
-    this.client.on('connectionReady', (event) => {
+    this.client.on('connectionReady', (_event) => {
       if (process.env.NODE_ENV === 'development') {
         logger.debug('✅ MongoDB connection ready');
       }
     });
 
-    this.client.on('connectionClosed', (event) => {
+    this.client.on('connectionClosed', (_event) => {
       if (process.env.NODE_ENV === 'development') {
         logger.debug('📴 MongoDB connection closed');
       }
     });
 
-    this.client.on('connectionPoolClosed', (event) => {
+    this.client.on('connectionPoolClosed', (_event) => {
       logger.warn('🚫 MongoDB connection pool closed');
       this.isConnected = false;
     });

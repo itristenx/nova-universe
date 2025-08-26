@@ -6,9 +6,7 @@ import {
   ChartBarIcon,
   CogIcon,
   UserGroupIcon,
-  BuildingOfficeIcon,
   CurrencyDollarIcon,
-  DocumentTextIcon,
   ClockIcon,
   CheckCircleIcon,
   ShieldCheckIcon,
@@ -169,9 +167,27 @@ const ServiceCatalog: React.FC<ServiceCatalogProps> = ({ className }) => {
 
       setIsInitialized(true);
       setRetryCount(0);
-    } catch (_error) {
+    } catch (error) {
       console.error('Critical error loading production data:', error);
       setError('System unavailable. Please contact your system administrator.');
+      
+      // Enhanced error handling for service catalog
+      if (error instanceof Error) {
+        console.error('Service catalog error details:', {
+          message: error.message,
+          stack: error.stack,
+          timestamp: new Date().toISOString(),
+          retry_count: retryCount
+        });
+      }
+      
+      // Set appropriate error state based on retry attempts
+      const maxRetries = 3;
+      if (retryCount < maxRetries) {
+        setError(`Loading failed. Retrying... (${retryCount + 1}/${maxRetries})`);
+      } else {
+        setError('Service catalog temporarily unavailable. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }

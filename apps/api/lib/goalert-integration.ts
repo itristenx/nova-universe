@@ -430,12 +430,26 @@ export class NovaGoAlertIntegration extends EventEmitter {
       for (const [id, schedule] of this.schedules) {
         try {
           onCallInfo[id] = await this.getGoAlertOnCall(id);
+          // Include schedule information in the result
+          onCallInfo[id].schedule = {
+            name: schedule.name,
+            description: schedule.description,
+            timezone: schedule.timeZone
+          };
         } catch (error) {
           logger.warn('Failed to get on-call info for schedule', {
             scheduleId: id,
+            scheduleName: schedule.name,
             error: error.message,
           });
-          onCallInfo[id] = { error: error.message };
+          onCallInfo[id] = { 
+            error: error.message,
+            schedule: {
+              name: schedule.name,
+              description: schedule.description,
+              timezone: schedule.timeZone
+            }
+          };
         }
       }
 
@@ -526,15 +540,15 @@ export class NovaGoAlertIntegration extends EventEmitter {
         // Check if service already exists
         const existing = await this.checkExistingService(serviceConfig.name);
         if (existing) {
-          logger.info(`AI service already exists in GoAlert: ${serviceConfig.name}`);
+          logger.info(`AI service already exists in GoAlert: ${serviceConfig.name} (ID: ${serviceId})`);
           continue;
         }
 
         // Create service via Nova GoAlert proxy
         await this.createGoAlertService(serviceConfig);
-        logger.info(`Created GoAlert service for: ${serviceConfig.name}`);
+        logger.info(`Created GoAlert service for: ${serviceConfig.name} (ID: ${serviceId})`);
       } catch (error) {
-        logger.warn(`Failed to create GoAlert service for ${serviceConfig.name}:`, error.message);
+        logger.warn(`Failed to create GoAlert service for ${serviceConfig.name} (ID: ${serviceId}):`, error.message);
       }
     }
   }
@@ -1353,6 +1367,8 @@ export class NovaGoAlertIntegration extends EventEmitter {
         data: {
           alert_id: args.alert_id,
           message: 'Alert acknowledged successfully',
+          acknowledged_by: response.data?.acknowledged_by,
+          acknowledged_at: response.data?.acknowledged_at || new Date().toISOString(),
         },
       };
     } catch (error) {
@@ -1378,6 +1394,9 @@ export class NovaGoAlertIntegration extends EventEmitter {
         data: {
           alert_id: args.alert_id,
           message: 'Alert closed successfully',
+          closed_by: response.data?.closed_by,
+          closed_at: response.data?.closed_at || new Date().toISOString(),
+          status: response.data?.status || 'closed',
         },
       };
     } catch (error) {
@@ -1453,6 +1472,10 @@ export class NovaGoAlertIntegration extends EventEmitter {
         data: {
           alert_id: args.alert_id,
           message: 'Incident escalated successfully',
+          escalated_by: response.data?.escalated_by,
+          escalated_at: response.data?.escalated_at || new Date().toISOString(),
+          escalation_level: response.data?.escalation_level,
+          next_escalation: response.data?.next_escalation,
         },
       };
     } catch (error) {

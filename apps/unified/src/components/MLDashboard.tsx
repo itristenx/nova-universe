@@ -4,22 +4,13 @@ import {
   CpuChipIcon,
   ChartBarIcon,
   LightBulbIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-  ClockIcon,
-  UserIcon,
-  BuildingLibraryIcon,
-  TagIcon,
   SparklesIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
   InformationCircleIcon,
   BeakerIcon,
   RocketLaunchIcon,
-  Cog6ToothIcon,
-  PlayIcon,
   PauseIcon,
-  StopIcon,
 } from '@heroicons/react/24/outline';
 import { useRBACStore } from '../stores/rbacStore';
 
@@ -381,8 +372,18 @@ export const MLDashboard: React.FC = () => {
           assigned_to: 'devops_team',
         },
       ]);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to load ML data:', error);
+      
+      // Enhanced error handling for ML dashboard
+      if (error instanceof Error) {
+        console.error('ML Dashboard error details:', {
+          message: error.message,
+          stack: error.stack,
+          timestamp: new Date().toISOString(),
+          component: 'MLDashboard'
+        });
+      }
     } finally {
       setLoading(false);
     }

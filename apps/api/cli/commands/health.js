@@ -246,7 +246,7 @@ async function checkSystemResources(_verbose = false) {
   } catch (error) {
     result.details.push({
       status: 'warning',
-      message: 'Disk usage check failed',
+      message: `Disk usage check failed: ${error.message}`,
     });
   }
 
@@ -353,7 +353,7 @@ async function checkDatabase(_verbose = false) {
     } catch (error) {
       result.details.push({
         status: 'warning',
-        message: 'Could not list collections',
+        message: `Could not list collections: ${error.message}`,
       });
     }
   } catch (error) {
@@ -412,7 +412,7 @@ async function checkFileSystem(_verbose = false) {
   } catch (error) {
     result.details.push({
       status: 'warning',
-      message: 'Could not check file permissions',
+      message: `Could not check file permissions: ${error.message}`,
     });
   }
 
@@ -466,7 +466,7 @@ async function checkDependencies(_verbose = false) {
             }
           }
         } catch (error) {
-          // Ignore stat errors
+          console.warn('Error checking disk usage:', error.message);
         }
       }
     }
@@ -644,7 +644,7 @@ async function runDiagnostics(options) {
               conflicts.push(port);
             }
           } catch (error) {
-            // Port not in use
+            console.debug('Port not in use or check failed:', error.message);
           }
         }
 

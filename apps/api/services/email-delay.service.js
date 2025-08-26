@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '/prisma/generated/core/index.js';
 import logger from '../logger.js';
 import { EmailCommunicationService } from './email-communication.service.js';
 import EmailTemplateService from './email-template.service.js';

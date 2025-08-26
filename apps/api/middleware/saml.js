@@ -63,7 +63,13 @@ export function configureSAML() {
               return done(err);
             }
 
-            let user;
+            let user = existingUser;
+            logger.info('SAML authentication processing', {
+              email,
+              existingUser: !!user,
+              userInfo: user ? { id: user.id, email: user.email } : null,
+            });
+
             if (existingUser) {
               // Update existing user
               const updateQuery = `

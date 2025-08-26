@@ -4,7 +4,7 @@ import { authenticateToken } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validation.js';
 import { body, param, query } from 'express-validator';
 import logger from '../logger.js';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '/prisma/generated/core/index.js';
 
 const prisma = new PrismaClient();
 

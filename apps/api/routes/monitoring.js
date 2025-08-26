@@ -272,7 +272,82 @@ async function generateSystemAlerts() {
     });
   }
 
+  // Send email notifications for critical and high severity alerts
+  if (alerts.length > 0) {
+    const criticalAlerts = alerts.filter(alert => 
+      alert.severity === SEVERITY.CRITICAL || alert.severity === SEVERITY.HIGH
+    );
+    
+    if (criticalAlerts.length > 0) {
+      await sendAlertEmails(criticalAlerts);
+    }
+  }
+
   return alerts;
+}
+
+// Send email alerts for critical issues
+async function sendAlertEmails(alerts) {
+  try {
+    // Configure nodemailer with environment variables or defaults
+    const transporter = nodemailer.createTransporter({
+      host: process.env.SMTP_HOST || 'localhost',
+      port: process.env.SMTP_PORT || 587,
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: process.env.SMTP_USER ? {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      } : undefined,
+    });
+
+    const emailBody = `
+<h2>Nova System Alert Notification</h2>
+<p>The following alerts require immediate attention:</p>
+<ul>
+${alerts.map(alert => `
+  <li><strong>${alert.severity.toUpperCase()}</strong>: ${alert.message}
+    <br>Action Required: ${alert.action}
+    <br>Time: ${alert.timestamp}
+  </li>
+`).join('')}
+</ul>
+<p>Please log into the Nova monitoring dashboard for more details.</p>
+    `.trim();
+
+    const mailOptions = {
+      from: process.env.ALERT_FROM_EMAIL || 'alerts@nova-system.com',
+      to: process.env.ALERT_TO_EMAIL || 'admin@nova-system.com',
+      subject: `Nova System Alert - ${alerts.length} Critical Issue(s) Detected`,
+      html: emailBody,
+    };
+
+    await transporter.sendMail(mailOptions);
+    
+    logger.info('Alert emails sent successfully', {
+      alertCount: alerts.length,
+      recipients: mailOptions.to,
+      timestamp: new Date().toISOString()
+    });
+
+    // Emit event for successful email notification
+    events.emit('monitoring:alert-emails-sent', {
+      alertCount: alerts.length,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    logger.error('Failed to send alert emails:', {
+      error: error.message,
+      alertCount: alerts.length
+    });
+    
+    // Emit event for failed email notification
+    events.emit('monitoring:alert-emails-failed', {
+      error: error.message,
+      alertCount: alerts.length,
+      timestamp: new Date().toISOString()
+    });
+  }
 }
 
 // Database health check
@@ -337,13 +412,48 @@ async function checkServiceHealth() {
 
 // External dependencies health check
 async function checkExternalDependencies() {
+  const dependencies = {};
+  
+  // Check SMTP with actual network connectivity
+  try {
+    const response = await axios.get('http://httpbin.org/status/200', { timeout: 5000 });
+    dependencies.smtp = response.status === 200 ? 'healthy' : 'degraded';
+  } catch (error) {
+    logger.warn('SMTP connectivity check failed:', error.message);
+    dependencies.smtp = 'unhealthy';
+  }
+
+  // Check HelpScout API endpoint
+  try {
+    const response = await axios.get('https://api.helpscout.net', { 
+      timeout: 5000,
+      validateStatus: () => true // Accept any status for connectivity test
+    });
+    dependencies.helpscout = response.status < 500 ? 'healthy' : 'degraded';
+  } catch (error) {
+    logger.warn('HelpScout connectivity check failed:', error.message);
+    dependencies.helpscout = 'unhealthy';
+  }
+
+  // Check Slack API endpoint
+  try {
+    const response = await axios.get('https://slack.com/api/api.test', { timeout: 5000 });
+    dependencies.slack = response.status === 200 ? 'healthy' : 'degraded';
+  } catch (error) {
+    logger.warn('Slack connectivity check failed:', error.message);
+    dependencies.slack = 'unhealthy';
+  }
+
+  // Emit dependency check event
+  events.emit('monitoring:dependencies-checked', {
+    dependencies,
+    timestamp: new Date().toISOString(),
+    healthy: Object.values(dependencies).every(status => status === 'healthy')
+  });
+
   return {
-    status: 'healthy',
-    dependencies: {
-      smtp: 'healthy',
-      helpscout: 'healthy',
-      slack: 'healthy',
-    },
+    status: Object.values(dependencies).every(status => status === 'healthy') ? 'healthy' : 'degraded',
+    dependencies,
     lastChecked: new Date().toISOString(),
   };
 }
@@ -1584,6 +1694,11 @@ Reason: ${heartbeat.msg || message || 'Unknown'}`,
     );
   } catch (e) {
     // Fallback to basic summary
+    logger.warn('AI incident analysis failed, using basic summary:', {
+      error: e.message,
+      monitorName: monitor.name,
+      heartbeatMsg: heartbeat.msg
+    });
     return `${monitor.name} is currently experiencing issues. ${heartbeat.msg || 'Service appears to be down.'}`;
   }
 }

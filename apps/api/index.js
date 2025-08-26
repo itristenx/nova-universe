@@ -42,7 +42,7 @@ import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
-import novaTVRouter from './src/routes/nova-tv.js'; // Nova TV - Channel Management
+import novaTVRouter from './routes/nova-tv.js'; // Nova TV - Channel Management
 import customerActivityRouter from './routes/customer-activity.js'; // Customer Activity & Email Communication Tracking
 // Service Catalog API routes
 import serviceCatalogRouter from './routes/serviceCatalog.js';
@@ -66,6 +66,7 @@ import session from 'express-session';
 import { body, validationResult } from 'express-validator';
 import fs from 'fs';
 import http from 'http';
+import https from 'https';
 import nodemailer from 'nodemailer';
 import passport from 'passport';
 import path from 'path';
@@ -121,7 +122,22 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Create HTTP server and WebSocket server
-const server = http.createServer(app);
+let server;
+if (CERT_PATH && KEY_PATH && fs.existsSync(CERT_PATH) && fs.existsSync(KEY_PATH)) {
+  // Create HTTPS server with TLS certificates
+  const options = {
+    cert: fs.readFileSync(CERT_PATH),
+    key: fs.readFileSync(KEY_PATH),
+  };
+  server = https.createServer(options, app);
+  logger.info('Starting HTTPS server with TLS certificates');
+} else {
+  // Fallback to HTTP server
+  server = http.createServer(app);
+  if (CERT_PATH || KEY_PATH) {
+    logger.warning('TLS certificates not found or incomplete, falling back to HTTP');
+  }
+}
 const io = new SocketIOServer(server, {
   cors: {
     origin: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : '*',
@@ -161,6 +177,7 @@ io.use(async (socket, next) => {
       next();
     }
   } catch (error) {
+    logger.warn('WebSocket authentication failed:', error.message);
     next(new Error('Authentication failed'));
   }
 });
@@ -1675,21 +1692,8 @@ app.post('/api/kiosks/activate', (req, res) => {
 });
 
 // Kiosk configuration endpoint
-app.get('/api/kiosks/:id/remote-config', (req, res) => {
+app.get('/api/kiosks/:id/remote-config', kioskOrAuth, (req, res) => {
   const kioskId = req.params.id;
-
-  // Check authentication
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  const payload = token && verify(token);
-
-  const isKioskAuth = payload && payload.type === 'kiosk' && payload.kioskId === kioskId;
-  const isAdminAuth = req.user || (payload && payload.type !== 'kiosk');
-  const hasGeneralKioskToken = KIOSK_TOKEN && token === KIOSK_TOKEN;
-
-  if (!isKioskAuth && !isAdminAuth && !hasGeneralKioskToken && !DISABLE_AUTH) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
 
   // Get kiosk-specific configuration
   db.get('SELECT * FROM kiosks WHERE id=$1', [kioskId], (err, kiosk) => {
@@ -1729,22 +1733,9 @@ app.get('/api/kiosks/:id/remote-config', (req, res) => {
 });
 
 // Kiosk status update endpoint
-app.put('/api/kiosks/:id/status', (req, res) => {
+app.put('/api/kiosks/:id/status', kioskOrAuth, (req, res) => {
   const kioskId = req.params.id;
   const { status, timestamp } = req.body;
-
-  // Check authentication
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  const payload = token && verify(token);
-
-  const isKioskAuth = payload && payload.type === 'kiosk' && payload.kioskId === kioskId;
-  const isAdminAuth = req.user || (payload && payload.type !== 'kiosk');
-  const hasGeneralKioskToken = KIOSK_TOKEN && token === KIOSK_TOKEN;
-
-  if (!isKioskAuth && !isAdminAuth && !hasGeneralKioskToken && !DISABLE_AUTH) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
 
   if (!status) {
     return res.status(400).json({ error: 'Status is required' });
@@ -1779,22 +1770,8 @@ app.put('/api/kiosks/:id/status', (req, res) => {
   );
 });
 
-app.get('/api/kiosks/:id', (req, res) => {
+app.get('/api/kiosks/:id', kioskOrAuth, (req, res) => {
   const kioskId = req.params.id;
-
-  // Check if request has valid kiosk token or admin auth
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  const payload = token && verify(token);
-
-  // Allow access with valid kiosk token, admin auth, or general kiosk token
-  const isKioskAuth = payload && payload.type === 'kiosk' && payload.kioskId === kioskId;
-  const isAdminAuth = req.user || (payload && payload.type !== 'kiosk');
-  const hasGeneralKioskToken = KIOSK_TOKEN && token === KIOSK_TOKEN;
-
-  if (!isKioskAuth && !isAdminAuth && !hasGeneralKioskToken && !DISABLE_AUTH) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
 
   db.get('SELECT * FROM kiosks WHERE id=$1', [kioskId], (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
@@ -1852,12 +1829,13 @@ app.get('/api/kiosks', ensureAuth, async (req, res) => {
     }));
     res.json(kiosksWithConfig);
   } catch (err) {
+    logger.error('Error fetching kiosks with config:', err.message);
     res.status(500).json({ error: 'DB error' });
   }
 });
 
 // Refactored kiosksRouter GET endpoint (async/await, PostgreSQL)
-kiosksRouter.get('/', ensureAuth, async (req, res) => {
+kiosksRouter.get('/', kioskOrAuth, async (req, res) => {
   try {
     const { rows: kiosks } = await db.query('SELECT * FROM kiosks');
     const { rows: configRows } = await db.query('SELECT key, value FROM config');
@@ -1883,6 +1861,7 @@ kiosksRouter.get('/', ensureAuth, async (req, res) => {
     }));
     res.json(kiosksWithConfig);
   } catch (err) {
+    logger.error('Error in kiosksRouter GET:', err.message);
     res.status(500).json({ error: 'DB error' });
   }
 });
@@ -2046,11 +2025,11 @@ v1Router.delete('/api/notifications', ensureAuth, (req, res) => {
 });
 
 // --- API v1 Kiosks endpoints ---
-app.use('/api/v1/kiosks', kiosksRouter);
+app.use('/api/v1/kiosks', kioskOrAuth, kiosksRouter);
 
 // Mount at both /api/kiosks and /api/v1/kiosks
-app.use('/api/kiosks', kiosksRouter);
-app.use('/api/v1/kiosks', kiosksRouter);
+app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
+app.use('/api/v1/kiosks', kioskOrAuth, kiosksRouter);
 
 // Register v1 router for legacy API endpoints
 app.use('/api/v1', v1Router);
@@ -2322,7 +2301,7 @@ v1Router.use('/cmdb', cmdbExtendedRouter);
 v1Router.use('/integrations', integrationsRouter);
 v1Router.use('/catalog-items', catalogItemsRouter);
 v1Router.use('/search', searchRouter);
-v1Router.use('/configuration', configurationRouter);
+v1Router.use('/configuration', requirePermission('admin'), configurationRouter);
 v1Router.use('/', serverRouter); // Handles /api/v1/server-info
 v1Router.use('/logs', logsRouter);
 v1Router.use('/reports', reportsRouter);
@@ -2361,8 +2340,8 @@ v1Router.use('/orbit', orbitRouter); // Nova Orbit - End-User Portal
 v1Router.use('/synth', synthRouter); // Nova Synth - AI Engine (Legacy v1)
 
 // Kiosk management (available in both versions)
-v1Router.use('/kiosks', kiosksRouter);
-v2Router.use('/kiosks', kiosksRouter);
+v1Router.use('/kiosks', kioskOrAuth, kiosksRouter);
+v2Router.use('/kiosks', kioskOrAuth, kiosksRouter);
 
 // === BACKWARD COMPATIBILITY ROUTES ===
 // Map legacy unversioned routes to v1 for backward compatibility
@@ -2375,12 +2354,12 @@ app.use('/api/helpscout', helpscoutRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/monitoring', monitoringRouter);
 app.use('/api/auth', authRouter);
-app.use('/api/tickets', ticketsRouter);
+app.use('/api/tickets', ticketLimiter, ticketsRouter);
 app.use('/api/spaces', spacesRouter);
 app.use('/api/ai-fabric', aiFabricRouter);
 app.use('/api/setup', setupRouter);
 app.use('/api/nova-tv', novaTVRouter);
-app.use('/api/kiosks', kiosksRouter);
+app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
 
 // Service Catalog API routes
 app.use('/api/service-catalog', serviceCatalogRouter);
@@ -2395,7 +2374,7 @@ app.use('/api/email-templates', emailTemplatesRouter);
 app.use('/api/customer-activity', customerActivityRouter);
 
 // Special routes that maintain their own paths
-app.use('/scim/v2', scimRouter); // SCIM 2.0 Provisioning API
+app.use('/scim/v2', ensureScimAuth, scimRouter); // SCIM 2.0 Provisioning API with authentication
 app.use('/core', coreRouter);
 
 // Feature-gated status pages
@@ -2474,7 +2453,7 @@ if (
   process.env.FORCE_LISTEN === 'true' ||
   process.env.API_PORT
 ) {
-  createApp().then(async ({ app, server, io }) => {
+  createApp().then(async ({ app: _app, server, io: _io }) => {
     server.listen(PORT, async () => {
       logger.info(`🚀 Nova Universe API Server running on port ${PORT}`);
       logger.info(`📊 Admin interface: http://localhost:${PORT}/admin`);
@@ -2528,6 +2507,7 @@ kiosksRouter.get('/', async (req, res) => {
     const { rows: kiosks } = await db.query('SELECT * FROM kiosks');
     res.json(kiosks);
   } catch (err) {
+    logger.error('Error fetching kiosks:', err.message);
     res.status(500).json({ error: 'DB error' });
   }
 });

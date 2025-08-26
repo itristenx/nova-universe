@@ -199,24 +199,24 @@ async function startDevelopment(options) {
   }
 
   // Set up process monitoring
-  for (const { name, process: proc, port: _port } of processes) {
+  for (const { name, process: proc, port } of processes) {
     proc.stdout.on('data', (data) => {
       const output = data.toString().trim();
       if (output) {
-        console.log(chalk.gray(`[${name}] ${output}`));
+        console.log(chalk.gray(`[${name}:${port}] ${output}`));
       }
     });
 
     proc.stderr.on('data', (data) => {
       const output = data.toString().trim();
       if (output && !output.includes('ExperimentalWarning')) {
-        console.log(chalk.yellow(`[${name}] ${output}`));
+        console.log(chalk.yellow(`[${name}:${port}] ${output}`));
       }
     });
 
     proc.on('close', (code) => {
       if (code !== 0) {
-        console.log(chalk.red(`[${name}] Process exited with code ${code}`));
+        console.log(chalk.red(`[${name}:${port}] Process exited with code ${code}`));
       }
     });
   }
@@ -418,7 +418,7 @@ async function buildApplication(options) {
         cwd: path.join(projectRoot, 'nova-core'),
       });
     } catch (error) {
-      logger.warning('Bundle analysis not available');
+      logger.warning('Bundle analysis not available:', error.message);
     }
   }
 
@@ -442,7 +442,11 @@ async function manageDependencies(options) {
           await runCommand('npm', ['outdated'], { cwd: servicePath });
         } catch (error) {
           // npm outdated returns exit code 1 when outdated packages are found
-          console.log(chalk.gray('All packages are up to date'));
+          if (error.code === 1) {
+            console.log(chalk.yellow('Some packages may be outdated'));
+          } else {
+            console.log(chalk.gray('All packages are up to date'));
+          }
         }
       }
     }
@@ -459,8 +463,13 @@ async function manageDependencies(options) {
         console.log(chalk.blue(`\n🔍 Auditing ${service}:`));
         try {
           await runCommand('npm', ['audit'], { cwd: servicePath });
+          console.log(chalk.green('No security vulnerabilities found'));
         } catch (error) {
-          console.log(chalk.yellow('Security vulnerabilities found'));
+          if (error.code === 1) {
+            console.log(chalk.yellow('Security vulnerabilities found - run npm audit for details'));
+          } else {
+            console.log(chalk.red('Security audit failed:', error.message));
+          }
         }
       }
     }
@@ -491,7 +500,7 @@ async function manageDependencies(options) {
             await runCommand('npm', ['update'], { cwd: servicePath });
             spinner.succeed(`${service} packages updated`);
           } catch (error) {
-            spinner.fail(`${service} update failed`);
+            spinner.fail(`${service} update failed: ${error.message}`);
           }
         }
       }
@@ -524,7 +533,7 @@ async function manageDependencies(options) {
             await runCommand('npm', ['install'], { cwd: servicePath });
             spinner.succeed(`${service} dependencies reinstalled`);
           } catch (error) {
-            spinner.fail(`${service} clean failed`);
+            spinner.fail(`${service} clean failed: ${error.message}`);
           }
         }
       }
@@ -592,7 +601,7 @@ async function databaseTools(options) {
         stdio: 'inherit',
       });
     } catch (error) {
-      logger.error('Failed to open database studio');
+      logger.error('Failed to open database studio:', error.message);
     }
   }
 }
@@ -898,9 +907,14 @@ function displayServiceStatus(status) {
     colWidths: [15, 15, 10],
   });
 
-  for (const [_key, service] of Object.entries(status)) {
+  for (const [key, service] of Object.entries(status)) {
     const statusColor = service.status === 'running' ? chalk.green : chalk.red;
     const statusIcon = service.status === 'running' ? '🟢' : '🔴';
+
+    // Include service key in logging for debugging
+    if (process.env.DEBUG) {
+      console.log(`Service ${key}: ${service.status}`);
+    }
 
     table.push([service.name, statusColor(`${statusIcon} ${service.status}`), service.port]);
   }

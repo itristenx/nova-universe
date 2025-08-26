@@ -64,7 +64,9 @@ router.post(
         const user = result.rows[0];
         return res.status(201).json({ id: user.id, email: user.email, name: user.name });
       } catch (dbErr) {
-        // Fallback to in-memory for environments without DB
+        // Log database error and fallback to in-memory for environments without DB
+        console.warn('Database unavailable, using in-memory storage:', dbErr.message);
+        
         if (inMemoryUsersByEmail.has(email)) {
           return res.status(409).json({ error: 'User already exists' });
         }

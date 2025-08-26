@@ -184,7 +184,35 @@ router.post(
   '/upload',
   authenticateJWT,
   createRateLimit(15 * 60 * 1000, 20), // 20 uploads per 15 minutes
+  [
+    body('description')
+      .optional()
+      .isLength({ max: 1000 })
+      .withMessage('Description must be less than 1000 characters')
+      .trim(),
+    body('tags')
+      .optional()
+      .isLength({ max: 500 })
+      .withMessage('Tags must be less than 500 characters')
+      .trim(),
+  ],
   (req, res, next) => {
+    // Validate request body before file processing
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      logger.warn('File upload validation failed:', {
+        userId: req.user?.id,
+        errors: errors.array(),
+        body: req.body
+      });
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request data',
+        details: errors.array(),
+        errorCode: 'VALIDATION_ERROR',
+      });
+    }
+
     upload.single('file')(req, res, (err) => {
       if (err) {
         if (err.code === 'LIMIT_FILE_SIZE') {
@@ -617,7 +645,12 @@ router.delete(
           try {
             await fs.unlink(file.path);
           } catch (fsError) {
-            logger.warn('File not found on disk during deletion:', { fileId: id, path: file.path });
+            logger.warn('File not found on disk during deletion:', { 
+              fileId: id, 
+              path: file.path,
+              fsError: fsError.message,
+              errorCode: fsError.code 
+            });
           }
 
           db.run('DELETE FROM files WHERE id = $1', [id], (deleteErr) => {

@@ -6,7 +6,6 @@ import {
   CosmoMessage,
   CosmoConversation,
   CosmoEvent,
-  CosmoEventType,
 } from './types';
 
 export interface UseCosmoOptions {
@@ -82,6 +81,16 @@ export function useCosmo(
     });
 
     cosmoSDK.on('conversation_ended', (event: CosmoEvent) => {
+      // Log conversation end event for analytics
+      console.log('Conversation ended:', {
+        eventType: event.type,
+        timestamp: event.timestamp,
+        conversationId: event.data?.conversationId,
+        duration: event.data?.duration,
+        messageCount: messages.length,
+        eventData: event.data
+      });
+      
       setConversation(null);
       setMessages([]);
     });

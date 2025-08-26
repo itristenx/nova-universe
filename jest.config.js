@@ -9,7 +9,7 @@ export default {
         '!<rootDir>/test/components/**/*',
         '!<rootDir>/test/**/*.tsx',
       ],
-      setupFilesAfterEnv: ['<rootDir>/test/test-cleanup.js'],
+      setupFilesAfterEnv: [],
       transform: {},
       extensionsToTreatAsEsm: ['.ts'],
       globals: {
@@ -27,6 +27,10 @@ export default {
       detectOpenHandles: true,
       testTimeout: 60000,
       maxWorkers: 1,
+      preset: undefined,
+      transformIgnorePatterns: [
+        'node_modules/(?!(.*\\.mjs$))',
+      ],
     },
     {
       displayName: 'react',
@@ -35,7 +39,7 @@ export default {
         '<rootDir>/test/components/**/*.(test|spec).(ts|tsx)',
         '<rootDir>/test/**/*.(test|spec).tsx',
       ],
-      setupFilesAfterEnv: ['<rootDir>/test/setup/jest-setup.js', '<rootDir>/test/test-cleanup.js'],
+      setupFilesAfterEnv: ['<rootDir>/test/setup/jest-setup.js'],
       transform: {
         '^.+\\.(ts|tsx)$': [
           '@swc/jest',

@@ -654,10 +654,15 @@ test('Network Security', async (t) => {
         url: httpsUrl,
       });
 
-      console.log('  ✅ HTTPS endpoint accessible');
+      // Validate response status and structure
+      if (response.status === 200 && response.data) {
+        console.log('  ✅ HTTPS endpoint accessible and healthy');
+      } else {
+        console.log(`  ⚠️  HTTPS endpoint returned status ${response.status}`);
+      }
     } catch (error) {
       if (SECURITY_CONFIG.apiUrl.startsWith('https://')) {
-        console.log('  ⚠️  HTTPS endpoint test failed - check SSL configuration');
+        console.log(`  ⚠️  HTTPS endpoint test failed - ${error.message || 'check SSL configuration'}`);
       } else {
         console.log('  ℹ️  HTTP endpoint in use - consider HTTPS for production');
       }

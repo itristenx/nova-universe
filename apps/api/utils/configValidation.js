@@ -200,21 +200,23 @@ function validateByKey(key, value) {
       }
       break;
 
-    case 'security.min_pin_length':
+    case 'security.min_pin_length': {
       const minPin = Number(value);
       if (minPin < 3 || minPin > 12) {
         return { valid: false, error: 'Minimum PIN length must be between 3 and 12' };
       }
       break;
+    }
 
-    case 'security.max_pin_length':
+    case 'security.max_pin_length': {
       const maxPin = Number(value);
       if (maxPin < 4 || maxPin > 20) {
         return { valid: false, error: 'Maximum PIN length must be between 4 and 20' };
       }
       break;
+    }
 
-    case 'security.rate_limit_window':
+    case 'security.rate_limit_window': {
       const window = Number(value);
       if (window < 1000 || window > 86400000) {
         // 1 second to 24 hours
@@ -224,24 +226,27 @@ function validateByKey(key, value) {
         };
       }
       break;
+    }
 
     case 'security.rate_limit_max':
     case 'security.submit_ticket_limit':
-    case 'security.api_login_limit':
+    case 'security.api_login_limit': {
       const limit = Number(value);
       if (limit < 1 || limit > 10000) {
         return { valid: false, error: 'Limit must be between 1 and 10000' };
       }
       break;
+    }
 
-    case 'integrations.cosmo_model_provider':
+    case 'integrations.cosmo_model_provider': {
       const validProviders = ['openai', 'anthropic', 'azure', 'google', 'cohere'];
       if (!validProviders.includes(stringValue)) {
         return { valid: false, error: `Provider must be one of: ${validProviders.join(', ')}` };
       }
       break;
+    }
 
-    case 'integrations.directory_provider':
+    case 'integrations.directory_provider': {
       const validDirProviders = ['mock', 'ldap', 'azure_ad', 'okta', 'google'];
       if (!validDirProviders.includes(stringValue)) {
         return {
@@ -250,8 +255,9 @@ function validateByKey(key, value) {
         };
       }
       break;
+    }
 
-    case 'integrations.cosmo_personality':
+    case 'integrations.cosmo_personality': {
       const validPersonalities = [
         'friendly_professional',
         'technical_expert',
@@ -265,6 +271,7 @@ function validateByKey(key, value) {
         };
       }
       break;
+    }
 
     default:
       // No specific validation for this key

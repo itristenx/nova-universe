@@ -1,5 +1,5 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '/prisma/generated/core/index.js';
 import { EnhancedTicketService } from '../services/enhanced-ticket.service.js';
 import { AutoClassificationService } from '../services/autoClassification.service.js';
 import { WorkflowService } from '../services/workflow.service.js';

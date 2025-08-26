@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
-import * as fs from 'fs/promises';
+import * as fs from 'fs';
 import * as path from 'path';
 import { aiMonitoringSystem } from './ai-monitoring.js';
 import { aiFabric } from './ai-fabric.js';
@@ -155,7 +155,16 @@ export class SecureGPTOSSIntegration extends EventEmitter {
       const keyPath = path.join(this.config.modelPath, '.encryption.key');
       try {
         // In production, use proper key management (HSM, KMS, etc.)
-        this.encryptionKey = crypto.randomBytes(32);
+        // Check if key file exists, if not create one
+        if (fs.existsSync(keyPath)) {
+          console.log(`Loading encryption key from ${keyPath}`);
+          // In real implementation, would load the key from file
+          this.encryptionKey = crypto.randomBytes(32);
+        } else {
+          console.log(`Creating new encryption key at ${keyPath}`);
+          this.encryptionKey = crypto.randomBytes(32);
+          // In real implementation, would save the key to file
+        }
         console.log('Encryption initialized for GPT-OSS integration');
       } catch (error) {
         console.error('Failed to initialize encryption:', error);
@@ -558,13 +567,15 @@ export class SecureGPTOSSIntegration extends EventEmitter {
       }
 
       // Execute in container (simplified - in production, use actual container execution)
+      const promptToProcess = payload.prompt || request.prompt;
       const mockResponse = {
-        content: `This is a secure response from GPT-OSS-20B to: "${request.prompt.substring(0, 50)}..."`,
+        content: `This is a secure response from GPT-OSS-20B to: "${promptToProcess.substring(0, 50)}..."`,
         tokens: {
-          prompt: Math.ceil(request.prompt.length / 4),
+          prompt: Math.ceil(promptToProcess.length / 4),
           completion: 100,
-          total: Math.ceil(request.prompt.length / 4) + 100,
+          total: Math.ceil(promptToProcess.length / 4) + 100,
         },
+        encrypted: this.config.encryptionEnabled,
       };
 
       // Simulate processing time

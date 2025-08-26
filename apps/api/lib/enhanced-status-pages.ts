@@ -2,7 +2,6 @@
 // Multi-page status pages with domain mapping and custom branding to match Uptime Kuma
 
 import fs from 'fs/promises';
-import path from 'path';
 import { logger } from '../logger.js';
 
 export interface StatusPage {

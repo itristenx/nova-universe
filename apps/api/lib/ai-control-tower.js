@@ -5,7 +5,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '/prisma/generated/core/index.js';
 import * as tf from '@tensorflow/tfjs-node';
 import * as path from 'path';
 import * as fs from 'fs/promises';

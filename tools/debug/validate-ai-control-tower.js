@@ -32,6 +32,16 @@ try {
   });
 
   console.log('   📈 AI Fabric file size:', Math.round(aiFabricContent.length / 1024), 'KB');
+  
+  // Test dynamic module loading
+  try {
+    const moduleUrl = pathToFileURL(aiFabricPath).href;
+    console.log(`   🔗 Module URL for dynamic import: ${moduleUrl}`);
+    // Note: Actual dynamic import would require async context
+    console.log('   ✅ Module URL generation successful');
+  } catch (moduleError) {
+    console.log(`   ❌ Module URL generation failed: ${moduleError.message}`);
+  }
 } catch (error) {
   console.log('   ❌ AI Fabric validation failed:', error.message);
 }

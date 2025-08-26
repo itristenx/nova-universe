@@ -100,7 +100,7 @@ class EnhancedMonitoringService {
       await database.query(`SELECT 1 FROM ${partitionTable} LIMIT 1`);
       logger.debug(`✓ Partition table ${partitionTable} exists`);
     } catch (error) {
-      logger.warn(`Partition table ${partitionTable} not found, creating...`);
+      logger.warn(`Partition table ${partitionTable} not found (${error.code}), creating...`);
       await this.createMonthlyPartition(currentYear, currentMonth);
     }
 
@@ -736,6 +736,7 @@ class EnhancedMonitoringService {
 
     // Clear all monitor checkers
     for (const [monitorId, interval] of this.monitorCheckers) {
+      logger.debug(`Stopping monitor checker for monitor ${monitorId}`);
       clearInterval(interval);
     }
     this.monitorCheckers.clear();

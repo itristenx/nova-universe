@@ -96,6 +96,7 @@ export class NovaSentinelIntegration extends EventEmitter {
   private monitors: Map<string, SentinelMonitor> = new Map();
   private incidents: Map<string, SentinelIncident> = new Map();
   private alerts: Map<string, SentinelAlert> = new Map();
+  private monitoringInterval?: NodeJS.Timeout;
 
   private isInitialized = false;
   private sentinelApiUrl = process.env.NOVA_SENTINEL_API_URL || 'http://localhost:3001/api';
@@ -1005,6 +1006,9 @@ export class NovaSentinelIntegration extends EventEmitter {
 
     if (monitor) {
       await this.updateMonitorStatus(monitor.id, event.healthy ? 'up' : 'down');
+      logger.info(`Provider health changed for monitor ${monitorId}: ${event.healthy ? 'healthy' : 'unhealthy'}`);
+    } else {
+      logger.warn(`Provider health change event received for unknown monitor: ${monitorId}`);
     }
   }
 
@@ -1283,6 +1287,9 @@ export class NovaSentinelIntegration extends EventEmitter {
             metric.value > this.config.escalationThresholds.aiResponseTime ? 'down' : 'up',
             { responseTime: metric.value },
           );
+          logger.info(`AI metric processed for monitor ${monitorId}: ${metric.value}ms`);
+        } else {
+          logger.warn(`No monitor found for AI metric with ID: ${monitorId}`);
         }
       }
     } catch (error) {
@@ -1433,20 +1440,39 @@ export class NovaSentinelIntegration extends EventEmitter {
         params: { tags: 'ai-fabric' },
       });
 
-      logger.info('Synced monitors from Sentinel', { count: response.data.monitors?.length || 0 });
+      // Process and sync monitor data from Sentinel
+      if (response.data.monitors && Array.isArray(response.data.monitors)) {
+        for (const sentinelMonitor of response.data.monitors) {
+          // Update local monitor state with Sentinel data
+          if (this.monitors.has(sentinelMonitor.id)) {
+            const localMonitor = this.monitors.get(sentinelMonitor.id);
+            if (localMonitor) {
+              localMonitor.status = this.mapSentinelStatus(sentinelMonitor.status);
+              localMonitor.lastCheck = new Date(sentinelMonitor.updated_at || Date.now());
+              logger.debug(
+                `Synced monitor from Sentinel: ${sentinelMonitor.id} (${localMonitor.status})`
+              );
+            }
+          }
+        }
+      }
+
+      logger.info(
+        `Synced monitors from Sentinel - count: ${response.data.monitors?.length || 0}`
+      );
     } catch (error) {
-      logger.warn('Failed to sync monitors from Sentinel', { error: error.message });
+      logger.warn(`Failed to sync monitors from Sentinel: ${(error as Error).message}`);
     }
   }
 
   private async escalateToGoAlert(incident: SentinelIncident): Promise<void> {
     // This will be implemented in the GoAlert integration
-    logger.info('Would escalate to GoAlert', { incidentId: incident.id });
+    logger.info(`Would escalate to GoAlert - incident: ${incident.id}`);
   }
 
   private async escalateSecurityAlert(alert: SentinelAlert): Promise<void> {
     // This will be implemented in the GoAlert integration
-    logger.info('Would escalate security alert to GoAlert', { alertId: alert.id });
+    logger.info(`Would escalate security alert to GoAlert - alert: ${alert.id}`);
   }
 
   private async createIncidentTicket(incident: SentinelIncident): Promise<string> {
@@ -1463,9 +1489,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       );
       return id;
     } catch (error) {
-      logger.warn('Ticket creation fallback (db unavailable)', {
-        error: (error as Error)?.message,
-      });
+      logger.warn(`Ticket creation fallback (db unavailable): ${(error as Error)?.message}`);
       return crypto.randomUUID();
     }
   }
@@ -1484,10 +1508,9 @@ export class NovaSentinelIntegration extends EventEmitter {
         );
       }
     } catch (error) {
-      logger.warn('Ticket resolution fallback (db unavailable)', {
-        error: (error as Error)?.message,
-        ticketId,
-      });
+      logger.warn(
+        `Ticket resolution fallback (db unavailable) - ticket: ${ticketId}, error: ${(error as Error)?.message}`
+      );
     }
   }
 

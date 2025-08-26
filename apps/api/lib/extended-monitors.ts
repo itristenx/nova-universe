@@ -80,6 +80,65 @@ export class ExtendedMonitorService {
   }
 
   /**
+   * DNS monitoring - Check DNS resolution and lookup times
+   */
+  async checkDns(check: MonitorCheck): Promise<MonitorResult> {
+    const { hostname, record_type = 'A', expected_address } = check.config;
+    const startTime = Date.now();
+
+    try {
+      let result;
+      
+      if (record_type === 'A' || record_type === 'AAAA') {
+        // Use DNS lookup for A/AAAA records
+        const lookupResult = await dnsLookup(hostname, {
+          family: record_type === 'AAAA' ? 6 : 4
+        });
+        result = { addresses: [lookupResult.address] };
+      } else {
+        // Use DNS resolve for other record types
+        const addresses = await dnsResolve(hostname, record_type);
+        result = { addresses: Array.isArray(addresses) ? addresses : [addresses] };
+      }
+
+      const responseTime = Date.now() - startTime;
+
+      // Check if expected address matches (if specified)
+      let success = true;
+      let message = `DNS resolution successful for ${hostname}`;
+      
+      if (expected_address) {
+        const addressMatches = result.addresses.some(addr => 
+          typeof addr === 'string' ? addr === expected_address : addr.address === expected_address
+        );
+        success = addressMatches;
+        message = addressMatches 
+          ? `DNS resolution matched expected address: ${expected_address}`
+          : `DNS resolution did not match expected address. Got: ${result.addresses.join(', ')}`;
+      }
+
+      return {
+        success,
+        responseTime,
+        message,
+        data: { 
+          hostname,
+          record_type,
+          addresses: result.addresses,
+          expected_address 
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        responseTime: Date.now() - startTime,
+        message: `DNS resolution failed: ${error.message}`,
+        data: { error: error.message, hostname, record_type },
+      };
+    }
+  }
+
+  /**
    * JSON Query monitoring - Check specific JSON path value in API response
    */
   async checkJsonQuery(check: MonitorCheck): Promise<MonitorResult> {
@@ -323,11 +382,30 @@ export class ExtendedMonitorService {
           clearTimeout(timeout);
           socket.destroy();
 
+          // Basic connection successful
+          let message = `MQTT broker is accepting connections`;
+          let success = true;
+
+          // If expected_message is specified, note it for future validation
+          if (expected_message) {
+            message += ` (Note: Message validation would require MQTT client library)`;
+            // In a real implementation, we would:
+            // 1. Subscribe to the topic
+            // 2. Wait for messages
+            // 3. Validate against expected_message
+          }
+
           resolve({
-            success: true,
+            success,
             responseTime: Date.now() - startTime,
-            message: `MQTT broker is accepting connections`,
-            data: { hostname, port, topic },
+            message,
+            data: { 
+              hostname, 
+              port, 
+              topic,
+              expected_message,
+              validation_note: expected_message ? 'Message validation requires MQTT client' : null
+            },
           });
         });
 
@@ -371,11 +449,33 @@ export class ExtendedMonitorService {
           clearTimeout(timeout);
           socket.destroy();
 
+          // Basic connection successful
+          let message = `RADIUS server is accepting connections`;
+          
+          // Validate authentication parameters
+          if (!username || !password || !secret) {
+            message += ` (Warning: Missing authentication parameters)`;
+          } else {
+            message += ` (Note: Full RADIUS authentication would require RADIUS client library)`;
+            // In a real implementation, we would:
+            // 1. Create RADIUS Access-Request packet
+            // 2. Include username and password attributes
+            // 3. Sign packet with shared secret
+            // 4. Send packet and wait for Access-Accept/Reject
+          }
+
           resolve({
             success: true,
             responseTime: Date.now() - startTime,
-            message: `RADIUS server is accepting connections`,
-            data: { hostname, port, username },
+            message,
+            data: { 
+              hostname, 
+              port, 
+              username,
+              has_password: !!password,
+              has_secret: !!secret,
+              auth_note: 'Full RADIUS authentication requires RADIUS client library'
+            },
           });
         });
 

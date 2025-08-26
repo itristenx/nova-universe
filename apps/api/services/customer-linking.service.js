@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '/prisma/generated/core/index.js';
 import logger from '../logger.js';
 
 export class CustomerLinkingService {

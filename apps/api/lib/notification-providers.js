@@ -22,7 +22,29 @@ export const notificationProviderService = {
     }
   },
   async sendNotification(provider, message) {
-    return { success: true, provider: provider?.type || 'unknown', messageId: `${Date.now()}` };
+    // Validate message content and format
+    if (!message || (!message.title && !message.text)) {
+      return { 
+        success: false, 
+        error: 'Message title or text is required',
+        provider: provider?.type || 'unknown' 
+      };
+    }
+
+    // Process message based on provider type
+    const processedMessage = {
+      title: message.title || 'Notification',
+      text: message.text || message.title,
+      priority: message.priority || 'normal',
+      timestamp: new Date().toISOString(),
+    };
+
+    return { 
+      success: true, 
+      provider: provider?.type || 'unknown', 
+      messageId: `${Date.now()}`,
+      messageData: processedMessage
+    };
   },
 };
 

@@ -6,11 +6,10 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { Listr } from 'listr2';
-import { existsSync, writeFileSync, readFileSync, mkdirSync } from 'fs';
+import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import path from 'path';
 import {
   logger,
-  createSpinner,
   runCommand,
   getProjectRoot,
   config,
@@ -348,7 +347,7 @@ async function runInteractiveSetup(options) {
 }
 
 // Create environment configuration files
-async function createEnvironmentFiles(projectRoot, config) {
+async function createEnvironmentFiles(projectRoot, config, options = {}) {
   const envFiles = [
     {
       path: path.join(projectRoot, 'nova-api', '.env'),

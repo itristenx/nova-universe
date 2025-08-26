@@ -135,10 +135,11 @@ class TestResultTracker {
     for (const [suiteName, result] of Object.entries(report.suites)) {
       const icon = result.success ? '✅' : result.skipped ? '⏭️' : '❌';
       const duration = result.duration ? `(${(result.duration / 1000).toFixed(2)}s)` : '';
-      console.log(`   ${icon} ${result.name} ${duration}`);
+      const displayName = result.name || suiteName; // Use suiteName as fallback
+      console.log(`   ${icon} ${displayName} ${duration}`);
 
       if (result.error && TEST_CONFIG.verbose) {
-        console.log(`      Error: ${result.error}`);
+        console.log(`      Suite: ${suiteName} - Error: ${result.error}`);
       }
 
       if (result.warnings && result.warnings.length > 0) {

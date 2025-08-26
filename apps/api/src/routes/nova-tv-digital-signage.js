@@ -8,7 +8,7 @@ import { promises as fs } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 
 // Import database client
-import { PrismaClient as CorePrismaClient } from '../../../../prisma/generated/core/index.js';
+import { PrismaClient as CorePrismaClient } from '/prisma/generated/core/index.js';
 const prisma = new CorePrismaClient();
 
 const router = express.Router();

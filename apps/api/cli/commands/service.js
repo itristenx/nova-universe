@@ -70,15 +70,40 @@ serviceCommand
   .command('restart')
   .description('Restart Nova services')
   .option('-s, --service <name>', 'Restart specific service (api, admin, comms)')
+  .option('-i, --interactive', 'Select services interactively')
   .action(async (options) => {
     try {
       console.log(chalk.cyan('🔄 Restarting services...\n'));
+
+      let servicesToRestart = [];
+      
+      if (options.interactive && !options.service) {
+        const { selectedServices } = await inquirer.prompt([
+          {
+            type: 'checkbox',
+            name: 'selectedServices',
+            message: 'Select services to restart:',
+            choices: [
+              { name: 'API Service', value: 'api' },
+              { name: 'Admin UI', value: 'admin' },
+              { name: 'Communications', value: 'comms' },
+            ],
+          },
+        ]);
+        servicesToRestart = selectedServices;
+      }
 
       // Stop first
       if (options.service) {
         await stopSingleService(options.service, { force: true });
         await sleep(2000);
         await startSingleService(options.service, getProjectRoot(), {});
+      } else if (servicesToRestart.length > 0) {
+        for (const service of servicesToRestart) {
+          await stopSingleService(service, { force: true });
+          await sleep(1000);
+          await startSingleService(service, getProjectRoot(), {});
+        }
       } else {
         await stopAllServices({ force: true });
         await sleep(2000);
@@ -270,7 +295,10 @@ async function stopAllServices(options) {
           exec(`lsof -ti:${port} | xargs kill -TERM`, { stdio: 'ignore' });
         }
       } catch (error) {
-        // Port might not be in use, ignore error
+        // Port might not be in use or process already stopped
+        if (options.verbose) {
+          console.warn(`Could not stop service on port ${port}:`, error.message);
+        }
       }
     }
 
@@ -314,19 +342,27 @@ async function stopSingleService(serviceName, options) {
 // Display service status in a table
 function displayServiceStatus(status) {
   const table = new Table({
-    head: ['Service', 'Status', 'Port', 'PID'],
-    colWidths: [15, 10, 8, 10],
+    head: ['Service', 'Status', 'Port', 'PID', 'Uptime'],
+    colWidths: [15, 10, 8, 10, 12],
   });
 
   for (const [key, service] of Object.entries(status)) {
     const statusColor = service.status === 'running' ? chalk.green : chalk.red;
     const statusIcon = service.status === 'running' ? '🟢' : '🔴';
+    
+    // Calculate uptime if startTime is available
+    let uptimeDisplay = 'N/A';
+    if (service.startTime && service.status === 'running') {
+      const uptime = Date.now() - new Date(service.startTime).getTime();
+      uptimeDisplay = formatDuration(uptime);
+    }
 
     table.push([
-      service.name,
+      service.name || key,
       statusColor(`${statusIcon} ${service.status}`),
       service.port,
       service.pid || 'N/A',
+      uptimeDisplay,
     ]);
   }
 
@@ -437,7 +473,7 @@ async function showServiceLogs(options) {
         try {
           await runCommand('tail', ['-n', '10', logPath]);
         } catch (error) {
-          console.log(chalk.gray('No logs available'));
+          console.log(chalk.gray(`No logs available: ${error.message}`));
         }
       }
     }
