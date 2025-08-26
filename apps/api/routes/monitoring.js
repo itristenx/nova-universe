@@ -356,8 +356,11 @@ async function checkDatabaseHealth() {
     const result = await db.query('SELECT 1 as health');
     const connectionCount = await db.query('SELECT COUNT(*) FROM pg_stat_activity');
 
+    // Verify the health check query succeeded
+    const isHealthy = result && result.rows && result.rows.length > 0 && result.rows[0].health === 1;
+
     return {
-      status: 'healthy',
+      status: isHealthy ? 'healthy' : 'unhealthy',
       responseTime: 50, // Mock response time
       connections: parseInt(connectionCount.rows[0].count),
       lastChecked: new Date().toISOString(),
@@ -526,6 +529,14 @@ router.get('/monitors', authenticateJWT, async (req, res) => {
 
     const params = [];
     let paramIndex = 1;
+
+    // Apply user-based access control
+    if (user && !user.isAdmin) {
+      // Non-admin users can only see monitors they have access to
+      query += ` AND (m.created_by = $${paramIndex} OR m.public = true)`;
+      params.push(user.id);
+      paramIndex++;
+    }
 
     // Apply tenant scoping for Orbit users
     if (tenant_id) {
@@ -1204,6 +1215,15 @@ router.get('/history/:id', authenticateJWT, async (req, res) => {
 
     const result = await db.query(query, [id]);
 
+    // Add metadata about the queried interval for client information
+    const metadata = {
+      period,
+      granularity,
+      interval,
+      timeRange,
+      monitorId: id
+    };
+
     // Calculate overall statistics
     const statsQuery = `
       SELECT 
@@ -1235,6 +1255,7 @@ router.get('/history/:id', authenticateJWT, async (req, res) => {
         downtime_count: parseInt(stats.down_checks),
         avg_response_time: parseFloat(stats.avg_response_time) || 0,
       },
+      metadata,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -1440,7 +1461,7 @@ async function processKumaEvent(event) {
         heartbeat.ping || null,
         heartbeat.statusCode || null,
         heartbeat.msg || null,
-        new Date(heartbeat.time),
+        timestamp ? new Date(timestamp) : new Date(heartbeat.time),
         heartbeat.important || false,
       ],
     );

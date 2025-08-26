@@ -17,6 +17,8 @@ router.get('/', authenticateJWT, async (req, res) => {
     }));
     res.json({ success: true, assets });
   } catch (err) {
+    logger.error("Error occurred:", err.message);
+    logger.error('Failed to fetch assets:', err.message);
     res
       .status(500)
       .json({ success: false, error: 'Failed to fetch assets', errorCode: 'INVENTORY_ERROR' });
@@ -36,6 +38,8 @@ router.get('/user/:userId', authenticateJWT, async (req, res) => {
     }));
     res.json({ success: true, assets });
   } catch (err) {
+    logger.error("Error occurred:", err.message);
+    logger.error('Failed to fetch user assets:', err.message);
     res
       .status(500)
       .json({ success: false, error: 'Failed to fetch assets', errorCode: 'INVENTORY_ERROR' });
@@ -62,6 +66,8 @@ router.get('/:id', authenticateJWT, async (req, res) => {
     }
     res.json({ success: true, asset, warrantyAlert });
   } catch (err) {
+    logger.error("Error occurred:", err.message);
+    logger.error('Failed to fetch asset:', err.message);
     res
       .status(500)
       .json({ success: false, error: 'Failed to fetch asset', errorCode: 'INVENTORY_ERROR' });
@@ -104,6 +110,7 @@ router.post('/', authenticateJWT, async (req, res) => {
     );
     res.json({ success: true, asset: rows[0] });
   } catch (err) {
+    logger.error("Error occurred:", err.message);
     res
       .status(500)
       .json({ success: false, error: 'Failed to create asset', errorCode: 'INVENTORY_ERROR' });
@@ -146,6 +153,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
     );
     res.json({ success: true, asset: rows[0] });
   } catch (err) {
+    logger.error("Error occurred:", err.message);
     res
       .status(500)
       .json({ success: false, error: 'Failed to update asset', errorCode: 'INVENTORY_ERROR' });
@@ -158,6 +166,7 @@ router.delete('/:id', authenticateJWT, async (req, res) => {
     await db.query('DELETE FROM inventory_assets WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
+    logger.error("Error occurred:", err.message);
     res
       .status(500)
       .json({ success: false, error: 'Failed to delete asset', errorCode: 'INVENTORY_ERROR' });
@@ -173,6 +182,7 @@ router.get('/:id/history', authenticateJWT, async (req, res) => {
     );
     res.json({ success: true, history: rows });
   } catch (err) {
+    logger.error("Error occurred:", err.message);
     res
       .status(500)
       .json({ success: false, error: 'Failed to fetch history', errorCode: 'INVENTORY_ERROR' });
@@ -190,6 +200,7 @@ router.post('/:id/status', authenticateJWT, async (req, res) => {
     );
     res.json({ success: true, log: rows[0] });
   } catch (err) {
+    logger.error("Error occurred:", err.message);
     res
       .status(500)
       .json({ success: false, error: 'Failed to log status', errorCode: 'INVENTORY_ERROR' });
@@ -223,6 +234,7 @@ router.post('/:id/assign', authenticateJWT, async (req, res) => {
     ]);
     res.json({ success: true, assignment: rows[0] });
   } catch (err) {
+    logger.error("Error occurred:", err.message);
     res
       .status(500)
       .json({ success: false, error: 'Failed to assign asset', errorCode: 'INVENTORY_ERROR' });
@@ -244,6 +256,7 @@ router.post('/import', authenticateJWT, async (req, res) => {
           }),
         );
       } catch (e) {
+        logger.error('Invalid CSV data:', e.message);
         return res.status(400).json({ error: 'Invalid CSV data' });
       }
     } else if (format === 'json') {
@@ -285,6 +298,7 @@ router.post('/import', authenticateJWT, async (req, res) => {
 
     res.json({ success: true, imported: records.length });
   } catch (err) {
+    logger.error("Error occurred:", err.message);
     logger.error('Error during asset import:', err); // Log the full error for debugging
     res.status(500).json({
       success: false,

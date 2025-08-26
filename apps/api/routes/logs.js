@@ -1,5 +1,6 @@
 import express from 'express';
 import db from '../db.js';
+import { logger } from '../logger.js';
 
 const router = express.Router();
 
@@ -23,6 +24,7 @@ router.get('/api/v1/logs', async (req, res) => {
     const { rows } = await db.query(query, params);
     res.json(rows);
   } catch (err) {
+    logger.error('Database error in logs route:', err.message);
     res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
   }
 });

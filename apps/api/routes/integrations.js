@@ -347,8 +347,9 @@ router.post('/:id/test', async (req, res, next) => {
       });
     }
   } catch (error) {
-    logger.error(error.message);
-    return res.status(500).json({ error: 'Integration test failed', errorCode: 'TEST_FAILED' });
+    logger.error('Integration test failed:', error.message);
+    // Use next() for proper Express error handling
+    next(error);
   }
 });
 

@@ -1,16 +1,13 @@
 import express from 'express';
-import { PrismaClient } from '/prisma/generated/core/index.js';
 import { EnhancedTicketService } from '../services/enhanced-ticket.service.js';
 import { AutoClassificationService } from '../services/autoClassification.service.js';
 import { WorkflowService } from '../services/workflow.service.js';
 import { logger } from '../logger.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { validateRequest } from '../middleware/validation.js';
 import multer from 'multer';
 import path from 'path';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({

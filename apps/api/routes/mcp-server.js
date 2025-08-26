@@ -505,7 +505,7 @@ router.get(
  */
 router.post(
   '/tools/:toolName/call',
-  authenticateJWT,
+  authenticateOAuth,
   createRateLimiter({ windowMs: 60 * 1000, max: 50 }), // 50 requests per minute
   [body('arguments').optional().isObject().withMessage('Arguments must be an object')],
   async (req, res) => {
