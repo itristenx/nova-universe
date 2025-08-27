@@ -199,6 +199,7 @@ router.get('/vip-heatmap', async (req, res) => {
     `);
     res.json({ success: true, heatmap: rows });
   } catch (err) {
+    logger.error('Failed to load VIP support heatmap data:', err);
     res
       .status(500)
       .json({ success: false, error: 'Failed to load heatmap', errorCode: 'HEATMAP_ERROR' });

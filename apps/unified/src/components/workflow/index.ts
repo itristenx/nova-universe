@@ -1,8 +1,8 @@
 // Nova Workflow Components - Main Export
 // ServiceNow-style workflow automation system
 
-export { default as WorkflowAutomation } from './WorkflowAutomation';
-export { default as WorkflowBuilder } from './WorkflowBuilder';
+export { default as SimpleWorkflowAutomation } from './SimpleWorkflowAutomation';
+export { default as SimpleWorkflowBuilder } from './SimpleWorkflowBuilder';
 
 // Export workflow types
 export type {

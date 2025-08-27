@@ -1,5 +1,6 @@
 import { apiClient } from './api';
 import type { PaginatedResponse } from '@/types';
+import { io, Socket } from 'socket.io-client';
 
 // Monitoring Types
 export interface Monitor {
@@ -345,28 +346,27 @@ export const monitoringService = {
       data: Monitor | Alert;
     }) => void,
   ): Promise<() => void> {
-    // WebSocket connection for real-time monitoring events
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/monitoring`;
+    // Socket.IO connection for real-time monitoring events
+    const socket = io('http://localhost:3001', {
+      transports: ['websocket', 'polling'],
+      timeout: 5000,
+    });
 
-    const ws = new WebSocket(wsUrl);
+    socket.on('connect', () => {
+      console.log('Monitoring WebSocket connected');
+    });
 
-    ws.onmessage = (event) => {
-      try {
-        const monitorEvent = JSON.parse(event.data);
-        callback(monitorEvent);
-      } catch (_error) {
-        console.error('Failed to parse monitoring event:', error);
-      }
-    };
+    socket.on('monitor_event', (event) => {
+      callback(event);
+    });
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+    socket.on('connect_error', (error) => {
+      console.error('Monitoring WebSocket error:', error);
+    });
 
     // Return cleanup function
     return () => {
-      ws.close();
+      socket.disconnect();
     };
   },
 };

@@ -1,4 +1,4 @@
-import { prisma } from '../db/prisma.js';
+import db from '../db.js';
 import { logger } from '../logger.js';
 
 /**
@@ -10,7 +10,7 @@ export class AuditService {
    */
   static async logTicketCreated(ticket, user) {
     try {
-      await prisma.ticketHistory.create({
+      await db.ticketHistory.create({
         data: {
           ticketId: ticket.id,
           userId: user.id,
@@ -39,7 +39,7 @@ export class AuditService {
   static async logTicketUpdated(ticket, changes, user) {
     try {
       for (const change of changes) {
-        await prisma.ticketHistory.create({
+        await db.ticketHistory.create({
           data: {
             ticketId: ticket.id,
             userId: user.id,
@@ -87,7 +87,7 @@ export class AuditService {
         metadata.assignedToQueueId = assignmentData.assignedToQueueId;
       }
 
-      await prisma.ticketHistory.create({
+      await db.ticketHistory.create({
         data: {
           ticketId: ticket.id,
           userId: user.id,
@@ -111,7 +111,7 @@ export class AuditService {
    */
   static async logTicketEscalated(ticket, escalationData, user) {
     try {
-      await prisma.ticketHistory.create({
+      await db.ticketHistory.create({
         data: {
           ticketId: ticket.id,
           userId: user.id,
@@ -140,7 +140,7 @@ export class AuditService {
    */
   static async logTicketResolved(ticket, resolutionData, user) {
     try {
-      await prisma.ticketHistory.create({
+      await db.ticketHistory.create({
         data: {
           ticketId: ticket.id,
           userId: user.id,
@@ -167,7 +167,7 @@ export class AuditService {
    */
   static async logTicketClosed(ticket, closeData, user) {
     try {
-      await prisma.ticketHistory.create({
+      await db.ticketHistory.create({
         data: {
           ticketId: ticket.id,
           userId: user.id,
@@ -195,7 +195,7 @@ export class AuditService {
    */
   static async logTicketReopened(ticket, reopenData, user) {
     try {
-      await prisma.ticketHistory.create({
+      await db.ticketHistory.create({
         data: {
           ticketId: ticket.id,
           userId: user.id,
@@ -221,7 +221,7 @@ export class AuditService {
    */
   static async logCommentAdded(ticket, comment) {
     try {
-      await prisma.ticketHistory.create({
+      await db.ticketHistory.create({
         data: {
           ticketId: ticket.id,
           userId: comment.userId,
@@ -249,7 +249,7 @@ export class AuditService {
    */
   static async logAttachmentAdded(ticket, attachment, user) {
     try {
-      await prisma.ticketHistory.create({
+      await db.ticketHistory.create({
         data: {
           ticketId: ticket.id,
           userId: user.id,
@@ -278,7 +278,7 @@ export class AuditService {
    */
   static async logSLABreach(ticket, breachType, targetTime, actualTime) {
     try {
-      await prisma.ticketHistory.create({
+      await db.ticketHistory.create({
         data: {
           ticketId: ticket.id,
           userId: null, // System action
@@ -317,7 +317,7 @@ export class AuditService {
         whereClause.userId = userId;
       }
 
-      const auditEntries = await prisma.ticketHistory.findMany({
+      const auditEntries = await db.ticketHistory.findMany({
         where: whereClause,
         include: {
           user: {
@@ -341,7 +341,7 @@ export class AuditService {
    */
   static async getTicketAuditSummary(ticketId) {
     try {
-      const summary = await prisma.ticketHistory.groupBy({
+      const summary = await db.ticketHistory.groupBy({
         by: ['action'],
         where: { ticketId },
         _count: { action: true },

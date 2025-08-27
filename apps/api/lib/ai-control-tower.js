@@ -5,20 +5,10 @@
  */
 
 import { EventEmitter } from 'events';
-import { PrismaClient } from '/prisma/generated/core/index.js';
-import * as tf from '@tensorflow/tfjs-node';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { logger } from '../../api/logger.js';
-
-// Create AI database client
-const aiDbClient = new PrismaClient({
-  datasources: {
-    ai_db: {
-      url: process.env.AI_DATABASE_URL || 'postgresql://localhost:5432/nova_ai',
-    },
-  },
-});
+import { logger } from '../logger.js';
+import db from '../db.js';
 
 /**
  * AI Control Tower - Main orchestration service
@@ -27,7 +17,7 @@ const aiDbClient = new PrismaClient({
 export class AIControlTowerService extends EventEmitter {
   constructor() {
     super();
-    this.db = aiDbClient;
+    this.db = db;
     this.initialized = false;
     this.towers = new Map();
     this.activeModels = new Map();
@@ -792,34 +782,124 @@ export class AIControlTowerService extends EventEmitter {
   }
 
   async createClassificationModel(config) {
-    // Placeholder for TensorFlow model creation
-    return tf.sequential({
-      layers: [
-        tf.layers.dense({ inputShape: [config.inputDim || 10], units: 64, activation: 'relu' }),
-        tf.layers.dense({ units: 32, activation: 'relu' }),
-        tf.layers.dense({ units: config.numClasses || 2, activation: 'softmax' }),
-      ],
-    });
+    // Note: TensorFlow.js functionality temporarily disabled
+    logger.warn('TensorFlow.js models temporarily disabled');
+    
+    // Use config parameters to create comprehensive model configuration
+    const modelConfig = {
+      type: 'classification',
+      inputShape: config?.inputShape || [config?.inputDim || 10],
+      numClasses: config?.numClasses || 2,
+      layers: config?.layers || ['dense', 'dropout', 'dense'],
+      activation: config?.activation || 'softmax',
+      optimizer: config?.optimizer || 'adam',
+      learningRate: config?.learningRate || 0.001,
+      batchSize: config?.batchSize || 32,
+      epochs: config?.epochs || 100,
+      validationSplit: config?.validationSplit || 0.2,
+      earlyStopping: config?.earlyStopping || true,
+      regularization: config?.regularization || 'l2',
+      dropoutRate: config?.dropoutRate || 0.3
+    };
+    
+    logger.info('Classification model config created:', modelConfig);
+    
+    // Store model configuration for future use
+    await this.storeModelConfiguration('classification', modelConfig);
+    
+    return { 
+      modelType: 'classification', 
+      config: modelConfig,
+      status: 'configured',
+      createdAt: new Date().toISOString(),
+      id: `class_${Date.now()}`
+    };
   }
 
   async createRegressionModel(config) {
-    return tf.sequential({
-      layers: [
-        tf.layers.dense({ inputShape: [config.inputDim || 10], units: 64, activation: 'relu' }),
-        tf.layers.dense({ units: 32, activation: 'relu' }),
-        tf.layers.dense({ units: 1 }),
-      ],
-    });
+    // Note: TensorFlow.js functionality temporarily disabled
+    logger.warn('TensorFlow.js models temporarily disabled');
+    
+    // Use config parameters to create comprehensive regression model configuration
+    const modelConfig = {
+      type: 'regression',
+      inputShape: config?.inputShape || [config?.inputDim || 10],
+      outputShape: config?.outputShape || [1],
+      layers: config?.layers || ['dense', 'dropout', 'dense'],
+      activation: config?.activation || 'linear',
+      optimizer: config?.optimizer || 'adam',
+      learningRate: config?.learningRate || 0.001,
+      loss: config?.loss || 'meanSquaredError',
+      batchSize: config?.batchSize || 32,
+      epochs: config?.epochs || 100,
+      validationSplit: config?.validationSplit || 0.2,
+      earlyStopping: config?.earlyStopping || true,
+      regularization: config?.regularization || 'l2'
+    };
+    
+    logger.info('Regression model config created:', modelConfig);
+    
+    // Store model configuration for future use
+    await this.storeModelConfiguration('regression', modelConfig);
+    
+    return { 
+      modelType: 'regression', 
+      config: modelConfig,
+      status: 'configured',
+      createdAt: new Date().toISOString(),
+      id: `reg_${Date.now()}`
+    };
   }
 
   async createNLPModel(config) {
-    return tf.sequential({
-      layers: [
-        tf.layers.embedding({ inputDim: config.vocabSize || 10000, outputDim: 128 }),
-        tf.layers.lstm({ units: 64 }),
-        tf.layers.dense({ units: config.numClasses || 2, activation: 'softmax' }),
-      ],
-    });
+    // Note: TensorFlow.js functionality temporarily disabled
+    logger.warn('TensorFlow.js models temporarily disabled');
+    
+    // Use config parameters to create comprehensive NLP model configuration
+    const modelConfig = {
+      type: 'nlp',
+      vocabularySize: config?.vocabularySize || 10000,
+      maxSequenceLength: config?.maxSequenceLength || 100,
+      embeddingDim: config?.embeddingDim || 128,
+      layers: config?.layers || ['embedding', 'lstm', 'dense'],
+      activation: config?.activation || 'softmax',
+      optimizer: config?.optimizer || 'adam',
+      learningRate: config?.learningRate || 0.001,
+      batchSize: config?.batchSize || 32,
+      epochs: config?.epochs || 50,
+      validationSplit: config?.validationSplit || 0.2,
+      earlyStopping: config?.earlyStopping || true,
+      recurrentDropout: config?.recurrentDropout || 0.2
+    };
+    
+    logger.info('NLP model config created:', modelConfig);
+    
+    // Store model configuration for future use
+    await this.storeModelConfiguration('nlp', modelConfig);
+    
+    return { 
+      modelType: 'nlp', 
+      config: modelConfig,
+      status: 'configured',
+      createdAt: new Date().toISOString(),
+      id: `nlp_${Date.now()}`
+    };
+  }
+
+  // Helper method to store model configurations
+  async storeModelConfiguration(type, config) {
+    try {
+      // In a real implementation, this would store to database
+      logger.info(`Storing ${type} model configuration`);
+      
+      // For now, just log the configuration
+      this.modelConfigurations = this.modelConfigurations || {};
+      this.modelConfigurations[type] = config;
+      
+      logger.info('Model configuration stored successfully');
+    } catch (error) {
+      logger.error('Failed to store model configuration:', error);
+    }
   }
 
   async trainModelWithMonitoring(model, trainingData, config, jobId) {
@@ -872,8 +952,16 @@ export class AIControlTowerService extends EventEmitter {
     const numSamples = config.numSamples || 1000;
     const inputDim = config.inputDim || 10;
 
-    const xs = tf.randomNormal([numSamples, inputDim]);
-    const ys = tf.randomUniform([numSamples], 0, config.numClasses || 2, 'int32');
+    // Create placeholder training data arrays
+    // Note: TensorFlow.js functionality temporarily disabled, using placeholder arrays
+    const xs = Array(numSamples)
+      .fill(null)
+      .map(() => 
+        Array(inputDim).fill(0).map(() => Math.random() * 2 - 1)
+      );
+    const ys = Array(numSamples).fill(0).map(() => 
+      Math.floor(Math.random() * (config.numClasses || 2))
+    );
 
     return { xs, ys };
   }

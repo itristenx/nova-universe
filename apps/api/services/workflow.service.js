@@ -1,4 +1,4 @@
-import { prisma } from '../db/prisma.js';
+import db from '../db.js';
 import { logger } from '../logger.js';
 
 /**
@@ -10,7 +10,7 @@ export class WorkflowService {
    */
   static async startWorkflow(ticketId, workflowId, user) {
     try {
-      const workflow = await prisma.workflowDefinition.findUnique({
+      const workflow = await db.workflowDefinition.findUnique({
         where: { id: workflowId },
         include: { steps: { orderBy: { stepOrder: 'asc' } } },
       });
@@ -20,7 +20,7 @@ export class WorkflowService {
       }
 
       // Create workflow instance
-      const instance = await prisma.workflowInstance.create({
+      const instance = await db.workflowInstance.create({
         data: {
           ticketId,
           workflowDefinitionId: workflowId,
@@ -49,7 +49,7 @@ export class WorkflowService {
    */
   static async executeNextStep(instanceId) {
     try {
-      const instance = await prisma.workflowInstance.findUnique({
+      const instance = await db.workflowInstance.findUnique({
         where: { id: instanceId },
         include: {
           workflowDefinition: {
@@ -65,7 +65,7 @@ export class WorkflowService {
       const nextStep = instance.workflowDefinition.steps[instance.currentStep];
       if (!nextStep) {
         // Workflow completed
-        await prisma.workflowInstance.update({
+        await db.workflowInstance.update({
           where: { id: instanceId },
           data: { status: 'COMPLETED', completedAt: new Date() },
         });
@@ -76,7 +76,7 @@ export class WorkflowService {
       await this.executeStep(instance, nextStep);
 
       // Move to next step
-      await prisma.workflowInstance.update({
+      await db.workflowInstance.update({
         where: { id: instanceId },
         data: { currentStep: instance.currentStep + 1 },
       });
@@ -124,7 +124,7 @@ export class WorkflowService {
   static async executeAssignStep(instance, step) {
     const { assignToUserId, assignToGroupId } = step.configuration;
 
-    await prisma.enhancedSupportTicket.update({
+    await db.enhancedSupportTicket.update({
       where: { id: instance.ticketId },
       data: {
         assignedToUserId: assignToUserId,
@@ -142,7 +142,7 @@ export class WorkflowService {
 
     // Create approval requests
     for (const approverId of approverIds) {
-      await prisma.ticketApproval.create({
+      await db.ticketApproval.create({
         data: {
           ticketId: instance.ticketId,
           approverId,
@@ -153,7 +153,7 @@ export class WorkflowService {
     }
 
     // Update ticket state
-    await prisma.enhancedSupportTicket.update({
+    await db.enhancedSupportTicket.update({
       where: { id: instance.ticketId },
       data: { state: 'PENDING_APPROVAL' },
     });
@@ -173,7 +173,7 @@ export class WorkflowService {
   static async executeUpdateFieldStep(instance, step) {
     const { field, value } = step.configuration;
 
-    await prisma.enhancedSupportTicket.update({
+    await db.enhancedSupportTicket.update({
       where: { id: instance.ticketId },
       data: { [field]: value },
     });
@@ -197,7 +197,7 @@ export class WorkflowService {
    * Get active workflows for a ticket
    */
   static async getTicketWorkflows(ticketId) {
-    return await prisma.workflowInstance.findMany({
+    return await db.workflowInstance.findMany({
       where: { ticketId, status: 'ACTIVE' },
       include: { workflowDefinition: true },
     });

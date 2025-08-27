@@ -12,7 +12,7 @@ const API_BASE_URL = '/api'; // Use relative URL to go through Vite proxy
 const API_TIMEOUT = 30000;
 
 // Validate API usage in development
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   validateApiUsage();
 }
 
@@ -306,7 +306,7 @@ export function createServiceClient(service: ApiService) {
   const baseUrl = getApiBaseUrl(service);
 
   // Log deprecation warning in development
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     logDeprecationWarning(service);
   }
 

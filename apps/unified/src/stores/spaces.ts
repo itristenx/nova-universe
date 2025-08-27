@@ -7,6 +7,7 @@ import {
   type SpaceMetrics,
 } from '@services/spaces';
 import type { PaginatedResponse } from '@/types';
+import toast from 'react-hot-toast';
 
 interface SpaceState {
   // State
@@ -93,10 +94,12 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
         isLoading: false,
       });
     } catch (_error) {
+      console.error('Failed to fetch spaces:', _error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to load spaces',
         isLoading: false,
+        error: _error instanceof Error ? _error.message : 'Failed to fetch spaces'
       });
+      toast.error('Failed to load spaces');
     }
   },
 
@@ -111,10 +114,12 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
         isLoading: false,
       });
     } catch (_error) {
+      console.error('Failed to fetch space details:', _error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to load space',
         isLoading: false,
+        error: _error instanceof Error ? _error.message : 'Failed to fetch space details'
       });
+      toast.error('Failed to load space details');
     }
   },
 
@@ -136,11 +141,13 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
 
       return newSpace;
     } catch (_error) {
+      console.error('Failed to create space:', _error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to create space',
         isLoading: false,
+        error: _error instanceof Error ? _error.message : 'Failed to create space'
       });
-      throw error;
+      toast.error('Failed to create space');
+      throw _error;
     }
   },
 
@@ -159,11 +166,13 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
 
       return updatedSpace;
     } catch (_error) {
+      console.error('Failed to update space:', _error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to update space',
         isLoading: false,
+        error: _error instanceof Error ? _error.message : 'Failed to update space'
       });
-      throw error;
+      toast.error('Failed to update space');
+      throw _error;
     }
   },
 
@@ -185,11 +194,13 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
         isLoading: false,
       }));
     } catch (_error) {
+      console.error('Failed to delete space:', _error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to delete space',
         isLoading: false,
+        error: _error instanceof Error ? _error.message : 'Failed to delete space'
       });
-      throw error;
+      toast.error('Failed to delete space');
+      throw _error;
     }
   },
 
@@ -204,10 +215,12 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
         isLoading: false,
       });
     } catch (_error) {
+      console.error('Failed to fetch bookings:', _error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to load bookings',
         isLoading: false,
+        error: _error instanceof Error ? _error.message : 'Failed to fetch bookings'
       });
+      toast.error('Failed to load bookings');
     }
   },
 
@@ -225,11 +238,13 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
 
       return newBooking;
     } catch (_error) {
+      console.error('Failed to book space:', _error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to create booking',
         isLoading: false,
+        error: _error instanceof Error ? _error.message : 'Failed to book space'
       });
-      throw error;
+      toast.error('Failed to book space');
+      throw _error;
     }
   },
 
@@ -248,11 +263,13 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
 
       return updatedBooking;
     } catch (_error) {
+      console.error('Failed to update space settings:', _error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to update booking',
         isLoading: false,
+        error: _error instanceof Error ? _error.message : 'Failed to update space settings'
       });
-      throw error;
+      toast.error('Failed to update space settings');
+      throw _error;
     }
   },
 
@@ -269,11 +286,13 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
         isLoading: false,
       }));
     } catch (_error) {
+      console.error('Failed to cancel booking:', _error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to cancel booking',
         isLoading: false,
+        error: _error instanceof Error ? _error.message : 'Failed to cancel booking'
       });
-      throw error;
+      toast.error('Failed to cancel booking');
+      throw _error;
     }
   },
 
@@ -288,10 +307,12 @@ export const useSpaceStore = create<SpaceState>((set, get) => ({
         isLoading: false,
       });
     } catch (_error) {
+      console.error('Failed to fetch space analytics:', _error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to load metrics',
         isLoading: false,
+        error: _error instanceof Error ? _error.message : 'Failed to fetch space analytics'
       });
+      toast.error('Failed to load space analytics');
     }
   },
 

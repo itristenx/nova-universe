@@ -170,17 +170,17 @@ const ServiceCatalog: React.FC<ServiceCatalogProps> = ({ className }) => {
     } catch (error) {
       console.error('Critical error loading production data:', error);
       setError('System unavailable. Please contact your system administrator.');
-      
+
       // Enhanced error handling for service catalog
       if (error instanceof Error) {
         console.error('Service catalog error details:', {
           message: error.message,
           stack: error.stack,
           timestamp: new Date().toISOString(),
-          retry_count: retryCount
+          retry_count: retryCount,
         });
       }
-      
+
       // Set appropriate error state based on retry attempts
       const maxRetries = 3;
       if (retryCount < maxRetries) {

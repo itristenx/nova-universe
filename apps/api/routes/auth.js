@@ -66,7 +66,7 @@ router.post(
       } catch (dbErr) {
         // Log database error and fallback to in-memory for environments without DB
         console.warn('Database unavailable, using in-memory storage:', dbErr.message);
-        
+
         if (inMemoryUsersByEmail.has(email)) {
           return res.status(409).json({ error: 'User already exists' });
         }
@@ -158,5 +158,141 @@ router.post(
     }
   },
 );
+
+// POST /api/auth/logout
+router.post('/logout', async (req, res) => {
+  try {
+    // Get the token from the Authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        error: 'No valid token provided',
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    // Add token to blacklist for security
+    if (token && global.tokenBlacklist) {
+      global.tokenBlacklist.add(token);
+    } else if (token) {
+      // Initialize blacklist if it doesn't exist
+      global.tokenBlacklist = new Set([token]);
+    }
+
+    // In a production environment, you would:
+    // 1. Add the token to a blacklist/revocation list
+    // 2. Store the revocation in Redis or database
+    // 3. Check the blacklist on subsequent requests
+
+    // For now, we'll just return success
+    // The client should remove the token from storage
+
+    logger.info('User logged out successfully', {
+      timestamp: new Date().toISOString(),
+      message: 'Token should be removed by client',
+    });
+
+    return res.json({
+      success: true,
+      message: 'Logged out successfully',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Logout error', { error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: 'Logout failed',
+    });
+  }
+});
+
+// GET /api/auth/me - Get current user profile
+router.get('/me', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        error: 'No valid token provided',
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    // Verify the token
+    try {
+      const { verify: verifyJwt } = await import('../jwt.js');
+      const decoded = verifyJwt(token);
+
+      if (!decoded || !decoded.id || !decoded.email) {
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid token',
+        });
+      }
+
+      // Try to get user from database first
+      try {
+        const result = await db.query(
+          'SELECT id, name, email, created_at, last_login FROM users WHERE id = $1 AND email = $2',
+          [decoded.id, decoded.email],
+        );
+
+        if (result.rows && result.rows.length > 0) {
+          const user = result.rows[0];
+          return res.json({
+            success: true,
+            data: {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              createdAt: user.created_at,
+              lastLogin: user.last_login,
+            },
+          });
+        }
+      } catch (dbErr) {
+        // Log database connection issue for debugging
+        console.error('Database connection failed during token verification:', dbErr.message);
+
+        // Fallback to in-memory store
+        if (inMemoryUsersByEmail.has(decoded.email)) {
+          const user = inMemoryUsersByEmail.get(decoded.email);
+          return res.json({
+            success: true,
+            data: {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              createdAt: user.createdAt,
+              lastLogin: null,
+            },
+          });
+        }
+      }
+
+      return res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+    } catch (jwtErr) {
+      // Log JWT verification error for debugging
+      console.error('JWT verification failed:', jwtErr.message);
+
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid or expired token',
+      });
+    }
+  } catch (error) {
+    logger.error('Get profile error', { error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get user profile',
+    });
+  }
+});
 
 export default router;

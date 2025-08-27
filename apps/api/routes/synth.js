@@ -1253,10 +1253,33 @@ async function generateWorkloadPrediction(historicalData, period, department) {
       : 10;
 
   const multiplier = period === 'daily' ? 1 : period === 'weekly' ? 7 : 30;
-  const expectedTickets = Math.round(avgTicketsPerDay * multiplier * 1.1); // 10% growth assumption
+
+  // Apply department-specific growth factors
+  let growthFactor = 1.1; // Default 10% growth
+  if (department) {
+    switch (department.toLowerCase()) {
+      case 'it':
+      case 'technology':
+        growthFactor = 1.15; // Higher growth for IT departments
+        break;
+      case 'hr':
+      case 'human resources':
+        growthFactor = 1.05; // Lower growth for HR
+        break;
+      case 'operations':
+      case 'ops':
+        growthFactor = 1.12; // Moderate growth for operations
+        break;
+      default:
+        growthFactor = 1.1;
+    }
+  }
+
+  const expectedTickets = Math.round(avgTicketsPerDay * multiplier * growthFactor);
 
   return {
     period,
+    department: department || 'General',
     confidence: 0.78,
     expectedTickets,
     peakDays: period === 'weekly' ? ['Monday', 'Wednesday'] : ['Monday', 'Tuesday', 'Wednesday'],

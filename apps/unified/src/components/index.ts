@@ -7,6 +7,9 @@ export { default as RequestManagement } from './RequestManagement';
 // Admin Components
 export { default as ConfigurationManagement } from './admin/ConfigurationManagement';
 
+// Workflow Components
+export * from './workflow';
+
 // Other Components
 export { default as KioskRedirect } from './KioskRedirect';
 export { default as LanguageSwitcher } from './LanguageSwitcher';

@@ -1,4 +1,5 @@
 import { apiClient } from './api';
+import { io, Socket } from 'socket.io-client';
 
 // Uptime Kuma Monitor Types from Official API
 export interface UptimeKumaMonitor {
@@ -415,16 +416,18 @@ export const uptimeKumaService = {
       data: any;
     }) => void,
   ): Promise<() => void> {
-    // WebSocket connection for real-time Uptime Kuma events
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/uptime-kuma`;
+    // Socket.IO connection for real-time Uptime Kuma events
+    const socket = io('http://localhost:3001', {
+      transports: ['websocket', 'polling'],
+      timeout: 5000,
+    });
 
-    const ws = new WebSocket(wsUrl);
+    socket.on('connect', () => {
+      console.log('Uptime Kuma WebSocket connected');
+    });
 
-    ws.onmessage = (event) => {
+    socket.on('uptime_kuma_event', (kumaEvent) => {
       try {
-        const kumaEvent = JSON.parse(event.data);
-
         // Transform Uptime Kuma events to Nova format
         let transformedEvent;
         switch (kumaEvent.type) {
@@ -445,18 +448,18 @@ export const uptimeKumaService = {
         }
 
         callback(transformedEvent);
-      } catch (_error) {
+      } catch (error) {
         console.error('Failed to parse Uptime Kuma event:', error);
       }
-    };
+    });
 
-    ws.onerror = (error) => {
+    socket.on('connect_error', (error) => {
       console.error('Uptime Kuma WebSocket error:', error);
-    };
+    });
 
     // Return cleanup function
     return () => {
-      ws.close();
+      socket.disconnect();
     };
   },
 };

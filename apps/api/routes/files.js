@@ -203,7 +203,7 @@ router.post(
       logger.warn('File upload validation failed:', {
         userId: req.user?.id,
         errors: errors.array(),
-        body: req.body
+        body: req.body,
       });
       return res.status(400).json({
         success: false,
@@ -645,11 +645,11 @@ router.delete(
           try {
             await fs.unlink(file.path);
           } catch (fsError) {
-            logger.warn('File not found on disk during deletion:', { 
-              fileId: id, 
+            logger.warn('File not found on disk during deletion:', {
+              fileId: id,
               path: file.path,
               fsError: fsError.message,
-              errorCode: fsError.code 
+              errorCode: fsError.code,
             });
           }
 

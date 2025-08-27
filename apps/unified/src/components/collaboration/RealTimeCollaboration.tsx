@@ -182,9 +182,9 @@ export function RealTimeCollaboration({
   currentUser,
   onStartVideoCall,
   onStartScreenShare,
-  onInviteUser,
+  onInviteUser: _onInviteUser,
   onMessageSend,
-  enableWhiteboard = true,
+  enableWhiteboard: _enableWhiteboard = true,
   enableScreenShare = true,
   enableVideoCall = true,
 }: RealTimeCollaborationProps) {
@@ -259,6 +259,9 @@ export function RealTimeCollaboration({
           messages: [...prev.messages, newMsg],
           lastActivity: new Date(),
         }));
+        
+        // Add notification for new message
+        setNotifications(prev => [...prev, newMsg.id]);
       }
     }, 3000);
 
@@ -425,6 +428,14 @@ export function RealTimeCollaboration({
                 <VideoCameraIcon className="h-4 w-4" />
               </button>
             )}
+            
+            <button
+              onClick={() => {/* Audio call handler */}}
+              className="hover:text-nova-600 dark:hover:text-nova-400 rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+              title="Start audio call"
+            >
+              <PhoneIcon className="h-4 w-4" />
+            </button>
 
             {enableScreenShare && (
               <button
@@ -435,6 +446,19 @@ export function RealTimeCollaboration({
                 <ShareIcon className="h-4 w-4" />
               </button>
             )}
+            
+            <button
+              onClick={() => setNotifications([])}
+              className="hover:text-nova-600 dark:hover:text-nova-400 relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+              title="View notifications"
+            >
+              <BellIcon className="h-4 w-4" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                  {notifications.length}
+                </span>
+              )}
+            </button>
 
             <button
               onClick={() => setShowParticipants(!showParticipants)}
@@ -467,7 +491,7 @@ export function RealTimeCollaboration({
               className="ml-auto text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
               title="View shared screen"
             >
-              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+              <EyeIcon className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -561,9 +585,20 @@ export function RealTimeCollaboration({
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {message.userName}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {formatTime(message.timestamp)}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <ClockIcon className="h-3 w-3 text-gray-400" />
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatTime(message.timestamp)}
+                      </span>
+                    </div>
+                    {message.userId === currentUser.id && (
+                      <button
+                        className="ml-auto opacity-0 group-hover:opacity-100 rounded p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-opacity"
+                        title="Edit message"
+                      >
+                        <PencilIcon className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
 
                   <div className="text-sm text-gray-700 dark:text-gray-300">{message.content}</div>

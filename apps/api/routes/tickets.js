@@ -76,15 +76,35 @@ router.post(
 
       const { title, description, priority = 'medium', category = 'technical', type } = req.body;
       const typeCode = normalizeTicketType(type || 'INC');
-      const ticketNumber = await generateTypedTicketId(typeCode);
+
+      // Try to get typed ticket ID from database, fallback to in-memory generator
+      let ticketNumber;
+      try {
+        ticketNumber = await generateTypedTicketId(typeCode);
+      } catch (error) {
+        logger.warn('Database ticket ID generation failed, using fallback:', error.message);
+        ticketNumber = generateTicketNumber();
+      }
 
       // Attempt DB insert first
       try {
         const id = (await import('uuid')).v4();
         const now = new Date().toISOString();
         const result = await db.query(
-          'INSERT INTO tickets (id, ticket_id, type_code, title, description, priority, status, requested_by_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id, ticket_id',
-          [id, ticketNumber, typeCode, title, description, priority, 'open', req.user.id, now, now],
+          'INSERT INTO tickets (id, ticket_id, type_code, title, description, priority, category, status, requested_by_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, ticket_id',
+          [
+            id,
+            ticketNumber,
+            typeCode,
+            title,
+            description,
+            priority,
+            category,
+            'open',
+            req.user.id,
+            now,
+            now,
+          ],
         );
         return res.status(201).json({
           id: result.rows[0].id,
@@ -101,6 +121,8 @@ router.post(
           type: typeCode,
           title,
           description,
+          priority,
+          category,
           status: 'open',
           ticket_number: ticketNumber,
         };

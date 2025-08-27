@@ -32,7 +32,7 @@ try {
   });
 
   console.log('   📈 AI Fabric file size:', Math.round(aiFabricContent.length / 1024), 'KB');
-  
+
   // Test dynamic module loading
   try {
     const moduleUrl = pathToFileURL(aiFabricPath).href;

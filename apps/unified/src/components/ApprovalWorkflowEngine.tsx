@@ -52,26 +52,24 @@ export default function ApprovalWorkflowEngine({
   // Get relevant approval instances
   const myApprovals = showMyApprovals ? getMyApprovals() : [];
   const historyApprovals = recordId ? getApprovalHistory(recordId) : getApprovalHistory();
-  
+
   // Filter approval instances, optionally by table type
   let filteredInstances = approvalInstances.filter(
     (instance) => instance.status === 'pending' || instance.status === 'escalated',
   );
-  
+
   // Apply recordTable filter if specified
   if (recordTable) {
     filteredInstances = filteredInstances.filter(
-      (instance) => instance.record_table === recordTable
+      (instance) => instance.record_table === recordTable,
     );
   }
-  
+
   // Apply recordId filter if specified
   if (recordId) {
-    filteredInstances = filteredInstances.filter(
-      (instance) => instance.record_id === recordId
-    );
+    filteredInstances = filteredInstances.filter((instance) => instance.record_id === recordId);
   }
-  
+
   const pendingApprovals = filteredInstances;
 
   const handleApprove = (instanceId: string, stepId: string) => {

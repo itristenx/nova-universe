@@ -76,7 +76,7 @@ serviceCommand
       console.log(chalk.cyan('🔄 Restarting services...\n'));
 
       let servicesToRestart = [];
-      
+
       if (options.interactive && !options.service) {
         const { selectedServices } = await inquirer.prompt([
           {
@@ -349,7 +349,7 @@ function displayServiceStatus(status) {
   for (const [key, service] of Object.entries(status)) {
     const statusColor = service.status === 'running' ? chalk.green : chalk.red;
     const statusIcon = service.status === 'running' ? '🟢' : '🔴';
-    
+
     // Calculate uptime if startTime is available
     let uptimeDisplay = 'N/A';
     if (service.startTime && service.status === 'running') {

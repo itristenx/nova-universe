@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
-import i18n from '../i18n';
+import { i18n } from '../i18n';
 
 // Mock fetch for tests
 global.fetch = jest.fn();

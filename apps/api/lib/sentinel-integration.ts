@@ -1006,7 +1006,9 @@ export class NovaSentinelIntegration extends EventEmitter {
 
     if (monitor) {
       await this.updateMonitorStatus(monitor.id, event.healthy ? 'up' : 'down');
-      logger.info(`Provider health changed for monitor ${monitorId}: ${event.healthy ? 'healthy' : 'unhealthy'}`);
+      logger.info(
+        `Provider health changed for monitor ${monitorId}: ${event.healthy ? 'healthy' : 'unhealthy'}`,
+      );
     } else {
       logger.warn(`Provider health change event received for unknown monitor: ${monitorId}`);
     }
@@ -1450,16 +1452,14 @@ export class NovaSentinelIntegration extends EventEmitter {
               localMonitor.status = this.mapSentinelStatus(sentinelMonitor.status);
               localMonitor.lastCheck = new Date(sentinelMonitor.updated_at || Date.now());
               logger.debug(
-                `Synced monitor from Sentinel: ${sentinelMonitor.id} (${localMonitor.status})`
+                `Synced monitor from Sentinel: ${sentinelMonitor.id} (${localMonitor.status})`,
               );
             }
           }
         }
       }
 
-      logger.info(
-        `Synced monitors from Sentinel - count: ${response.data.monitors?.length || 0}`
-      );
+      logger.info(`Synced monitors from Sentinel - count: ${response.data.monitors?.length || 0}`);
     } catch (error) {
       logger.warn(`Failed to sync monitors from Sentinel: ${(error as Error).message}`);
     }
@@ -1509,7 +1509,7 @@ export class NovaSentinelIntegration extends EventEmitter {
       }
     } catch (error) {
       logger.warn(
-        `Ticket resolution fallback (db unavailable) - ticket: ${ticketId}, error: ${(error as Error)?.message}`
+        `Ticket resolution fallback (db unavailable) - ticket: ${ticketId}, error: ${(error as Error)?.message}`,
       );
     }
   }

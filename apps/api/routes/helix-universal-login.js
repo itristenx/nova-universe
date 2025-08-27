@@ -22,7 +22,7 @@ const router = express.Router();
 // Rate limiters
 const loginRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts per window
+  max: process.env.NODE_ENV === 'development' ? 50 : 5, // More lenient in development
   message: { error: 'Too many login attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -30,7 +30,7 @@ const loginRateLimit = rateLimit({
 
 const mfaRateLimit = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 10, // 10 MFA attempts per window
+  max: process.env.NODE_ENV === 'development' ? 100 : 10, // More lenient in development
   message: { error: 'Too many MFA attempts, please try again later' },
 });
 
@@ -148,17 +148,31 @@ router.post(
 
       // Fall back to default tenant if no specific tenant found
       if (!tenant) {
-        const defaultResult = await db.query(
-          'SELECT * FROM tenants WHERE domain = $1 AND active = true',
-          ['localhost'],
-        );
+        // Development fallback: Only allow default tenant for known test emails or explicit requests
+        if (process.env.NODE_ENV === 'development' && 
+            (email === 'admin@novauniverse.com' || email === 'admin@example.com' || 
+             email === 'test@novauniverse.com' || email === 'admin@localhost')) {
+          
+          const defaultResult = await db.query(
+            'SELECT * FROM tenants WHERE domain = $1 AND active = true',
+            ['localhost'],
+          );
 
-        if (defaultResult.rows.length > 0) {
-          tenant = defaultResult.rows[0];
+          if (defaultResult.rows.length > 0) {
+            tenant = defaultResult.rows[0];
+            logger.info(`Development fallback: Using default tenant for ${email}`);
+          } else {
+            return res.status(404).json({
+              success: false,
+              error: 'No tenant configuration found',
+            });
+          }
         } else {
+          // Production behavior: Don't auto-fallback for unknown emails
           return res.status(404).json({
             success: false,
-            error: 'No tenant configuration found',
+            error: 'No tenant found for this email or domain',
+            code: 'TENANT_NOT_FOUND'
           });
         }
       }

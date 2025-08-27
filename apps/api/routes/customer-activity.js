@@ -2,9 +2,9 @@ import express from 'express';
 import { EmailCommunicationService } from '../services/email-communication.service.js';
 import { CustomerLinkingService } from '../services/customer-linking.service.js';
 import { EmailDelayService } from '../services/email-delay.service.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateJWT as authenticateToken } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validation.js';
-import logger from '../logger.js';
+import { logger } from '../logger.js';
 import DOMPurify from 'isomorphic-dompurify';
 import xss from 'xss';
 

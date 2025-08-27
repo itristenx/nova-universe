@@ -35,9 +35,9 @@ export default function CatalogManagement() {
     items,
     requests,
     departmentCostCenters,
-    billingReports,
+    billingReports: _billingReports,
     selectedCategory,
-    selectedItem,
+    selectedItem: _selectedItem,
     searchQuery,
     filters,
     setSelectedCategory,
@@ -47,12 +47,12 @@ export default function CatalogManagement() {
     getFilteredItems,
     createCategory,
     createItem,
-    updateItem,
+    updateItem: _updateItem,
     deleteItem,
     duplicateItem,
     generateBillingReport,
-    getDepartmentCosts,
-    getLicenseUtilization,
+    getDepartmentCosts: _getDepartmentCosts,
+    getLicenseUtilization: _getLicenseUtilization,
   } = useCatalogStore();
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -116,6 +116,61 @@ export default function CatalogManagement() {
     ['pending_approval', 'approved', 'fulfilling'].includes(req.state),
   ).length;
 
+  // Helper function to get status icon based on item status
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
+      case 'pending':
+        return <ClockIcon className="h-4 w-4 text-yellow-500" />;
+      case 'warning':
+        return <ExclamationTriangleIcon className="h-4 w-4 text-orange-500" />;
+      default:
+        return <CogIcon className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  // Handle export functionality
+  const handleExport = () => {
+    const csvData = items.map((item) => ({
+      name: item.name,
+      category: item.category_id,
+      price: item.price,
+      status: item.status,
+    }));
+    const csvContent = [
+      Object.keys(csvData[0]).join(','),
+      ...csvData.map((row) => Object.values(row).join(',')),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'catalog-items.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Handle viewing department users
+  const showDepartmentUsers = (department: string) => {
+    setSelectedDepartment(department);
+    setShowAnalytics(true); // Show analytics panel with department filter
+  };
+
+  // Generate and download billing report
+  const downloadBillingReport = () => {
+    const report: BillingReport = generateBillingReport('all', new Date(), new Date());
+    const reportData = JSON.stringify(report, null, 2);
+    const blob = new Blob([reportData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'billing-report.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -138,6 +193,23 @@ export default function CatalogManagement() {
                 <ChartBarIcon className="mr-2 h-4 w-4" />
                 Analytics
               </button>
+
+              <button
+                onClick={handleExport}
+                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+              >
+                <ArrowDownTrayIcon className="mr-2 h-4 w-4" />
+                Export
+              </button>
+
+              <button
+                onClick={downloadBillingReport}
+                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+              >
+                <ArrowUpTrayIcon className="mr-2 h-4 w-4" />
+                Billing Report
+              </button>
+
               <button
                 onClick={() => {
                   setCreateMode('item');
@@ -294,12 +366,30 @@ export default function CatalogManagement() {
             >
               <div className="mb-8 overflow-hidden rounded-lg bg-white shadow dark:bg-slate-800">
                 <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                    Catalog Analytics & Cost Tracking
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Department costs, license utilization, and billing insights
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                        Catalog Analytics & Cost Tracking
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Department costs, license utilization, and billing insights
+                      </p>
+                    </div>
+                    {selectedDepartment && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500">Filtered by:</span>
+                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                          {departmentCostCenters.find(d => d.department_name === selectedDepartment)?.department_name || selectedDepartment}
+                          <button 
+                            onClick={() => setSelectedDepartment('')}
+                            className="ml-1 rounded-full p-0.5 hover:bg-blue-200"
+                          >
+                            <XMarkIcon className="h-3 w-3" />
+                          </button>
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="p-6">
                   <div className="border-b border-gray-200 dark:border-gray-700">
@@ -321,7 +411,9 @@ export default function CatalogManagement() {
 
                   <div className="mt-6">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                      {departmentCostCenters.map((dept) => (
+                      {departmentCostCenters
+                        .filter(dept => !selectedDepartment || dept.department_name === selectedDepartment)
+                        .map((dept) => (
                         <div key={dept.id} className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
                           <div className="mb-2 flex items-center justify-between">
                             <h4 className="font-semibold text-gray-900 dark:text-white">
@@ -347,6 +439,12 @@ export default function CatalogManagement() {
                             <div className="h-2 w-full rounded-full bg-gray-200">
                               <div className="h-2 w-0 rounded-full bg-blue-600"></div>
                             </div>
+                            <button
+                              onClick={() => showDepartmentUsers(dept.department_name)}
+                              className="mt-2 w-full text-xs text-blue-600 hover:text-blue-700"
+                            >
+                              View Department Users
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -405,6 +503,8 @@ export default function CatalogManagement() {
               onEdit={() => setSelectedItem(item)}
               onDuplicate={() => duplicateItem(item.id)}
               onDelete={() => deleteItem(item.id)}
+              getStatusIcon={getStatusIcon}
+              onViewDetails={(item) => setSelectedItem(item)}
             />
           ))}
         </div>
@@ -458,9 +558,19 @@ interface CatalogItemCardProps {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  getStatusIcon: (status: string) => React.ReactElement;
+  onViewDetails: (item: CatalogItem) => void;
 }
 
-function CatalogItemCard({ item, viewMode, onEdit, onDuplicate, onDelete }: CatalogItemCardProps) {
+function CatalogItemCard({
+  item,
+  viewMode,
+  onEdit,
+  onDuplicate,
+  onDelete,
+  getStatusIcon,
+  onViewDetails,
+}: CatalogItemCardProps) {
   if (viewMode === 'list') {
     return (
       <div className="rounded-lg bg-white shadow transition-shadow hover:shadow-lg dark:bg-slate-800">
@@ -480,12 +590,13 @@ function CatalogItemCard({ item, viewMode, onEdit, onDuplicate, onDelete }: Cata
                 <div className="flex items-center gap-4 text-sm">
                   <span
                     className={cn(
-                      'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                      'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium',
                       item.status === 'active'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800',
                     )}
                   >
+                    {getStatusIcon(item.status)}
                     {item.status}
                   </span>
                   <span className="flex items-center gap-1 text-gray-500">
@@ -496,6 +607,22 @@ function CatalogItemCard({ item, viewMode, onEdit, onDuplicate, onDelete }: Cata
                     <ShoppingCartIcon className="h-3 w-3" />
                     {item.order_count} orders
                   </span>
+                  <button
+                    onClick={() => alert(`Viewing users for ${item.name}`)}
+                    className="flex items-center gap-1 text-blue-500 hover:text-blue-600"
+                    title="View Users"
+                  >
+                    <UsersIcon className="h-3 w-3" />
+                    Users
+                  </button>
+                  <button
+                    onClick={() => onViewDetails(item)}
+                    className="flex items-center gap-1 text-gray-500 hover:text-gray-600"
+                    title="View Details"
+                  >
+                    <EyeIcon className="h-3 w-3" />
+                    View
+                  </button>
                 </div>
               </div>
             </div>

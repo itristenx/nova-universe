@@ -467,11 +467,7 @@ class ElasticsearchManager {
 
     try {
       // Extract options with defaults
-      const { 
-        includeShards = false, 
-        indexPattern = null,
-        timeRange = null 
-      } = options;
+      const { includeShards = false, indexPattern = null, timeRange = null } = options;
 
       // Get index stats
       const statsQuery = {
@@ -498,26 +494,26 @@ class ElasticsearchManager {
                 range: {
                   '@timestamp': {
                     gte: timeRange.from,
-                    lte: timeRange.to
-                  }
-                }
+                    lte: timeRange.to,
+                  },
+                },
               },
               aggs: {
                 documents_over_time: {
                   date_histogram: {
                     field: '@timestamp',
-                    interval: '1h'
-                  }
-                }
+                    interval: '1h',
+                  },
+                },
               },
-              size: 0
-            }
+              size: 0,
+            },
           });
-          
+
           timeBasedMetrics = {
             time_range: timeRange,
             documents_in_range: searchResponse.body.hits.total.value,
-            histogram: searchResponse.body.aggregations?.documents_over_time?.buckets || []
+            histogram: searchResponse.body.aggregations?.documents_over_time?.buckets || [],
           };
         } catch (timeError) {
           logger.warn('Failed to get time-based metrics:', timeError.message);

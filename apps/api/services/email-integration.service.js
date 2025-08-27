@@ -1,7 +1,7 @@
-import { PrismaClient } from '/prisma/generated/core/index.js';
-import logger from '../logger.js';
+import { PrismaClient } from '../../../prisma/generated/core/index.js';
+import { logger } from '../logger.js';
 import { NotificationService } from './notification.service.js';
-import { EnhancedTicketService } from './enhanced-ticket.service.js';
+import { TicketService as EnhancedTicketService } from './enhanced-ticket.service.js';
 import _EmailTemplateService from './email-template.service.js';
 import { EmailCommunicationService } from './email-communication.service.js';
 import { Client } from '@microsoft/microsoft-graph-client';
@@ -1116,12 +1116,15 @@ class EmailIntegrationService {
    */
   async handleConversationThreading(email, account) {
     try {
+      // Account-specific threading configuration
+      const accountConfig = await this.getAccountThreadingConfig(account);
+
       // Multiple methods to detect threading
       const threadingAttempts = [
         () => this.extractTicketIdFromSubject(email.subject),
         () => this.findThreadByMessageId(email.inReplyTo),
         () => this.findThreadByConversationId(email.conversationId),
-        () => this.findThreadBySenderAndTimeframe(email.from, email.date),
+        () => this.findThreadBySenderAndTimeframe(email.from, email.date, accountConfig),
       ];
 
       let existingTicketId = null;
@@ -1142,6 +1145,28 @@ class EmailIntegrationService {
     } catch (error) {
       logger.error('Error in conversation threading:', error);
       return null;
+    }
+  }
+
+  /**
+   * Get account-specific threading configuration
+   */
+  async getAccountThreadingConfig(account) {
+    try {
+      if (!account) {
+        return { timeframeHours: 24, allowSenderMatching: true };
+      }
+
+      // Return account-specific configuration or defaults
+      return {
+        timeframeHours: account.threadingTimeframeHours || 24,
+        allowSenderMatching: account.allowSenderThreading ?? true,
+        strictMessageIdMatching: account.strictThreading ?? false,
+        accountSpecificRules: account.threadingRules || [],
+      };
+    } catch (error) {
+      logger.error('Error getting account threading config:', error);
+      return { timeframeHours: 24, allowSenderMatching: true };
     }
   }
 

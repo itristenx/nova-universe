@@ -77,10 +77,10 @@ class RAGEngine {
     logger.info('RAG response generation', { query, context });
 
     // Use context to enhance the response
-    const enhancedResponse = context.userRole 
-      ? `[As ${context.userRole}] RAG-generated response` 
+    const enhancedResponse = context.userRole
+      ? `[As ${context.userRole}] RAG-generated response`
       : 'RAG-generated response';
-    
+
     const confidenceBoost = context.sessionHistory ? 0.1 : 0;
 
     return {

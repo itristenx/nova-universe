@@ -1040,7 +1040,7 @@ router.get('/badge/:statusPageId/:monitorId?', async (req, res) => {
 async function runBasicMonitorCheck(monitor) {
   // This would contain your existing monitor check logic for basic types
   // Implementation depends on your current monitoring logic
-  
+
   const startTime = Date.now();
   let result = {
     success: true,

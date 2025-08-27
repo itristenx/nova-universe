@@ -7,9 +7,7 @@
       "success": true,
       "skipped": true,
       "duration": 0,
-      "warnings": [
-        "API not available"
-      ],
+      "warnings": ["API not available"],
       "timestamp": 1756178904449
     },
     "performance": {
@@ -17,9 +15,7 @@
       "success": true,
       "skipped": true,
       "duration": 0,
-      "warnings": [
-        "API not available"
-      ],
+      "warnings": ["API not available"],
       "timestamp": 1756178904449
     },
     "security": {
@@ -27,9 +23,7 @@
       "success": true,
       "skipped": true,
       "duration": 0,
-      "warnings": [
-        "API not available"
-      ],
+      "warnings": ["API not available"],
       "timestamp": 1756178904449
     },
     "uat": {
@@ -37,9 +31,7 @@
       "success": true,
       "skipped": true,
       "duration": 0,
-      "warnings": [
-        "API not available"
-      ],
+      "warnings": ["API not available"],
       "timestamp": 1756178904449
     }
   },

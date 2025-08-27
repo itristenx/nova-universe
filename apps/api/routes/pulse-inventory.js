@@ -9,7 +9,6 @@ import { body, param, query, validationResult } from 'express-validator';
 import inventoryService from '../services/inventory.js';
 import helixKioskIntegration from '../services/helixKioskIntegration.js';
 import { logger } from '../logger.js';
-import { encrypt, decrypt } from '../utils/encryption.js';
 // import { PrismaClient } from '../../../prisma/generated/core/index.js';
 
 async function getPrisma() {

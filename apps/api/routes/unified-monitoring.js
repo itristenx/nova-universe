@@ -15,7 +15,7 @@
 import express from 'express';
 import { body, query, param, validationResult } from 'express-validator';
 import { logger } from '../logger.js';
-import { authenticateToken, requirePermission } from '../middleware/auth.js';
+import { authenticateJWT as authenticateToken, requirePermission } from '../middleware/auth.js';
 import { database } from '../database.js';
 import { monitoringIntegrationService } from '../lib/monitoring-integration-service.js';
 import { eventBridge } from '../lib/event-bridge.js';

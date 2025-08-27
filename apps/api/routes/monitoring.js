@@ -274,10 +274,10 @@ async function generateSystemAlerts() {
 
   // Send email notifications for critical and high severity alerts
   if (alerts.length > 0) {
-    const criticalAlerts = alerts.filter(alert => 
-      alert.severity === SEVERITY.CRITICAL || alert.severity === SEVERITY.HIGH
+    const criticalAlerts = alerts.filter(
+      (alert) => alert.severity === SEVERITY.CRITICAL || alert.severity === SEVERITY.HIGH,
     );
-    
+
     if (criticalAlerts.length > 0) {
       await sendAlertEmails(criticalAlerts);
     }
@@ -294,22 +294,28 @@ async function sendAlertEmails(alerts) {
       host: process.env.SMTP_HOST || 'localhost',
       port: process.env.SMTP_PORT || 587,
       secure: process.env.SMTP_SECURE === 'true',
-      auth: process.env.SMTP_USER ? {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      } : undefined,
+      auth: process.env.SMTP_USER
+        ? {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          }
+        : undefined,
     });
 
     const emailBody = `
 <h2>Nova System Alert Notification</h2>
 <p>The following alerts require immediate attention:</p>
 <ul>
-${alerts.map(alert => `
+${alerts
+  .map(
+    (alert) => `
   <li><strong>${alert.severity.toUpperCase()}</strong>: ${alert.message}
     <br>Action Required: ${alert.action}
     <br>Time: ${alert.timestamp}
   </li>
-`).join('')}
+`,
+  )
+  .join('')}
 </ul>
 <p>Please log into the Nova monitoring dashboard for more details.</p>
     `.trim();
@@ -322,30 +328,29 @@ ${alerts.map(alert => `
     };
 
     await transporter.sendMail(mailOptions);
-    
+
     logger.info('Alert emails sent successfully', {
       alertCount: alerts.length,
       recipients: mailOptions.to,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Emit event for successful email notification
     events.emit('monitoring:alert-emails-sent', {
       alertCount: alerts.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     logger.error('Failed to send alert emails:', {
       error: error.message,
-      alertCount: alerts.length
+      alertCount: alerts.length,
     });
-    
+
     // Emit event for failed email notification
     events.emit('monitoring:alert-emails-failed', {
       error: error.message,
       alertCount: alerts.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -357,7 +362,8 @@ async function checkDatabaseHealth() {
     const connectionCount = await db.query('SELECT COUNT(*) FROM pg_stat_activity');
 
     // Verify the health check query succeeded
-    const isHealthy = result && result.rows && result.rows.length > 0 && result.rows[0].health === 1;
+    const isHealthy =
+      result && result.rows && result.rows.length > 0 && result.rows[0].health === 1;
 
     return {
       status: isHealthy ? 'healthy' : 'unhealthy',
@@ -416,7 +422,7 @@ async function checkServiceHealth() {
 // External dependencies health check
 async function checkExternalDependencies() {
   const dependencies = {};
-  
+
   // Check SMTP with actual network connectivity
   try {
     const response = await axios.get('http://httpbin.org/status/200', { timeout: 5000 });
@@ -428,9 +434,9 @@ async function checkExternalDependencies() {
 
   // Check HelpScout API endpoint
   try {
-    const response = await axios.get('https://api.helpscout.net', { 
+    const response = await axios.get('https://api.helpscout.net', {
       timeout: 5000,
-      validateStatus: () => true // Accept any status for connectivity test
+      validateStatus: () => true, // Accept any status for connectivity test
     });
     dependencies.helpscout = response.status < 500 ? 'healthy' : 'degraded';
   } catch (error) {
@@ -451,11 +457,13 @@ async function checkExternalDependencies() {
   events.emit('monitoring:dependencies-checked', {
     dependencies,
     timestamp: new Date().toISOString(),
-    healthy: Object.values(dependencies).every(status => status === 'healthy')
+    healthy: Object.values(dependencies).every((status) => status === 'healthy'),
   });
 
   return {
-    status: Object.values(dependencies).every(status => status === 'healthy') ? 'healthy' : 'degraded',
+    status: Object.values(dependencies).every((status) => status === 'healthy')
+      ? 'healthy'
+      : 'degraded',
     dependencies,
     lastChecked: new Date().toISOString(),
   };
@@ -1221,7 +1229,7 @@ router.get('/history/:id', authenticateJWT, async (req, res) => {
       granularity,
       interval,
       timeRange,
-      monitorId: id
+      monitorId: id,
     };
 
     // Calculate overall statistics
@@ -1718,7 +1726,7 @@ Reason: ${heartbeat.msg || message || 'Unknown'}`,
     logger.warn('AI incident analysis failed, using basic summary:', {
       error: e.message,
       monitorName: monitor.name,
-      heartbeatMsg: heartbeat.msg
+      heartbeatMsg: heartbeat.msg,
     });
     return `${monitor.name} is currently experiencing issues. ${heartbeat.msg || 'Service appears to be down.'}`;
   }
@@ -1750,6 +1758,18 @@ router.get('/kuma/monitors', authenticateJWT, async (req, res) => {
       await syncStatusFromKuma();
     } catch (syncError) {
       logger.warn('Failed to sync from Kuma, using cached data', { error: syncError.message });
+    }
+
+    // Validate connection to Kuma API if client is available
+    if (kumaClient) {
+      try {
+        await kumaClient.ping();
+        logger.debug('Kuma API connection validated');
+      } catch (kumaError) {
+        logger.warn('Kuma API validation failed, continuing with cached data', {
+          error: kumaError.message,
+        });
+      }
     }
 
     const result = await db.query(
@@ -2060,6 +2080,10 @@ router.post(
         status: status === 'up' ? 1 : 0,
         statusCode: null,
       });
+
+      // Escalate severity if marked as important
+      const finalSeverity = important ? 'critical' : severity;
+
       const summary = await generateIncidentSummary(monitor, { msg: errorMessage }, errorMessage);
 
       const result = await db.query(
@@ -2070,9 +2094,9 @@ router.post(
     `,
         [
           monitor.id,
-          severity,
+          finalSeverity,
           summary,
-          `Manual incident: ${errorMessage || 'Triggered from Pulse'}`,
+          `${important ? 'IMPORTANT - ' : ''}Manual incident: ${errorMessage || 'Triggered from Pulse'}`,
         ],
       );
 

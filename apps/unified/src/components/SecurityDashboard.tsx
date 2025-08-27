@@ -314,16 +314,16 @@ export const SecurityDashboard: React.FC = () => {
       ]);
     } catch (error) {
       console.error('Failed to load security data:', error);
-      
+
       // Enhanced error handling for security dashboard
       setSecurityAlerts([]);
-      
+
       // Log error details for monitoring
       if (error instanceof Error) {
         console.error('Error details:', {
           message: error.message,
           stack: error.stack,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
     } finally {

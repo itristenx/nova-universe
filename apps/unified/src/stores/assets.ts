@@ -140,10 +140,8 @@ export const useAssetStore = create<AssetState>((set, get) => ({
         error: null,
       });
     } catch (_error) {
-      set({
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to load assets',
-      });
+      console.error('Failed to fetch assets:', _error);
+      throw new Error('Failed to fetch assets');
     }
   },
 
@@ -187,11 +185,8 @@ export const useAssetStore = create<AssetState>((set, get) => ({
 
       return asset;
     } catch (_error) {
-      set({
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to create asset',
-      });
-      throw error;
+      console.error('Failed to create asset:', _error);
+      throw new Error('Failed to create asset');
     }
   },
 
@@ -211,11 +206,8 @@ export const useAssetStore = create<AssetState>((set, get) => ({
 
       return updatedAsset;
     } catch (_error) {
-      set({
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to update asset',
-      });
-      throw error;
+      console.error('Failed to update asset:', _error);
+      throw new Error('Failed to update asset');
     }
   },
 
@@ -238,11 +230,8 @@ export const useAssetStore = create<AssetState>((set, get) => ({
         error: null,
       }));
     } catch (_error) {
-      set({
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to delete asset',
-      });
-      throw error;
+      console.error('Failed to delete asset:', _error);
+      throw new Error('Failed to delete asset');
     }
   },
 

@@ -19,7 +19,7 @@ export async function searchDirectory(q) {
     const url = (cfg.directoryUrl || '').replace(/\/$/, '');
     const token = cfg.directoryToken || '';
     const resp = await axios.get(`${url}/Users`, {
-      params: { filter: `userName co \"${q}\"` },
+      params: { filter: `userName co "${q}"` },
       headers: { Authorization: `Bearer ${token}` },
     });
     const list = resp.data?.Resources || [];

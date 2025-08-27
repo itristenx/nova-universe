@@ -5,8 +5,8 @@ export const advancedFeaturesService = {
       // This would typically check against a maintenance database/storage
       // For now, we'll simulate checking maintenance status
       const maintenanceWindows = await this.getActiveMaintenanceWindows();
-      return maintenanceWindows.some(window => 
-        window.monitorIds && window.monitorIds.includes(monitorId)
+      return maintenanceWindows.some(
+        (window) => window.monitorIds && window.monitorIds.includes(monitorId),
       );
     } catch (error) {
       console.warn(`Failed to check maintenance status for monitor ${monitorId}:`, error.message);
@@ -19,7 +19,7 @@ export const advancedFeaturesService = {
   async createMaintenanceWindow(win) {
     return { id: `mw_${Date.now()}`, status: 'scheduled', ...win };
   },
-  
+
   async getActiveMaintenanceWindows() {
     // Get currently active maintenance windows
     // This would typically query a database or external service

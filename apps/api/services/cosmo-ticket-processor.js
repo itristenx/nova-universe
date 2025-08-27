@@ -144,12 +144,20 @@ class TicketClassifier {
 
     for (const [category, keywords] of Object.entries(this.categories)) {
       scores[category] = 0;
+      let matchCount = 0;
+
       for (const keyword of keywords) {
         if (text.includes(keyword)) {
           // Give more weight to matches in title
           const titleWeight = title.toLowerCase().includes(keyword) ? 3 : 1;
           scores[category] += titleWeight;
+          matchCount++;
         }
+      }
+
+      // Normalize score based on text length and match density
+      if (matchCount > 0 && totalWords > 0) {
+        scores[category] = (scores[category] / totalWords) * matchCount;
       }
     }
 
@@ -295,15 +303,32 @@ class CustomerMatcher {
       return {
         customer,
         matchType: 'domain',
-        confidence: 0.9,
+        confidence: 0.95,
       };
+    }
+
+    // Try phone number matching if provided
+    if (phone) {
+      const normalizedPhone = phone.replace(/\D/g, ''); // Remove non-digits
+      for (const [customerId, customer] of this.customers) {
+        if (customer.phone) {
+          const customerPhone = customer.phone.replace(/\D/g, '');
+          if (normalizedPhone === customerPhone) {
+            return {
+              customer: { ...customer, id: customerId },
+              matchType: 'phone',
+              confidence: 0.9,
+            };
+          }
+        }
+      }
     }
 
     // Try exact email matching
     for (const [customerId, customer] of this.customers) {
       if (customer.emails.includes(email)) {
         return {
-          customer,
+          customer: { ...customer, id: customerId },
           matchType: 'email',
           confidence: 1.0,
         };
@@ -315,7 +340,7 @@ class CustomerMatcher {
       for (const [customerId, customer] of this.customers) {
         if (this.fuzzyMatch(name, customer.name)) {
           return {
-            customer,
+            customer: { ...customer, id: customerId },
             matchType: 'name',
             confidence: 0.7,
           };

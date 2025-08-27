@@ -20,6 +20,9 @@ const ForgotPasswordPage = lazy(() => import('@pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@pages/auth/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('@pages/auth/VerifyEmailPage'));
 
+// Setup page
+const SetupPage = lazy(() => import('@pages/setup/SetupPage'));
+
 // Dashboard pages
 const DashboardPage = lazy(() => import('@pages/dashboard/DashboardPage'));
 const AdminDashboard = lazy(() => import('@pages/dashboard/AdminDashboard'));
@@ -184,6 +187,16 @@ function App() {
                   </Suspense>
                 </AuthLayout>
               )
+            }
+          />
+
+          {/* Setup route (no authentication required) */}
+          <Route
+            path="/setup"
+            element={
+              <Suspense fallback={<LoadingSpinner />}>
+                <SetupPage />
+              </Suspense>
             }
           />
 

@@ -30,7 +30,7 @@ export interface AIMetric {
   model: string;
   value: number;
   unit: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   tags: string[];
 }
 
@@ -43,9 +43,9 @@ export interface AIAuditEvent {
   sessionId?: string;
   providerId?: string;
   model?: string;
-  input?: any;
-  output?: any;
-  metadata: Record<string, any>;
+  input?: unknown;
+  output?: unknown;
+  metadata: Record<string, unknown>;
   complianceFlags: string[];
   riskScore: number;
   location?: {
@@ -69,7 +69,7 @@ export interface BiasMetric {
   threshold: number;
   passed: boolean;
   sampleSize: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface PrivacyAssessment {
@@ -123,6 +123,28 @@ export interface ModelDriftMetric {
   affectedFeatures?: string[];
 }
 
+export interface DashboardData {
+  recentMetrics: AIMetric[];
+  recentAuditEvents: AIAuditEvent[];
+  performanceMetrics: AIMetric[];
+  avgResponseTime: number;
+  errorRate: number;
+  biasAlerts: BiasMetric[];
+  driftAlerts: ModelDriftMetric[];
+  securityAlerts: SecurityAlert[];
+  complianceStatus: ComplianceReport['status'];
+}
+
+export interface UserContext {
+  userId: string;
+  role: string;
+  department: string;
+  permissions: string[];
+  lastActivity: Date;
+  riskLevel: string;
+  sessionCount: number;
+}
+
 export interface SecurityAlert {
   id: string;
   timestamp: Date;
@@ -147,7 +169,7 @@ export interface ExplainabilityReport {
   timestamp: Date;
   requestId: string;
   model: string;
-  prediction: any;
+  prediction: unknown;
   explanation: {
     method: 'lime' | 'shap' | 'gradcam' | 'attention' | 'saliency';
     featureImportances: Array<{
@@ -176,7 +198,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     id: string;
     timestamp: Date;
     event: string;
-    details: Record<string, any>;
+    details: Record<string, unknown>;
     severity: string;
   }> = [];
 
@@ -299,7 +321,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
    */
   async assessBias(
     model: string,
-    testData: any[],
+    testData: unknown[],
     protectedAttribute: string,
   ): Promise<BiasMetric> {
     const biasMetric: BiasMetric = {
@@ -358,8 +380,8 @@ export class NovaAIMonitoringSystem extends EventEmitter {
    */
   async detectDrift(
     model: string,
-    currentData: any[],
-    baselineData: any[],
+    currentData: unknown[],
+    baselineData: unknown[],
   ): Promise<ModelDriftMetric> {
     const driftMetric: ModelDriftMetric = {
       id: crypto.randomUUID(),
@@ -395,8 +417,8 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   async generateExplanation(
     requestId: string,
     model: string,
-    prediction: any,
-    inputData: any,
+    prediction: unknown,
+    inputData: unknown,
   ): Promise<ExplainabilityReport> {
     const explanation: ExplainabilityReport = {
       id: crypto.randomUUID(),
@@ -464,7 +486,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
   /**
    * Get monitoring dashboard data
    */
-  getDashboardData(): any {
+  getDashboardData(): DashboardData {
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -819,7 +841,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     };
   }
 
-  private async getUserContext(userId: string): Promise<any> {
+  private async getUserContext(userId: string): Promise<UserContext> {
     // Fetch user context based on userId
     try {
       // In a real implementation, this would query a user service or database
@@ -830,24 +852,24 @@ export class NovaAIMonitoringSystem extends EventEmitter {
         permissions: ['ai.use', 'ai.monitor'],
         lastActivity: new Date(),
         riskLevel: this.calculateUserRiskLevel(userId),
-        sessionCount: await this.getUserSessionCount(userId)
+        sessionCount: await this.getUserSessionCount(userId),
       };
-      
+
       // Log user context retrieval for audit
       this.logEvent('user_context_retrieved', {
         userId,
         hasPermissions: userContext.permissions.length > 0,
-        riskLevel: userContext.riskLevel
+        riskLevel: userContext.riskLevel,
       });
-      
+
       return userContext;
     } catch (error) {
       console.error(`Failed to fetch user context for ${userId}:`, error);
-      return { 
-        userId, 
-        role: 'unknown', 
+      return {
+        userId,
+        role: 'unknown',
         department: 'unknown',
-        riskLevel: 'medium'
+        riskLevel: 'medium',
       };
     }
   }
@@ -866,31 +888,31 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     return baseCount * multiplier + 1;
   }
 
-  private logEvent(eventType: string, eventData: Record<string, any>): void {
+  private logEvent(eventType: string, eventData: Record<string, unknown>): void {
     // Log monitoring events for audit trail
     const logEntry = {
       timestamp: new Date().toISOString(),
       type: eventType,
       data: eventData,
-      service: 'nova-ai-monitoring'
+      service: 'nova-ai-monitoring',
     };
-    
+
     console.log(`[AI-MONITORING] ${eventType}:`, JSON.stringify(logEntry, null, 2));
-    
+
     // In production, this would send to a logging service
     this.auditLog.push({
       id: Math.random().toString(36).substr(2, 9),
       timestamp: new Date(),
       event: eventType,
       details: eventData,
-      severity: this.getEventSeverity(eventType)
+      severity: this.getEventSeverity(eventType),
     });
   }
 
   private getEventSeverity(eventType: string): string {
     const highSeverityEvents = ['bias_detected', 'drift_detected', 'anomaly_detected'];
     const mediumSeverityEvents = ['performance_degraded', 'threshold_exceeded'];
-    
+
     if (highSeverityEvents.includes(eventType)) return 'high';
     if (mediumSeverityEvents.includes(eventType)) return 'medium';
     return 'low';
@@ -967,7 +989,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     }
   }
 
-  private async calculateBiasScore(testData: any[], protectedAttribute: string): Promise<number> {
+  private async calculateBiasScore(testData: unknown[], protectedAttribute: string): Promise<number> {
     // Demographic parity difference (absolute)
     if (!Array.isArray(testData) || testData.length === 0) return 0;
     const groups = new Map<string, { positives: number; total: number }>();
@@ -984,7 +1006,7 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     return Math.abs(max - min); // 0..1 (0 is best)
   }
 
-  private async calculateDriftScore(currentData: any[], baselineData: any[]): Promise<number> {
+  private async calculateDriftScore(currentData: unknown[], baselineData: unknown[]): Promise<number> {
     // Population Stability Index (PSI) for a single numeric feature if available
     if (
       !Array.isArray(currentData) ||
@@ -1026,23 +1048,23 @@ export class NovaAIMonitoringSystem extends EventEmitter {
 
   private async generateModelExplanation(
     model: string,
-    prediction: any,
-    inputData: any,
+    prediction: unknown,
+    inputData: unknown,
   ): Promise<ExplainabilityReport['explanation']> {
     // Generate model-specific explanation based on architecture and input
     const explanationMethod = this.getExplanationMethod(model);
     const featureImportances = this.calculateFeatureImportances(inputData, prediction);
     const confidence = this.calculateExplanationConfidence(prediction, inputData);
-    
+
     // Log explanation generation for audit
     this.logEvent('explanation_generated', {
       model,
       method: explanationMethod,
       confidence,
       inputFeatures: Object.keys(inputData || {}),
-      predictionType: typeof prediction
+      predictionType: typeof prediction,
     });
-    
+
     return {
       method: explanationMethod,
       featureImportances,
@@ -1051,7 +1073,9 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     };
   }
 
-  private getExplanationMethod(model: string): 'lime' | 'shap' | 'gradcam' | 'attention' | 'saliency' {
+  private getExplanationMethod(
+    model: string,
+  ): 'lime' | 'shap' | 'gradcam' | 'attention' | 'saliency' {
     // Select explanation method based on model type
     if (model.includes('vision') || model.includes('image')) return 'gradcam';
     if (model.includes('transformer') || model.includes('attention')) return 'attention';
@@ -1060,79 +1084,100 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     return 'lime'; // Default fallback
   }
 
-  private calculateFeatureImportances(inputData: any, prediction: any): Array<{
+  private calculateFeatureImportances(
+    inputData: unknown,
+    _prediction: unknown,
+  ): Array<{
     feature: string;
     importance: number;
     direction: 'positive' | 'negative';
   }> {
     const features = [];
-    
+
     if (inputData && typeof inputData === 'object') {
       const inputKeys = Object.keys(inputData);
-      
-      for (const key of inputKeys.slice(0, 10)) { // Limit to top 10 features
+
+      for (const key of inputKeys.slice(0, 10)) {
+        // Limit to top 10 features
         const value = inputData[key];
         const importance = Math.random() * 0.8 + 0.1; // 0.1 to 0.9
-        const direction = (typeof value === 'number' && value > 0) || 
-                         (typeof value === 'string' && value.length > 5) ? 'positive' : 'negative';
-        
+        const direction =
+          (typeof value === 'number' && value > 0) ||
+          (typeof value === 'string' && value.length > 5)
+            ? 'positive'
+            : 'negative';
+
         features.push({
           feature: key,
           importance,
-          direction
+          direction,
         });
       }
     }
-    
+
     // Sort by importance descending
     return features.sort((a, b) => b.importance - a.importance);
   }
 
-  private calculateExplanationConfidence(prediction: any, inputData: any): number {
+  private calculateExplanationConfidence(prediction: unknown, inputData: unknown): number {
     // Calculate confidence based on prediction certainty and input quality
     let confidence = 0.5; // Base confidence
-    
+
     if (prediction && typeof prediction === 'object' && prediction.confidence) {
       confidence = Math.min(prediction.confidence, 0.95);
     } else if (typeof prediction === 'number') {
       confidence = Math.min(Math.abs(prediction), 0.9);
     }
-    
+
     // Adjust based on input data quality
     if (inputData && typeof inputData === 'object') {
       const inputKeys = Object.keys(inputData);
-      const validInputs = inputKeys.filter(key => 
-        inputData[key] !== null && inputData[key] !== undefined
+      const validInputs = inputKeys.filter(
+        (key) => inputData[key] !== null && inputData[key] !== undefined,
       ).length;
-      
+
       confidence *= Math.min(validInputs / Math.max(inputKeys.length, 1), 1.0);
     }
-    
+
     return Math.max(0.1, Math.min(0.95, confidence));
   }
 
   private generateReasoningText(
-    model: string, 
-    featureImportances: Array<{ feature: string; importance: number; direction: string }>, 
-    prediction: any
+    model: string,
+    featureImportances: Array<{ feature: string; importance: number; direction: string }>,
+    prediction: unknown,
   ): string {
     const topFeature = featureImportances[0];
     const predictionSummary = this.summarizePrediction(prediction);
-    
+
     if (!topFeature) {
       return `Model ${model} generated ${predictionSummary} based on available input features.`;
     }
-    
-    const directionText = topFeature.direction === 'positive' ? 'positively influenced' : 'negatively influenced';
-    const importanceLevel = topFeature.importance > 0.7 ? 'strongly' : 
-                           topFeature.importance > 0.4 ? 'moderately' : 'weakly';
-    
-    return `Model ${model} ${predictionSummary} was ${importanceLevel} ${directionText} by ${topFeature.feature} ` +
-           `(importance: ${(topFeature.importance * 100).toFixed(1)}%). ` +
-           `${featureImportances.length > 1 ? `Additional factors include ${featureImportances.slice(1, 3).map(f => f.feature).join(', ')}.` : ''}`;
+
+    const directionText =
+      topFeature.direction === 'positive' ? 'positively influenced' : 'negatively influenced';
+    const importanceLevel =
+      topFeature.importance > 0.7
+        ? 'strongly'
+        : topFeature.importance > 0.4
+          ? 'moderately'
+          : 'weakly';
+
+    return (
+      `Model ${model} ${predictionSummary} was ${importanceLevel} ${directionText} by ${topFeature.feature} ` +
+      `(importance: ${(topFeature.importance * 100).toFixed(1)}%). ` +
+      `${
+        featureImportances.length > 1
+          ? `Additional factors include ${featureImportances
+              .slice(1, 3)
+              .map((f) => f.feature)
+              .join(', ')}.`
+          : ''
+      }`
+    );
   }
 
-  private summarizePrediction(prediction: any): string {
+  private summarizePrediction(prediction: unknown): string {
     if (typeof prediction === 'number') {
       return `prediction of ${prediction.toFixed(3)}`;
     } else if (typeof prediction === 'boolean') {

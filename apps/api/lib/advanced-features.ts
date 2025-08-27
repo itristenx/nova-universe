@@ -71,6 +71,18 @@ export interface CertificateInfo {
   last_checked: string;
 }
 
+export interface PingChartData {
+  timestamp: string;
+  responseTime: number;
+  status: 'up' | 'down';
+}
+
+export interface MonitorResult {
+  timestamp: string;
+  response_time: number;
+  success: boolean;
+}
+
 /**
  * Advanced Features Service
  * Implements tags, maintenance windows, proxy support, and certificate monitoring
@@ -262,8 +274,9 @@ export class AdvancedFeaturesService {
       });
 
       return response.status === 200;
-    } catch (error: any) {
-      logger.error(`Proxy test failed: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown proxy test error';
+      logger.error(`Proxy test failed: ${errorMessage}`);
       return false;
     }
   }
@@ -318,8 +331,9 @@ export class AdvancedFeaturesService {
           reject(new Error('Certificate check timeout'));
         });
       });
-    } catch (error: any) {
-      throw new Error(`Certificate check failed: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown certificate check error';
+      throw new Error(`Certificate check failed: ${errorMessage}`);
     }
   }
 
@@ -367,7 +381,7 @@ export class AdvancedFeaturesService {
   /**
    * Ping Chart Data
    */
-  async generatePingChartData(monitorId: string, hours: number = 24): Promise<any[]> {
+  async generatePingChartData(monitorId: string, hours: number = 24): Promise<PingChartData[]> {
     // Query monitor results for the specified time period
     const results = await this.queryMonitorResults(monitorId, hours);
 
@@ -421,7 +435,12 @@ export class AdvancedFeaturesService {
           tenantId,
         ])
       : await db.query('SELECT id, name, color FROM tags ORDER BY name');
-    return (res.rows || []).map((r: any) => ({ id: r.id, name: r.name, color: r.color, tenantId }));
+    return (res.rows || []).map((r: { id: string; name: string; color: string }) => ({ 
+      id: r.id, 
+      name: r.name, 
+      color: r.color, 
+      tenantId 
+    }));
   }
 
   private async assignMonitorTags(monitorId: string, tagIds: string[]): Promise<void> {
@@ -438,7 +457,7 @@ export class AdvancedFeaturesService {
   private async queryMonitorsByTag(tagId: string): Promise<string[]> {
     const db = (await import('../db.js')).default;
     const res = await db.query('SELECT monitor_id FROM monitor_tags WHERE tag_id = $1', [tagId]);
-    return (res.rows || []).map((r: any) => r.monitor_id);
+    return (res.rows || []).map((r: { monitor_id: string }) => r.monitor_id);
   }
 
   private async saveMaintenanceWindow(window: MaintenanceWindow): Promise<void> {
@@ -503,7 +522,7 @@ export class AdvancedFeaturesService {
     return res.rows || [];
   }
 
-  private async queryMonitorResults(monitorId: string, hours: number): Promise<any[]> {
+  private async queryMonitorResults(monitorId: string, hours: number): Promise<MonitorResult[]> {
     const db = (await import('../db.js')).default;
     const res = await db.query(
       `

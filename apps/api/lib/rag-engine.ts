@@ -689,11 +689,12 @@ export class NovaRAGEngine extends EventEmitter {
     // ChromaDB insertion logic - simplified implementation
     try {
       // Log the operation for monitoring
-      logger.debug(`Adding chunk ${chunk.id} to ChromaDB store ${store.name} with config: ${JSON.stringify(store.config)}`);
+      logger.debug(
+        `Adding chunk ${chunk.id} to ChromaDB store ${store.name} with config: ${JSON.stringify(store.config)}`,
+      );
 
       // Placeholder for actual ChromaDB API call
       // await chromaCollection.add({...});
-      
     } catch (error) {
       logger.error(`Failed to add chunk ${chunk.id} to ChromaDB: ${error}`);
       throw error;
@@ -703,11 +704,12 @@ export class NovaRAGEngine extends EventEmitter {
   private async addToPinecone(chunk: DocumentChunk, store: VectorStore): Promise<void> {
     // Pinecone insertion logic
     try {
-      logger.debug(`Adding chunk ${chunk.id} to Pinecone store ${store.name} with config: ${JSON.stringify(store.config)}`);
+      logger.debug(
+        `Adding chunk ${chunk.id} to Pinecone store ${store.name} with config: ${JSON.stringify(store.config)}`,
+      );
 
       // Placeholder for actual Pinecone API call
       // await pineconeIndex.upsert({...});
-      
     } catch (error) {
       logger.error(`Failed to add chunk ${chunk.id} to Pinecone: ${error}`);
       throw error;
@@ -721,7 +723,6 @@ export class NovaRAGEngine extends EventEmitter {
 
       // Placeholder for actual local store operation
       // this.localVectorIndex.add(chunk.embedding, chunk.id);
-      
     } catch (error) {
       logger.error(`Failed to add chunk ${chunk.id} to local store: ${error}`);
       throw error;
@@ -750,10 +751,9 @@ export class NovaRAGEngine extends EventEmitter {
     // ChromaDB deletion logic
     try {
       logger.debug(`Removing chunk ${chunkId} from ChromaDB store ${store.name}`);
-      
+
       // Placeholder for actual ChromaDB deletion
       // await chromaCollection.delete({ ids: [chunkId] });
-      
     } catch (error) {
       logger.error(`Failed to remove chunk ${chunkId} from ChromaDB: ${error}`);
       throw error;
@@ -764,10 +764,9 @@ export class NovaRAGEngine extends EventEmitter {
     // Pinecone deletion logic
     try {
       logger.debug(`Removing chunk ${chunkId} from Pinecone store ${store.name}`);
-      
+
       // Placeholder for actual Pinecone deletion
       // await pineconeIndex.delete1([chunkId]);
-      
     } catch (error) {
       logger.error(`Failed to remove chunk ${chunkId} from Pinecone: ${error}`);
       throw error;
@@ -778,10 +777,9 @@ export class NovaRAGEngine extends EventEmitter {
     // Local store deletion logic
     try {
       logger.debug(`Removing chunk ${chunkId} from local store ${store.name}`);
-      
+
       // Placeholder for actual local store deletion
       // this.localVectorIndex.remove(chunkId);
-      
     } catch (error) {
       logger.error(`Failed to remove chunk ${chunkId} from local store: ${error}`);
       throw error;
@@ -1012,11 +1010,11 @@ export class NovaRAGEngine extends EventEmitter {
     // Extract entities and relationships from document
     try {
       logger.debug(`Updating knowledge graph with document ${doc.id}`);
-      
+
       // Extract entities from content
       const entities = this.extractEntities(doc.content);
       const relationships = this.extractRelationships(doc.content);
-      
+
       // Update knowledge graph with extracted information
       const graphUpdate = {
         documentId: doc.id,
@@ -1024,31 +1022,38 @@ export class NovaRAGEngine extends EventEmitter {
         relationships,
         metadata: doc.metadata,
         contentLength: doc.content.length,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
-      
+
       // Store in knowledge graph (placeholder implementation)
       if (this.knowledgeGraph) {
         // Use the available method or implement a simple storage
-        logger.debug(`Knowledge graph update prepared for document ${doc.id}: ${JSON.stringify(graphUpdate)}`);
+        logger.debug(
+          `Knowledge graph update prepared for document ${doc.id}: ${JSON.stringify(graphUpdate)}`,
+        );
         // this.knowledgeGraph.update(graphUpdate);
       } else {
-        logger.debug(`No knowledge graph available, storing update info: ${JSON.stringify(graphUpdate)}`);
+        logger.debug(
+          `No knowledge graph available, storing update info: ${JSON.stringify(graphUpdate)}`,
+        );
       }
-      
-      logger.info(`Updated knowledge graph with ${entities.length} entities and ${relationships.length} relationships for document ${doc.id}`);
-      
+
+      logger.info(
+        `Updated knowledge graph with ${entities.length} entities and ${relationships.length} relationships for document ${doc.id}`,
+      );
     } catch (error) {
       logger.error(`Failed to update knowledge graph for document ${doc.id}: ${error}`);
       throw error;
     }
   }
 
-  private extractEntities(content: string): Array<{type: string, value: string, position: number}> {
+  private extractEntities(
+    content: string,
+  ): Array<{ type: string; value: string; position: number }> {
     // Simple entity extraction (placeholder)
-    const entities: Array<{type: string, value: string, position: number}> = [];
+    const entities: Array<{ type: string; value: string; position: number }> = [];
     const words = content.split(/\s+/);
-    
+
     words.forEach((word, index) => {
       // Extract email addresses
       if (word.match(/\S+@\S+\.\S+/)) {
@@ -1063,14 +1068,16 @@ export class NovaRAGEngine extends EventEmitter {
         entities.push({ type: 'PERSON', value: word, position: index });
       }
     });
-    
+
     return entities;
   }
 
-  private extractRelationships(content: string): Array<{source: string, relation: string, target: string}> {
+  private extractRelationships(
+    content: string,
+  ): Array<{ source: string; relation: string; target: string }> {
     // Simple relationship extraction (placeholder)
-    const relationships: Array<{source: string, relation: string, target: string}> = [];
-    
+    const relationships: Array<{ source: string; relation: string; target: string }> = [];
+
     // Look for common relationship patterns
     if (content.includes('is a')) {
       relationships.push({ source: 'entity', relation: 'is_a', target: 'category' });
@@ -1081,7 +1088,7 @@ export class NovaRAGEngine extends EventEmitter {
     if (content.includes('located in')) {
       relationships.push({ source: 'entity', relation: 'located_in', target: 'location' });
     }
-    
+
     return relationships;
   }
 

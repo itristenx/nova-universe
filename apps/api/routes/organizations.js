@@ -1,5 +1,6 @@
 import express from 'express';
 import db from '../db.js';
+import { logger } from '../logger.js';
 
 const router = express.Router();
 
@@ -45,6 +46,7 @@ router.get('/config', async (req, res) => {
 
     res.json(config);
   } catch (err) {
+    logger.error('Database error in organizations route:', err.message);
     res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
   }
 });

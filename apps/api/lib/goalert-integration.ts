@@ -434,7 +434,7 @@ export class NovaGoAlertIntegration extends EventEmitter {
           onCallInfo[id].schedule = {
             name: schedule.name,
             description: schedule.description,
-            timezone: schedule.timeZone
+            timezone: schedule.timeZone,
           };
         } catch (error) {
           logger.warn('Failed to get on-call info for schedule', {
@@ -442,13 +442,13 @@ export class NovaGoAlertIntegration extends EventEmitter {
             scheduleName: schedule.name,
             error: error.message,
           });
-          onCallInfo[id] = { 
+          onCallInfo[id] = {
             error: error.message,
             schedule: {
               name: schedule.name,
               description: schedule.description,
-              timezone: schedule.timeZone
-            }
+              timezone: schedule.timeZone,
+            },
           };
         }
       }
@@ -540,7 +540,9 @@ export class NovaGoAlertIntegration extends EventEmitter {
         // Check if service already exists
         const existing = await this.checkExistingService(serviceConfig.name);
         if (existing) {
-          logger.info(`AI service already exists in GoAlert: ${serviceConfig.name} (ID: ${serviceId})`);
+          logger.info(
+            `AI service already exists in GoAlert: ${serviceConfig.name} (ID: ${serviceId})`,
+          );
           continue;
         }
 
@@ -548,7 +550,10 @@ export class NovaGoAlertIntegration extends EventEmitter {
         await this.createGoAlertService(serviceConfig);
         logger.info(`Created GoAlert service for: ${serviceConfig.name} (ID: ${serviceId})`);
       } catch (error) {
-        logger.warn(`Failed to create GoAlert service for ${serviceConfig.name} (ID: ${serviceId}):`, error.message);
+        logger.warn(
+          `Failed to create GoAlert service for ${serviceConfig.name} (ID: ${serviceId}):`,
+          error.message,
+        );
       }
     }
   }

@@ -15,13 +15,13 @@ export interface MonitorResult {
   responseTime: number;
   statusCode?: number;
   message: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 export interface MonitorCheck {
   id: string;
   type: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   timeout: number;
 }
 
@@ -69,12 +69,13 @@ export class ExtendedMonitorService {
           statusCode: response.status,
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown keyword check error';
       return {
         success: false,
         responseTime: Date.now() - startTime,
-        message: `Keyword check failed: ${error.message}`,
-        data: { error: error.message, keyword },
+        message: `Keyword check failed: ${errorMessage}`,
+        data: { error: errorMessage, keyword },
       };
     }
   }
@@ -88,11 +89,11 @@ export class ExtendedMonitorService {
 
     try {
       let result;
-      
+
       if (record_type === 'A' || record_type === 'AAAA') {
         // Use DNS lookup for A/AAAA records
         const lookupResult = await dnsLookup(hostname, {
-          family: record_type === 'AAAA' ? 6 : 4
+          family: record_type === 'AAAA' ? 6 : 4,
         });
         result = { addresses: [lookupResult.address] };
       } else {
@@ -106,13 +107,13 @@ export class ExtendedMonitorService {
       // Check if expected address matches (if specified)
       let success = true;
       let message = `DNS resolution successful for ${hostname}`;
-      
+
       if (expected_address) {
-        const addressMatches = result.addresses.some(addr => 
-          typeof addr === 'string' ? addr === expected_address : addr.address === expected_address
+        const addressMatches = result.addresses.some((addr) =>
+          typeof addr === 'string' ? addr === expected_address : addr.address === expected_address,
         );
         success = addressMatches;
-        message = addressMatches 
+        message = addressMatches
           ? `DNS resolution matched expected address: ${expected_address}`
           : `DNS resolution did not match expected address. Got: ${result.addresses.join(', ')}`;
       }
@@ -121,11 +122,11 @@ export class ExtendedMonitorService {
         success,
         responseTime,
         message,
-        data: { 
+        data: {
           hostname,
           record_type,
           addresses: result.addresses,
-          expected_address 
+          expected_address,
         },
       };
     } catch (error) {
@@ -185,12 +186,13 @@ export class ExtendedMonitorService {
           statusCode: response.status,
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown JSON query error';
       return {
         success: false,
         responseTime: Date.now() - startTime,
-        message: `JSON query failed: ${error.message}`,
-        data: { error: error.message, json_path },
+        message: `JSON query failed: ${errorMessage}`,
+        data: { error: errorMessage, json_path },
       };
     }
   }
@@ -256,12 +258,13 @@ export class ExtendedMonitorService {
           });
         });
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown Steam server error';
       return {
         success: false,
         responseTime: Date.now() - startTime,
-        message: `Steam server check failed: ${error.message}`,
-        data: { error: error.message, hostname, port },
+        message: `Steam server check failed: ${errorMessage}`,
+        data: { error: errorMessage, hostname, port },
       };
     }
   }
@@ -304,12 +307,13 @@ export class ExtendedMonitorService {
           ports: container.NetworkSettings?.Ports,
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown Docker container error';
       return {
         success: false,
         responseTime: Date.now() - startTime,
-        message: `Docker container check failed: ${error.message}`,
-        data: { error: error.message, container_name },
+        message: `Docker container check failed: ${errorMessage}`,
+        data: { error: errorMessage, container_name },
       };
     }
   }
@@ -352,12 +356,13 @@ export class ExtendedMonitorService {
           });
         });
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown gRPC error';
       return {
         success: false,
         responseTime: Date.now() - startTime,
-        message: `gRPC check failed: ${error.message}`,
-        data: { error: error.message, hostname, port },
+        message: `gRPC check failed: ${errorMessage}`,
+        data: { error: errorMessage, hostname, port },
       };
     }
   }
@@ -384,7 +389,7 @@ export class ExtendedMonitorService {
 
           // Basic connection successful
           let message = `MQTT broker is accepting connections`;
-          let success = true;
+          const success = true;
 
           // If expected_message is specified, note it for future validation
           if (expected_message) {
@@ -399,12 +404,12 @@ export class ExtendedMonitorService {
             success,
             responseTime: Date.now() - startTime,
             message,
-            data: { 
-              hostname, 
-              port, 
+            data: {
+              hostname,
+              port,
               topic,
               expected_message,
-              validation_note: expected_message ? 'Message validation requires MQTT client' : null
+              validation_note: expected_message ? 'Message validation requires MQTT client' : null,
             },
           });
         });
@@ -419,12 +424,13 @@ export class ExtendedMonitorService {
           });
         });
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown MQTT error';
       return {
         success: false,
         responseTime: Date.now() - startTime,
-        message: `MQTT check failed: ${error.message}`,
-        data: { error: error.message, hostname, port },
+        message: `MQTT check failed: ${errorMessage}`,
+        data: { error: errorMessage, hostname, port },
       };
     }
   }
@@ -451,7 +457,7 @@ export class ExtendedMonitorService {
 
           // Basic connection successful
           let message = `RADIUS server is accepting connections`;
-          
+
           // Validate authentication parameters
           if (!username || !password || !secret) {
             message += ` (Warning: Missing authentication parameters)`;
@@ -468,13 +474,13 @@ export class ExtendedMonitorService {
             success: true,
             responseTime: Date.now() - startTime,
             message,
-            data: { 
-              hostname, 
-              port, 
+            data: {
+              hostname,
+              port,
               username,
               has_password: !!password,
               has_secret: !!secret,
-              auth_note: 'Full RADIUS authentication requires RADIUS client library'
+              auth_note: 'Full RADIUS authentication requires RADIUS client library',
             },
           });
         });
@@ -489,12 +495,13 @@ export class ExtendedMonitorService {
           });
         });
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown RADIUS error';
       return {
         success: false,
         responseTime: Date.now() - startTime,
-        message: `RADIUS check failed: ${error.message}`,
-        data: { error: error.message, hostname, port },
+        message: `RADIUS check failed: ${errorMessage}`,
+        data: { error: errorMessage, hostname, port },
       };
     }
   }
@@ -567,12 +574,13 @@ export class ExtendedMonitorService {
           });
         });
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown SSL certificate error';
       return {
         success: false,
         responseTime: Date.now() - startTime,
-        message: `SSL certificate check failed: ${error.message}`,
-        data: { error: error.message, hostname, port },
+        message: `SSL certificate check failed: ${errorMessage}`,
+        data: { error: errorMessage, hostname, port },
       };
     }
   }

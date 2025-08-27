@@ -60,11 +60,6 @@ export default function LoginPage() {
     }
   };
 
-  // Show offline screen if not connected
-  if (!connectionStatus.isOnline || !connectionStatus.isAPIConnected) {
-    return <OfflineScreen onRetry={handleConnectionRetry} isRetrying={isRetrying} />;
-  }
-
   // Validation schemas with translated messages
   const emailSchema = z.object({
     email: z.string().email(t('auth:validation.emailInvalid')),
@@ -94,6 +89,11 @@ export default function LoginPage() {
       rememberMe: false,
     },
   });
+
+  // Show offline screen if not connected
+  if (!connectionStatus.isOnline || !connectionStatus.isAPIConnected) {
+    return <OfflineScreen onRetry={handleConnectionRetry} isRetrying={isRetrying} />;
+  }
 
   // Handle tenant discovery
   const handleEmailSubmit = async (data: EmailFormData) => {

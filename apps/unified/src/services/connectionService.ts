@@ -32,7 +32,7 @@ class ConnectionService {
     checkInterval: 5000, // 5 seconds
     maxRetries: 3,
     timeout: 5000,
-    healthEndpoint: '/health',
+    healthEndpoint: '/api/health',
   };
 
   private listeners: Set<(status: ConnectionStatus) => void> = new Set();
@@ -181,7 +181,10 @@ class ConnectionService {
    * Get API base URL
    */
   private getAPIBaseURL(): string {
-    return process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+    // Use environment variable if available, otherwise default to localhost
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    console.log('🔍 Connection Service: Using API URL:', apiUrl);
+    return apiUrl;
   }
 
   /**

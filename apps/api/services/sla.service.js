@@ -1,4 +1,4 @@
-import { prisma } from '../db/prisma.js';
+import db from '../db.js';
 import { logger } from '../logger.js';
 
 /**
@@ -16,7 +16,7 @@ export class SLAService {
       const isVip = await this.isVipUser(userId);
 
       // Find matching SLA
-      const sla = await prisma.slaDefinition.findFirst({
+      const sla = await db.slaDefinition.findFirst({
         where: {
           isActive: true,
           OR: [
@@ -52,7 +52,7 @@ export class SLAService {
     if (!userId) return false;
 
     try {
-      const userExtended = await prisma.userExtended.findUnique({
+      const userExtended = await db.userExtended.findUnique({
         where: { userId },
         select: { vipLevel: true },
       });
@@ -100,7 +100,7 @@ export class SLAService {
 
       if (breached && !ticket.responseTimeBreached) {
         // Update ticket to mark response time as breached
-        await prisma.enhancedSupportTicket.update({
+        await db.enhancedSupportTicket.update({
           where: { id: ticket.id },
           data: {
             responseTimeBreached: true,
@@ -140,7 +140,7 @@ export class SLAService {
 
       if (breached && !ticket.resolutionTimeBreached) {
         // Update ticket to mark resolution time as breached
-        await prisma.enhancedSupportTicket.update({
+        await db.enhancedSupportTicket.update({
           where: { id: ticket.id },
           data: {
             resolutionTimeBreached: true,
@@ -168,7 +168,7 @@ export class SLAService {
    */
   static async getTicketSLAStatus(ticketId) {
     try {
-      const ticket = await prisma.enhancedSupportTicket.findUnique({
+      const ticket = await db.enhancedSupportTicket.findUnique({
         where: { id: ticketId },
         include: { sla: true },
       });
@@ -199,7 +199,7 @@ export class SLAService {
    */
   static async logSLABreach(ticketId, breachType, targetTime, actualTime) {
     try {
-      await prisma.slaBreach.create({
+      await db.slaBreach.create({
         data: {
           ticketId,
           breachType: breachType.toUpperCase(),
@@ -234,14 +234,14 @@ export class SLAService {
 
       const [totalTickets, responseBreaches, resolutionBreaches, totalBreaches] = await Promise.all(
         [
-          prisma.enhancedSupportTicket.count({ where: whereClause }),
-          prisma.enhancedSupportTicket.count({
+          db.enhancedSupportTicket.count({ where: whereClause }),
+          db.enhancedSupportTicket.count({
             where: { ...whereClause, responseTimeBreached: true },
           }),
-          prisma.enhancedSupportTicket.count({
+          db.enhancedSupportTicket.count({
             where: { ...whereClause, resolutionTimeBreached: true },
           }),
-          prisma.enhancedSupportTicket.count({
+          db.enhancedSupportTicket.count({
             where: {
               ...whereClause,
               OR: [{ responseTimeBreached: true }, { resolutionTimeBreached: true }],
@@ -286,7 +286,7 @@ export class SLAService {
       const cutoffTime = new Date();
       cutoffTime.setHours(cutoffTime.getHours() + hoursAhead);
 
-      const atRiskTickets = await prisma.enhancedSupportTicket.findMany({
+      const atRiskTickets = await db.enhancedSupportTicket.findMany({
         where: {
           state: { in: ['NEW', 'ASSIGNED', 'IN_PROGRESS', 'PENDING'] },
           sla: { isNot: null },
@@ -343,7 +343,7 @@ export class SLAService {
    */
   static async updateFirstResponseTime(ticketId, responseTime) {
     try {
-      const ticket = await prisma.enhancedSupportTicket.findUnique({
+      const ticket = await db.enhancedSupportTicket.findUnique({
         where: { id: ticketId },
         select: {
           firstResponseAt: true,
@@ -358,7 +358,7 @@ export class SLAService {
 
       const responseMinutes = Math.round((responseTime - ticket.createdAt) / (1000 * 60));
 
-      await prisma.enhancedSupportTicket.update({
+      await db.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
           firstResponseAt: responseTime,
@@ -377,7 +377,7 @@ export class SLAService {
    */
   static async calculateResolutionTime(ticketId, resolvedTime) {
     try {
-      const ticket = await prisma.enhancedSupportTicket.findUnique({
+      const ticket = await db.enhancedSupportTicket.findUnique({
         where: { id: ticketId },
         select: { createdAt: true },
       });
@@ -401,7 +401,7 @@ export class SLAService {
       logger.info('Starting SLA monitoring job...');
 
       // Get all active tickets with SLAs
-      const activeTickets = await prisma.enhancedSupportTicket.findMany({
+      const activeTickets = await db.enhancedSupportTicket.findMany({
         where: {
           state: { in: ['NEW', 'ASSIGNED', 'IN_PROGRESS', 'PENDING'] },
           sla: { isNot: null },

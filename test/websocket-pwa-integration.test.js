@@ -163,7 +163,7 @@ describe('PWA Functionality Tests', () => {
 
       // Verify critical assets are cached
       const criticalAssets = ['/manifest.json', '/offline.html', '/app.js', '/app.css'];
-      
+
       // Test that the service worker would cache these assets
       expect(mockServiceWorker.cache.addAll).toBeDefined();
       expect(mockServiceWorker.cache.match).toBeDefined();

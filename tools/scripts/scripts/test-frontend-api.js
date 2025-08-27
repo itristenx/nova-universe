@@ -53,7 +53,7 @@ async function testConnectivity() {
 
     console.log('\n🎉 All tests passed! Frontend should be able to communicate with API.');
   } catch (_error) {
-    console.error('❌ Test failed:', error.response?.data || error.message);
+    console.error('❌ Test failed:', _error.response?.data || _error.message);
     process.exit(1);
   }
 }

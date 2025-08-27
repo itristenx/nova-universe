@@ -99,6 +99,10 @@ import PerformanceMonitor from './middleware/performance-monitor.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// TLS configuration
+const CERT_PATH = process.env.TLS_CERT_PATH;
+const KEY_PATH = process.env.TLS_KEY_PATH;
+
 // Configure environment
 dotenv.config();
 
@@ -835,8 +839,6 @@ if (!DISABLE_AUTH) {
 
 const PORT = Number(process.env.API_PORT || 3000);
 const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
-const CERT_PATH = process.env.TLS_CERT_PATH;
-const KEY_PATH = process.env.TLS_KEY_PATH;
 const LOG_RETENTION_DAYS = Number(process.env.LOG_RETENTION_DAYS || 30);
 
 if (process.env.DISABLE_CLEANUP !== 'true') {

@@ -674,6 +674,7 @@ router.post('/devices/:deviceId/heartbeat', async (req, res) => {
 
       return res.json({ success: true, device: result.rows?.[0] });
     } catch (error) {
+      logger.warn('Device heartbeat failed, using fallback:', error.message);
       // Fallback to mock data when DB unavailable
       const device = mockData.devices.get(deviceId);
       if (device) {

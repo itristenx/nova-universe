@@ -1,7 +1,5 @@
-import { PrismaClient } from '/prisma/generated/core/index.js';
-import logger from '../logger.js';
-
-const prisma = new PrismaClient();
+import db from '../db.js';
+import { logger } from '../logger.js';
 
 /**
  * Email Communication Tracking Service
@@ -50,7 +48,7 @@ export class EmailCommunicationService {
       const sizeBytes = this.calculateEmailSize(bodyText, bodyHtml, attachments);
 
       // Create email communication record
-      const emailComm = await prisma.emailCommunication.create({
+      const emailComm = await db.emailCommunication.create({
         data: {
           messageId,
           conversationId:
@@ -138,7 +136,7 @@ export class EmailCommunicationService {
    */
   async recordTrackingEvent(messageId, eventType, eventData = {}) {
     try {
-      const emailComm = await prisma.emailCommunication.findUnique({
+      const emailComm = await db.emailCommunication.findUnique({
         where: { messageId },
       });
 
@@ -148,7 +146,7 @@ export class EmailCommunicationService {
       }
 
       // Create tracking event
-      const trackingEvent = await prisma.emailTrackingEvent.create({
+      const trackingEvent = await db.emailTrackingEvent.create({
         data: {
           emailId: emailComm.id,
           eventType,
@@ -185,7 +183,7 @@ export class EmailCommunicationService {
       }
 
       if (Object.keys(updateData).length > 0) {
-        await prisma.emailCommunication.update({
+        await db.emailCommunication.update({
           where: { id: emailComm.id },
           data: updateData,
         });
@@ -250,7 +248,7 @@ export class EmailCommunicationService {
         whereClause.AND.push({ isInternal: false });
       }
 
-      const activities = await prisma.customerActivityTimeline.findMany({
+      const activities = await db.customerActivityTimeline.findMany({
         where: whereClause,
         include: {
           ticket: {
@@ -299,7 +297,7 @@ export class EmailCommunicationService {
 
           // Add email engagement data for email activities
           if (activity.emailId) {
-            const trackingEvents = await prisma.emailTrackingEvent.findMany({
+            const trackingEvents = await db.emailTrackingEvent.findMany({
               where: { emailId: activity.emailId },
               orderBy: { occurredAt: 'asc' },
             });
@@ -322,7 +320,7 @@ export class EmailCommunicationService {
    */
   async getTicketCommunicationHistory(ticketId) {
     try {
-      const communications = await prisma.emailCommunication.findMany({
+      const communications = await db.emailCommunication.findMany({
         where: { ticketId },
         include: {
           attachments: true,
@@ -334,7 +332,7 @@ export class EmailCommunicationService {
       });
 
       // Get related timeline activities
-      const timelineActivities = await prisma.customerActivityTimeline.findMany({
+      const timelineActivities = await db.customerActivityTimeline.findMany({
         where: { ticketId },
         orderBy: { occurredAt: 'asc' },
       });
@@ -354,7 +352,7 @@ export class EmailCommunicationService {
    */
   async getConversationThread(threadId) {
     try {
-      const thread = await prisma.emailConversationThread.findUnique({
+      const thread = await db.emailConversationThread.findUnique({
         where: { threadId },
         include: {
           customer: {
@@ -378,7 +376,7 @@ export class EmailCommunicationService {
         throw new Error(`Conversation thread not found: ${threadId}`);
       }
 
-      const emails = await prisma.emailCommunication.findMany({
+      const emails = await db.emailCommunication.findMany({
         where: { conversationId: threadId },
         include: {
           attachments: true,
@@ -431,24 +429,24 @@ export class EmailCommunicationService {
         deliveryStats,
         engagementStats,
       ] = await Promise.all([
-        prisma.emailCommunication.count({ where: whereClause }),
-        prisma.emailCommunication.count({ where: { ...whereClause, direction: 'INBOUND' } }),
-        prisma.emailCommunication.count({ where: { ...whereClause, direction: 'OUTBOUND' } }),
-        prisma.emailCommunication.aggregate({
+        db.emailCommunication.count({ where: whereClause }),
+        db.emailCommunication.count({ where: { ...whereClause, direction: 'INBOUND' } }),
+        db.emailCommunication.count({ where: { ...whereClause, direction: 'OUTBOUND' } }),
+        db.emailCommunication.aggregate({
           where: { ...whereClause, sentimentScore: { not: null } },
           _avg: { sentimentScore: true },
         }),
-        prisma.emailCommunication.groupBy({
+        db.emailCommunication.groupBy({
           by: ['urgencyDetected'],
           where: { ...whereClause, urgencyDetected: { not: null } },
           _count: true,
         }),
-        prisma.emailCommunication.groupBy({
+        db.emailCommunication.groupBy({
           by: ['deliveryStatus'],
           where: { ...whereClause, direction: 'OUTBOUND', deliveryStatus: { not: null } },
           _count: true,
         }),
-        prisma.emailCommunication.aggregate({
+        db.emailCommunication.aggregate({
           where: { ...whereClause, direction: 'OUTBOUND' },
           _avg: { openedCount: true, clickedCount: true },
           _sum: { openedCount: true, clickedCount: true },
@@ -456,7 +454,7 @@ export class EmailCommunicationService {
       ]);
 
       // Get template performance
-      const templatePerformance = await prisma.emailTemplateUsage.groupBy({
+      const templatePerformance = await db.emailTemplateUsage.groupBy({
         by: ['templateName'],
         where: {
           createdAt: {
@@ -499,7 +497,7 @@ export class EmailCommunicationService {
    */
   async createActivityTimelineEntry(activityData) {
     try {
-      return await prisma.customerActivityTimeline.create({
+      return await db.customerActivityTimeline.create({
         data: {
           customerId: activityData.customerId,
           activityType: activityData.activityType,
@@ -563,7 +561,7 @@ export class EmailCommunicationService {
 
   async findCustomerByEmail(email) {
     try {
-      const user = await prisma.user.findUnique({
+      const user = await db.user.findUnique({
         where: { email },
         select: { id: true },
       });
@@ -599,7 +597,7 @@ export class EmailCommunicationService {
         malwareStatus: 'SCANNING',
       }));
 
-      await prisma.emailAttachment.createMany({
+      await db.emailAttachment.createMany({
         data: attachmentRecords,
       });
 
@@ -622,7 +620,7 @@ export class EmailCommunicationService {
 
   async recordTemplateUsage(emailId, templateName, variables, ticketId, customerId) {
     try {
-      await prisma.emailTemplateUsage.create({
+      await db.emailTemplateUsage.create({
         data: {
           templateName,
           templateVersion: '1.0', // Would track actual version
@@ -658,11 +656,11 @@ export class EmailCommunicationService {
     try {
       const cutoffDate = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
 
-      const deleted = await prisma.$transaction([
-        prisma.emailTrackingEvent.deleteMany({
+      const deleted = await db.$transaction([
+        db.emailTrackingEvent.deleteMany({
           where: { createdAt: { lt: cutoffDate } },
         }),
-        prisma.customerActivityTimeline.deleteMany({
+        db.customerActivityTimeline.deleteMany({
           where: {
             createdAt: { lt: cutoffDate },
             activityType: { in: ['EMAIL_ENGAGEMENT'] },

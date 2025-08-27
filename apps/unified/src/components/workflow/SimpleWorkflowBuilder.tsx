@@ -2,10 +2,10 @@
 // ServiceNow-style workflow automation builder without external dependencies
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Workflow } from '../../types/workflow';
-import './WorkflowBuilder.css';
+import { Workflow, WorkflowStatus, WorkflowType } from '../../types/workflow';
+import './SimpleWorkflowBuilder.css';
 
-const WorkflowBuilder = ({
+const SimpleWorkflowBuilder = ({
   workflow,
   onSave,
   onExecute,
@@ -25,8 +25,8 @@ const WorkflowBuilder = ({
     name: workflow?.name || 'New Workflow',
     description: workflow?.description || '',
     version: workflow?.version || '1.0.0',
-    status: workflow?.status || 'DRAFT',
-    type: workflow?.type || 'PROCESS',
+    status: workflow?.status || WorkflowStatus.DRAFT,
+    type: workflow?.type || WorkflowType.PROCESS,
     category: workflow?.category || '',
     tags: workflow?.tags || [],
     canvas: workflow?.canvas || {},
@@ -159,7 +159,7 @@ const WorkflowBuilder = ({
           <button
             className="btn btn-success"
             onClick={() => onPublish(workflowData.id)}
-            disabled={!workflowData.id || workflowData.status === 'PUBLISHED'}
+            disabled={!workflowData.id || workflowData.status === WorkflowStatus.PUBLISHED}
           >
             📤 Publish
           </button>
@@ -213,16 +213,18 @@ const WorkflowBuilder = ({
               <select
                 id="workflow-type"
                 value={workflowData.type}
-                onChange={(e) => setWorkflowData((prev) => ({ ...prev, type: e.target.value }))}
+                onChange={(e) =>
+                  setWorkflowData((prev) => ({ ...prev, type: e.target.value as WorkflowType }))
+                }
                 title="Select workflow type"
               >
-                <option value="PROCESS">Process</option>
-                <option value="INTEGRATION">Integration</option>
-                <option value="AUTOMATION">Automation</option>
-                <option value="APPROVAL">Approval</option>
-                <option value="NOTIFICATION">Notification</option>
-                <option value="DECISION">Decision</option>
-                <option value="SCHEDULED">Scheduled</option>
+                <option value={WorkflowType.PROCESS}>Process</option>
+                <option value={WorkflowType.INTEGRATION}>Integration</option>
+                <option value={WorkflowType.AUTOMATION}>Automation</option>
+                <option value={WorkflowType.APPROVAL}>Approval</option>
+                <option value={WorkflowType.NOTIFICATION}>Notification</option>
+                <option value={WorkflowType.DECISION}>Decision</option>
+                <option value={WorkflowType.SCHEDULED}>Scheduled</option>
               </select>
             </div>
           </div>
@@ -340,4 +342,4 @@ const WorkflowBuilder = ({
   );
 };
 
-export default WorkflowBuilder;
+export default SimpleWorkflowBuilder;

@@ -901,7 +901,7 @@ router.get('/forms/:id', async (req, res) => {
     res.json({ success: true, form });
   } catch (error) {
     console.error('Error fetching Orbit dynamic form:', error);
-    
+
     // Log error details for debugging and monitoring
     if (error.message) {
       console.error('Error message:', error.message);
@@ -909,23 +909,23 @@ router.get('/forms/:id', async (req, res) => {
     if (error.stack) {
       console.error('Error stack:', error.stack);
     }
-    
+
     // Enhanced error response with error context
     const errorResponse = {
       success: false,
       error: 'Failed to fetch form',
       errorType: error.name || 'UnknownError',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     // Include additional error context in development
     if (process.env.NODE_ENV === 'development') {
       errorResponse.details = {
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       };
     }
-    
+
     res.status(500).json(errorResponse);
   }
 });

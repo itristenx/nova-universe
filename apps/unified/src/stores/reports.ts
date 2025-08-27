@@ -130,7 +130,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
         isLoading: false,
       });
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load overview data';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load overview data';
       set({
         error: errorMessage,
         isLoading: false,
@@ -155,7 +155,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
         isLoading: false,
       });
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load ticket data';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load ticket data';
       set({
         error: errorMessage,
         isLoading: false,
@@ -180,7 +180,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
         isLoading: false,
       });
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load asset data';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load asset data';
       set({
         error: errorMessage,
         isLoading: false,
@@ -205,7 +205,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
         isLoading: false,
       });
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load user data';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load user data';
       set({
         error: errorMessage,
         isLoading: false,
@@ -230,7 +230,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
         isLoading: false,
       });
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load space data';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load space data';
       set({
         error: errorMessage,
         isLoading: false,
@@ -277,7 +277,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       set({ isExporting: false });
       toast.success(`Report exported as ${format.toUpperCase()}`);
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to export report';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to export report';
       set({
         error: errorMessage,
         isExporting: false,

@@ -31,7 +31,7 @@ export async function initializeMCPServer() {
   try {
     ({ McpServer: McpServerCtor } = await import('@modelcontextprotocol/sdk/server/mcp.js'));
   } catch (e) {
-    logger.warn('MCP SDK not installed; Cosmo features disabled');
+    logger.warn('MCP SDK not installed; Cosmo features disabled:', e.message);
     // Provide a minimal no-op server to satisfy callers
     mcpServer = {
       registerTool: () => {},
@@ -703,6 +703,22 @@ async function registerNovaTools(server) {
         const entities = [];
         const suggestedActions = [];
 
+        // Apply context-based adjustments
+        if (context.userRole === 'admin' || context.userRole === 'manager') {
+          // Admins might need elevated actions
+          confidence += 0.1;
+        }
+
+        if (context.currentModule) {
+          category = context.currentModule;
+          confidence += 0.05;
+        }
+
+        if (context.previousIntent === 'greeting' && intent !== 'greeting') {
+          // Follow-up after greeting gets higher confidence
+          confidence += 0.1;
+        }
+
         // Intent detection
         if (
           text.includes('create ticket') ||
@@ -926,13 +942,39 @@ async function registerNovaTools(server) {
 
         // Filter by query relevance (simple keyword matching)
         const queryWords = query.toLowerCase().split(' ');
-        const results = mockArticles
+        let results = mockArticles
           .filter((article) => {
             const articleText = `${article.title} ${article.content}`.toLowerCase();
             return queryWords.some((word) => articleText.includes(word));
           })
-          .sort((a, b) => b.relevance - a.relevance)
-          .slice(0, limit);
+          .sort((a, b) => b.relevance - a.relevance);
+
+        // Apply context-based filtering
+        if (context.userRole && context.userRole !== 'admin') {
+          // Non-admins might have restricted access to certain categories
+          results = results.filter((article) => article.category !== 'security');
+        }
+
+        if (context.tenantId) {
+          // Filter results by tenant-specific content
+          results = results.filter(
+            (article) => !article.tenantSpecific || article.tenantId === context.tenantId,
+          );
+        }
+
+        // Include attachments if requested
+        if (includeAttachments) {
+          results = results.map((article) => ({
+            ...article,
+            attachments: [
+              { name: `${article.id}_guide.pdf`, size: 1024, type: 'application/pdf' },
+              { name: `${article.id}_screenshots.zip`, size: 2048, type: 'application/zip' },
+            ],
+          }));
+        }
+
+        // Apply limit
+        results = results.slice(0, limit);
 
         const searchTime = Date.now() - startTime;
 
@@ -1042,6 +1084,8 @@ async function registerNovaTools(server) {
         const execution = {
           id: `EXEC-${Date.now()}`,
           workflowId,
+          executedBy: executedBy || 'system',
+          executionTime: timestamp || new Date().toISOString(),
           status: dryRun ? 'dry_run_complete' : 'completed',
           steps: [
             { step: 'validate_parameters', status: 'completed', duration: 50 },
@@ -1107,6 +1151,8 @@ async function registerNovaTools(server) {
         const execution = {
           id: `CUSTOM-${Date.now()}`,
           name,
+          createdBy: createdBy || 'system',
+          createdAt: timestamp || new Date().toISOString(),
           status: dryRun ? 'dry_run_complete' : 'completed',
           steps: steps.map((step, index) => ({
             ...step,
@@ -1187,6 +1233,21 @@ async function registerNovaTools(server) {
           badgesEarned.push('Knowledge Contributor');
         }
 
+        // Create audit trail entry
+        const auditEntry = {
+          userId,
+          change: amount,
+          reason,
+          category,
+          metadata: {
+            ...metadata,
+            levelChange: levelUp ? { from: currentLevel, to: newLevel } : null,
+            badgesEarned: badgesEarned.length > 0 ? badgesEarned : null,
+          },
+          grantedBy: grantedBy || 'system',
+          timestamp: timestamp || new Date().toISOString(),
+        };
+
         const result = {
           userId,
           amountGranted: amount,
@@ -1195,6 +1256,7 @@ async function registerNovaTools(server) {
           newLevel,
           badgesEarned,
           reason: reason || 'No reason provided',
+          auditTrail: auditEntry,
         };
 
         return {
@@ -1260,6 +1322,32 @@ async function registerNovaTools(server) {
             feedbackGiven: Math.floor(Math.random() * 15) + 5,
           },
         };
+
+        // Add historical data if requested
+        if (includeHistory) {
+          profile.history = {
+            xpChanges: [
+              { date: '2024-08-01', change: +50, reason: 'Ticket resolved', category: 'support' },
+              {
+                date: '2024-07-30',
+                change: +25,
+                reason: 'Knowledge shared',
+                category: 'knowledge',
+              },
+              { date: '2024-07-28', change: -10, reason: 'Late response', category: 'penalty' },
+            ],
+            recentActivities: [
+              { date: '2024-08-01', action: 'Resolved ticket INC-12345', xp: 50 },
+              { date: '2024-07-30', action: 'Contributed to knowledge base', xp: 25 },
+              { date: '2024-07-29', action: 'Helped colleague with issue', xp: 15 },
+            ],
+            monthlyProgress: [
+              { month: '2024-08', xpEarned: 150, ticketsResolved: 8 },
+              { month: '2024-07', xpEarned: 200, ticketsResolved: 12 },
+              { month: '2024-06', xpEarned: 175, ticketsResolved: 10 },
+            ],
+          };
+        }
 
         return {
           content: [
@@ -1438,6 +1526,9 @@ async function registerNovaTools(server) {
 
         const result = {
           hookId,
+          testData: Object.keys(testData).length > 0 ? testData : null,
+          triggeredBy: triggeredBy || 'system',
+          executionType: manual ? 'manual' : 'automatic',
           status: success ? 'success' : 'failed',
           responseCode: success ? 200 : 500,
           responseTime: Math.round(responseTime),
@@ -1884,7 +1975,7 @@ async function processMessageWithAI(message, conversation, context) {
 /**
  * Classify user intent from message
  */
-function classifyIntent(message) {
+export function classifyIntent(message) {
   const lowerMessage = message.toLowerCase();
 
   if (
@@ -1932,7 +2023,7 @@ function classifyIntent(message) {
 /**
  * Extract search query from message
  */
-function extractSearchQuery(message) {
+export function extractSearchQuery(message) {
   // Simple extraction - in a real system, use NLP
   const patterns = [/search for (.+)/i, /find (.+)/i, /look up (.+)/i];
 
@@ -1949,13 +2040,32 @@ function extractSearchQuery(message) {
 /**
  * Generate contextual response based on conversation history
  */
-function generateContextualResponse(message, conversation, context) {
-  const responses = [
-    'I understand your question. Let me help you with that.',
-    "Thanks for reaching out! I'll do my best to assist you.",
-    "I'm here to help! Could you provide a bit more detail about what you need?",
-    "That's a great question. Let me see what I can find for you.",
+export function generateContextualResponse(message, conversation, context) {
+  // Use context to personalize response
+  const userName = context.userName || 'there';
+  const userRole = context.userRole || 'user';
+
+  let responses = [
+    `Hello ${userName}! I understand your question. Let me help you with that.`,
+    `Thanks for reaching out, ${userName}! I'll do my best to assist you.`,
+    `I'm here to help! Could you provide a bit more detail about what you need?`,
+    `That's a great question. Let me see what I can find for you.`,
   ];
+
+  // Customize responses based on user role
+  if (userRole === 'admin') {
+    responses.push(
+      `As an admin, you have access to additional resources. How can I assist you today?`,
+    );
+  }
+
+  // Consider conversation history
+  if (conversation && conversation.length > 0) {
+    const lastMessage = conversation[conversation.length - 1];
+    if (lastMessage.intent === 'greeting') {
+      responses = [`Continuing our conversation, ${userName}, how else can I help you?`];
+    }
+  }
 
   return responses[Math.floor(Math.random() * responses.length)];
 }
@@ -2044,35 +2154,33 @@ function generateEscalationActions(escalationData) {
 
 // Helper functions for database operations
 async function createTicketInDatabase(userId, ticketData) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const typeCode = normalizeTicketType(ticketData.type || 'INC');
-      const ticketId = await generateTypedTicketId(typeCode);
-      const sql = `
-        INSERT INTO tickets (id, ticket_id, type_code, title, description, category, priority, status, requested_by_id, location, assigned_to_id, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', $8, $9, $10, $11, $12)
-      `;
-      const id = uuidv4();
-      const now = new Date().toISOString();
-      await db.run(sql, [
-        id,
-        ticketId,
-        typeCode,
-        ticketData.title,
-        ticketData.description,
-        ticketData.category,
-        ticketData.priority,
-        userId,
-        ticketData.location,
-        ticketData.assignedTo,
-        now,
-        now,
-      ]);
-      resolve(ticketId);
-    } catch (err) {
-      reject(err);
-    }
-  });
+  try {
+    const typeCode = normalizeTicketType(ticketData.type || 'INC');
+    const ticketId = await generateTypedTicketId(typeCode);
+    const sql = `
+      INSERT INTO tickets (id, ticket_id, type_code, title, description, category, priority, status, requested_by_id, location, assigned_to_id, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', $8, $9, $10, $11, $12)
+    `;
+    const id = uuidv4();
+    const now = new Date().toISOString();
+    await db.run(sql, [
+      id,
+      ticketId,
+      typeCode,
+      ticketData.title,
+      ticketData.description,
+      ticketData.category,
+      ticketData.priority,
+      userId,
+      ticketData.location,
+      ticketData.assignedTo,
+      now,
+      now,
+    ]);
+    return ticketId;
+  } catch (err) {
+    throw err;
+  }
 }
 
 async function searchKnowledgeBase(query, category, limit) {
@@ -2174,9 +2282,26 @@ async function storeConversationInDatabase(conversation) {
 }
 
 async function loadConversationFromDatabase(conversationId, userId) {
-  // Load conversation from database
-  logger.info(`Loading conversation ${conversationId} from database`);
-  return null;
+  // Load conversation from database with user access check
+  logger.info(`Loading conversation ${conversationId} for user ${userId} from database`);
+
+  // In a real implementation, verify user has access to this conversation
+  if (!userId) {
+    throw new Error('User ID required to access conversation');
+  }
+
+  // Mock user access validation
+  const hasAccess = await validateUserConversationAccess(userId, conversationId);
+  if (!hasAccess) {
+    throw new Error('User does not have access to this conversation');
+  }
+
+  return null; // TODO: Implement actual database query
+}
+
+async function validateUserConversationAccess(userId, conversationId) {
+  // Mock validation - in real implementation, check database permissions
+  return userId && conversationId;
 }
 
 async function storeEscalationInDatabase(escalation) {

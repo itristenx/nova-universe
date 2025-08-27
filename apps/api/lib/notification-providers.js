@@ -24,10 +24,10 @@ export const notificationProviderService = {
   async sendNotification(provider, message) {
     // Validate message content and format
     if (!message || (!message.title && !message.text)) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: 'Message title or text is required',
-        provider: provider?.type || 'unknown' 
+        provider: provider?.type || 'unknown',
       };
     }
 
@@ -39,11 +39,11 @@ export const notificationProviderService = {
       timestamp: new Date().toISOString(),
     };
 
-    return { 
-      success: true, 
-      provider: provider?.type || 'unknown', 
+    return {
+      success: true,
+      provider: provider?.type || 'unknown',
       messageId: `${Date.now()}`,
-      messageData: processedMessage
+      messageData: processedMessage,
     };
   },
 };

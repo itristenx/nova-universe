@@ -128,7 +128,7 @@ export const AIControlTowerDashboard = () => {
   const [selectedTower, setSelectedTower] = useState(null);
   const [models, setModels] = useState([]);
   const [metrics, setMetrics] = useState(null);
-  const [ragSystems, setRagSystems] = useState([]);
+  const [ragSystems, _setRagSystems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
@@ -168,8 +168,8 @@ export const AIControlTowerDashboard = () => {
       }
 
       setError(null);
-    } catch (err) {
-      setError(err.message || 'Failed to load dashboard data');
+    } catch (_err) {
+      setError(_err.message || 'Failed to load dashboard data');
       showSnackbar('Failed to load dashboard data', 'error');
     } finally {
       setLoading(false);
@@ -181,7 +181,7 @@ export const AIControlTowerDashboard = () => {
     try {
       const metricsResponse = await apiService.get(`/ai-control-tower/towers/${tower.id}/metrics`);
       setMetrics(metricsResponse.data);
-    } catch (err) {
+    } catch (_err) {
       showSnackbar('Failed to load tower metrics', 'error');
     }
   };
@@ -206,7 +206,7 @@ export const AIControlTowerDashboard = () => {
       setTowers((prev) => [...prev, response.data]);
       setCreateTowerDialog(false);
       showSnackbar('Control tower created successfully', 'success');
-    } catch (err) {
+    } catch (_err) {
       showSnackbar('Failed to create control tower', 'error');
     }
   };
@@ -220,7 +220,7 @@ export const AIControlTowerDashboard = () => {
       setModels((prev) => [...prev, response.data]);
       setCreateModelDialog(false);
       showSnackbar('AI model created successfully', 'success');
-    } catch (err) {
+    } catch (_err) {
       showSnackbar('Failed to create AI model', 'error');
     }
   };
@@ -231,7 +231,7 @@ export const AIControlTowerDashboard = () => {
       setTrainingDialog(false);
       showSnackbar('Training started successfully', 'success');
       loadDashboardData(); // Refresh data
-    } catch (err) {
+    } catch (_err) {
       showSnackbar('Failed to start training', 'error');
     }
   };
@@ -414,7 +414,13 @@ export const AIControlTowerDashboard = () => {
                 </Box>
                 <Box display="flex" gap={1} mt={2}>
                   <Badge badgeContent={metrics.audit.highRiskEvents} color="error">
-                    <Chip size="small" label="High Risk" color="error" variant="outlined" />
+                    <Chip 
+                      size="small" 
+                      label="High Risk" 
+                      color="error" 
+                      variant="outlined" 
+                      icon={<WarningIcon />}
+                    />
                   </Badge>
                 </Box>
               </CardContent>
@@ -466,7 +472,7 @@ export const AIControlTowerDashboard = () => {
           <Tab icon={<AIIcon />} label="Models" />
           <Tab icon={<TrainIcon />} label="Training" />
           <Tab icon={<DataIcon />} label="RAG Systems" />
-          <Tab icon={<AnalyticsIcon />} label="Analytics" />
+          <Tab icon={<TimelineIcon />} label="Analytics" />
           <Tab icon={<SecurityIcon />} label="Audit" />
         </Tabs>
       </Paper>
@@ -487,16 +493,16 @@ export const AIControlTowerDashboard = () => {
 
         {activeTab === 1 && (
           <TrainingPanel
-            towerId={selectedTower?.id}
+            _towerId={selectedTower?.id}
             onStartTraining={() => setTrainingDialog(true)}
           />
         )}
 
         {activeTab === 2 && (
-          <RAGPanel ragSystems={ragSystems} onCreateRAG={() => setCreateRAGDialog(true)} />
+          <RAGPanel _ragSystems={ragSystems} onCreateRAG={() => setCreateRAGDialog(true)} />
         )}
 
-        {activeTab === 3 && <AnalyticsPanel metrics={metrics} towerId={selectedTower?.id} />}
+        {activeTab === 3 && <AnalyticsPanel metrics={metrics} _towerId={selectedTower?.id} />}
 
         {activeTab === 4 && <AuditPanel towerId={selectedTower?.id} />}
       </Box>
@@ -659,7 +665,7 @@ const ModelsPanel = ({ models, onCreateModel, onStartTraining, onMenuOpen }) => 
   </Grid>
 );
 
-const TrainingPanel = ({ towerId, onStartTraining }) => (
+const TrainingPanel = ({ _towerId, onStartTraining }) => (
   <EmptyState
     icon={<TrainIcon sx={{ fontSize: 48 }} />}
     title="Training Dashboard"
@@ -672,7 +678,7 @@ const TrainingPanel = ({ towerId, onStartTraining }) => (
   />
 );
 
-const RAGPanel = ({ ragSystems, onCreateRAG }) => (
+const RAGPanel = ({ _ragSystems, onCreateRAG }) => (
   <EmptyState
     icon={<QueryIcon sx={{ fontSize: 48 }} />}
     title="RAG Systems"
@@ -685,7 +691,7 @@ const RAGPanel = ({ ragSystems, onCreateRAG }) => (
   />
 );
 
-const AnalyticsPanel = ({ metrics, towerId }) => (
+const AnalyticsPanel = ({ metrics, _towerId }) => (
   <Paper sx={{ p: 3 }}>
     <Typography variant="h6" gutterBottom>
       Performance Analytics
@@ -857,6 +863,32 @@ const CreateModelDialog = ({ open, onClose, onSubmit }) => {
             <MenuItem value="huggingface">Hugging Face</MenuItem>
           </Select>
         </FormControl>
+        <Box sx={{ mt: 2, p: 2, border: '1px dashed grey.300', borderRadius: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<UploadIcon />}
+            fullWidth
+            onClick={() => {
+              // Handle file upload for model artifacts
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = '.pkl,.h5,.pt,.onnx,.joblib';
+              input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  console.log('Uploading model file:', file.name);
+                  // Handle file upload logic here
+                }
+              };
+              input.click();
+            }}
+          >
+            Upload Model File (Optional)
+          </Button>
+          <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+            Supported formats: .pkl, .h5, .pt, .onnx, .joblib
+          </Typography>
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>

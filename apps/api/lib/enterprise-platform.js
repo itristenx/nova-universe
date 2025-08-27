@@ -1,4 +1,4 @@
-import { PrismaClient } from '/prisma/generated/core/index.js';
+import { PrismaClient } from '../../../prisma/generated/core/index.js';
 import winston from 'winston';
 
 // Initialize Prisma client for enterprise database

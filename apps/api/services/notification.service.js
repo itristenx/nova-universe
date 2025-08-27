@@ -1,4 +1,4 @@
-import { prisma } from '../db/prisma.js';
+import db from '../db.js';
 import { logger } from '../logger.js';
 
 /**
@@ -258,7 +258,7 @@ export class NotificationService {
    */
   static async createInAppNotification(type, data) {
     try {
-      await prisma.notification.create({
+      await db.notification.create({
         data: {
           userId: data.userId,
           type,
@@ -284,7 +284,7 @@ export class NotificationService {
   static async sendEmailNotification(type, data) {
     try {
       // Get user email preferences
-      const user = await prisma.user.findUnique({
+      const user = await db.user.findUnique({
         where: { id: data.userId },
         select: { email: true, name: true },
       });
@@ -360,7 +360,7 @@ export class NotificationService {
    */
   static async getTicketWatchers(ticketId) {
     try {
-      return await prisma.ticketWatcher.findMany({
+      return await db.ticketWatcher.findMany({
         where: { ticketId },
         include: {
           user: {
@@ -406,7 +406,7 @@ export class NotificationService {
    */
   static async getGroupMembers(groupId) {
     try {
-      return await prisma.groupMember.findMany({
+      return await db.groupMember.findMany({
         where: { groupId },
         include: {
           user: {
@@ -425,7 +425,7 @@ export class NotificationService {
    */
   static async getUserNotificationPreferences(userId) {
     try {
-      const preferences = await prisma.userNotificationPreferences.findUnique({
+      const preferences = await db.userNotificationPreferences.findUnique({
         where: { userId },
       });
 
@@ -469,7 +469,7 @@ export class NotificationService {
    */
   static async getUserPushTokens(userId) {
     try {
-      const tokens = await prisma.userPushToken.findMany({
+      const tokens = await db.userPushToken.findMany({
         where: {
           userId,
           isActive: true,
@@ -558,7 +558,7 @@ export class NotificationService {
    */
   static async markNotificationAsRead(notificationId, userId) {
     try {
-      await prisma.notification.update({
+      await db.notification.update({
         where: {
           id: notificationId,
           userId: userId, // Ensure user can only mark their own notifications
@@ -578,7 +578,7 @@ export class NotificationService {
    */
   static async getUnreadNotifications(userId, limit = 50) {
     try {
-      return await prisma.notification.findMany({
+      return await db.notification.findMany({
         where: {
           userId,
           isRead: false,
@@ -602,7 +602,7 @@ export class NotificationService {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
 
-      const result = await prisma.notification.deleteMany({
+      const result = await db.notification.deleteMany({
         where: {
           createdAt: {
             lt: cutoffDate,

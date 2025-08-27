@@ -104,16 +104,36 @@ interface ABTestListProps {
   onCreateTest: () => void;
   onEditTest: (test: ABTest) => void;
   onViewResults: (test: ABTest) => void;
+  onDeleteTest?: (test: ABTest) => void;
 }
 
 export const ABTestList: React.FC<ABTestListProps> = ({
   onCreateTest,
   onEditTest,
   onViewResults,
+  onDeleteTest,
 }) => {
   const [tests, setTests] = useState<ABTest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'draft' | 'running' | 'completed'>('all');
+
+  // Check RBAC permissions for delete actions
+  const { hasPermission } = useRBACStore();
+  const canDeleteTests = hasPermission('ab_tests', 'delete');
+
+  const syncTestWithFeatureFlag = async (test: ABTest) => {
+    try {
+      // Find existing feature flag or create one
+      const flagKey = test.feature_flag_key;
+      await featureFlagService.updateFeatureFlag(flagKey, {
+        enabled: true,
+        description: `A/B Test: ${test.name}`,
+        rollout_percentage: test.traffic_allocation,
+      });
+    } catch (error) {
+      console.error('Failed to sync feature flag:', error);
+    }
+  };
 
   useEffect(() => {
     loadTests();
@@ -125,9 +145,18 @@ export const ABTestList: React.FC<ABTestListProps> = ({
       // Replace with actual API call
       const response = await fetch('/api/ab-tests');
       const data = await response.json();
-      setTests(data.tests || []);
+      const testsData = data.tests || [];
+
+      // Sync with feature flags for active tests
+      for (const test of testsData) {
+        if (test.status === 'running') {
+          await syncTestWithFeatureFlag(test);
+        }
+      }
+
+      setTests(testsData);
     } catch (_error) {
-      console.error('Failed to load A/B tests:', error);
+      console.error('Failed to load A/B tests:', _error);
       // Demo data for now
       setTests([
         {
@@ -222,6 +251,8 @@ export const ABTestList: React.FC<ABTestListProps> = ({
         return <PlayIcon className="h-4 w-4 text-green-500" />;
       case 'paused':
         return <PauseIcon className="h-4 w-4 text-yellow-500" />;
+      case 'stopped':
+        return <StopIcon className="h-4 w-4 text-red-600" />;
       case 'completed':
         return <CheckCircleIcon className="h-4 w-4 text-blue-500" />;
       case 'cancelled':
@@ -237,6 +268,8 @@ export const ABTestList: React.FC<ABTestListProps> = ({
         return 'bg-green-100 text-green-800';
       case 'paused':
         return 'bg-yellow-100 text-yellow-800';
+      case 'stopped':
+        return 'bg-red-100 text-red-800';
       case 'completed':
         return 'bg-blue-100 text-blue-800';
       case 'cancelled':
@@ -295,88 +328,101 @@ export const ABTestList: React.FC<ABTestListProps> = ({
 
       {/* Test List */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {filteredTests.map((test) => (
-          <motion.div
-            key={test.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-lg border border-gray-200 bg-white shadow transition-shadow hover:shadow-md"
-          >
-            <div className="p-6">
-              <div className="mb-4 flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="mb-2 flex items-center space-x-2">
-                    <BeakerIcon className="h-5 w-5 text-purple-600" />
-                    <h3 className="text-lg font-medium text-gray-900">{test.name}</h3>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(test.status)}`}
-                    >
-                      {getStatusIcon(test.status)}
-                      <span className="ml-1">{test.status}</span>
-                    </span>
-                  </div>
-                  <p className="mb-3 text-sm text-gray-600">{test.description}</p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span className="flex items-center">
-                      <UserGroupIcon className="mr-1 h-4 w-4" />
-                      {test.traffic_allocation}% traffic
-                    </span>
-                    <span>{test.variations.length} variations</span>
+        <AnimatePresence>
+          {filteredTests.map((test) => (
+            <motion.div
+              key={test.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="rounded-lg border border-gray-200 bg-white shadow transition-shadow hover:shadow-md"
+            >
+              <div className="p-6">
+                <div className="mb-4 flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="mb-2 flex items-center space-x-2">
+                      <BeakerIcon className="h-5 w-5 text-purple-600" />
+                      <h3 className="text-lg font-medium text-gray-900">{test.name}</h3>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(test.status)}`}
+                      >
+                        {getStatusIcon(test.status)}
+                        <span className="ml-1">{test.status}</span>
+                      </span>
+                    </div>
+                    <p className="mb-3 text-sm text-gray-600">{test.description}</p>
+                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <span className="flex items-center">
+                        <UserGroupIcon className="mr-1 h-4 w-4" />
+                        {test.traffic_allocation}% traffic
+                      </span>
+                      <span>{test.variations.length} variations</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Variations Summary */}
-              {test.status === 'running' || test.status === 'completed' ? (
-                <div className="mb-4 space-y-2">
-                  {test.variations.map((variation) => (
-                    <div
-                      key={variation.id}
-                      className="flex items-center justify-between rounded bg-gray-50 p-2"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className={`h-2 w-2 rounded-full ${variation.is_control ? 'bg-blue-500' : 'bg-green-500'}`}
-                        />
-                        <span className="text-sm font-medium">{variation.name}</span>
-                        {variation.is_control && (
-                          <span className="rounded bg-blue-100 px-1 text-xs text-blue-700">
-                            Control
-                          </span>
+                {/* Variations Summary */}
+                {test.status === 'running' || test.status === 'completed' ? (
+                  <div className="mb-4 space-y-2">
+                    {test.variations.map((variation) => (
+                      <div
+                        key={variation.id}
+                        className="flex items-center justify-between rounded bg-gray-50 p-2"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className={`h-2 w-2 rounded-full ${variation.is_control ? 'bg-blue-500' : 'bg-green-500'}`}
+                          />
+                          <span className="text-sm font-medium">{variation.name}</span>
+                          {variation.is_control && (
+                            <span className="rounded bg-blue-100 px-1 text-xs text-blue-700">
+                              Control
+                            </span>
+                          )}
+                        </div>
+                        {variation.conversion_rate && (
+                          <div className="text-sm text-gray-600">
+                            {variation.conversion_rate.toFixed(1)}% CR
+                          </div>
                         )}
                       </div>
-                      {variation.conversion_rate && (
-                        <div className="text-sm text-gray-600">
-                          {variation.conversion_rate.toFixed(1)}% CR
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
+                    ))}
+                  </div>
+                ) : null}
 
-              {/* Actions */}
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => onEditTest(test)}
-                  className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-                >
-                  <CogIcon className="mr-2 h-4 w-4" />
-                  Configure
-                </button>
-                {(test.status === 'running' || test.status === 'completed') && (
+                {/* Actions */}
+                <div className="flex space-x-2">
                   <button
-                    onClick={() => onViewResults(test)}
+                    onClick={() => onEditTest(test)}
                     className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
                   >
-                    <EyeIcon className="mr-2 h-4 w-4" />
-                    Results
+                    <CogIcon className="mr-2 h-4 w-4" />
+                    Configure
                   </button>
-                )}
+                  {(test.status === 'running' || test.status === 'completed') && (
+                    <button
+                      onClick={() => onViewResults(test)}
+                      className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                    >
+                      <EyeIcon className="mr-2 h-4 w-4" />
+                      Results
+                    </button>
+                  )}
+                  {onDeleteTest &&
+                    canDeleteTests &&
+                    (test.status === 'draft' || test.status === 'cancelled') && (
+                      <button
+                        onClick={() => onDeleteTest(test)}
+                        className="inline-flex items-center justify-center rounded-md border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    )}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       {filteredTests.length === 0 && (

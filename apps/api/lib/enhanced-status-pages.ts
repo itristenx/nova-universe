@@ -3,6 +3,7 @@
 
 import fs from 'fs/promises';
 import { logger } from '../logger.js';
+import type { Monitor } from '../types/monitoring.js';
 
 export interface StatusPage {
   id: string;
@@ -84,13 +85,27 @@ export interface StatusPageBadge {
   color_pending?: string;
 }
 
+export interface OverallStatus {
+  class: string;
+  icon: string;
+  title: string;
+  message: string;
+}
+
+export interface MonitorGroups {
+  operational: Monitor[];
+  degraded: Monitor[];
+  down: Monitor[];
+  maintenance: Monitor[];
+}
+
 /**
  * Enhanced Status Page Service
  * Supports multiple status pages, custom domains, branding, and all Uptime Kuma features
  */
 export class StatusPageService {
   private readonly cacheDir = '/tmp/nova-status-cache';
-  private cache = new Map<string, any>();
+  private cache = new Map<string, unknown>();
   private cacheExpiry = new Map<string, number>();
 
   constructor() {
@@ -100,8 +115,9 @@ export class StatusPageService {
   private async initializeCache(): Promise<void> {
     try {
       await fs.mkdir(this.cacheDir, { recursive: true });
-    } catch (error: any) {
-      logger.error(`Failed to initialize status page cache: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown initialization error';
+      logger.error(`Failed to initialize status page cache: ${errorMessage}`);
     }
   }
 
@@ -127,8 +143,9 @@ export class StatusPageService {
       }
 
       return statusPage;
-    } catch (error: any) {
-      logger.error(`Failed to get status page: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown status page error';
+      logger.error(`Failed to get status page: ${errorMessage}`);
       return null;
     }
   }
@@ -138,7 +155,7 @@ export class StatusPageService {
    */
   async generateStatusPageHTML(
     statusPage: StatusPage,
-    monitors: any[],
+    monitors: Monitor[],
     incidents: StatusPageIncident[],
   ): Promise<string> {
     const uptime7d = await this.calculateUptime(statusPage.id, 7);
@@ -655,8 +672,9 @@ export class StatusPageService {
         return res.rows[0] as unknown as StatusPage;
       }
       return null;
-    } catch (error: any) {
-      logger.warn('Status page lookup fallback (db unavailable)', { error: error.message });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+      logger.warn('Status page lookup fallback (db unavailable)', { error: errorMessage });
       return null;
     }
   }
@@ -674,13 +692,14 @@ export class StatusPageService {
       );
       const value = parseFloat(res?.rows?.[0]?.uptime ?? '0');
       return isFinite(value) ? value : 0;
-    } catch (error: any) {
-      logger.warn('Uptime calculation fallback (db unavailable)', { error: error.message });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown uptime calculation error';
+      logger.warn('Uptime calculation fallback (db unavailable)', { error: errorMessage });
       return 0;
     }
   }
 
-  private calculateOverallStatus(monitors: any[]): any {
+  private calculateOverallStatus(monitors: Monitor[]): OverallStatus {
     const downCount = monitors.filter((m) => m.status === 'down').length;
     const degradedCount = monitors.filter((m) => m.status === 'degraded').length;
 
@@ -708,7 +727,7 @@ export class StatusPageService {
     }
   }
 
-  private groupMonitorsByStatus(monitors: any[]): any {
+  private groupMonitorsByStatus(monitors: Monitor[]): MonitorGroups {
     return {
       operational: monitors.filter((m) => m.status === 'operational'),
       degraded: monitors.filter((m) => m.status === 'degraded'),
@@ -717,7 +736,7 @@ export class StatusPageService {
     };
   }
 
-  private generateMonitorGroupHTML(title: string, monitors: any[], status: string): string {
+  private generateMonitorGroupHTML(title: string, monitors: Monitor[], status: string): string {
     return `
       <div class="monitor-group">
         <h3>${title}</h3>

@@ -1,4 +1,4 @@
-import { prisma } from '../db/prisma.js';
+import db from '../db.js';
 import { logger } from '../logger.js';
 
 /**
@@ -58,7 +58,7 @@ export class ExportService {
       includeAttachments,
     );
 
-    return await prisma.enhancedSupportTicket.findMany({
+    return await db.enhancedSupportTicket.findMany({
       where: whereClause,
       include: includeClause,
       orderBy: { createdAt: 'desc' },

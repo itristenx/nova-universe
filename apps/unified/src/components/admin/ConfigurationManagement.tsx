@@ -8,16 +8,6 @@
 import React, { useState, useEffect } from 'react';
 import './ConfigurationManagement.css';
 
-interface ConfigValue {
-  key: string;
-  value: any;
-  type: 'string' | 'number' | 'boolean' | 'array';
-  description?: string;
-  category: string;
-  required?: boolean;
-  sensitive?: boolean;
-}
-
 interface ConfigCategory {
   id: string;
   name: string;
@@ -176,7 +166,7 @@ const ConfigurationManagement = () => {
       } else {
         console.error('Failed to load configuration');
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error loading configuration:', error);
     } finally {
       setLoading(false);
@@ -231,7 +221,7 @@ const ConfigurationManagement = () => {
         const error = await response.json();
         alert(`Failed to save configuration: ${error.message || 'Unknown error'}`);
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error saving configuration:', error);
       alert('Error saving configuration. Please try again.');
     } finally {

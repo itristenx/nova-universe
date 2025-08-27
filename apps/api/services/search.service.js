@@ -1,4 +1,4 @@
-import { prisma } from '../db/prisma.js';
+import db from '../db.js';
 import { logger } from '../logger.js';
 
 /**
@@ -29,7 +29,7 @@ export class SearchService {
       // Execute search
       const [tickets, totalCount, facetData] = await Promise.all([
         this.executeSearch(whereClause, sortBy, sortOrder, offset, limit),
-        prisma.enhancedSupportTicket.count({ where: whereClause }),
+        db.enhancedSupportTicket.count({ where: whereClause }),
         facets.length > 0 ? this.getFacetData(whereClause, facets) : {},
       ]);
 
@@ -136,7 +136,7 @@ export class SearchService {
   static async executeSearch(whereClause, sortBy, sortOrder, offset, limit) {
     const orderBy = this.buildOrderBy(sortBy, sortOrder);
 
-    return await prisma.enhancedSupportTicket.findMany({
+    return await db.enhancedSupportTicket.findMany({
       where: whereClause,
       include: {
         requester: {
@@ -214,7 +214,7 @@ export class SearchService {
    * Get status facets
    */
   static async getStatusFacets(whereClause) {
-    const statusCounts = await prisma.enhancedSupportTicket.groupBy({
+    const statusCounts = await db.enhancedSupportTicket.groupBy({
       by: ['state'],
       where: whereClause,
       _count: { state: true },
@@ -231,7 +231,7 @@ export class SearchService {
    * Get priority facets
    */
   static async getPriorityFacets(whereClause) {
-    const priorityCounts = await prisma.enhancedSupportTicket.groupBy({
+    const priorityCounts = await db.enhancedSupportTicket.groupBy({
       by: ['priority'],
       where: whereClause,
       _count: { priority: true },
@@ -248,7 +248,7 @@ export class SearchService {
    * Get category facets
    */
   static async getCategoryFacets(whereClause) {
-    const categoryCounts = await prisma.enhancedSupportTicket.groupBy({
+    const categoryCounts = await db.enhancedSupportTicket.groupBy({
       by: ['category'],
       where: { ...whereClause, category: { not: null } },
       _count: { category: true },
@@ -265,7 +265,7 @@ export class SearchService {
    * Get assignee facets
    */
   static async getAssigneeFacets(whereClause) {
-    const assigneeCounts = await prisma.enhancedSupportTicket.groupBy({
+    const assigneeCounts = await db.enhancedSupportTicket.groupBy({
       by: ['assignedToUserId'],
       where: { ...whereClause, assignedToUserId: { not: null } },
       _count: { assignedToUserId: true },
@@ -273,7 +273,7 @@ export class SearchService {
 
     // Get user names for assignees
     const userIds = assigneeCounts.map((item) => item.assignedToUserId);
-    const users = await prisma.user.findMany({
+    const users = await db.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, name: true },
     });
@@ -367,7 +367,7 @@ export class SearchService {
 
       // Suggest ticket numbers
       if (partialQuery.match(/^\d+/)) {
-        const tickets = await prisma.enhancedSupportTicket.findMany({
+        const tickets = await db.enhancedSupportTicket.findMany({
           where: {
             ticketNumber: { contains: partialQuery },
             ...(await this.getAccessFilter(user)),
@@ -402,7 +402,7 @@ export class SearchService {
    */
   static async getCategorySuggestions(partialQuery) {
     try {
-      const categories = await prisma.enhancedSupportTicket.groupBy({
+      const categories = await db.enhancedSupportTicket.groupBy({
         by: ['category'],
         where: {
           category: {

@@ -113,9 +113,9 @@ export const useDashboardStore = create<DashboardState>()(
             widgets: layout.widgets,
             isLoading: false,
           });
-        } catch (error: any) {
+        } catch (_error: any) {
           set({
-            error: error.message || 'Failed to load dashboard layout',
+            error: _error.message || 'Failed to load dashboard layout',
             isLoading: false,
           });
           toast.error('Failed to load dashboard layout');
@@ -249,7 +249,7 @@ export const useDashboardStore = create<DashboardState>()(
         // Save to backend
         try {
           await get().updateWidget(id, { position });
-        } catch (error: any) {
+        } catch (_error: any) {
           // Revert on error
           set({ widgets });
           toast.error('Failed to save widget position');
@@ -268,8 +268,8 @@ export const useDashboardStore = create<DashboardState>()(
             currentLayout: newLayout,
           });
           toast.success('Dashboard layout saved successfully');
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to save dashboard layout' });
+        } catch (_error: any) {
+          set({ error: 'Failed to save dashboard layout' });
           toast.error('Failed to save dashboard layout');
         }
       },
@@ -285,8 +285,8 @@ export const useDashboardStore = create<DashboardState>()(
             layouts: updatedLayouts,
             currentLayout: currentLayout?.id === id ? updatedLayout : currentLayout,
           });
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to update dashboard layout' });
+        } catch (_error: any) {
+          set({ error: 'Failed to update dashboard layout' });
           toast.error('Failed to update dashboard layout');
         }
       },
@@ -305,8 +305,8 @@ export const useDashboardStore = create<DashboardState>()(
           });
 
           toast.success('Dashboard layout deleted successfully');
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to delete dashboard layout' });
+        } catch (_error: any) {
+          set({ error: 'Failed to delete dashboard layout' });
           toast.error('Failed to delete dashboard layout');
         }
       },
@@ -318,8 +318,8 @@ export const useDashboardStore = create<DashboardState>()(
           const { layouts } = get();
           set({ layouts: [...layouts, newLayout] });
           toast.success('Dashboard layout duplicated successfully');
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to duplicate dashboard layout' });
+        } catch (_error: any) {
+          set({ error: 'Failed to duplicate dashboard layout' });
           toast.error('Failed to duplicate dashboard layout');
         }
       },
@@ -335,8 +335,8 @@ export const useDashboardStore = create<DashboardState>()(
             widgets: newLayout.widgets,
           });
           toast.success('Dashboard created from template successfully');
-        } catch (error: any) {
-          set({ error: error.message || 'Failed to create dashboard from template' });
+        } catch (_error: any) {
+          set({ error: 'Failed to create dashboard from template' });
           toast.error('Failed to create dashboard from template');
         }
       },

@@ -256,7 +256,7 @@ export function getV2Equivalent(v1Service: string): string | null {
  */
 export function logDeprecationWarning(service: keyof ApiEndpointConfig): void {
   const config = getApiConfig(service);
-  if (config.deprecated && process.env.NODE_ENV === 'development') {
+  if (config.deprecated && import.meta.env.DEV) {
     console.warn(
       `🚨 API Deprecation Warning: ${service} (${config.version}) is deprecated.`,
       `\n📅 Sunset Date: ${config.deprecationDate}`,
@@ -270,7 +270,7 @@ export function logDeprecationWarning(service: keyof ApiEndpointConfig): void {
  * Runtime API version validation
  */
 export function validateApiUsage(): void {
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     const deprecated = getDeprecatedServices();
     if (deprecated.length > 0) {
       console.group('🔄 API Version Status Report');

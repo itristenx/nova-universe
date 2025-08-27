@@ -135,7 +135,7 @@ export default function PullToRefresh({
       </div>
 
       {/* Pull distance indicator (development mode) */}
-      {process.env.NODE_ENV === 'development' && isPulling && (
+      {import.meta.env.DEV && isPulling && (
         <div className="bg-opacity-75 fixed top-16 left-4 z-50 rounded bg-black px-2 py-1 text-xs text-white">
           Pull: {Math.round(pullDistance)}px / {threshold}px
         </div>

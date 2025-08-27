@@ -37,7 +37,7 @@ test('error handling works', () => {
   assert.throws(() => {
     throw new Error('Test error');
   }, Error);
-  
+
   assert.doesNotThrow(() => {
     // This should not throw
   });

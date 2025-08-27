@@ -1,9 +1,9 @@
 import express from 'express';
-import { EnhancedTicketService } from '../services/enhanced-ticket.service.js';
+import { TicketService as EnhancedTicketService } from '../services/enhanced-ticket.service.js';
 import { AutoClassificationService } from '../services/autoClassification.service.js';
 import { WorkflowService } from '../services/workflow.service.js';
 import { logger } from '../logger.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticateJWT as authMiddleware } from '../middleware/auth.js';
 import multer from 'multer';
 import path from 'path';
 

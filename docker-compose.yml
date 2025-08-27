@@ -1,5 +1,5 @@
-# Docker Compose for Nova Universe Local Development
-# Provides PostgreSQL, MongoDB, Elasticsearch, and management tools
+# Nova Universe - Consolidated Docker Compose Configuration
+# Single file for all environments with environment-specific overrides
 
 services:
   # PostgreSQL Database (Core Data with Prisma)
@@ -21,16 +21,12 @@ services:
     networks:
       - nova-network
     healthcheck:
-      test:
-        ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-nova_admin} -d ${POSTGRES_DB:-nova_universe}']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-nova_admin} -d ${POSTGRES_DB:-nova_universe}']
       interval: 10s
       timeout: 5s
       retries: 5
     security_opt:
       - no-new-privileges:true
-    tmpfs:
-      - /tmp
-      - /var/run/postgresql
     command: >
       postgres
       -c log_statement=all
@@ -49,29 +45,6 @@ services:
       -c work_mem=4MB
       -c min_wal_size=1GB
       -c max_wal_size=4GB
-
-  # pgAdmin for PostgreSQL Management
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: nova-pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
-    ports:
-      - '${PGADMIN_PORT:-8080}:80'
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-      - ./scripts/pgadmin-servers.json:/pgladmin4/servers.json:ro
-    networks:
-      - nova-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-    security_opt:
-      - no-new-privileges:true
 
   # MongoDB Database (Logs and Telemetry)
   mongodb:
@@ -102,7 +75,33 @@ services:
       --logpath=/var/log/mongodb/mongod.log
       --logappend
 
-  # Elasticsearch (Search and Analytics)
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: nova-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-redis_secure_pass_2024}
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  # Elasticsearch (Search and Analytics) - Optional for development
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
     container_name: nova-elasticsearch
@@ -134,8 +133,11 @@ services:
       retries: 5
     security_opt:
       - no-new-privileges:true
+    profiles:
+      - full
+      - production
 
-  # Kibana (Elasticsearch Dashboard)
+  # Kibana (Elasticsearch Dashboard) - Optional for development
   kibana:
     image: docker.elastic.co/kibana/kibana:8.11.0
     container_name: nova-kibana
@@ -155,8 +157,37 @@ services:
         condition: service_healthy
     security_opt:
       - no-new-privileges:true
+    profiles:
+      - full
+      - production
 
-  # Mongo Express (MongoDB Web Interface)
+  # pgAdmin for PostgreSQL Management - Optional for development
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nova-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - '${PGADMIN_PORT:-8080}:80'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./scripts/pgadmin-servers.json:/pgladmin4/servers.json:ro
+    networks:
+      - nova-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - full
+      - development
+
+  # Mongo Express (MongoDB Web Interface) - Optional for development
   mongo-express:
     image: mongo-express:latest
     container_name: nova-mongo-express
@@ -176,78 +207,9 @@ services:
         condition: service_healthy
     security_opt:
       - no-new-privileges:true
-
-  # Redis Cache (Optional)
-  redis:
-    image: redis:7-alpine
-    container_name: nova-redis
-    restart: unless-stopped
-    command: >
-      redis-server
-      --requirepass ${REDIS_PASSWORD:-redis_secure_pass_2024}
-      --appendonly yes
-      --appendfsync everysec
-      --maxmemory 256mb
-      --maxmemory-policy allkeys-lru
-    ports:
-      - '${REDIS_PORT:-6379}:6379'
-    volumes:
-      - redis_data:/data
-    networks:
-      - nova-network
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    security_opt:
-      - no-new-privileges:true
-
-  # Nova API (Main Application)
-  # nova-api:
-  #   build:
-  #     context: ./nova-api
-  #     dockerfile: Dockerfile
-  #   container_name: nova-api
-  #   restart: unless-stopped
-  #   environment:
-  #     NODE_ENV: development
-  #     DATABASE_URL: postgres://nova_admin:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/nova_universe
-  #     MONGO_URL: mongodb://admin:mongo_secure_pass_2024@mongodb:27017/nova_logs
-  #     # Add any other required environment variables here
-  #   ports:
-  #     - "3001:3000"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     mongodb:
-  #       condition: service_healthy
-  #     elasticsearch:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   networks:
-  #     - nova-network
-
-  # Nova Comms is now integrated directly into the API service
-  # No separate service needed - Slack integration runs within the main API
-
-  # Nova Core (Admin UI)
-  # nova-core:
-  #   build:
-  #     context: ./nova-core
-  #     dockerfile: Dockerfile
-  #   container_name: nova-core
-  #   restart: unless-stopped
-  #   environment:
-  #     NODE_ENV: development
-  #     # Add any required environment variables for UI here
-  #   ports:
-  #     - "5173:5173"
-  #   depends_on:
-  #     - nova-api
-  #   networks:
-  #     - nova-network
+    profiles:
+      - full
+      - development
 
 volumes:
   postgres_data:

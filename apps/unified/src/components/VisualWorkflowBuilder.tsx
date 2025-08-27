@@ -145,6 +145,9 @@ const nodeTypes: NodeTypes = {
   end: EndNode,
 };
 
+// Custom edge types for different workflow connections
+const edgeTypes: EdgeTypes = {};
+
 // Node Configuration Modal
 interface NodeConfigModalProps {
   node: Node<WorkflowNodeData> | null;
@@ -171,96 +174,118 @@ const NodeConfigModal: React.FC<NodeConfigModalProps> = ({ node, isOpen, onClose
   if (!isOpen || !node) return null;
 
   return (
-    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="mx-4 w-full max-w-md rounded-lg bg-white shadow-xl"
-      >
-        <div className="p-6">
-          <h3 className="mb-4 text-lg font-medium text-gray-900">
-            Configure {node.data.type} Node
-          </h3>
+    <AnimatePresence>
+      {isOpen && (
+        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="mx-4 w-full max-w-md rounded-lg bg-white shadow-xl"
+          >
+            <div className="p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Configure {node.data.type} Node
+                </h3>
+                <button
+                  onClick={onClose}
+                  className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                >
+                  <XCircleIcon className="h-5 w-5" />
+                </button>
+              </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Label</label>
-              <input
-                type="text"
-                value={config.label || ''}
-                onChange={(e) => setConfig({ ...config, label: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
-              <textarea
-                value={config.description || ''}
-                onChange={(e) => setConfig({ ...config, description: e.target.value })}
-                rows={3}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              />
-            </div>
-
-            {node.data.type === 'approval' && (
-              <>
+              <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">Assignee</label>
-                  <select
-                    value={config.assignee || ''}
-                    onChange={(e) => setConfig({ ...config, assignee: e.target.value })}
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Label</label>
+                  <input
+                    type="text"
+                    value={config.label || ''}
+                    onChange={(e) => setConfig({ ...config, label: e.target.value })}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  >
-                    <option value="">Select assignee...</option>
-                    {users.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.display_name}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
                 <div>
                   <label className="mb-1 block text-sm font-medium text-gray-700">
-                    Timeout (hours)
+                    Description
                   </label>
-                  <input
-                    type="number"
-                    value={config.timeout || ''}
-                    onChange={(e) => setConfig({ ...config, timeout: parseInt(e.target.value) })}
+                  <textarea
+                    value={config.description || ''}
+                    onChange={(e) => setConfig({ ...config, description: e.target.value })}
+                    rows={3}
                     className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                 </div>
-              </>
-            )}
 
-            {node.data.type === 'condition' && (
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Conditions</label>
-                <div className="text-sm text-gray-500">Condition configuration coming soon...</div>
+                {node.data.type === 'approval' && (
+                  <>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">
+                        Assignee
+                      </label>
+                      <select
+                        value={config.assignee || ''}
+                        onChange={(e) => setConfig({ ...config, assignee: e.target.value })}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      >
+                        <option value="">Select assignee...</option>
+                        {users.map((user) => (
+                          <option key={user.id} value={user.id}>
+                            {user.display_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">
+                        Timeout (hours)
+                      </label>
+                      <input
+                        type="number"
+                        value={config.timeout || ''}
+                        onChange={(e) =>
+                          setConfig({ ...config, timeout: parseInt(e.target.value) })
+                        }
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {node.data.type === 'condition' && (
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Conditions
+                    </label>
+                    <div className="text-sm text-gray-500">
+                      Condition configuration coming soon...
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          <div className="mt-6 flex justify-end space-x-3">
-            <button
-              onClick={onClose}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            >
-              Save
-            </button>
-          </div>
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={onClose}
+                  className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -459,6 +484,44 @@ export const VisualWorkflowBuilder: React.FC<VisualWorkflowBuilderProps> = ({
     setEdges((eds) => eds.filter((edge) => !edge.selected));
   }, [setNodes, setEdges]);
 
+  const duplicateSelectedNodes = useCallback(() => {
+    const selectedNodes = nodes.filter((node) => node.selected);
+    const duplicatedNodes = selectedNodes.map((node) => ({
+      ...node,
+      id: `${node.id}-copy-${Date.now()}`,
+      position: {
+        x: node.position.x + 50,
+        y: node.position.y + 50,
+      },
+      selected: false,
+      data: {
+        ...node.data,
+        id: `${node.data.id}-copy-${Date.now()}`,
+        label: `${node.data.label} (Copy)`,
+      },
+    }));
+    setNodes((nds) => [...nds, ...duplicatedNodes]);
+  }, [nodes, setNodes]);
+
+  const addNewNode = useCallback(
+    (nodeType: string) => {
+      const nodeId = `${nodeType}-${Date.now()}`;
+      const newNode: Node<WorkflowNodeData> = {
+        id: nodeId,
+        type: nodeType,
+        position: { x: 250, y: 200 + nodes.length * 100 },
+        data: {
+          id: nodeId,
+          label: `New ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`,
+          type: nodeType as any,
+          description: `Configure this ${nodeType} step`,
+        },
+      };
+      setNodes((nds) => [...nds, newNode]);
+    },
+    [nodes.length, setNodes],
+  );
+
   const handleSaveWorkflow = () => {
     // Convert nodes and edges back to ApprovalFlow format
     const approvalNodes = nodes.filter((node) => node.data.type === 'approval');
@@ -554,6 +617,20 @@ export const VisualWorkflowBuilder: React.FC<VisualWorkflowBuilderProps> = ({
             <h3 className="mb-4 text-sm font-medium text-gray-900">Actions</h3>
             <div className="space-y-2">
               <button
+                onClick={() => addNewNode('approval')}
+                className="flex w-full items-center space-x-2 rounded-md border border-green-200 bg-green-50 p-2 text-sm text-green-700 hover:bg-green-100"
+              >
+                <PlusIcon className="h-4 w-4" />
+                <span>Add Node</span>
+              </button>
+              <button
+                onClick={duplicateSelectedNodes}
+                className="flex w-full items-center space-x-2 rounded-md border border-blue-200 bg-blue-50 p-2 text-sm text-blue-700 hover:bg-blue-100"
+              >
+                <DocumentDuplicateIcon className="h-4 w-4" />
+                <span>Duplicate Selected</span>
+              </button>
+              <button
                 onClick={deleteSelectedNodes}
                 className="flex w-full items-center space-x-2 rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-700 hover:bg-red-100"
               >
@@ -577,6 +654,7 @@ export const VisualWorkflowBuilder: React.FC<VisualWorkflowBuilderProps> = ({
             onDragOver={onDragOver}
             onNodeDoubleClick={onNodeDoubleClick}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             connectionMode={ConnectionMode.Loose}
             fitView
             className="bg-gray-50"

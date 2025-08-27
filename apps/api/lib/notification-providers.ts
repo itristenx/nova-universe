@@ -61,7 +61,7 @@ export class NotificationProviderService {
       user: user_key,
       title: message.title,
       message: message.message,
-      priority: priority !== undefined ? priority : (priorityMap[message.severity] || 0),
+      priority: priority !== undefined ? priority : priorityMap[message.severity] || 0,
       device: device || undefined,
       sound: sound || undefined,
       url: message.url || undefined,

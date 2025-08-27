@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { CosmoSDK } from './CosmoSDK';
-import {
-  CosmoConfig,
-  CosmoContext,
-  CosmoMessage,
-  CosmoConversation,
-  CosmoEvent,
-} from './types';
+import { CosmoConfig, CosmoContext, CosmoMessage, CosmoConversation, CosmoEvent } from './types';
 
 export interface UseCosmoOptions {
   autoStart?: boolean;
@@ -88,9 +82,9 @@ export function useCosmo(
         conversationId: event.data?.conversationId,
         duration: event.data?.duration,
         messageCount: messages.length,
-        eventData: event.data
+        eventData: event.data,
       });
-      
+
       setConversation(null);
       setMessages([]);
     });

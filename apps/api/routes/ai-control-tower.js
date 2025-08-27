@@ -8,7 +8,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { body, param, query, validationResult } from 'express-validator';
 import { aiControlTower } from '../lib/ai-control-tower.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authenticateJWT as authMiddleware } from '../middleware/auth.js';
 import { logger } from '../logger.js';
 
 const router = Router();

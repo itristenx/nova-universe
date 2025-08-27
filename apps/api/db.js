@@ -10,16 +10,23 @@ import { DatabaseFactory } from './database/factory.js';
 import bcrypt from 'bcryptjs';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
-// import { PrismaClient } from '../../prisma/generated/core/index.js';
+import { PrismaClient } from '../../prisma/generated/core/index.js';
 
 // Keep filename for potential future use
-
 const __filename = fileURLToPath(import.meta.url);
+
+// Log the current file being executed for debugging purposes
+if (process.env.DB_VERBOSE_LOGGING === 'true') {
+  logger.debug(`Database module loaded from: ${__filename}`);
+}
 
 // Initialize database factory
 const dbFactory = new DatabaseFactory();
 let db = null;
 let isInitialized = false;
+
+// Initialize Prisma client
+const prisma = new PrismaClient();
 
 /**
  * Initialize the database factory and set up schemas
@@ -763,6 +770,41 @@ class DatabaseWrapper {
     }
   }
 
+  // Prisma-specific operations
+  async getPrismaClient() {
+    return prisma;
+  }
+
+  async prismaQuery(model, operation, params = {}) {
+    try {
+      const client = await this.getPrismaClient();
+      return await client[model][operation](params);
+    } catch (error) {
+      logger.error(`Prisma query failed for ${model}.${operation}:`, error);
+      throw error;
+    }
+  }
+
+  async createWithPrisma(model, data) {
+    return await this.prismaQuery(model, 'create', { data });
+  }
+
+  async findManyWithPrisma(model, where = {}) {
+    return await this.prismaQuery(model, 'findMany', { where });
+  }
+
+  async findUniqueWithPrisma(model, where) {
+    return await this.prismaQuery(model, 'findUnique', { where });
+  }
+
+  async updateWithPrisma(model, where, data) {
+    return await this.prismaQuery(model, 'update', { where, data });
+  }
+
+  async deleteWithPrisma(model, where) {
+    return await this.prismaQuery(model, 'delete', { where });
+  }
+
   // Compatibility: .get(sql, params, cb)
   get(sql, params, cb) {
     // If only two arguments and second is a function, shift
@@ -831,14 +873,19 @@ class DatabaseWrapper {
 
 // Create and export the database wrapper
 const dbWrapper = new DatabaseWrapper();
-// const prisma = new PrismaClient();
 
 export default dbWrapper;
-// export { prisma };
+export { prisma };
 
 // Gracefully close all database connections
 async function closeDatabase() {
   try {
+    // Close Prisma client
+    if (prisma) {
+      await prisma.$disconnect();
+      logger.info('Prisma client disconnected');
+    }
+
     if (dbFactory && typeof dbFactory.close === 'function' && isInitialized) {
       await dbFactory.close();
       isInitialized = false;

@@ -1,13 +1,13 @@
-import { PrismaClient } from '/prisma/generated/core/index.js';
-import logger from '../logger.js';
+import { logger } from '../logger.js';
 import { EmailCommunicationService } from './email-communication.service.js';
-import EmailTemplateService from './email-template.service.js';
+import emailTemplateService from './email-template.service.js';
+import db from '../db.js';
 
 export class EmailDelayService {
   constructor() {
-    this.prisma = new PrismaClient();
+    this.db = db;
     this.communicationService = new EmailCommunicationService();
-    this.templateService = new EmailTemplateService();
+    this.templateService = emailTemplateService;
     this.delayedEmails = new Map(); // ticketId -> timeout
     this.defaultDelayMs = 30000; // 30 seconds default delay
     this.maxDelayMs = 300000; // 5 minutes maximum delay
@@ -45,7 +45,7 @@ export class EmailDelayService {
       }
 
       // Store pending email in database
-      const pendingEmail = await this.prisma.pendingEmail.create({
+      const pendingEmail = await this.db.pendingEmail.create({
         data: {
           ticketId,
           templateKey,
@@ -97,7 +97,7 @@ export class EmailDelayService {
       }
 
       // Update database record
-      const cancelled = await this.prisma.pendingEmail.updateMany({
+      const cancelled = await this.db.pendingEmail.updateMany({
         where: {
           ticketId,
           status: 'PENDING',
@@ -128,7 +128,7 @@ export class EmailDelayService {
    */
   async processPendingEmail(pendingEmailId) {
     try {
-      const pendingEmail = await this.prisma.pendingEmail.findUnique({
+      const pendingEmail = await this.db.pendingEmail.findUnique({
         where: { id: pendingEmailId },
       });
 
@@ -138,7 +138,7 @@ export class EmailDelayService {
       }
 
       // Check if ticket still exists and is in valid state
-      const ticket = await this.prisma.supportTicket.findUnique({
+      const ticket = await this.db.supportTicket.findUnique({
         where: { id: pendingEmail.ticketId },
         include: {
           customer: true,
@@ -149,7 +149,7 @@ export class EmailDelayService {
       });
 
       if (!ticket) {
-        await this.prisma.pendingEmail.update({
+        await this.db.pendingEmail.update({
           where: { id: pendingEmailId },
           data: {
             status: 'FAILED',
@@ -192,7 +192,7 @@ export class EmailDelayService {
       });
 
       // Update pending email status
-      await this.prisma.pendingEmail.update({
+      await this.db.pendingEmail.update({
         where: { id: pendingEmailId },
         data: {
           status: emailResult.success ? 'SENT' : 'FAILED',
@@ -208,7 +208,7 @@ export class EmailDelayService {
       logger.error(`Error processing pending email ${pendingEmailId}:`, error);
 
       // Mark as failed
-      await this.prisma.pendingEmail.update({
+      await this.db.pendingEmail.update({
         where: { id: pendingEmailId },
         data: {
           status: 'FAILED',
@@ -292,7 +292,7 @@ export class EmailDelayService {
   async getEmailDelay(organizationId, templateKey, priority) {
     try {
       // Get organization-specific delay settings
-      const delayConfig = await this.prisma.emailDelayConfiguration.findFirst({
+      const delayConfig = await this.db.emailDelayConfiguration.findFirst({
         where: {
           organizationId,
           templateKey,
@@ -305,7 +305,7 @@ export class EmailDelayService {
       }
 
       // Check for template category defaults
-      const categoryConfig = await this.prisma.emailDelayConfiguration.findFirst({
+      const categoryConfig = await this.db.emailDelayConfiguration.findFirst({
         where: {
           organizationId,
           templateCategory: this.getTemplateCategory(templateKey),
@@ -347,7 +347,7 @@ export class EmailDelayService {
    */
   async getRecentTicketUpdates(ticketId, since) {
     try {
-      const updates = await this.prisma.ticketUpdate.findMany({
+      const updates = await this.db.ticketUpdate.findMany({
         where: {
           ticketId,
           createdAt: {
@@ -395,7 +395,7 @@ export class EmailDelayService {
     try {
       const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
 
-      const deleted = await this.prisma.pendingEmail.deleteMany({
+      const deleted = await this.db.pendingEmail.deleteMany({
         where: {
           createdAt: {
             lt: cutoffDate,
@@ -424,7 +424,7 @@ export class EmailDelayService {
     try {
       const where = organizationId ? { organizationId } : {};
 
-      const summary = await this.prisma.pendingEmail.groupBy({
+      const summary = await this.db.pendingEmail.groupBy({
         by: ['status'],
         where,
         _count: {
@@ -462,7 +462,7 @@ export class EmailDelayService {
       this.delayedEmails.clear();
 
       // Reload pending emails from database
-      const pendingEmails = await this.prisma.pendingEmail.findMany({
+      const pendingEmails = await this.db.pendingEmail.findMany({
         where: {
           status: 'PENDING',
           scheduledAt: {

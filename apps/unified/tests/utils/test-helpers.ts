@@ -36,7 +36,9 @@ export class TestHelper {
 
   constructor() {
     this.apiBaseUrl = process.env.TEST_API_URL || 'http://localhost:3000';
-    this.databaseUrl = process.env.TEST_DATABASE_URL || 'postgresql://nova_admin:nova_password@localhost:5432/nova_universe_test';
+    this.databaseUrl =
+      process.env.TEST_DATABASE_URL ||
+      'postgresql://nova_admin:nova_password@localhost:5432/nova_universe_test';
   }
 
   /**
@@ -46,7 +48,7 @@ export class TestHelper {
     try {
       const response = await axios.post(`${this.apiBaseUrl}/auth/login`, {
         email,
-        password
+        password,
       });
       return response.data.token;
     } catch (error) {
@@ -62,11 +64,9 @@ export class TestHelper {
     const result: any = {};
 
     if (data.organization) {
-      const orgResponse = await axios.post(
-        `${this.apiBaseUrl}/organizations`,
-        data.organization,
-        { headers }
-      );
+      const orgResponse = await axios.post(`${this.apiBaseUrl}/organizations`, data.organization, {
+        headers,
+      });
       result.organization = orgResponse.data;
     }
 
@@ -75,9 +75,9 @@ export class TestHelper {
         `${this.apiBaseUrl}/categories`,
         {
           ...data.category,
-          organizationId: result.organization.id
+          organizationId: result.organization.id,
         },
-        { headers }
+        { headers },
       );
       result.category = catResponse.data;
     }
@@ -88,9 +88,9 @@ export class TestHelper {
         {
           ...data.ticket,
           categoryId: result.category.id,
-          organizationId: result.organization.id
+          organizationId: result.organization.id,
         },
-        { headers }
+        { headers },
       );
       result.ticket = ticketResponse.data;
     }
@@ -100,9 +100,9 @@ export class TestHelper {
         `${this.apiBaseUrl}/assets`,
         {
           ...data.asset,
-          organizationId: result.organization.id
+          organizationId: result.organization.id,
         },
-        { headers }
+        { headers },
       );
       result.asset = assetResponse.data;
     }
@@ -160,9 +160,13 @@ export class TestHelper {
   /**
    * Wait for API response and verify status
    */
-  async waitForApiResponse(page: Page, urlPattern: string, expectedStatus: number = 200): Promise<void> {
+  async waitForApiResponse(
+    page: Page,
+    urlPattern: string,
+    expectedStatus: number = 200,
+  ): Promise<void> {
     const response = await page.waitForResponse(
-      response => response.url().includes(urlPattern) && response.status() === expectedStatus
+      (response) => response.url().includes(urlPattern) && response.status() === expectedStatus,
     );
     expect(response.status()).toBe(expectedStatus);
   }
@@ -182,10 +186,14 @@ export class TestHelper {
   /**
    * Verify toast notification
    */
-  async verifyToast(page: Page, expectedMessage: string, type: 'success' | 'error' | 'info' = 'success'): Promise<void> {
+  async verifyToast(
+    page: Page,
+    expectedMessage: string,
+    type: 'success' | 'error' | 'info' = 'success',
+  ): Promise<void> {
     const toastSelector = `[data-testid="toast-${type}"]`;
     await page.waitForSelector(toastSelector, { timeout: 10000 });
-    
+
     const toastText = await page.textContent(toastSelector);
     expect(toastText).toContain(expectedMessage);
   }
@@ -193,7 +201,11 @@ export class TestHelper {
   /**
    * Verify table data
    */
-  async verifyTableData(page: Page, tableSelector: string, expectedData: Record<string, string>[]): Promise<void> {
+  async verifyTableData(
+    page: Page,
+    tableSelector: string,
+    expectedData: Record<string, string>[],
+  ): Promise<void> {
     const table = page.locator(tableSelector);
     await expect(table).toBeVisible();
 
@@ -211,7 +223,7 @@ export class TestHelper {
   async navigateToRoute(page: Page, route: string, expectedTitle?: string): Promise<void> {
     await page.goto(route);
     await this.waitForPageLoad(page);
-    
+
     if (expectedTitle) {
       await expect(page).toHaveTitle(new RegExp(expectedTitle, 'i'));
     }
@@ -224,9 +236,9 @@ export class TestHelper {
     const searchInput = page.locator('[data-testid="search-input"]');
     await searchInput.fill(searchTerm);
     await searchInput.press('Enter');
-    
+
     await page.waitForLoadState('networkidle');
-    
+
     for (const expectedResult of expectedResults) {
       const resultElement = page.locator(`text=${expectedResult}`);
       await expect(resultElement).toBeVisible();
@@ -240,18 +252,20 @@ export class TestHelper {
     const breakpoints = [
       { width: 1920, height: 1080, name: 'Desktop' },
       { width: 1024, height: 768, name: 'Tablet' },
-      { width: 375, height: 667, name: 'Mobile' }
+      { width: 375, height: 667, name: 'Mobile' },
     ];
 
     for (const breakpoint of breakpoints) {
       await page.setViewportSize(breakpoint);
       await page.waitForTimeout(500); // Wait for layout adjustments
-      
+
       // Verify key elements are visible at this breakpoint
       const mainContent = page.locator('[data-testid="main-content"]');
       await expect(mainContent).toBeVisible();
-      
-      console.log(`✅ Responsive design verified for ${breakpoint.name} (${breakpoint.width}x${breakpoint.height})`);
+
+      console.log(
+        `✅ Responsive design verified for ${breakpoint.name} (${breakpoint.width}x${breakpoint.height})`,
+      );
     }
   }
 
@@ -262,14 +276,14 @@ export class TestHelper {
     // Check for proper heading hierarchy
     const headings = await page.locator('h1, h2, h3, h4, h5, h6').all();
     expect(headings.length).toBeGreaterThan(0);
-    
+
     // Check for alt text on images
     const images = await page.locator('img').all();
     for (const img of images) {
       const alt = await img.getAttribute('alt');
       expect(alt).toBeTruthy();
     }
-    
+
     // Check for proper form labels
     const inputs = await page.locator('input, select, textarea').all();
     for (const input of inputs) {
@@ -279,7 +293,7 @@ export class TestHelper {
         await expect(label).toBeVisible();
       }
     }
-    
+
     console.log('✅ Accessibility compliance verified');
   }
 }

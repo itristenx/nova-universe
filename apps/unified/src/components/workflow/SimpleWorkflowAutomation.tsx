@@ -2,16 +2,16 @@
 // ServiceNow-style workflow automation system
 
 import React, { useState, useCallback } from 'react';
-import WorkflowBuilder from './WorkflowBuilder';
+import SimpleWorkflowBuilder from './SimpleWorkflowBuilder';
 import { Workflow, WorkflowStatus, WorkflowType } from '../../types/workflow';
-import './WorkflowAutomation.css';
+import './SimpleWorkflowAutomation.css';
 
 interface WorkflowAutomationProps {
   workflowId?: string;
   onClose?: () => void;
 }
 
-const WorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationProps) => {
+const SimpleWorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationProps) => {
   const [currentWorkflow, setCurrentWorkflow] = useState(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -163,7 +163,7 @@ const WorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationProps) =>
         </div>
       )}
 
-      <WorkflowBuilder
+      <SimpleWorkflowBuilder
         workflow={currentWorkflow}
         onSave={handleSaveWorkflow}
         onExecute={handleExecuteWorkflow}
@@ -173,4 +173,4 @@ const WorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationProps) =>
   );
 };
 
-export default WorkflowAutomation;
+export default SimpleWorkflowAutomation;

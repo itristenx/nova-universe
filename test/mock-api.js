@@ -13,16 +13,16 @@ const mockData = {
     { id: 1, name: 'Test User 1', email: 'user1@test.com', role: 'end_user' },
     { id: 2, name: 'Test User 2', email: 'user2@test.com', role: 'support_agent' },
     { id: 3, name: 'Test Manager', email: 'manager@test.com', role: 'manager' },
-    { id: 4, name: 'Test Admin', email: 'admin@test.com', role: 'admin' }
+    { id: 4, name: 'Test Admin', email: 'admin@test.com', role: 'admin' },
   ],
   tickets: [
     { id: 1, title: 'Test Ticket 1', status: 'open', priority: 'medium', userId: 1 },
-    { id: 2, title: 'Test Ticket 2', status: 'closed', priority: 'high', userId: 1 }
+    { id: 2, title: 'Test Ticket 2', status: 'closed', priority: 'high', userId: 1 },
   ],
   auth: {
     tokens: new Map(),
-    sessions: new Map()
-  }
+    sessions: new Map(),
+  },
 };
 
 // Request handler
@@ -67,7 +67,7 @@ const requestHandler = (req, res) => {
   // Create ticket endpoint
   if (path === '/api/tickets' && method === 'POST') {
     let body = '';
-    req.on('data', chunk => {
+    req.on('data', (chunk) => {
       body += chunk.toString();
     });
     req.on('end', () => {
@@ -77,7 +77,7 @@ const requestHandler = (req, res) => {
           id: mockData.tickets.length + 1,
           ...ticket,
           status: ticket.status || 'open',
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
         mockData.tickets.push(newTicket);
         res.writeHead(201, { 'Content-Type': 'application/json' });
@@ -93,7 +93,7 @@ const requestHandler = (req, res) => {
   // User registration endpoint
   if (path === '/api/auth/register' && method === 'POST') {
     let body = '';
-    req.on('data', chunk => {
+    req.on('data', (chunk) => {
       body += chunk.toString();
     });
     req.on('end', () => {
@@ -103,7 +103,7 @@ const requestHandler = (req, res) => {
           id: mockData.users.length + 1,
           ...userData,
           role: userData.role || 'end_user',
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
         mockData.users.push(newUser);
         res.writeHead(201, { 'Content-Type': 'application/json' });
@@ -119,13 +119,13 @@ const requestHandler = (req, res) => {
   // User login endpoint
   if (path === '/api/auth/login' && method === 'POST') {
     let body = '';
-    req.on('data', chunk => {
+    req.on('data', (chunk) => {
       body += chunk.toString();
     });
     req.on('end', () => {
       try {
         const loginData = JSON.parse(body);
-        const user = mockData.users.find(u => u.email === loginData.email);
+        const user = mockData.users.find((u) => u.email === loginData.email);
         if (user) {
           const token = `mock-jwt-token-${user.id}`;
           mockData.auth.tokens.set(token, user.id);
@@ -147,13 +147,13 @@ const requestHandler = (req, res) => {
   if (path.match(/^\/api\/tickets\/\d+$/) && method === 'PUT') {
     const ticketId = parseInt(path.split('/').pop());
     let body = '';
-    req.on('data', chunk => {
+    req.on('data', (chunk) => {
       body += chunk.toString();
     });
     req.on('end', () => {
       try {
         const updates = JSON.parse(body);
-        const ticketIndex = mockData.tickets.findIndex(t => t.id === ticketId);
+        const ticketIndex = mockData.tickets.findIndex((t) => t.id === ticketId);
         if (ticketIndex !== -1) {
           mockData.tickets[ticketIndex] = { ...mockData.tickets[ticketIndex], ...updates };
           res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -173,11 +173,13 @@ const requestHandler = (req, res) => {
   // Dashboard endpoints
   if (path === '/api/dashboard/metrics' && method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      totalTickets: mockData.tickets.length,
-      openTickets: mockData.tickets.filter(t => t.status === 'open').length,
-      closedTickets: mockData.tickets.filter(t => t.status === 'closed').length
-    }));
+    res.end(
+      JSON.stringify({
+        totalTickets: mockData.tickets.length,
+        openTickets: mockData.tickets.filter((t) => t.status === 'open').length,
+        closedTickets: mockData.tickets.filter((t) => t.status === 'closed').length,
+      }),
+    );
     return;
   }
 

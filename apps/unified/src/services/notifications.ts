@@ -1,5 +1,6 @@
 import { apiClient } from './api';
 import type { PaginatedResponse } from '@/types';
+import { io, Socket } from 'socket.io-client';
 
 // Notification Types
 export interface Notification {
@@ -151,28 +152,27 @@ export const notificationService = {
   async subscribeToNotifications(
     callback: (notification: Notification) => void,
   ): Promise<() => void> {
-    // WebSocket connection for real-time notifications
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/notifications`;
+    // Socket.IO connection for real-time notifications
+    const socket = io('http://localhost:3001', {
+      transports: ['websocket', 'polling'],
+      timeout: 5000,
+    });
 
-    const ws = new WebSocket(wsUrl);
+    socket.on('connect', () => {
+      console.log('Notifications WebSocket connected');
+    });
 
-    ws.onmessage = (event) => {
-      try {
-        const notification = JSON.parse(event.data) as Notification;
-        callback(notification);
-      } catch (_error) {
-        console.error('Failed to parse notification:', error);
-      }
-    };
+    socket.on('notification', (notification: Notification) => {
+      callback(notification);
+    });
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+    socket.on('connect_error', (error) => {
+      console.error('Notifications WebSocket error:', error);
+    });
 
     // Return cleanup function
     return () => {
-      ws.close();
+      socket.disconnect();
     };
   },
 

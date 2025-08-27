@@ -13,9 +13,11 @@ test.describe('Database Integration Tests', () => {
     prisma = new PrismaClient({
       datasources: {
         db: {
-          url: process.env.TEST_DATABASE_URL || 'postgresql://nova_admin:nova_password@localhost:5432/nova_universe_test'
-        }
-      }
+          url:
+            process.env.TEST_DATABASE_URL ||
+            'postgresql://nova_admin:nova_password@localhost:5432/nova_universe_test',
+        },
+      },
     });
 
     try {
@@ -30,8 +32,8 @@ test.describe('Database Integration Tests', () => {
         create: {
           name: 'Test Organization for UI Tests',
           description: 'Test organization for database integration testing',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       });
       testOrganizationId = testOrg.id;
 
@@ -42,8 +44,8 @@ test.describe('Database Integration Tests', () => {
           name: 'Test Category for UI Tests',
           description: 'Test category for database integration testing',
           organizationId: testOrganizationId,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       });
       testCategoryId = testCat.id;
 
@@ -56,8 +58,8 @@ test.describe('Database Integration Tests', () => {
           lastName: 'User',
           role: 'USER',
           status: 'ACTIVE',
-          organizationId: testOrganizationId
-        }
+          organizationId: testOrganizationId,
+        },
       });
       testUserId = testUser.id;
 
@@ -72,19 +74,19 @@ test.describe('Database Integration Tests', () => {
     try {
       // Clean up test data
       await prisma.ticket.deleteMany({
-        where: { organizationId: testOrganizationId }
+        where: { organizationId: testOrganizationId },
       });
       await prisma.asset.deleteMany({
-        where: { organizationId: testOrganizationId }
+        where: { organizationId: testOrganizationId },
       });
       await prisma.category.deleteMany({
-        where: { organizationId: testOrganizationId }
+        where: { organizationId: testOrganizationId },
       });
       await prisma.user.deleteMany({
-        where: { organizationId: testOrganizationId }
+        where: { organizationId: testOrganizationId },
       });
       await prisma.organization.delete({
-        where: { id: testOrganizationId }
+        where: { id: testOrganizationId },
       });
 
       await prisma.$disconnect();
@@ -110,7 +112,7 @@ test.describe('Database Integration Tests', () => {
         WHERE table_schema = 'public' 
         AND table_name IN ('organizations', 'users', 'categories', 'tickets', 'assets')
       `;
-      
+
       expect(tables).toHaveLength(5);
       console.log('✅ Required tables verified');
     });
@@ -123,23 +125,23 @@ test.describe('Database Integration Tests', () => {
       await page.click('[data-testid="login-button"]');
       await testHelper.fillFormFields(page, {
         '[data-testid="email-input"]': 'testuser@nova.com',
-        '[data-testid="password-input"]': 'TestUser123!'
+        '[data-testid="password-input"]': 'TestUser123!',
       });
       await page.click('[data-testid="login-submit"]');
-      
+
       await expect(page).toHaveURL(/.*dashboard/);
       await page.click('[data-testid="nav-tickets"]');
       await testHelper.waitForPageLoad(page);
 
       // Create new ticket
       await page.click('[data-testid="new-ticket-button"]');
-      
+
       const testTitle = `Database Test Ticket ${Date.now()}`;
       await testHelper.fillFormFields(page, {
         '[data-testid="ticket-title-input"]': testTitle,
         '[data-testid="ticket-description-input"]': 'Test ticket for database persistence',
         '[data-testid="ticket-priority-select"]': 'High',
-        '[data-testid="ticket-category-select"]': 'Test Category for UI Tests'
+        '[data-testid="ticket-category-select"]': 'Test Category for UI Tests',
       });
 
       await page.click('[data-testid="submit-button"]');
@@ -149,7 +151,7 @@ test.describe('Database Integration Tests', () => {
 
       // Verify data is persisted in database
       const savedTicket = await prisma.ticket.findFirst({
-        where: { title: testTitle }
+        where: { title: testTitle },
       });
 
       expect(savedTicket).toBeTruthy();
@@ -169,12 +171,12 @@ test.describe('Database Integration Tests', () => {
 
       // Create new asset
       await page.click('[data-testid="new-asset-button"]');
-      
+
       const testAssetName = `Database Test Asset ${Date.now()}`;
       await testHelper.fillFormFields(page, {
         '[data-testid="asset-name-input"]': testAssetName,
         '[data-testid="asset-type-select"]': 'Hardware',
-        '[data-testid="asset-status-select"]': 'Active'
+        '[data-testid="asset-status-select"]': 'Active',
       });
 
       await page.click('[data-testid="submit-button"]');
@@ -184,7 +186,7 @@ test.describe('Database Integration Tests', () => {
 
       // Verify data is persisted in database
       const savedAsset = await prisma.asset.findFirst({
-        where: { name: testAssetName }
+        where: { name: testAssetName },
       });
 
       expect(savedAsset).toBeTruthy();
@@ -203,14 +205,14 @@ test.describe('Database Integration Tests', () => {
 
       // Create new user
       await page.click('[data-testid="new-user-button"]');
-      
+
       const testEmail = `newuser${Date.now()}@test.nova.com`;
       await testHelper.fillFormFields(page, {
         '[data-testid="user-first-name-input"]': 'New',
         '[data-testid="user-last-name-input"]': 'User',
         '[data-testid="user-email-input"]': testEmail,
         '[data-testid="user-role-select"]': 'User',
-        '[data-testid="user-status-select"]': 'Active'
+        '[data-testid="user-status-select"]': 'Active',
       });
 
       await page.click('[data-testid="submit-button"]');
@@ -220,7 +222,7 @@ test.describe('Database Integration Tests', () => {
 
       // Verify data is persisted in database
       const savedUser = await prisma.user.findFirst({
-        where: { email: testEmail }
+        where: { email: testEmail },
       });
 
       expect(savedUser).toBeTruthy();
@@ -246,8 +248,8 @@ test.describe('Database Integration Tests', () => {
           priority: 'MEDIUM',
           organizationId: testOrganizationId,
           categoryId: testCategoryId,
-          createdBy: testUserId
-        }
+          createdBy: testUserId,
+        },
       });
 
       // Navigate to tickets page
@@ -260,7 +262,9 @@ test.describe('Database Integration Tests', () => {
       // Verify ticket details
       await page.locator(`text=${testTicket.title}`).click();
       await expect(page.locator('[data-testid="ticket-details"]')).toBeVisible();
-      await expect(page.locator('[data-testid="ticket-description"]')).toContainText('Test ticket for data retrieval');
+      await expect(page.locator('[data-testid="ticket-description"]')).toContainText(
+        'Test ticket for data retrieval',
+      );
       await expect(page.locator('[data-testid="ticket-status"]')).toContainText('Open');
       await expect(page.locator('[data-testid="ticket-priority"]')).toContainText('Medium');
 
@@ -275,8 +279,8 @@ test.describe('Database Integration Tests', () => {
           type: 'SOFTWARE',
           status: 'ACTIVE',
           organizationId: testOrganizationId,
-          assignedTo: testUserId
-        }
+          assignedTo: testUserId,
+        },
       });
 
       // Navigate to assets page
@@ -325,8 +329,8 @@ test.describe('Database Integration Tests', () => {
           priority: 'LOW',
           organizationId: testOrganizationId,
           categoryId: testCategoryId,
-          createdBy: testUserId
-        }
+          createdBy: testUserId,
+        },
       });
 
       // Navigate to tickets page and edit ticket
@@ -348,7 +352,7 @@ test.describe('Database Integration Tests', () => {
 
       // Verify data is updated in database
       const updatedTicket = await prisma.ticket.findUnique({
-        where: { id: testTicket.id }
+        where: { id: testTicket.id },
       });
 
       expect(updatedTicket?.title).toBe(newTitle);
@@ -366,8 +370,8 @@ test.describe('Database Integration Tests', () => {
           type: 'HARDWARE',
           status: 'ACTIVE',
           organizationId: testOrganizationId,
-          assignedTo: testUserId
-        }
+          assignedTo: testUserId,
+        },
       });
 
       // Navigate to assets page and edit asset
@@ -388,7 +392,7 @@ test.describe('Database Integration Tests', () => {
 
       // Verify data is updated in database
       const updatedAsset = await prisma.asset.findUnique({
-        where: { id: testAsset.id }
+        where: { id: testAsset.id },
       });
 
       expect(updatedAsset?.name).toBe(newName);
@@ -410,8 +414,8 @@ test.describe('Database Integration Tests', () => {
           organizationId: testOrganizationId,
           categoryId: testCategoryId,
           createdBy: testUserId,
-          assignedTo: testUserId
-        }
+          assignedTo: testUserId,
+        },
       });
 
       // Navigate to ticket details
@@ -420,9 +424,15 @@ test.describe('Database Integration Tests', () => {
       await page.locator(`text=${testTicket.title}`).click();
 
       // Verify relationships are displayed correctly
-      await expect(page.locator('[data-testid="ticket-category"]')).toContainText('Test Category for UI Tests');
-      await expect(page.locator('[data-testid="ticket-assignee"]')).toContainText('testuser@nova.com');
-      await expect(page.locator('[data-testid="ticket-organization"]')).toContainText('Test Organization for UI Tests');
+      await expect(page.locator('[data-testid="ticket-category"]')).toContainText(
+        'Test Category for UI Tests',
+      );
+      await expect(page.locator('[data-testid="ticket-assignee"]')).toContainText(
+        'testuser@nova.com',
+      );
+      await expect(page.locator('[data-testid="ticket-organization"]')).toContainText(
+        'Test Organization for UI Tests',
+      );
 
       console.log('✅ Referential integrity maintained');
     });
@@ -434,8 +444,8 @@ test.describe('Database Integration Tests', () => {
           name: `Cascade Test Category ${Date.now()}`,
           description: 'Test category for cascade testing',
           organizationId: testOrganizationId,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       });
 
       // Create test ticket in this category
@@ -447,8 +457,8 @@ test.describe('Database Integration Tests', () => {
           priority: 'LOW',
           organizationId: testOrganizationId,
           categoryId: testCat.id,
-          createdBy: testUserId
-        }
+          createdBy: testUserId,
+        },
       });
 
       // Navigate to categories page and delete category
@@ -463,13 +473,13 @@ test.describe('Database Integration Tests', () => {
 
       // Verify category is deleted
       const deletedCategory = await prisma.category.findUnique({
-        where: { id: testCat.id }
+        where: { id: testCat.id },
       });
       expect(deletedCategory).toBeNull();
 
       // Verify related ticket is also deleted (if cascade is configured)
       const deletedTicket = await prisma.ticket.findUnique({
-        where: { id: testTicket.id }
+        where: { id: testTicket.id },
       });
       // This behavior depends on your database schema configuration
       console.log('✅ Cascade delete behavior verified');
@@ -503,7 +513,7 @@ test.describe('Database Integration Tests', () => {
       await testHelper.fillFormFields(page, {
         '[data-testid="ticket-title-input"]': 'Valid Title',
         '[data-testid="ticket-description-input"]': 'Valid description',
-        '[data-testid="ticket-priority-select"]': 'Invalid Priority'
+        '[data-testid="ticket-priority-select"]': 'Invalid Priority',
       });
 
       await page.click('[data-testid="submit-button"]');
@@ -526,11 +536,11 @@ test.describe('Database Integration Tests', () => {
         priority: 'MEDIUM' as const,
         organizationId: testOrganizationId,
         categoryId: testCategoryId,
-        createdBy: testUserId
+        createdBy: testUserId,
       }));
 
       await prisma.ticket.createMany({
-        data: testTickets
+        data: testTickets,
       });
 
       console.log(`✅ Created ${ticketCount} test tickets`);
@@ -550,7 +560,7 @@ test.describe('Database Integration Tests', () => {
 
       // Clean up test data
       await prisma.ticket.deleteMany({
-        where: { title: { contains: 'Performance Test Ticket' } }
+        where: { title: { contains: 'Performance Test Ticket' } },
       });
     });
 
@@ -578,8 +588,8 @@ test.describe('Database Integration Tests', () => {
           priority: 'MEDIUM',
           organizationId: testOrganizationId,
           categoryId: testCategoryId,
-          createdBy: testUserId
-        }
+          createdBy: testUserId,
+        },
       });
 
       // Navigate to ticket details
@@ -605,7 +615,7 @@ test.describe('Database Integration Tests', () => {
 
       // Verify database consistency
       const updatedTicket = await prisma.ticket.findUnique({
-        where: { id: testTicket.id }
+        where: { id: testTicket.id },
       });
       expect(updatedTicket?.status).toBe('IN_PROGRESS');
 

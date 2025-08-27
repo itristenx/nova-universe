@@ -288,13 +288,13 @@ export class NovaCustomModels extends EventEmitter {
    */
   private async createTicketClassifierModel(): Promise<NovaCustomModel> {
     const modelId = 'nova_ticket_classifier_v1';
-    
+
     // Generate model configuration hash for integrity verification
     const configData = JSON.stringify({
       architecture: 'embedding-lstm-attention-dense',
       version: '1.0.0',
       inputSize: 10000,
-      outputSize: 12
+      outputSize: 12,
     });
     const modelHash = createHash('sha256').update(configData).digest('hex');
 
@@ -829,7 +829,7 @@ export class NovaCustomModels extends EventEmitter {
             },
           };
         }
-        
+
         // Try Harmony integration as secondary fallback
         if (harmonyIntegration && typeof harmonyIntegration.processModelRequest === 'function') {
           const harmonyResponse = await harmonyIntegration.processModelRequest(request);
@@ -861,7 +861,7 @@ export class NovaCustomModels extends EventEmitter {
     // Use model configuration for classification
     const modelAccuracy = model.performance?.accuracy || 0.85;
     const modelVersion = model.version || '1.0.0';
-    
+
     // Log model usage for analytics
     aiMonitoringSystem.logModelUsage({
       modelId: model.id,
@@ -869,7 +869,7 @@ export class NovaCustomModels extends EventEmitter {
       modelType: model.type,
       version: modelVersion,
       requestType: 'ticket_classification',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Simulate advanced ticket classification
@@ -942,13 +942,13 @@ export class NovaCustomModels extends EventEmitter {
     // Use model-specific prediction parameters
     const predictionThreshold = model.performance?.threshold || 0.7;
     const modelPrecision = model.performance?.precision || 0.8;
-    
+
     // Log model prediction usage
     aiMonitoringSystem.emit('model-usage', {
       modelId: model.id,
       modelType: 'incident_predictor',
       version: model.version,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Simulate incident prediction analysis
@@ -963,13 +963,15 @@ export class NovaCustomModels extends EventEmitter {
 
     // Factor in historical incidents for pattern analysis
     const historicalIncidentCount = historical.length;
-    const historicalRisk = historicalIncidentCount > 5 ? 0.6 : historicalIncidentCount > 2 ? 0.3 : 0.1;
-    const recentIncidents = historical.filter(incident => 
-      new Date(incident.timestamp) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    const historicalRisk =
+      historicalIncidentCount > 5 ? 0.6 : historicalIncidentCount > 2 ? 0.3 : 0.1;
+    const recentIncidents = historical.filter(
+      (incident) => new Date(incident.timestamp) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
     ).length;
     const recentIncidentRisk = recentIncidents > 2 ? 0.8 : recentIncidents > 0 ? 0.4 : 0.1;
 
-    const overallRisk = (cpuRisk + memoryRisk + diskRisk + networkRisk + historicalRisk + recentIncidentRisk) / 6;
+    const overallRisk =
+      (cpuRisk + memoryRisk + diskRisk + networkRisk + historicalRisk + recentIncidentRisk) / 6;
     const incidentProbability = Math.min(0.99, overallRisk + Math.random() * 0.1);
 
     const prediction = {
@@ -1026,14 +1028,14 @@ export class NovaCustomModels extends EventEmitter {
     // Use model configuration for extraction parameters
     const extractionAccuracy = model.performance?.accuracy || 0.8;
     const modelComplexity = model.architecture?.hiddenLayers?.length || 3;
-    
+
     // Log knowledge extraction model usage
     aiMonitoringSystem.emit('knowledge-extraction', {
       modelId: model.id,
       modelName: model.name,
       accuracy: extractionAccuracy,
       complexity: modelComplexity,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     const inputText = request.input.text || request.input.content || '';
@@ -1085,14 +1087,14 @@ export class NovaCustomModels extends EventEmitter {
     // Use model performance metrics for resolution confidence
     const resolutionConfidence = model.performance?.precision || 0.75;
     const modelReliability = model.performance?.accuracy || 0.8;
-    
+
     // Log auto-resolution model usage with model specifics
     aiMonitoringSystem.emit('auto-resolution-attempt', {
       modelId: model.id,
       modelVersion: model.version,
       confidence: resolutionConfidence,
       reliability: modelReliability,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     const ticketText = request.input.description || request.input.text || '';
@@ -1100,8 +1102,8 @@ export class NovaCustomModels extends EventEmitter {
 
     // Find matching solutions with model-adjusted confidence
     const solutions = await this.findMatchingSolutions(ticketText, category);
-    const automationPossible = this.checkAutomationPossibility(category, ticketText) && 
-                              (resolutionConfidence > 0.7);
+    const automationPossible =
+      this.checkAutomationPossibility(category, ticketText) && resolutionConfidence > 0.7;
 
     const prediction = {
       can_auto_resolve: automationPossible && solutions.length > 0,
@@ -1110,7 +1112,7 @@ export class NovaCustomModels extends EventEmitter {
       automation_steps: automationPossible ? this.generateAutomationSteps(category) : [],
       manual_escalation_needed: !automationPossible || solutions.length === 0,
       estimated_resolution_time: automationPossible ? '5-15 minutes' : '30-60 minutes',
-      success_probability: automationPossible ? (0.85 * modelReliability) : 0.45,
+      success_probability: automationPossible ? 0.85 * modelReliability : 0.45,
     };
 
     const explanation = {
@@ -1149,7 +1151,7 @@ export class NovaCustomModels extends EventEmitter {
     // Use model-specific sentiment analysis configuration
     const sentimentAccuracy = model.performance?.accuracy || 0.82;
     const modelSensitivity = model.performance?.recall || 0.78;
-    
+
     // Log sentiment analysis model usage
     aiMonitoringSystem.emit('sentiment-analysis', {
       modelId: model.id,
@@ -1157,7 +1159,7 @@ export class NovaCustomModels extends EventEmitter {
       accuracy: sentimentAccuracy,
       sensitivity: modelSensitivity,
       analysisType: 'customer_sentiment',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     const text = request.input.text || request.input.message || '';
@@ -1242,7 +1244,7 @@ export class NovaCustomModels extends EventEmitter {
     // Use model-specific priority scoring parameters
     const scoringAccuracy = model.performance?.accuracy || 0.85;
     const priorityPrecision = model.performance?.precision || 0.82;
-    
+
     // Log priority scoring model usage
     aiMonitoringSystem.emit('priority-scoring', {
       modelId: model.id,
@@ -1250,7 +1252,7 @@ export class NovaCustomModels extends EventEmitter {
       accuracy: scoringAccuracy,
       precision: priorityPrecision,
       version: model.version,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     const ticket = request.input;
@@ -1338,16 +1340,16 @@ export class NovaCustomModels extends EventEmitter {
       'Service Request': 'Service Desk',
       Incident: 'Incident Response Team',
     };
-    
+
     // Use subcategory for more specific assignment routing
     const specializedAssignments = {
       'Hardware-Server': 'Infrastructure Team',
       'Hardware-Mobile Device': 'Mobile Device Management',
       'Software-License': 'License Management Team',
       'Network-VPN': 'VPN Support Specialists',
-      'Access-Password': 'Password Reset Automation'
+      'Access-Password': 'Password Reset Automation',
     };
-    
+
     const specificKey = `${category}-${subcategory}`;
     return specializedAssignments[specificKey] || assignments[category] || 'General Support';
   }
@@ -1361,46 +1363,48 @@ export class NovaCustomModels extends EventEmitter {
       'Service Request': 'Medium',
       Incident: 'High',
     };
-    
+
     // Subcategory-specific effort adjustments
     const subcategoryModifiers = {
-      'Server': 'High',
+      Server: 'High',
       'Mobile Device': 'Low',
-      'VPN': 'High',
-      'Password': 'Low',
-      'License': 'Medium'
+      VPN: 'High',
+      Password: 'Low',
+      License: 'Medium',
     };
-    
+
     return subcategoryModifiers[subcategory] || efforts[category] || 'Medium';
   }
 
   private async findRelatedKnowledge(category: string, text: string): Promise<any[]> {
     // Extract keywords and analyze text complexity for better matching
-    const textWords = text.toLowerCase().split(/\s+/).filter(word => word.length > 3);
+    const textWords = text
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((word) => word.length > 3);
     const keywords = textWords.slice(0, 10); // Top 10 keywords
     const textLength = text.length;
     const sentenceCount = text.split(/[.!?]+/).length;
     const avgWordsPerSentence = textWords.length / Math.max(sentenceCount, 1);
     const complexity = Math.min(avgWordsPerSentence / 15, 1); // Normalized complexity score
-    
+
     const related = Array.from(this.knowledgeBase.values())
       .filter((kb) => {
         const categoryMatch = kb.category.toLowerCase().includes(category.toLowerCase());
-        const textMatch = keywords.some((keyword: string) => 
-          kb.title.toLowerCase().includes(keyword) ||
-          (kb.description && kb.description.toLowerCase().includes(keyword))
+        const textMatch = keywords.some(
+          (keyword: string) =>
+            kb.title.toLowerCase().includes(keyword) ||
+            (kb.description && kb.description.toLowerCase().includes(keyword)),
         );
         return categoryMatch || textMatch;
       })
       .slice(0, 3)
       .map((kb) => {
-        const matchedKeywords = keywords.filter((k: string) => 
-          kb.title.toLowerCase().includes(k)
-        );
+        const matchedKeywords = keywords.filter((k: string) => kb.title.toLowerCase().includes(k));
         const baseScore = 0.7;
         const keywordBonus = matchedKeywords.length * 0.1;
         const relevanceScore = Math.min(baseScore + keywordBonus, 1.0);
-        
+
         return {
           id: kb.id,
           title: kb.title,
@@ -1410,8 +1414,8 @@ export class NovaCustomModels extends EventEmitter {
           text_analysis: {
             complexity_score: complexity,
             keyword_count: keywords.length,
-            text_length: textLength
-          }
+            text_length: textLength,
+          },
         };
       });
 
@@ -1423,7 +1427,8 @@ export class NovaCustomModels extends EventEmitter {
         keywords_extracted: keywords.length,
         matches_found: related.length,
         complexity_score: complexity,
-        avg_relevance: related.reduce((sum, r) => sum + r.relevance_score, 0) / Math.max(related.length, 1)
+        avg_relevance:
+          related.reduce((sum, r) => sum + r.relevance_score, 0) / Math.max(related.length, 1),
       });
     }
 
@@ -1448,12 +1453,14 @@ export class NovaCustomModels extends EventEmitter {
     return entities;
   }
 
-  private extractRelationships(text: string): Array<{source: string, relation: string, target: string}> {
-    const relationships: Array<{source: string, relation: string, target: string}> = [];
-    
+  private extractRelationships(
+    text: string,
+  ): Array<{ source: string; relation: string; target: string }> {
+    const relationships: Array<{ source: string; relation: string; target: string }> = [];
+
     // Analyze text for common IT relationships
     const lowerText = text.toLowerCase();
-    
+
     // User-related relationships
     if (lowerText.includes('user') && lowerText.includes('error')) {
       relationships.push({ source: 'User', relation: 'experiences', target: 'Error' });
@@ -1461,104 +1468,118 @@ export class NovaCustomModels extends EventEmitter {
     if (lowerText.includes('user') && lowerText.includes('access')) {
       relationships.push({ source: 'User', relation: 'requests', target: 'Access' });
     }
-    
+
     // System-related relationships
     if (lowerText.includes('system') && lowerText.includes('down')) {
       relationships.push({ source: 'System', relation: 'has_status', target: 'Down' });
     }
     if (lowerText.includes('application') && lowerText.includes('slow')) {
-      relationships.push({ source: 'Application', relation: 'exhibits', target: 'Performance Issue' });
+      relationships.push({
+        source: 'Application',
+        relation: 'exhibits',
+        target: 'Performance Issue',
+      });
     }
-    
+
     // Network-related relationships
     if (lowerText.includes('network') && lowerText.includes('timeout')) {
       relationships.push({ source: 'Network', relation: 'causes', target: 'Timeout' });
     }
-    
+
     // Default relationships based on common patterns
     if (relationships.length === 0) {
       relationships.push({ source: 'User', relation: 'experiences', target: 'Issue' });
       relationships.push({ source: 'System', relation: 'generates', target: 'Event' });
     }
-    
+
     // Track relationship extraction analytics
     if (this.monitoring) {
       this.monitoring.logEvent('relationship_extraction', {
         text_length: text.length,
         relationships_found: relationships.length,
-        text_keywords: lowerText.split(/\s+/).length
+        text_keywords: lowerText.split(/\s+/).length,
       });
     }
-    
+
     return relationships;
   }
 
-  private extractSolutions(text: string): Array<{solution: string, confidence: number, reasoning: string}> {
-    const solutions: Array<{solution: string, confidence: number, reasoning: string}> = [];
+  private extractSolutions(
+    text: string,
+  ): Array<{ solution: string; confidence: number; reasoning: string }> {
+    const solutions: Array<{ solution: string; confidence: number; reasoning: string }> = [];
     const lowerText = text.toLowerCase();
-    
+
     // Common IT solutions based on text analysis
     if (lowerText.includes('slow') || lowerText.includes('performance')) {
       solutions.push({
         solution: 'Restart the application or service',
         confidence: 0.8,
-        reasoning: 'Performance issues often resolve with restart'
+        reasoning: 'Performance issues often resolve with restart',
       });
       solutions.push({
         solution: 'Clear browser cache and temporary files',
         confidence: 0.6,
-        reasoning: 'Cache issues can cause performance problems'
+        reasoning: 'Cache issues can cause performance problems',
       });
     }
-    
-    if (lowerText.includes('login') || lowerText.includes('access') || lowerText.includes('password')) {
+
+    if (
+      lowerText.includes('login') ||
+      lowerText.includes('access') ||
+      lowerText.includes('password')
+    ) {
       solutions.push({
         solution: 'Reset user password and verify permissions',
         confidence: 0.9,
-        reasoning: 'Access issues often relate to authentication'
+        reasoning: 'Access issues often relate to authentication',
       });
       solutions.push({
         solution: 'Check user account status and group memberships',
         confidence: 0.7,
-        reasoning: 'Account settings may affect access'
+        reasoning: 'Account settings may affect access',
       });
     }
-    
-    if (lowerText.includes('network') || lowerText.includes('connection') || lowerText.includes('timeout')) {
+
+    if (
+      lowerText.includes('network') ||
+      lowerText.includes('connection') ||
+      lowerText.includes('timeout')
+    ) {
       solutions.push({
         solution: 'Check network connectivity and firewall settings',
         confidence: 0.8,
-        reasoning: 'Network issues require connectivity verification'
+        reasoning: 'Network issues require connectivity verification',
       });
     }
-    
+
     if (lowerText.includes('error') || lowerText.includes('crash') || lowerText.includes('fail')) {
       solutions.push({
         solution: 'Review application logs for error details',
         confidence: 0.9,
-        reasoning: 'Error analysis starts with log examination'
+        reasoning: 'Error analysis starts with log examination',
       });
       solutions.push({
         solution: 'Update software to latest version',
         confidence: 0.6,
-        reasoning: 'Updates often fix known issues'
+        reasoning: 'Updates often fix known issues',
       });
     }
-    
+
     // Default solutions if no specific patterns found
     if (solutions.length === 0) {
       solutions.push({
         solution: 'Gather additional information about the issue',
         confidence: 0.5,
-        reasoning: 'More context needed for specific solution'
+        reasoning: 'More context needed for specific solution',
       });
       solutions.push({
         solution: 'Follow standard troubleshooting procedures',
         confidence: 0.6,
-        reasoning: 'Standard procedures cover common issues'
+        reasoning: 'Standard procedures cover common issues',
       });
     }
-    
+
     // Track solution extraction metrics
     if (this.monitoring) {
       this.monitoring.logEvent('solution_extraction', {
@@ -1569,11 +1590,11 @@ export class NovaCustomModels extends EventEmitter {
           performance_related: lowerText.includes('slow') || lowerText.includes('performance'),
           access_related: lowerText.includes('login') || lowerText.includes('access'),
           network_related: lowerText.includes('network') || lowerText.includes('connection'),
-          error_related: lowerText.includes('error') || lowerText.includes('crash')
-        }
+          error_related: lowerText.includes('error') || lowerText.includes('crash'),
+        },
       });
     }
-    
+
     return solutions;
   }
 
@@ -1587,45 +1608,54 @@ export class NovaCustomModels extends EventEmitter {
     return words.filter((word) => word.length > 4).slice(0, 5);
   }
 
-  private async findSimilarCases(text: string): Promise<Array<{id: string, title: string, similarity_score: number, matched_terms: string[]}>> {
+  private async findSimilarCases(
+    text: string,
+  ): Promise<
+    Array<{ id: string; title: string; similarity_score: number; matched_terms: string[] }>
+  > {
     // Analyze text to find similar historical cases
-    const textWords = text.toLowerCase().split(/\s+/).filter(word => word.length > 3);
+    const textWords = text
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((word) => word.length > 3);
     const searchTerms = textWords.slice(0, 10); // Use top 10 terms for similarity matching
-    
+
     const similarCases = Array.from(this.knowledgeBase.values())
       .map((kb) => {
         // Calculate similarity based on shared terms
         const kbWords = kb.title.toLowerCase().split(/\s+/);
-        const matchedTerms = searchTerms.filter(term => 
-          kbWords.some(word => word.includes(term) || term.includes(word))
+        const matchedTerms = searchTerms.filter((term) =>
+          kbWords.some((word) => word.includes(term) || term.includes(word)),
         );
-        
+
         const similarity = matchedTerms.length / Math.max(searchTerms.length, 1);
-        
+
         return {
           id: kb.id,
           title: kb.title,
           similarity_score: Math.min(0.6 + similarity * 0.4, 1.0), // Base score + similarity bonus
           matched_terms: matchedTerms,
           category_match: kb.category,
-          resolution_available: !!kb.resolution
+          resolution_available: !!kb.resolution,
         };
       })
-      .filter(case_ => case_.similarity_score > 0.3) // Filter low similarity cases
+      .filter((case_) => case_.similarity_score > 0.3) // Filter low similarity cases
       .sort((a, b) => b.similarity_score - a.similarity_score)
       .slice(0, 5); // Top 5 similar cases
-    
+
     // Track similarity analysis metrics
     if (this.monitoring) {
       this.monitoring.logEvent('similar_case_analysis', {
         text_length: text.length,
         search_terms_count: searchTerms.length,
         similar_cases_found: similarCases.length,
-        avg_similarity: similarCases.reduce((sum, c) => sum + c.similarity_score, 0) / Math.max(similarCases.length, 1),
-        has_high_similarity: similarCases.some(c => c.similarity_score > 0.8)
+        avg_similarity:
+          similarCases.reduce((sum, c) => sum + c.similarity_score, 0) /
+          Math.max(similarCases.length, 1),
+        has_high_similarity: similarCases.some((c) => c.similarity_score > 0.8),
       });
     }
-    
+
     return similarCases;
   }
 
@@ -1740,7 +1770,7 @@ export class NovaCustomModels extends EventEmitter {
       processing_time: Date.now() - (request.timestamp || Date.now()),
       client_type: request.client_id || 'unknown',
       request_priority: request.priority || 'normal',
-      source_system: request.metadata?.source_system || 'internal'
+      source_system: request.metadata?.source_system || 'internal',
     };
 
     const businessContext = {
@@ -1752,8 +1782,8 @@ export class NovaCustomModels extends EventEmitter {
         client_capabilities: request.client_capabilities || {},
         request_metrics: requestMetrics,
         business_priority: this.calculateBusinessPriority(request, prediction),
-        sla_requirements: this.determineSLARequirements(request, model.type)
-      }
+        sla_requirements: this.determineSLARequirements(request, model.type),
+      },
     };
 
     // Track business context generation
@@ -1763,7 +1793,7 @@ export class NovaCustomModels extends EventEmitter {
         client_id: request.client_id,
         processing_time: requestMetrics.processing_time,
         has_escalation: businessContext.escalation_needed,
-        automation_potential: businessContext.automation_opportunity
+        automation_potential: businessContext.automation_opportunity,
       });
     }
 
@@ -1785,23 +1815,41 @@ export class NovaCustomModels extends EventEmitter {
   private generateRecommendedActions(prediction: any, modelType: string): string[] {
     // Base actions on model type and prediction specifics
     const modelSpecificActions = {
-      ticket_classifier: ['Route to appropriate team', 'Apply category-specific SLA', 'Tag for tracking'],
-      incident_predictor: ['Monitor prediction indicators', 'Prepare mitigation plan', 'Alert stakeholders'],
-      knowledge_extractor: ['Update knowledge base', 'Create solution template', 'Validate extraction'],
+      ticket_classifier: [
+        'Route to appropriate team',
+        'Apply category-specific SLA',
+        'Tag for tracking',
+      ],
+      incident_predictor: [
+        'Monitor prediction indicators',
+        'Prepare mitigation plan',
+        'Alert stakeholders',
+      ],
+      knowledge_extractor: [
+        'Update knowledge base',
+        'Create solution template',
+        'Validate extraction',
+      ],
       auto_resolver: ['Execute resolution script', 'Monitor success rate', 'Log outcome'],
-      sentiment_analyzer: ['Adjust communication tone', 'Priority escalation if needed', 'Follow up plan'],
-      priority_scorer: ['Apply calculated priority', 'Adjust SLA timeline', 'Resource allocation']
+      sentiment_analyzer: [
+        'Adjust communication tone',
+        'Priority escalation if needed',
+        'Follow up plan',
+      ],
+      priority_scorer: ['Apply calculated priority', 'Adjust SLA timeline', 'Resource allocation'],
     };
 
-    const baseActions = modelSpecificActions[modelType] || ['Process according to standard procedure'];
-    
+    const baseActions = modelSpecificActions[modelType] || [
+      'Process according to standard procedure',
+    ];
+
     // Add prediction-specific actions
     if (prediction.can_auto_resolve) {
       return [
         ...baseActions,
         'Execute automated resolution',
         'Monitor outcome and success rate',
-        'Update knowledge base with results'
+        'Update knowledge base with results',
       ];
     }
     if (prediction.risk_level === 'high') {
@@ -1809,7 +1857,7 @@ export class NovaCustomModels extends EventEmitter {
         'Immediate escalation required',
         'Prepare incident response team',
         'Monitor closely and frequently',
-        ...baseActions
+        ...baseActions,
       ];
     }
     if (prediction.confidence && prediction.confidence < 0.6) {
@@ -1817,14 +1865,14 @@ export class NovaCustomModels extends EventEmitter {
         'Manual review recommended',
         'Gather additional context',
         ...baseActions,
-        'Update model training data'
+        'Update model training data',
       ];
     }
-    
+
     return [
       ...baseActions,
       'Monitor progress according to SLA',
-      'Document outcome for model improvement'
+      'Document outcome for model improvement',
     ];
   }
 
@@ -1837,21 +1885,21 @@ export class NovaCustomModels extends EventEmitter {
     const modelEscalationRules = {
       incident_predictor: prediction.risk_level === 'high' || prediction.probability > 0.8,
       ticket_classifier: prediction.priority === 'critical' || prediction.confidence < 0.5,
-      sentiment_analyzer: prediction.sentiment?.includes('very_negative') || prediction.sentiment_score < 0.3,
+      sentiment_analyzer:
+        prediction.sentiment?.includes('very_negative') || prediction.sentiment_score < 0.3,
       auto_resolver: !prediction.can_auto_resolve && prediction.complexity > 0.7,
       priority_scorer: prediction.calculated_priority === 'critical',
-      knowledge_extractor: prediction.confidence < 0.4 && prediction.category === 'unknown'
+      knowledge_extractor: prediction.confidence < 0.4 && prediction.category === 'unknown',
     };
 
     const modelSpecificEscalation = modelEscalationRules[modelType] || false;
-    
+
     // General escalation criteria
-    const generalEscalation = (
+    const generalEscalation =
       prediction.risk_level === 'high' ||
       prediction.priority === 'critical' ||
       prediction.sentiment?.includes('very_negative') ||
-      (prediction.confidence && prediction.confidence < 0.3)
-    );
+      (prediction.confidence && prediction.confidence < 0.3);
 
     const shouldEscalate = modelSpecificEscalation || generalEscalation;
 
@@ -1862,7 +1910,7 @@ export class NovaCustomModels extends EventEmitter {
         escalation_reason: modelSpecificEscalation ? 'model_specific' : 'general_criteria',
         prediction_confidence: prediction.confidence,
         risk_level: prediction.risk_level,
-        priority: prediction.priority
+        priority: prediction.priority,
       });
     }
 

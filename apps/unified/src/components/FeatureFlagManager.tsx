@@ -167,6 +167,41 @@ export default function FeatureFlagManager({ className = '' }: FeatureFlagManage
     setShowEditModal(true);
   };
 
+  const exportFeatureFlags = () => {
+    const exportData = featureFlags.map((flag) => ({
+      key: flag.key,
+      name: flag.name,
+      type: flag.type,
+      enabled: flag.enabled,
+      value: flag.value,
+      description: flag.description,
+      rollout_percentage: flag.rollout_percentage,
+    }));
+
+    const csvContent = [
+      Object.keys(exportData[0]).join(','),
+      ...exportData.map((row) =>
+        Object.values(row)
+          .map((val) => (typeof val === 'string' ? `"${val}"` : val))
+          .join(','),
+      ),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'feature-flags.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Handle feature flag overrides
+  const handleOverride = (flagKey: string, override: FeatureFlagOverride) => {
+    // Implementation for managing feature flag overrides
+    console.log('Override applied:', flagKey, override);
+  };
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'boolean':
@@ -237,6 +272,13 @@ export default function FeatureFlagManager({ className = '' }: FeatureFlagManage
           >
             <FunnelIcon className="mr-2 h-4 w-4" />
             Filters
+          </button>
+          <button
+            onClick={exportFeatureFlags}
+            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <ArrowDownTrayIcon className="mr-2 h-4 w-4" />
+            Export
           </button>
           {checkPermission('features:create') && (
             <button

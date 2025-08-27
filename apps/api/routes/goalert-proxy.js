@@ -496,9 +496,9 @@ router.get(
       // Filter by favorite status if requested
       let filteredPolicies = enrichedPolicies;
       if (favorite === 'true') {
-        filteredPolicies = enrichedPolicies.filter(policy => policy.userFavorite);
+        filteredPolicies = enrichedPolicies.filter((policy) => policy.userFavorite);
       } else if (favorite === 'false') {
-        filteredPolicies = enrichedPolicies.filter(policy => !policy.userFavorite);
+        filteredPolicies = enrichedPolicies.filter((policy) => !policy.userFavorite);
       }
 
       res.json({
@@ -622,9 +622,9 @@ router.get(
       // Filter by favorite status if requested
       let filteredSchedules = enrichedSchedules;
       if (favorite === 'true') {
-        filteredSchedules = enrichedSchedules.filter(schedule => schedule.userFavorite);
+        filteredSchedules = enrichedSchedules.filter((schedule) => schedule.userFavorite);
       } else if (favorite === 'false') {
-        filteredSchedules = enrichedSchedules.filter(schedule => !schedule.userFavorite);
+        filteredSchedules = enrichedSchedules.filter((schedule) => !schedule.userFavorite);
       }
 
       res.json({

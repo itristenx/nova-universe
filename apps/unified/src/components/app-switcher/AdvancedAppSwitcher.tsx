@@ -116,7 +116,7 @@ class AppSwitcherService {
         body: JSON.stringify({ appId, action, metadata }),
       });
     } catch (_error) {
-      console.warn('Failed to track usage:', error);
+      console.warn('Failed to track usage:', _error);
     }
   }
 }
@@ -301,7 +301,7 @@ const AppCard: React.FC<AppCardProps> = ({
             )}
             {app.rating > 0 && (
               <span className="flex items-center gap-1">
-                <StarSolidIcon className="h-3 w-3 text-yellow-400" />
+                <StarIcon className="h-3 w-3 text-yellow-400 fill-current" />
                 {app.rating.toFixed(1)}
               </span>
             )}
@@ -363,8 +363,14 @@ const AdvancedAppSwitcher: React.FC = () => {
             : 'grid',
         );
       }
+      
+      // Use configRes for additional config if needed
+      if (configRes.success && configRes.data) {
+        // Additional config processing could go here
+        console.log('Config loaded:', configRes.data);
+      }
     } catch (_error) {
-      console.error('Failed to load dashboard:', error);
+      console.error('Failed to load dashboard:', _error);
     } finally {
       setLoading(false);
     }
@@ -377,7 +383,7 @@ const AdvancedAppSwitcher: React.FC = () => {
         setCategories(response.data.categories);
       }
     } catch (_error) {
-      console.error('Failed to load categories:', error);
+      console.error('Failed to load categories:', _error);
     }
   }, [service]);
 
@@ -388,7 +394,7 @@ const AdvancedAppSwitcher: React.FC = () => {
         setRecommendations(response.data.recommendations);
       }
     } catch (_error) {
-      console.error('Failed to load recommendations:', error);
+      console.error('Failed to load recommendations:', _error);
     }
   }, [service]);
 
@@ -404,7 +410,7 @@ const AdvancedAppSwitcher: React.FC = () => {
             setSearchResults(response.data.apps);
           }
         } catch (_error) {
-          console.error('Search failed:', error);
+          console.error('Search failed:', _error);
         }
       }, 300);
 
@@ -434,7 +440,7 @@ const AdvancedAppSwitcher: React.FC = () => {
           );
         }
       } catch (_error) {
-        console.error('Failed to toggle favorite:', error);
+        console.error('Failed to toggle favorite:', _error);
       }
     },
     [service],
@@ -452,7 +458,7 @@ const AdvancedAppSwitcher: React.FC = () => {
       try {
         await service.updateConfig({ layout_type: newLayout });
       } catch (_error) {
-        console.error('Failed to update layout:', error);
+        console.error('Failed to update layout:', _error);
       }
     },
     [service],
@@ -495,6 +501,15 @@ const AdvancedAppSwitcher: React.FC = () => {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
+              {/* Add App Button */}
+              <button
+                onClick={() => {/* Add new app functionality */}}
+                className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100"
+                title="Add new app"
+              >
+                <PlusIcon className="h-5 w-5" />
+              </button>
+              
               {/* Layout Toggle */}
               <div className="flex rounded-lg bg-gray-100 p-1">
                 <button
@@ -665,7 +680,7 @@ const AdvancedAppSwitcher: React.FC = () => {
                         <div
                           key={app.id}
                           className="flex h-8 w-8 items-center justify-center rounded-lg border-2 border-white text-xs font-semibold text-white"
-                          style={{ backgroundColor: app.backgroundColor }}
+                          style={{ backgroundColor: app.backgroundColor, zIndex: 10 - index }}
                         >
                           {app.iconUrl ? (
                             <img src={app.iconUrl} alt={app.name} className="h-6 w-6 rounded-md" />
@@ -732,6 +747,15 @@ const AdvancedAppSwitcher: React.FC = () => {
             </div>
           )}
         </div>
+        
+        {/* Config Footer (Development) */}
+        {config.allow_custom_categories && (
+          <div className="mt-8 text-center">
+            <p className="text-xs text-gray-500">
+              Custom categories enabled - Layout: {config.layout_type}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

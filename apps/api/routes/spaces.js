@@ -6,12 +6,14 @@
 
 import express from 'express';
 import { logger } from '../logger.js';
-import { novaSpacesService } from '../lib/nova-spaces-service.js';
+import { NovaSpacesService } from '../lib/nova-spaces-service.js';
 
 const router = express.Router();
 
 // Initialize the enhanced spaces service
+const novaSpacesService = new NovaSpacesService();
 let serviceReady = false;
+
 novaSpacesService
   .initialize()
   .then(() => {
@@ -61,7 +63,7 @@ router.get('/buildings', ensureServiceReady, async (req, res) => {
  */
 router.get('/buildings/:id', ensureServiceReady, async (req, res) => {
   try {
-    const building = await novaSpacesService.getBuildingDetails(req.params.id);
+    const building = await novaSpacesService.getBuildingById(req.params.id);
     if (!building) {
       return res.status(404).json({
         success: false,
@@ -163,7 +165,7 @@ router.get('/', ensureServiceReady, async (req, res) => {
  */
 router.get('/:id', ensureServiceReady, async (req, res) => {
   try {
-    const space = await novaSpacesService.getSpaceDetails(req.params.id);
+    const space = await novaSpacesService.getSpaceById(req.params.id);
     if (!space) {
       return res.status(404).json({
         success: false,

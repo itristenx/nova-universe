@@ -11,7 +11,10 @@ const rateLimitStore = new Map();
  */
 export const createRateLimiter = (options = {}) => {
   const defaults = {
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || config?.rateLimiting?.windowMs || 15 * 60 * 1000,
+    windowMs:
+      parseInt(process.env.RATE_LIMIT_WINDOW_MS) ||
+      config?.rateLimiting?.windowMs ||
+      15 * 60 * 1000,
     max: parseInt(process.env.RATE_LIMIT_MAX) || config?.rateLimiting?.maxRequests || 100,
     message: {
       error: 'Too many requests from this IP, please try again later.',
@@ -22,7 +25,7 @@ export const createRateLimiter = (options = {}) => {
       // Skip rate limiting for health checks and in test environment
       if (req.path === '/api/health') return true;
       if (config?.environment === 'test') return true;
-      
+
       // Add rate limit headers for monitoring
       res.set('X-RateLimit-Applied', 'true');
       return false;

@@ -415,8 +415,13 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
     // Apply configuration options for ticket data processing
     const maxTickets = config?.maxTickets || 1000;
     const includeResolved = config?.includeResolved !== false;
-    const categoriesFilter = config?.categories || ['hardware', 'software', 'network', 'user_access'];
-    
+    const categoriesFilter = config?.categories || [
+      'hardware',
+      'software',
+      'network',
+      'user_access',
+    ];
+
     console.log(`Processing ticket data with config:`, {
       maxTickets,
       includeResolved,
@@ -432,7 +437,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
       priority: ['low', 'medium', 'high', 'critical'][i % 4],
       resolution: includeResolved ? `Resolution for ticket ${i}` : undefined,
       tags: [`tag${i % 10}`, `category_${i % 5}`],
-    })).filter(ticket => includeResolved || !ticket.resolution);
+    })).filter((ticket) => includeResolved || !ticket.resolution);
 
     // Process tickets for different training types
     if (dataset.type === 'supervised') {
@@ -487,7 +492,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
     const maxInteractions = config?.maxInteractions || 500;
     const includeSessionData = config?.includeSessionData !== false;
     const minimumLength = config?.minimumLength || 10;
-    
+
     console.log(`Processing user interaction data for dataset ${dataset.id} with config:`, {
       maxInteractions,
       includeSessionData,
@@ -508,7 +513,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
     const maxArticles = config?.maxArticles || 200;
     const includeMetadata = config?.includeMetadata !== false;
     const qualityThreshold = config?.qualityThreshold || 0.7;
-    
+
     console.log(`Processing knowledge base data for dataset ${dataset.id} with config:`, {
       maxArticles,
       includeMetadata,
@@ -1004,9 +1009,9 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
   async getAnalytics(timeRange: string = '30d'): Promise<HarmonyAnalytics> {
     // Parse time range for filtering data
     const daysBack = parseInt(timeRange.replace('d', '')) || 30;
-    
+
     console.log(`Generating analytics for timeRange: ${timeRange} (${daysBack} days)`);
-    
+
     // Get all data (in real implementation, would filter by timeRange from database)
     const jobs = Array.from(this.trainingJobs.values());
     const evaluations = Array.from(this.evaluations.values());

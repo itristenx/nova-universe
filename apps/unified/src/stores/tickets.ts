@@ -6,6 +6,7 @@ import {
   type UpdateTicketData,
 } from '@services/tickets';
 import type { Ticket, PaginatedResponse, SortOption } from '@/types';
+import toast from 'react-hot-toast';
 
 interface TicketState {
   // State
@@ -107,10 +108,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         error: null,
       });
     } catch (_error) {
+      console.error('Failed to fetch tickets:', _error);
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to load tickets',
+        error: _error instanceof Error ? _error.message : 'Failed to fetch tickets',
       });
+      toast.error('Failed to load tickets');
     }
   },
 
@@ -126,11 +129,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         error: null,
       });
     } catch (_error) {
+      console.error('Failed to fetch ticket details:', _error);
       set({
         currentTicket: null,
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to load ticket',
+        error: _error instanceof Error ? _error.message : 'Failed to fetch ticket details',
       });
+      toast.error('Failed to load ticket details');
     }
   },
 
@@ -154,11 +159,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       return ticket;
     } catch (_error) {
+      console.error('Failed to create ticket:', _error);
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to create ticket',
+        error: _error instanceof Error ? _error.message : 'Failed to create ticket',
       });
-      throw error;
+      toast.error('Failed to create ticket');
+      throw _error;
     }
   },
 
@@ -178,11 +185,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       return updatedTicket;
     } catch (_error) {
+      console.error('Failed to update ticket:', _error);
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to update ticket',
+        error: _error instanceof Error ? _error.message : 'Failed to update ticket',
       });
-      throw error;
+      toast.error('Failed to update ticket');
+      throw _error;
     }
   },
 
@@ -205,11 +214,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         error: null,
       }));
     } catch (_error) {
+      console.error('Failed to delete ticket:', _error);
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to delete ticket',
+        error: _error instanceof Error ? _error.message : 'Failed to delete ticket',
       });
-      throw error;
+      toast.error('Failed to delete ticket');
+      throw _error;
     }
   },
 
@@ -229,11 +240,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         error: null,
       });
     } catch (_error) {
+      console.error('Failed to update tickets:', _error);
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to update tickets',
+        error: _error instanceof Error ? _error.message : 'Failed to update tickets',
       });
-      throw error;
+      toast.error('Failed to update tickets');
+      throw _error;
     }
   },
 
@@ -255,11 +268,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         error: null,
       }));
     } catch (_error) {
+      console.error('Failed to delete tickets:', _error);
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to delete tickets',
+        error: _error instanceof Error ? _error.message : 'Failed to delete tickets',
       });
-      throw error;
+      toast.error('Failed to delete tickets');
+      throw _error;
     }
   },
 
@@ -307,7 +322,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const stats = await ticketService.getTicketStats(period);
       set({ stats });
     } catch (_error) {
-      console.error('Failed to load ticket stats:', error);
+      console.error('Failed to load ticket stats:', _error);
+      set({
+        error: _error instanceof Error ? _error.message : 'Failed to load ticket statistics',
+      });
+      toast.error('Failed to load ticket statistics');
     }
   },
 
@@ -331,10 +350,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         error: null,
       });
     } catch (_error) {
+      console.error('Failed to search tickets:', _error);
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to search tickets',
+        error: _error instanceof Error ? _error.message : 'Failed to search tickets',
       });
+      toast.error('Failed to search tickets');
     }
   },
 

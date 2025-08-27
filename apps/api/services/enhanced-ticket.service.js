@@ -1,4 +1,4 @@
-import { prisma } from '../db/prisma.js';
+import db from '../db.js';
 import { logger } from '../logger.js';
 import { generateTypedTicketId } from '../utils/dbUtils.js';
 import { SLAService } from './sla.service.js';
@@ -48,7 +48,7 @@ export class TicketService {
 
       // Execute queries
       const [tickets, totalCount] = await Promise.all([
-        prisma.enhancedSupportTicket.findMany({
+        db.enhancedSupportTicket.findMany({
           where: whereClause,
           include: {
             requester: {
@@ -78,7 +78,7 @@ export class TicketService {
           skip,
           take: limit,
         }),
-        prisma.enhancedSupportTicket.count({ where: whereClause }),
+        db.enhancedSupportTicket.count({ where: whereClause }),
       ]);
 
       // Calculate pagination
@@ -97,7 +97,7 @@ export class TicketService {
           itemsPerPage: limit,
         },
         totalFiltered: totalCount,
-        totalUnfiltered: await prisma.enhancedSupportTicket.count(),
+        totalUnfiltered: await db.enhancedSupportTicket.count(),
         appliedFilters: Object.keys(filterOptions).filter(
           (key) => filterOptions[key] !== undefined,
         ),
@@ -115,7 +115,7 @@ export class TicketService {
     try {
       const includeClause = this.buildIncludeClause(include);
 
-      const ticket = await prisma.enhancedSupportTicket.findFirst({
+      const ticket = await db.enhancedSupportTicket.findFirst({
         where: {
           id: ticketId,
           ...(await this.getAccessFilter(user)),
@@ -139,7 +139,7 @@ export class TicketService {
    */
   static async createTicket(ticketData, user) {
     try {
-      const transaction = await prisma.$transaction(async (tx) => {
+      const transaction = await db.$transaction(async (tx) => {
         // Generate ticket number
         const ticketNumber = await generateTypedTicketId(ticketData.type || 'REQUEST');
 
@@ -240,7 +240,7 @@ export class TicketService {
    */
   static async updateTicket(ticketId, updateData, user) {
     try {
-      const transaction = await prisma.$transaction(async (tx) => {
+      const transaction = await db.$transaction(async (tx) => {
         // Get current ticket
         const currentTicket = await tx.enhancedSupportTicket.findUnique({
           where: { id: ticketId },
@@ -329,7 +329,7 @@ export class TicketService {
    */
   static async assignTicket(ticketId, assignmentData) {
     try {
-      const ticket = await prisma.enhancedSupportTicket.update({
+      const ticket = await db.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
           assignedToUserId: assignmentData.assignedToUserId,
@@ -367,7 +367,7 @@ export class TicketService {
    */
   static async addComment(ticketId, commentData) {
     try {
-      const transaction = await prisma.$transaction(async (tx) => {
+      const transaction = await db.$transaction(async (tx) => {
         // Create comment
         const comment = await tx.ticketComment.create({
           data: {
@@ -418,7 +418,7 @@ export class TicketService {
    */
   static async addWatcher(ticketId, userId, watchType = 'manual', addedBy = null) {
     try {
-      await prisma.ticketWatcher.upsert({
+      await db.ticketWatcher.upsert({
         where: {
           ticketId_userId: {
             ticketId,
@@ -449,7 +449,7 @@ export class TicketService {
    */
   static async escalateTicket(ticketId, escalationData) {
     try {
-      const transaction = await prisma.$transaction(async (tx) => {
+      const transaction = await db.$transaction(async (tx) => {
         // Get current escalation level
         const existingEscalations = await tx.ticketEscalation.findMany({
           where: { ticketId, status: 'ACTIVE' },
@@ -507,7 +507,7 @@ export class TicketService {
     try {
       const resolvedAt = new Date();
 
-      const ticket = await prisma.enhancedSupportTicket.update({
+      const ticket = await db.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
           state: 'RESOLVED',
@@ -548,7 +548,7 @@ export class TicketService {
     try {
       const closedAt = new Date();
 
-      const ticket = await prisma.enhancedSupportTicket.update({
+      const ticket = await db.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
           state: 'CLOSED',
@@ -585,7 +585,7 @@ export class TicketService {
    */
   static async reopenTicket(ticketId, reopenData) {
     try {
-      const ticket = await prisma.enhancedSupportTicket.update({
+      const ticket = await db.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
           state: 'REOPENED',
@@ -619,7 +619,7 @@ export class TicketService {
    */
   static async linkTickets(sourceTicketId, targetTicketId, relationshipType, createdBy) {
     try {
-      const link = await prisma.ticketLink.create({
+      const link = await db.ticketLink.create({
         data: {
           sourceTicketId,
           targetTicketId,
@@ -645,7 +645,7 @@ export class TicketService {
       };
 
       if (reciprocalTypes[relationshipType.toUpperCase()]) {
-        await prisma.ticketLink.create({
+        await db.ticketLink.create({
           data: {
             sourceTicketId: targetTicketId,
             targetTicketId: sourceTicketId,
@@ -667,7 +667,7 @@ export class TicketService {
    */
   static async addTimeEntry(ticketId, timeData) {
     try {
-      const timeEntry = await prisma.ticketTimeEntry.create({
+      const timeEntry = await db.ticketTimeEntry.create({
         data: {
           ticketId,
           userId: timeData.userId,
@@ -730,17 +730,17 @@ export class TicketService {
 
       // Basic counts
       const [total, open, resolved, closed, breached] = await Promise.all([
-        prisma.enhancedSupportTicket.count({ where: whereClause }),
-        prisma.enhancedSupportTicket.count({
+        db.enhancedSupportTicket.count({ where: whereClause }),
+        db.enhancedSupportTicket.count({
           where: { ...whereClause, state: { in: ['NEW', 'ASSIGNED', 'IN_PROGRESS', 'PENDING'] } },
         }),
-        prisma.enhancedSupportTicket.count({
+        db.enhancedSupportTicket.count({
           where: { ...whereClause, state: 'RESOLVED' },
         }),
-        prisma.enhancedSupportTicket.count({
+        db.enhancedSupportTicket.count({
           where: { ...whereClause, state: 'CLOSED' },
         }),
-        prisma.enhancedSupportTicket.count({
+        db.enhancedSupportTicket.count({
           where: {
             ...whereClause,
             OR: [{ responseTimeBreached: true }, { resolutionTimeBreached: true }],
@@ -839,7 +839,7 @@ export class TicketService {
    */
   static async getTicketTemplates(user) {
     try {
-      const templates = await prisma.ticketTemplate.findMany({
+      const templates = await db.ticketTemplate.findMany({
         where: {
           isActive: true,
           OR: [{ isPublic: true }, { createdBy: user.id }],
@@ -890,7 +890,7 @@ export class TicketService {
    */
   static async createFromTemplate(templateId, overrides, user) {
     try {
-      const template = await prisma.ticketTemplate.findUnique({
+      const template = await db.ticketTemplate.findUnique({
         where: { id: templateId },
         include: {
           workflow: true,
@@ -962,7 +962,7 @@ export class TicketService {
       const createdTicket = await this.createTicket(ticketData, user);
 
       // Update template usage count
-      await prisma.ticketTemplate.update({
+      await db.ticketTemplate.update({
         where: { id: templateId },
         data: { usageCount: { increment: 1 } },
       });
@@ -1302,7 +1302,7 @@ export class TicketService {
     if (!userId) return false;
 
     try {
-      const userExtended = await prisma.userExtended.findUnique({
+      const userExtended = await db.userExtended.findUnique({
         where: { userId },
         select: { vipLevel: true },
       });

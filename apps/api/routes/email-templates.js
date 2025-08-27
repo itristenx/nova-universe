@@ -1,9 +1,9 @@
 import express from 'express';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateJWT as authenticateToken } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validation.js';
 import { body, param } from 'express-validator';
 import EmailTemplateService from '../services/email-template.service.js';
-import logger from '../logger.js';
+import { logger } from '../logger.js';
 
 const router = express.Router();
 

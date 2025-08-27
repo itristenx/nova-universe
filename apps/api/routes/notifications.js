@@ -9,7 +9,7 @@ import express from 'express';
 import { body, query, param, validationResult } from 'express-validator';
 import { authenticateJWT, requirePermission } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
-import { novaNotificationPlatform } from '/packages/integrations/notification/nova-notification-platform.js';
+// import { novaNotificationPlatform } from '../../../packages/integrations/notification/nova-notification-platform.js';
 import { logger } from '../logger.js';
 import db from '../db.js';
 
@@ -823,8 +823,15 @@ router.get(
         timeline: [],
       };
       try {
-        const baseWhere = 'created_at BETWEEN $1 AND $2';
+        let baseWhere = 'created_at BETWEEN $1 AND $2';
         const params = [start.toISOString(), end.toISOString()];
+
+        // Add module filter if provided
+        if (moduleFilter) {
+          baseWhere += ' AND module = $3';
+          params.push(moduleFilter);
+        }
+
         const totalRes = await db.query(
           `SELECT COUNT(*) AS cnt FROM notifications WHERE ${baseWhere}`,
           params,

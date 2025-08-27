@@ -374,14 +374,14 @@ export const MLDashboard: React.FC = () => {
       ]);
     } catch (error) {
       console.error('Failed to load ML data:', error);
-      
+
       // Enhanced error handling for ML dashboard
       if (error instanceof Error) {
         console.error('ML Dashboard error details:', {
           message: error.message,
           stack: error.stack,
           timestamp: new Date().toISOString(),
-          component: 'MLDashboard'
+          component: 'MLDashboard',
         });
       }
     } finally {

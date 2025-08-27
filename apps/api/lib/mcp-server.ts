@@ -325,7 +325,7 @@ export class NovaMCPServer {
         url: req.url,
         method: req.method,
         userAgent: req.get('User-Agent'),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       // Call next if headers aren't sent yet, for additional error handling
@@ -626,11 +626,11 @@ export class NovaMCPServer {
       tools: { listChanged: true },
       resources: { subscribe: false, listChanged: true },
     };
-    
+
     logger.info('MCP client initialized:', {
       clientId: client.id,
       capabilities: client.capabilities,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     const serverInfo = {
@@ -737,9 +737,12 @@ export class NovaMCPServer {
 
   private async handleResourcesList(message: MCPMessage, client: MCPClient): Promise<MCPMessage> {
     // Filter resources based on client permissions and capabilities
-    const allowedResources = Array.from(this.resources.values()).filter(resource => {
+    const allowedResources = Array.from(this.resources.values()).filter((resource) => {
       // Check if client has permission to access this resource
-      if (client.capabilities?.resources?.subscribe === false && resource.name.includes('realtime')) {
+      if (
+        client.capabilities?.resources?.subscribe === false &&
+        resource.name.includes('realtime')
+      ) {
         return false; // Client doesn't support realtime resources
       }
       return true;
@@ -748,7 +751,7 @@ export class NovaMCPServer {
     logger.debug('Resources filtered for client:', {
       clientId: client.id,
       totalResources: this.resources.size,
-      allowedResources: allowedResources.length
+      allowedResources: allowedResources.length,
     });
 
     return {
@@ -767,7 +770,7 @@ export class NovaMCPServer {
     logger.info('Resource read request:', {
       clientId: client.id,
       uri: uri,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Implement client-specific access control
@@ -913,12 +916,12 @@ export class NovaMCPServer {
     const clientIp = req.socket.remoteAddress || req.connection.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
     const origin = req.headers.origin || 'unknown';
-    
+
     logger.info('WebSocket connection established', {
       clientIp,
       userAgent,
       origin,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     ws.on('message', async (data: string) => {
@@ -980,12 +983,12 @@ export class NovaMCPServer {
   ): Promise<MCPMessage> {
     // WebSocket-specific MCP message processing with connection state tracking
     const connectionId = (ws as any).connectionId || 'unknown';
-    
+
     logger.debug(`Processing WebSocket MCP message: ${message.method}`, {
       connectionId,
       messageId: message.id,
       readyState: ws.readyState,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Check WebSocket connection state

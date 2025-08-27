@@ -80,13 +80,14 @@ export function SmartKnowledgeBase({ initialQuery = '', contextData }: SmartKnow
           category: category !== 'all' ? category : undefined,
           sortBy,
           limit: 20,
+          // TODO: Add contextData support to knowledge service for personalized results
         });
 
         setArticles(searchResults.articles);
         setSuggestions(searchResults.suggestions);
         setAiInsights(searchResults.insights);
       } catch (_error) {
-        console.error('Knowledge search failed:', error);
+        console.error('Knowledge search failed:', _error);
         setArticles([]);
         setSuggestions([]);
         setAiInsights([]);
@@ -94,7 +95,7 @@ export function SmartKnowledgeBase({ initialQuery = '', contextData }: SmartKnow
         setIsLoading(false);
       }
     },
-    [sortBy],
+    [sortBy, contextData],
   );
 
   useEffect(() => {
@@ -123,7 +124,7 @@ export function SmartKnowledgeBase({ initialQuery = '', contextData }: SmartKnow
         }),
       );
     } catch (_error) {
-      console.error('Failed to rate article:', error);
+      console.error('Failed to rate article:', _error);
     }
   };
 
@@ -144,7 +145,7 @@ export function SmartKnowledgeBase({ initialQuery = '', contextData }: SmartKnow
         }),
       );
     } catch (_error) {
-      console.error('Failed to track article view:', error);
+      console.error('Failed to track article view:', _error);
     }
   };
 
@@ -153,7 +154,7 @@ export function SmartKnowledgeBase({ initialQuery = '', contextData }: SmartKnow
       await knowledgeService.bookmarkArticle(articleId);
       // Could add UI feedback here
     } catch (_error) {
-      console.error('Failed to bookmark article:', error);
+      console.error('Failed to bookmark article:', _error);
     }
   };
 
@@ -162,7 +163,7 @@ export function SmartKnowledgeBase({ initialQuery = '', contextData }: SmartKnow
       await knowledgeService.shareArticle(articleId, { method: 'copy-link' });
       // Could add UI feedback here (toast notification)
     } catch (_error) {
-      console.error('Failed to share article:', error);
+      console.error('Failed to share article:', _error);
     }
   };
 
@@ -300,6 +301,9 @@ export function SmartKnowledgeBase({ initialQuery = '', contextData }: SmartKnow
                     >
                       {article.title}
                     </h3>
+                    {article.views > 100 && (
+                      <ArrowTrendingUpIcon className="h-4 w-4 text-orange-500" title={t('knowledge:article.trending')} />
+                    )}
                     <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                       {article.relevanceScore}% {t('knowledge:article.relevant')}
                     </span>

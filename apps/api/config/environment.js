@@ -2,14 +2,19 @@ import dotenv from 'dotenv';
 import { validateDatabaseConfig } from './database.js';
 dotenv.config();
 
-const required = ['SESSION_SECRET', 'JWT_SECRET', 'KIOSK_TOKEN', 'SCIM_TOKEN'];
+const required = ['SESSION_SECRET', 'JWT_SECRET'];
 
-// Database configuration
-if (!process.env.DATABASE_URL) {
+// Only require these in production
+if (process.env.NODE_ENV === 'production') {
+  required.push('KIOSK_TOKEN', 'SCIM_TOKEN');
+}
+
+// Database configuration - only require in production
+if (!process.env.DATABASE_URL && process.env.NODE_ENV === 'production') {
   required.push('POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB');
 }
 
-if (process.env.MONGO_ENABLED === 'true') {
+if (process.env.MONGO_ENABLED === 'true' && process.env.NODE_ENV === 'production') {
   required.push('MONGO_HOST', 'MONGO_DB');
 }
 
@@ -19,8 +24,36 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const missing = required.filter((k) => !process.env[k]);
-if (missing.length && process.env.NODE_ENV !== 'development') {
+if (missing.length && process.env.NODE_ENV === 'production') {
   throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+}
+
+// In development, set defaults for missing values
+if (process.env.NODE_ENV !== 'production') {
+  if (!process.env.SESSION_SECRET) {
+    process.env.SESSION_SECRET = 'dev-session-secret-change-in-production';
+  }
+  if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = 'dev-jwt-secret-change-in-production';
+  }
+  if (!process.env.KIOSK_TOKEN) {
+    process.env.KIOSK_TOKEN = 'dev-kiosk-token';
+  }
+  if (!process.env.SCIM_TOKEN) {
+    process.env.SCIM_TOKEN = 'dev-scim-token';
+  }
+  if (!process.env.POSTGRES_HOST) {
+    process.env.POSTGRES_HOST = 'localhost';
+  }
+  if (!process.env.POSTGRES_USER) {
+    process.env.POSTGRES_USER = 'nova_user';
+  }
+  if (!process.env.POSTGRES_PASSWORD) {
+    process.env.POSTGRES_PASSWORD = 'nova_password';
+  }
+  if (!process.env.POSTGRES_DB) {
+    process.env.POSTGRES_DB = 'nova_universe';
+  }
 }
 
 const config = {

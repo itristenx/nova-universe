@@ -28,9 +28,7 @@ export default {
       testTimeout: 60000,
       maxWorkers: 1,
       preset: undefined,
-      transformIgnorePatterns: [
-        'node_modules/(?!(.*\\.mjs$))',
-      ],
+      transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))'],
     },
     {
       displayName: 'react',

@@ -121,14 +121,14 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             isLoading: false,
-            error: error instanceof Error ? error.message : 'Login failed',
+            error: _error instanceof Error ? _error.message : 'Login failed',
           });
-          throw error;
+          throw _error;
         }
       },
 
       // Helix-specific login action
-      loginWithHelix: async (data) => {
+      loginWithHelix: async (data: HelixAuthData) => {
         set({ isLoading: true, error: null });
 
         try {
@@ -155,9 +155,9 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             isLoading: false,
-            error: error instanceof Error ? error.message : 'Login failed',
+            error: _error instanceof Error ? _error.message : 'Login failed',
           });
-          throw error;
+          throw _error;
         }
       },
 
@@ -174,9 +174,9 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             isLoading: false,
-            error: error instanceof Error ? error.message : 'Registration failed',
+            error: _error instanceof Error ? _error.message : 'Registration failed',
           });
-          throw error;
+          throw _error;
         }
       },
 
@@ -188,7 +188,7 @@ export const useAuthStore = create<AuthState>()(
           await helixAuthService.logout();
         } catch (_error) {
           // Continue with logout even if API call fails
-          console.warn('Logout API call failed:', error);
+          console.warn('Logout API call failed:', _error);
         } finally {
           set({
             user: null,
@@ -218,7 +218,7 @@ export const useAuthStore = create<AuthState>()(
           // Map the user data if it's in Helix format
           let user: User;
           if (userData && typeof userData === 'object' && 'id' in userData) {
-            user = mapHelixUserToUser(userData as any);
+            user = mapHelixUserToUser(userData as HelixUser);
           } else {
             throw new Error('Invalid user data format');
           }
@@ -234,7 +234,7 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             isAuthenticated: false,
             isLoading: false,
-            error: error instanceof Error ? error.message : 'Failed to refresh user data',
+            error: _error instanceof Error ? _error.message : 'Failed to refresh user data',
           });
         }
       },
@@ -253,9 +253,9 @@ export const useAuthStore = create<AuthState>()(
         } catch (_error) {
           set({
             isLoading: false,
-            error: error instanceof Error ? error.message : 'Failed to update profile',
+            error: _error instanceof Error ? _error.message : 'Failed to update profile',
           });
-          throw error;
+          throw _error;
         }
       },
 

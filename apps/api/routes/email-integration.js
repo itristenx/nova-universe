@@ -1,12 +1,10 @@
 import express from 'express';
 import { EmailIntegrationService } from '../services/email-integration.service.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateJWT as authenticateToken } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validation.js';
 import { body, param, query } from 'express-validator';
-import logger from '../logger.js';
-import { PrismaClient } from '/prisma/generated/core/index.js';
-
-const prisma = new PrismaClient();
+import { logger } from '../logger.js';
+import db from '../db.js';
 
 const router = express.Router();
 const emailService = new EmailIntegrationService();
@@ -21,7 +19,7 @@ emailService.initialize().catch((error) => {
  */
 router.get('/accounts', authenticateToken, async (req, res) => {
   try {
-    const accounts = await prisma.emailAccount.findMany({
+    const accounts = await db.emailAccount.findMany({
       select: {
         id: true,
         address: true,
@@ -130,7 +128,7 @@ router.put(
       const { id } = req.params;
       const updateData = req.body;
 
-      const account = await prisma.emailAccount.update({
+      const account = await db.emailAccount.update({
         where: { id },
         data: updateData,
       });
@@ -169,7 +167,7 @@ router.delete(
     try {
       const { id } = req.params;
 
-      await prisma.emailAccount.delete({
+      await db.emailAccount.delete({
         where: { id },
       });
 
@@ -202,7 +200,7 @@ router.post(
     try {
       const { id } = req.params;
 
-      const account = await prisma.emailAccount.findUnique({
+      const account = await db.emailAccount.findUnique({
         where: { id },
       });
 
@@ -308,7 +306,7 @@ router.get(
         });
       } else {
         // Get stats for all accounts
-        const accounts = await prisma.emailAccount.findMany({
+        const accounts = await db.emailAccount.findMany({
           where: { isActive: true },
           select: { id: true, address: true },
         });
@@ -373,7 +371,7 @@ router.post('/process', authenticateToken, async (req, res) => {
  */
 router.get('/status', authenticateToken, async (req, res) => {
   try {
-    const accounts = await prisma.emailAccount.findMany({
+    const accounts = await db.emailAccount.findMany({
       where: { isActive: true },
       select: {
         id: true,

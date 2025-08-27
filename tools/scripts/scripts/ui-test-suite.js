@@ -69,7 +69,7 @@ async function runUITests() {
       const health = await healthResponse.json();
       console.log('✅ API Health Check:', health);
     } catch (_error) {
-      throw new Error(`API connectivity failed: ${error.message}`);
+      throw new Error(`API connectivity failed: ${_error.message}`);
     }
 
     // Test 4: Manual Login API Test
@@ -94,7 +94,7 @@ async function runUITests() {
       // Store token for subsequent tests
       localStorage.setItem('auth_token', loginResult.token);
     } catch (_error) {
-      throw new Error(`Login API test failed: ${error.message}`);
+      throw new Error(`Login API test failed: ${_error.message}`);
     }
 
     // Test 5: Submit Login Form
@@ -110,7 +110,7 @@ async function runUITests() {
       const currentUrl = window.location.pathname;
       console.log('✅ Form submitted, current path:', currentUrl);
     } catch (_error) {
-      console.warn('⚠️ Form submission test had issues:', error.message);
+      console.warn('⚠️ Form submission test had issues:', _error.message);
     }
 
     // Test 6: Check Authentication State
@@ -134,7 +134,7 @@ async function runUITests() {
           console.warn('⚠️ Profile API failed');
         }
       } catch (_error) {
-        console.warn('⚠️ Profile test failed:', error.message);
+        console.warn('⚠️ Profile test failed:', _error.message);
       }
     } else {
       console.warn('⚠️ No auth token found in localStorage');
@@ -176,7 +176,7 @@ async function runUITests() {
     console.log('3. Look for JavaScript errors in Console');
     console.log('4. Verify the page redirects after successful login');
   } catch (_error) {
-    console.error('❌ UI Test Failed:', error.message);
+    console.error('❌ UI Test Failed:', _error.message);
     console.log('\n🔍 Debugging Info:');
     console.log('- Current URL:', window.location.href);
     console.log('- Form elements:', {

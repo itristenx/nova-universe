@@ -86,7 +86,7 @@ export default function BookingPage() {
   const [space, setSpace] = useState<APISpace | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [currentStep, setCurrentStep] = useState(1) // Unused
+  const [currentStep, setCurrentStep] = useState(1); // Multi-step booking process
   const [formData, setFormData] = useState<BookingFormData>({
     startDate: '',
     startTime: '',
@@ -118,7 +118,7 @@ export default function BookingPage() {
         // Fetch space details from API
         const spaceData = await spaceService.getSpace(id);
         setSpace(spaceData);
-      } catch (_error) {
+      } catch (error) {
         console.error('Failed to fetch space details:', error);
         toast.error('Failed to load space details');
         navigate('/spaces');
@@ -144,16 +144,35 @@ export default function BookingPage() {
     return Math.max(0, diffMs / (1000 * 60 * 60)); // hours
   };
 
-  /*
-  const calculateTotalCost = () => { // Unused function
-    // Note: hourlyRate not available in API Space type
-    return 0
-    // if (!space?.hourlyRate) return 0
-    // const duration = calculateDuration()
-    // const setupCleanupTime = (formData.setupTime + formData.cleanupTime) / 60 // convert minutes to hours
-    // return (duration + setupCleanupTime) * space.hourlyRate
-  }
-  */
+  const calculateTotalCost = () => {
+    // Calculate cost based on duration and room rate
+    const hourlyRate = (space as any)?.hourlyRate;
+    if (!hourlyRate) return 0;
+    const duration = calculateDuration();
+    const setupCleanupTime = (formData.setupTime + formData.cleanupTime) / 60; // convert minutes to hours
+    return Math.round((duration + setupCleanupTime) * hourlyRate);
+  };
+
+  const nextStep = () => {
+    setCurrentStep((prev) => Math.min(prev + 1, 3));
+  };
+
+  const prevStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 1:
+        return 'Basic Details';
+      case 2:
+        return 'Additional Requirements';
+      case 3:
+        return 'Review & Confirm';
+      default:
+        return 'Booking';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,7 +237,7 @@ export default function BookingPage() {
   }
 
   const duration = calculateDuration();
-  // const totalCost = calculateTotalCost() // Unused
+  const totalCost = calculateTotalCost();
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">

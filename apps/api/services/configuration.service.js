@@ -6,7 +6,7 @@
  * 3. Built-in defaults (fallback)
  */
 
-import { PrismaClient } from '/prisma/generated/core/index.js';
+import { PrismaClient } from '../../../prisma/generated/core/index.js';
 import { logger } from '../logger.js';
 
 // Initialize Prisma client

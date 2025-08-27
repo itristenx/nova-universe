@@ -49,21 +49,24 @@ Before running the tests, ensure you have:
 ## 📦 Installation
 
 1. **Install dependencies:**
+
    ```bash
    cd apps/unified
    pnpm install
    ```
 
 2. **Install Playwright browsers:**
+
    ```bash
    npx playwright install
    ```
 
 3. **Setup test environment:**
+
    ```bash
    # Copy environment configuration
    cp tests/env.test .env.test
-   
+
    # Edit environment variables as needed
    nano .env.test
    ```
@@ -73,16 +76,18 @@ Before running the tests, ensure you have:
 The testing suite requires a test database. You can use the existing Docker setup:
 
 1. **Start test database services:**
+
    ```bash
    # From project root
    docker-compose up -d postgres mongodb
    ```
 
 2. **Create test database:**
+
    ```bash
    # Connect to PostgreSQL
    docker exec -it nova-postgres psql -U nova_admin -d nova_universe
-   
+
    # Create test database
    CREATE DATABASE nova_universe_test;
    ```
@@ -99,6 +104,7 @@ The testing suite requires a test database. You can use the existing Docker setu
 ### Quick Start
 
 Run all tests:
+
 ```bash
 cd apps/unified
 ./scripts/run-tests.sh
@@ -127,21 +133,25 @@ Options:
 ### Examples
 
 **Run authentication tests in Firefox:**
+
 ```bash
 ./scripts/run-tests.sh -t auth -b firefox
 ```
 
 **Run ticket tests with 2 workers, verbose output:**
+
 ```bash
 ./scripts/run-tests.sh -t tickets -w 2 -v
 ```
 
 **Run API tests sequentially:**
+
 ```bash
 ./scripts/run-tests.sh -t api --sequential
 ```
 
 **Run E2E tests in headed mode:**
+
 ```bash
 ./scripts/run-tests.sh -t e2e -h false
 ```
@@ -269,6 +279,7 @@ After running tests, reports are generated in `test-results/`:
 - **Traces**: Detailed execution traces
 
 View the HTML report:
+
 ```bash
 npx playwright show-report test-results/html
 ```
@@ -278,6 +289,7 @@ npx playwright show-report test-results/html
 ### Debug Mode
 
 Run tests in debug mode:
+
 ```bash
 npx playwright test --debug
 ```
@@ -285,6 +297,7 @@ npx playwright test --debug
 ### UI Mode
 
 Run tests with Playwright UI:
+
 ```bash
 npx playwright test --ui
 ```
@@ -292,6 +305,7 @@ npx playwright test --ui
 ### Verbose Output
 
 Enable detailed logging:
+
 ```bash
 ./scripts/run-tests.sh -v
 ```
@@ -299,6 +313,7 @@ Enable detailed logging:
 ### Specific Test
 
 Run a specific test:
+
 ```bash
 npx playwright test -g "should login successfully"
 ```
@@ -331,6 +346,7 @@ jobs:
 ### Local CI Simulation
 
 Test CI locally:
+
 ```bash
 # Install dependencies
 pnpm install
@@ -352,6 +368,7 @@ The suite tests across multiple browsers:
 - **Mobile**: Responsive design testing
 
 Run cross-browser tests:
+
 ```bash
 npx playwright test --project=firefox
 npx playwright test --project=webkit
@@ -363,34 +380,38 @@ npx playwright test --project="Mobile Chrome"
 ### Common Issues
 
 1. **Database Connection Failed**
+
    ```bash
    # Check Docker services
    docker-compose ps
-   
+
    # Restart database
    docker-compose restart postgres
    ```
 
 2. **API Connection Failed**
+
    ```bash
    # Check API service
    curl http://localhost:3000/health
-   
+
    # Start API service
    cd apps/api && npm start
    ```
 
 3. **Playwright Browsers Not Found**
+
    ```bash
    # Reinstall browsers
    npx playwright install
    ```
 
 4. **Test Environment Variables**
+
    ```bash
    # Check environment file
    cat tests/env.test
-   
+
    # Verify variables are loaded
    echo $TEST_API_URL
    ```
@@ -423,6 +444,7 @@ The suite includes performance benchmarks:
 - Concurrent operation testing
 
 Run performance tests:
+
 ```bash
 ./scripts/run-tests.sh -t performance -v
 ```

@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { io, Socket } from 'socket.io-client';
 
 // Simple toast implementation until we can install sonner
 const toast = {
@@ -52,13 +55,9 @@ export interface UseSetupWizardReturn {
   retryConnection: () => void;
 }
 
-const WEBSOCKET_URL =
-  process.env.REACT_APP_WS_URL || process.env.VITE_WS_URL || 'ws://localhost:3001';
+const WEBSOCKET_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3001';
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL ||
-  process.env.VITE_API_URL ||
-  process.env.VITE_API_BASE_URL ||
-  'http://localhost:3001';
+  import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 const setupSteps: StepData[] = [
   {
@@ -174,7 +173,7 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
   const [_skippedSteps, setSkippedSteps] = useState<Set<string>>(new Set());
 
   // WebSocket connection
-  const wsRef = useRef<WebSocket | null>(null);
+  const wsRef = useRef<Socket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
@@ -219,58 +218,63 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
 
   // WebSocket connection management
   const connectWebSocket = useCallback((sessionId: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.connected) {
       return;
     }
 
     try {
-      const ws = new WebSocket(`${WEBSOCKET_URL}/setup?sessionId=${sessionId}`);
+      const socket = io(WEBSOCKET_URL, {
+        transports: ['websocket', 'polling'],
+        query: { sessionId },
+        timeout: 5000,
+      });
 
-      ws.onopen = () => {
+      socket.on('connect', () => {
         console.log('WebSocket connected');
         setIsConnected(true);
         setError(null);
         reconnectAttempts.current = 0;
 
         // Send initial message to confirm connection
-        ws.send(
-          JSON.stringify({
-            type: 'ping',
-            sessionId,
-            timestamp: Date.now(),
-          }),
-        );
-      };
+        socket.emit('setup_message', {
+          type: 'ping',
+          sessionId,
+          timestamp: Date.now(),
+        });
+      });
 
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          handleWebSocketMessage(message);
-        } catch (err) {
-          console.error('Failed to parse WebSocket message:', err);
+      socket.on('connection_status', (data) => {
+        console.log('Connection status received:', data);
+        if (data.status === 'connected') {
+          setIsConnected(true);
+          setError(null);
         }
-      };
+      });
 
-      ws.onclose = (event) => {
-        console.log('WebSocket disconnected:', event.code, event.reason);
+      socket.on('setup_response', (message) => {
+        handleWebSocketMessage(message);
+      });
+
+      socket.on('disconnect', (reason) => {
+        console.log('WebSocket disconnected:', reason);
         setIsConnected(false);
 
         // Attempt to reconnect if not intentionally closed
-        if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
+        if (reason !== 'io client disconnect' && reconnectAttempts.current < maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttempts.current++;
             connectWebSocket(sessionId);
           }, delay);
         }
-      };
+      });
 
-      ws.onerror = (error) => {
+      socket.on('connect_error', (error) => {
         console.error('WebSocket error:', error);
         setError('Connection error occurred');
-      };
+      });
 
-      wsRef.current = ws;
+      wsRef.current = socket;
     } catch (err) {
       console.error('Failed to create WebSocket connection:', err);
       setError('Failed to establish real-time connection');
@@ -322,20 +326,11 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
   }, []);
 
   // Send WebSocket message
-  const sendWebSocketMessage = useCallback(
-    (message: any) => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(
-          JSON.stringify({
-            ...message,
-            sessionId,
-            timestamp: Date.now(),
-          }),
-        );
-      }
-    },
-    [sessionId],
-  );
+  const sendWebSocketMessage = useCallback((message: any) => {
+    if (wsRef.current?.connected) {
+      wsRef.current.emit('setup_message', message);
+    }
+  }, []);
 
   // Initialize on mount
   useEffect(() => {
@@ -356,7 +351,7 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
         clearTimeout(reconnectTimeoutRef.current);
       }
       if (wsRef.current) {
-        wsRef.current.close(1000, 'Component unmounted');
+        wsRef.current.disconnect();
       }
     };
   }, [initializeSession, connectWebSocket]);
@@ -366,6 +361,8 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
   const progress = ((currentStepIndex + 1) / setupSteps.length) * 100;
 
   // Actions
+  const navigate = useNavigate();
+
   const nextStep = useCallback(() => {
     if (currentStepIndex < setupSteps.length - 1) {
       const newIndex = currentStepIndex + 1;
@@ -386,8 +383,23 @@ export const useSetupWizard = (): UseSetupWizardReturn => {
           },
         });
       }
+    } else {
+      // Wizard completed - navigate to dashboard or main application
+      toast.success('Setup wizard completed successfully!');
+      sendWebSocketMessage({
+        type: 'wizard_completed',
+        data: {
+          completedAt: new Date().toISOString(),
+          finalConfig: config,
+        },
+      });
+
+      // Navigate to the main dashboard after completion
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
     }
-  }, [currentStepIndex, sendWebSocketMessage]);
+  }, [currentStepIndex, sendWebSocketMessage, config, navigate]);
 
   const previousStep = useCallback(() => {
     if (currentStepIndex > 0) {

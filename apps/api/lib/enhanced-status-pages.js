@@ -6,25 +6,30 @@ export const statusPageService = {
     return { id: `sp_${slug}`, slug, title: slug, published: true, incident_history_days: 7 };
   },
   async generateStatusPageHTML(statusPage, monitors, incidents) {
-    const recentIncidents = incidents.filter(incident => {
+    const recentIncidents = incidents.filter((incident) => {
       const incidentDate = new Date(incident.created_at || incident.startedAt);
       const daysAgo = statusPage.incident_history_days || 7;
       const cutoffDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
       return incidentDate > cutoffDate;
     });
 
-    const incidentHtml = recentIncidents.length > 0 
-      ? `<div class="incidents">
+    const incidentHtml =
+      recentIncidents.length > 0
+        ? `<div class="incidents">
            <h2>Recent Incidents</h2>
-           ${recentIncidents.map(incident => `
+           ${recentIncidents
+             .map(
+               (incident) => `
              <div class="incident ${incident.severity}">
                <strong>${incident.title || incident.summary}</strong>
                <span class="status">${incident.status}</span>
                <small>${new Date(incident.created_at || incident.startedAt).toLocaleDateString()}</small>
              </div>
-           `).join('')}
+           `,
+             )
+             .join('')}
          </div>`
-      : '<div class="no-incidents"><p>No recent incidents to report.</p></div>';
+        : '<div class="no-incidents"><p>No recent incidents to report.</p></div>';
 
     return `<html>
       <head>

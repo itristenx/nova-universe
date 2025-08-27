@@ -75,7 +75,7 @@ export function AIChatbot() {
         };
         setMessages([welcomeMessage]);
       } catch (_error) {
-        console.error('Failed to initialize chat:', error);
+        console.error('Failed to initialize chat:', _error);
         // Fallback without conversation ID
         const welcomeMessage: ChatMessage = {
           id: 'welcome',
@@ -108,7 +108,7 @@ export function AIChatbot() {
 
         return response.message;
       } catch (_error) {
-        console.error('Failed to get AI response:', error);
+        console.error('Failed to get AI response:', _error);
 
         // Fallback response in case of API failure
         return {
@@ -144,7 +144,7 @@ export function AIChatbot() {
       const aiResponse = await sendMessageToAI(input.trim());
       setMessages((prev) => [...prev, aiResponse]);
     } catch (_error) {
-      console.error('AI response failed:', error);
+      console.error('AI response failed:', _error);
       const errorMessage: ChatMessage = {
         id: Date.now().toString(),
         type: 'system',
@@ -219,7 +219,7 @@ export function AIChatbot() {
       await chatService.rateResponse(messageId, isHelpful ? 'positive' : 'negative');
       console.log(`Message ${messageId} rated as ${isHelpful ? 'positive' : 'negative'}`);
     } catch (_error) {
-      console.error('Failed to rate message:', error);
+      console.error('Failed to rate message:', _error);
     }
   };
 
@@ -228,17 +228,49 @@ export function AIChatbot() {
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-gray-200 p-4 dark:border-gray-700">
         <div className="rounded-lg bg-purple-100 p-2 dark:bg-purple-900/30">
-          <SparklesIcon className="h-6 w-6 text-purple-600" />
+          <ChatBubbleLeftRightIcon className="h-6 w-6 text-purple-600" />
         </div>
         <div className="flex-1">
           <h3 className="font-semibold text-gray-900 dark:text-white">{t('chatbot:title')}</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">{t('chatbot:subtitle')}</p>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="h-2 w-2 rounded-full bg-green-500"></div>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {t('chatbot:status.online')}
-          </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => window.open('/knowledge', '_blank')}
+            className="p-1 text-gray-400 transition-colors hover:text-blue-600"
+            title="Open Knowledge Base"
+          >
+            <DocumentTextIcon className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => {
+              setMessages([]);
+              setConversationId(null);
+              // Re-initialize chat
+              const welcomeMessage = {
+                id: 'welcome',
+                type: 'ai' as const,
+                content: t('chatbot:welcome.message'),
+                timestamp: new Date(),
+                suggestions: [
+                  t('chatbot:welcome.suggestions.help'),
+                  t('chatbot:welcome.suggestions.ticket'),
+                  t('chatbot:welcome.suggestions.status'),
+                ],
+              };
+              setMessages([welcomeMessage]);
+            }}
+            className="p-1 text-gray-400 transition-colors hover:text-green-600"
+            title="Reset Conversation"
+          >
+            <ArrowPathIcon className="h-4 w-4" />
+          </button>
+          <div className="flex items-center gap-1">
+            <div className="h-2 w-2 rounded-full bg-green-500"></div>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {t('chatbot:status.online')}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -308,9 +340,15 @@ export function AIChatbot() {
               </div>
 
               <div className="mt-1 flex items-center justify-between px-1">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
+                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                  <ClockIcon className="h-3 w-3" />
+                  <span>
+                    {message.timestamp.toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </div>
 
                 {message.type === 'ai' && (
                   <div className="flex items-center gap-1">
@@ -365,9 +403,10 @@ export function AIChatbot() {
       {/* Quick Suggestions */}
       {messages.length === 1 && (
         <div className="border-t border-gray-200 px-4 py-2 dark:border-gray-700">
-          <p className="mb-2 text-xs text-gray-600 dark:text-gray-400">
-            {t('chatbot:quickStart')}:
-          </p>
+          <div className="mb-2 flex items-center gap-1">
+            <LightBulbIcon className="h-3 w-3 text-yellow-500" />
+            <p className="text-xs text-gray-600 dark:text-gray-400">{t('chatbot:quickStart')}:</p>
+          </div>
           <div className="flex flex-wrap gap-2">
             {suggestions.slice(0, 3).map((suggestion) => (
               <button

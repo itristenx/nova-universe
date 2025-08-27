@@ -662,7 +662,9 @@ test('Network Security', async (t) => {
       }
     } catch (error) {
       if (SECURITY_CONFIG.apiUrl.startsWith('https://')) {
-        console.log(`  ⚠️  HTTPS endpoint test failed - ${error.message || 'check SSL configuration'}`);
+        console.log(
+          `  ⚠️  HTTPS endpoint test failed - ${error.message || 'check SSL configuration'}`,
+        );
       } else {
         console.log('  ℹ️  HTTP endpoint in use - consider HTTPS for production');
       }

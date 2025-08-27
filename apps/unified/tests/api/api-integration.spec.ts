@@ -8,12 +8,12 @@ test.describe('API Integration Tests', () => {
 
   test.beforeAll(async () => {
     apiBaseUrl = process.env.TEST_API_URL || 'http://localhost:3000';
-    
+
     // Get authentication token
     try {
       const response = await axios.post(`${apiBaseUrl}/auth/login`, {
         email: process.env.TEST_USER_EMAIL || 'testuser@nova.com',
-        password: process.env.TEST_USER_PASSWORD || 'TestUser123!'
+        password: process.env.TEST_USER_PASSWORD || 'TestUser123!',
       });
       authToken = response.data.token;
     } catch (error) {
@@ -25,7 +25,7 @@ test.describe('API Integration Tests', () => {
   test.describe('Authentication API', () => {
     test('should successfully authenticate user', async ({ page }) => {
       // Mock successful authentication
-      await page.route('**/auth/login', route => 
+      await page.route('**/auth/login', (route) =>
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -34,10 +34,10 @@ test.describe('API Integration Tests', () => {
             user: {
               id: 'test-user-id',
               email: 'testuser@nova.com',
-              role: 'USER'
-            }
-          })
-        })
+              role: 'USER',
+            },
+          }),
+        }),
       );
 
       // Perform login
@@ -45,7 +45,7 @@ test.describe('API Integration Tests', () => {
       await page.click('[data-testid="login-button"]');
       await testHelper.fillFormFields(page, {
         '[data-testid="email-input"]': 'testuser@nova.com',
-        '[data-testid="password-input"]': 'TestUser123!'
+        '[data-testid="password-input"]': 'TestUser123!',
       });
       await page.click('[data-testid="login-submit"]');
 
@@ -55,14 +55,14 @@ test.describe('API Integration Tests', () => {
 
     test('should handle authentication errors', async ({ page }) => {
       // Mock authentication failure
-      await page.route('**/auth/login', route => 
+      await page.route('**/auth/login', (route) =>
         route.fulfill({
           status: 401,
           contentType: 'application/json',
           body: JSON.stringify({
-            error: 'Invalid credentials'
-          })
-        })
+            error: 'Invalid credentials',
+          }),
+        }),
       );
 
       // Perform login
@@ -70,7 +70,7 @@ test.describe('API Integration Tests', () => {
       await page.click('[data-testid="login-button"]');
       await testHelper.fillFormFields(page, {
         '[data-testid="email-input"]': 'invalid@example.com',
-        '[data-testid="password-input"]': 'wrongpassword'
+        '[data-testid="password-input"]': 'wrongpassword',
       });
       await page.click('[data-testid="login-submit"]');
 
@@ -80,14 +80,14 @@ test.describe('API Integration Tests', () => {
 
     test('should handle network errors gracefully', async ({ page }) => {
       // Mock network failure
-      await page.route('**/auth/login', route => route.abort());
+      await page.route('**/auth/login', (route) => route.abort());
 
       // Perform login
       await page.goto('/');
       await page.click('[data-testid="login-button"]');
       await testHelper.fillFormFields(page, {
         '[data-testid="email-input"]': 'test@example.com',
-        '[data-testid="password-input"]': 'password123'
+        '[data-testid="password-input"]': 'password123',
       });
       await page.click('[data-testid="login-submit"]');
 
@@ -107,7 +107,7 @@ test.describe('API Integration Tests', () => {
           status: 'OPEN',
           priority: 'MEDIUM',
           assignee: 'testuser@nova.com',
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         },
         {
           id: 'ticket-2',
@@ -116,11 +116,11 @@ test.describe('API Integration Tests', () => {
           status: 'IN_PROGRESS',
           priority: 'HIGH',
           assignee: 'admin@nova.com',
-          createdAt: new Date().toISOString()
-        }
+          createdAt: new Date().toISOString(),
+        },
       ];
 
-      await page.route('**/tickets', route => 
+      await page.route('**/tickets', (route) =>
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -128,9 +128,9 @@ test.describe('API Integration Tests', () => {
             tickets: mockTickets,
             total: 2,
             page: 1,
-            limit: 10
-          })
-        })
+            limit: 10,
+          }),
+        }),
       );
 
       // Navigate to tickets page
@@ -144,7 +144,7 @@ test.describe('API Integration Tests', () => {
 
     test('should create new ticket via API', async ({ page }) => {
       // Mock ticket creation API
-      await page.route('**/tickets', route => 
+      await page.route('**/tickets', (route) =>
         route.fulfill({
           status: 201,
           contentType: 'application/json',
@@ -154,9 +154,9 @@ test.describe('API Integration Tests', () => {
             description: 'New test description',
             status: 'OPEN',
             priority: 'MEDIUM',
-            message: 'Ticket created successfully'
-          })
-        })
+            message: 'Ticket created successfully',
+          }),
+        }),
       );
 
       // Navigate to tickets page and create ticket
@@ -167,7 +167,7 @@ test.describe('API Integration Tests', () => {
       await testHelper.fillFormFields(page, {
         '[data-testid="ticket-title-input"]': 'New Test Ticket',
         '[data-testid="ticket-description-input"]': 'New test description',
-        '[data-testid="ticket-priority-select"]': 'Medium'
+        '[data-testid="ticket-priority-select"]': 'Medium',
       });
 
       // Submit form
@@ -179,7 +179,7 @@ test.describe('API Integration Tests', () => {
 
     test('should update ticket via API', async ({ page }) => {
       // Mock ticket update API
-      await page.route('**/tickets/*', route => 
+      await page.route('**/tickets/*', (route) =>
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -189,9 +189,9 @@ test.describe('API Integration Tests', () => {
             description: 'Updated description',
             status: 'IN_PROGRESS',
             priority: 'HIGH',
-            message: 'Ticket updated successfully'
-          })
-        })
+            message: 'Ticket updated successfully',
+          }),
+        }),
       );
 
       // Navigate to tickets page and edit ticket
@@ -212,7 +212,7 @@ test.describe('API Integration Tests', () => {
 
     test('should handle API validation errors', async ({ page }) => {
       // Mock validation error response
-      await page.route('**/tickets', route => 
+      await page.route('**/tickets', (route) =>
         route.fulfill({
           status: 400,
           contentType: 'application/json',
@@ -220,10 +220,10 @@ test.describe('API Integration Tests', () => {
             error: 'Validation failed',
             details: {
               title: 'Title is required',
-              description: 'Description is required'
-            }
-          })
-        })
+              description: 'Description is required',
+            },
+          }),
+        }),
       );
 
       // Navigate to tickets page and try to create invalid ticket
@@ -249,7 +249,7 @@ test.describe('API Integration Tests', () => {
           type: 'HARDWARE',
           status: 'ACTIVE',
           location: 'Office A',
-          assignedTo: 'testuser@nova.com'
+          assignedTo: 'testuser@nova.com',
         },
         {
           id: 'asset-2',
@@ -257,11 +257,11 @@ test.describe('API Integration Tests', () => {
           type: 'SOFTWARE',
           status: 'ACTIVE',
           location: 'Office B',
-          assignedTo: 'admin@nova.com'
-        }
+          assignedTo: 'admin@nova.com',
+        },
       ];
 
-      await page.route('**/assets', route => 
+      await page.route('**/assets', (route) =>
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -269,9 +269,9 @@ test.describe('API Integration Tests', () => {
             assets: mockAssets,
             total: 2,
             page: 1,
-            limit: 10
-          })
-        })
+            limit: 10,
+          }),
+        }),
       );
 
       // Navigate to assets page
@@ -285,7 +285,7 @@ test.describe('API Integration Tests', () => {
 
     test('should create new asset via API', async ({ page }) => {
       // Mock asset creation API
-      await page.route('**/assets', route => 
+      await page.route('**/assets', (route) =>
         route.fulfill({
           status: 201,
           contentType: 'application/json',
@@ -294,9 +294,9 @@ test.describe('API Integration Tests', () => {
             name: 'New Test Asset',
             type: 'HARDWARE',
             status: 'ACTIVE',
-            message: 'Asset created successfully'
-          })
-        })
+            message: 'Asset created successfully',
+          }),
+        }),
       );
 
       // Navigate to assets page and create asset
@@ -306,7 +306,7 @@ test.describe('API Integration Tests', () => {
       // Fill asset form
       await testHelper.fillFormFields(page, {
         '[data-testid="asset-name-input"]': 'New Test Asset',
-        '[data-testid="asset-type-select"]': 'Hardware'
+        '[data-testid="asset-type-select"]': 'Hardware',
       });
 
       // Submit form
@@ -327,7 +327,7 @@ test.describe('API Integration Tests', () => {
           firstName: 'Test',
           lastName: 'User',
           role: 'USER',
-          status: 'ACTIVE'
+          status: 'ACTIVE',
         },
         {
           id: 'user-2',
@@ -335,11 +335,11 @@ test.describe('API Integration Tests', () => {
           firstName: 'Admin',
           lastName: 'User',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       ];
 
-      await page.route('**/users', route => 
+      await page.route('**/users', (route) =>
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -347,9 +347,9 @@ test.describe('API Integration Tests', () => {
             users: mockUsers,
             total: 2,
             page: 1,
-            limit: 10
-          })
-        })
+            limit: 10,
+          }),
+        }),
       );
 
       // Navigate to users page
@@ -366,23 +366,17 @@ test.describe('API Integration Tests', () => {
     test('should perform global search', async ({ page }) => {
       // Mock search API response
       const mockSearchResults = {
-        tickets: [
-          { id: 'ticket-1', title: 'Search Test Ticket', type: 'ticket' }
-        ],
-        assets: [
-          { id: 'asset-1', name: 'Search Test Asset', type: 'asset' }
-        ],
-        users: [
-          { id: 'user-1', email: 'search@nova.com', type: 'user' }
-        ]
+        tickets: [{ id: 'ticket-1', title: 'Search Test Ticket', type: 'ticket' }],
+        assets: [{ id: 'asset-1', name: 'Search Test Asset', type: 'asset' }],
+        users: [{ id: 'user-1', email: 'search@nova.com', type: 'user' }],
       };
 
-      await page.route('**/search?q=test', route => 
+      await page.route('**/search?q=test', (route) =>
         route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify(mockSearchResults)
-        })
+          body: JSON.stringify(mockSearchResults),
+        }),
       );
 
       // Navigate to dashboard and perform search
@@ -408,7 +402,7 @@ test.describe('API Integration Tests', () => {
           message: 'You have been assigned a new ticket',
           type: 'INFO',
           read: false,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         },
         {
           id: 'notif-2',
@@ -416,19 +410,19 @@ test.describe('API Integration Tests', () => {
           message: 'System maintenance scheduled',
           type: 'WARNING',
           read: true,
-          createdAt: new Date().toISOString()
-        }
+          createdAt: new Date().toISOString(),
+        },
       ];
 
-      await page.route('**/notifications', route => 
+      await page.route('**/notifications', (route) =>
         route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
             notifications: mockNotifications,
-            unreadCount: 1
-          })
-        })
+            unreadCount: 1,
+          }),
+        }),
       );
 
       // Navigate to dashboard and open notifications
@@ -443,14 +437,14 @@ test.describe('API Integration Tests', () => {
 
     test('should mark notification as read', async ({ page }) => {
       // Mock mark as read API
-      await page.route('**/notifications/*/read', route => 
+      await page.route('**/notifications/*/read', (route) =>
         route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
-            message: 'Notification marked as read'
-          })
-        })
+            message: 'Notification marked as read',
+          }),
+        }),
       );
 
       // Navigate to dashboard and open notifications
@@ -468,11 +462,11 @@ test.describe('API Integration Tests', () => {
   test.describe('Real-time Updates', () => {
     test('should receive real-time notifications', async ({ page }) => {
       // Mock WebSocket connection
-      await page.route('**/ws', route => 
+      await page.route('**/ws', (route) =>
         route.fulfill({
           status: 101,
-          body: 'WebSocket connection established'
-        })
+          body: 'WebSocket connection established',
+        }),
       );
 
       // Navigate to dashboard
@@ -485,7 +479,7 @@ test.describe('API Integration Tests', () => {
 
     test('should handle WebSocket disconnection', async ({ page }) => {
       // Mock WebSocket disconnection
-      await page.route('**/ws', route => route.abort());
+      await page.route('**/ws', (route) => route.abort());
 
       // Navigate to dashboard
       await page.goto('/dashboard');
@@ -499,14 +493,14 @@ test.describe('API Integration Tests', () => {
   test.describe('Error Handling', () => {
     test('should handle 404 errors gracefully', async ({ page }) => {
       // Mock 404 response
-      await page.route('**/nonexistent-endpoint', route => 
+      await page.route('**/nonexistent-endpoint', (route) =>
         route.fulfill({
           status: 404,
           contentType: 'application/json',
           body: JSON.stringify({
-            error: 'Endpoint not found'
-          })
-        })
+            error: 'Endpoint not found',
+          }),
+        }),
       );
 
       // Navigate to non-existent route
@@ -518,14 +512,14 @@ test.describe('API Integration Tests', () => {
 
     test('should handle 500 errors gracefully', async ({ page }) => {
       // Mock 500 response
-      await page.route('**/tickets', route => 
+      await page.route('**/tickets', (route) =>
         route.fulfill({
           status: 500,
           contentType: 'application/json',
           body: JSON.stringify({
-            error: 'Internal server error'
-          })
-        })
+            error: 'Internal server error',
+          }),
+        }),
       );
 
       // Navigate to tickets page
@@ -533,23 +527,25 @@ test.describe('API Integration Tests', () => {
 
       // Verify error handling
       await expect(page.locator('[data-testid="error-message"]')).toBeVisible();
-      await expect(page.locator('[data-testid="error-message"]')).toContainText('Internal server error');
+      await expect(page.locator('[data-testid="error-message"]')).toContainText(
+        'Internal server error',
+      );
     });
 
     test('should handle rate limiting', async ({ page }) => {
       // Mock rate limit response
-      await page.route('**/tickets', route => 
+      await page.route('**/tickets', (route) =>
         route.fulfill({
           status: 429,
           contentType: 'application/json',
           headers: {
-            'Retry-After': '60'
+            'Retry-After': '60',
           },
           body: JSON.stringify({
             error: 'Rate limit exceeded',
-            retryAfter: 60
-          })
-        })
+            retryAfter: 60,
+          }),
+        }),
       );
 
       // Navigate to tickets page
@@ -557,7 +553,9 @@ test.describe('API Integration Tests', () => {
 
       // Verify rate limit handling
       await expect(page.locator('[data-testid="rate-limit-message"]')).toBeVisible();
-      await expect(page.locator('[data-testid="rate-limit-message"]')).toContainText('Rate limit exceeded');
+      await expect(page.locator('[data-testid="rate-limit-message"]')).toContainText(
+        'Rate limit exceeded',
+      );
     });
   });
 
@@ -569,10 +567,10 @@ test.describe('API Integration Tests', () => {
         title: `Test Ticket ${i}`,
         description: `Description for ticket ${i}`,
         status: 'OPEN',
-        priority: 'MEDIUM'
+        priority: 'MEDIUM',
       }));
 
-      await page.route('**/tickets', route => 
+      await page.route('**/tickets', (route) =>
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -580,9 +578,9 @@ test.describe('API Integration Tests', () => {
             tickets: largeDataset,
             total: 1000,
             page: 1,
-            limit: 10
-          })
-        })
+            limit: 10,
+          }),
+        }),
       );
 
       // Navigate to tickets page

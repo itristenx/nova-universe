@@ -290,9 +290,9 @@ class NovaMCPServer {
 
     // Log token type hint for debugging/audit purposes
     const tokenType = token_type_hint || 'access_token';
-    logger.info('Token revocation requested', { 
-      clientId: client_id, 
-      tokenType 
+    logger.info('Token revocation requested', {
+      clientId: client_id,
+      tokenType,
     });
 
     // Revoke access token
