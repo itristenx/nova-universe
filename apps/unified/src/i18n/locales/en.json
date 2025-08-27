@@ -158,6 +158,7 @@
       "enterVerificationCode": "Enter verification code",
       "workEmail": "Work Email",
       "emailPlaceholder": "Enter your work email address",
+      "password": "Password",
       "passwordPlaceholder": "Enter your password",
       "discovering": "Discovering organization...",
       "findOrganizationHelp": "Enter your work email to find your organization",
@@ -170,6 +171,7 @@
       "forgotPassword": "Forgot your password?",
       "signIn": "Sign In",
       "signInWith": "Sign in with {{provider}}",
+      "orContinueWithPassword": "Or continue with password",
       "mfaRequired": "Two-factor authentication is required for this account",
       "poweredBy": "Powered by",
       "helixBrand": "Nova Helix",
@@ -997,9 +999,12 @@
     "status": {
       "operational": "Operational",
       "degraded": "Degraded",
-      "partialOutage": "Partial Outage",
-      "majorOutage": "Major Outage",
-      "underMaintenance": "Under Maintenance"
+      "partial_outage": "Partial Outage",
+      "major_outage": "Major Outage",
+      "under_maintenance": "Under Maintenance",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "scheduled": "Scheduled"
     },
     "severity": {
       "low": "Low",

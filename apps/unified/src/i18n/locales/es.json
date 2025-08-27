@@ -50,6 +50,7 @@
       "enterVerificationCode": "Ingresa el código de verificación",
       "workEmail": "Email de Trabajo",
       "emailPlaceholder": "Ingresa tu dirección de email de trabajo",
+      "password": "Contraseña",
       "passwordPlaceholder": "Ingresa tu contraseña",
       "discovering": "Descubriendo organización...",
       "findOrganizationHelp": "Ingresa tu email de trabajo para encontrar tu organización",
@@ -62,6 +63,7 @@
       "forgotPassword": "¿Olvidaste tu contraseña?",
       "signIn": "Iniciar Sesión",
       "signInWith": "Iniciar sesión con {{provider}}",
+      "orContinueWithPassword": "o continuar con contraseña",
       "mfaRequired": "Se requiere autenticación de dos factores para esta cuenta",
       "poweredBy": "Desarrollado por",
       "helixBrand": "Nova Helix",
@@ -723,9 +725,12 @@
     "status": {
       "operational": "Operativo",
       "degraded": "Degradado",
-      "partialOutage": "Interrupción Parcial",
-      "majorOutage": "Interrupción Mayor",
-      "underMaintenance": "En Mantenimiento"
+      "partial_outage": "Interrupción Parcial",
+      "major_outage": "Interrupción Mayor",
+      "under_maintenance": "En Mantenimiento",
+      "in_progress": "En Progreso",
+      "completed": "Completado",
+      "scheduled": "Programado"
     },
     "severity": {
       "low": "Bajo",

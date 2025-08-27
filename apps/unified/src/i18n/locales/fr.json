@@ -18,6 +18,8 @@
       "enterVerificationCode": "Entrez le code de vérification",
       "workEmail": "Email Professionnel",
       "emailPlaceholder": "Entrez votre adresse email professionnelle",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Entrez votre mot de passe",
       "discovering": "Découverte de l'organisation...",
       "findOrganizationHelp": "Entrez votre email professionnel pour trouver votre organisation",
       "organizationFound": "Organisation trouvée : {{organization}}",
@@ -29,6 +31,7 @@
       "forgotPassword": "Mot de passe oublié ?",
       "signIn": "Se Connecter",
       "signInWith": "Se connecter avec {{provider}}",
+      "orContinueWithPassword": "ou continuer avec un mot de passe",
       "mfaRequired": "L'authentification à deux facteurs est requise pour ce compte",
       "poweredBy": "Propulsé par",
       "helixBrand": "Nova Helix",
@@ -599,9 +602,12 @@
     "status": {
       "operational": "Opérationnel",
       "degraded": "Dégradé",
-      "partialOutage": "Panne Partielle",
-      "majorOutage": "Panne Majeure",
-      "underMaintenance": "En Maintenance"
+      "partial_outage": "Panne Partielle",
+      "major_outage": "Panne Majeure",
+      "under_maintenance": "En Maintenance",
+      "in_progress": "En Cours",
+      "completed": "Terminé",
+      "scheduled": "Planifié"
     },
     "severity": {
       "low": "Faible",

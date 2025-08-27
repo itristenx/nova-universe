@@ -18,6 +18,8 @@
       "enterVerificationCode": "أدخل رمز التحقق",
       "workEmail": "البريد الإلكتروني للعمل",
       "emailPlaceholder": "أدخل عنوان بريدك الإلكتروني للعمل",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "أدخل كلمة المرور",
       "discovering": "اكتشاف المؤسسة...",
       "findOrganizationHelp": "أدخل بريدك الإلكتروني للعمل للعثور على مؤسستك",
       "organizationFound": "تم العثور على المؤسسة: {{organization}}",
@@ -29,6 +31,7 @@
       "forgotPassword": "نسيت كلمة المرور؟",
       "signIn": "تسجيل الدخول",
       "signInWith": "تسجيل الدخول باستخدام {{provider}}",
+      "orContinueWithPassword": "أو المتابعة باستخدام كلمة المرور",
       "mfaRequired": "مطلوب المصادقة الثنائية لهذا الحساب",
       "poweredBy": "مدعوم من",
       "helixBrand": "Nova Helix",
@@ -607,9 +610,12 @@
     "status": {
       "operational": "تشغيلي",
       "degraded": "متدهور",
-      "partialOutage": "انقطاع جزئي",
-      "majorOutage": "انقطاع كبير",
-      "underMaintenance": "تحت الصيانة"
+      "partial_outage": "انقطاع جزئي",
+      "major_outage": "انقطاع كبير",
+      "under_maintenance": "تحت الصيانة",
+      "in_progress": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "scheduled": "مجدول"
     },
     "severity": {
       "low": "منخفض",
