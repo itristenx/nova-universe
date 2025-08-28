@@ -1,0 +1,172 @@
+services:
+  # Database
+  nova-test-test-postgres:
+    image: postgres:15-alpine
+    container_name: nova-test-test-postgres
+    environment:
+      POSTGRES_DB: nova_test
+      POSTGRES_USER: nova_test
+      POSTGRES_PASSWORD: test_password_test
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "4032:5432"
+    volumes:
+      - nova-test-test-postgres-data:/var/lib/postgresql/data
+    networks:
+      - nova-test-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nova_test -d nova_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  nova-test-test-redis:
+    image: redis:7-alpine
+    container_name: nova-test-test-redis
+    ports:
+      - "4079:6379"
+    volumes:
+      - nova-test-test-redis-data:/data
+    networks:
+      - nova-test-test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # API Service
+  nova-test-test-api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+    container_name: nova-test-test-api
+    env_file:
+      - .env.test.test
+    environment:
+      NODE_ENV: test
+      API_PORT: 3000
+      DATABASE_URL: postgresql://nova_test:test_password_test@nova-test-test-postgres:5432/nova_test
+      REDIS_URL: redis://nova-test-test-redis:6379
+      JWT_SECRET: test_jwt_secret_test
+      SESSION_SECRET: test_session_secret_test
+      KIOSK_TOKEN: kiosk_token_test
+      SCIM_TOKEN: scim_token_test
+      AUTH_DB_PASSWORD: test_password_test
+      # Core DB (used by databaseConfig)
+      CORE_DB_HOST: nova-test-test-postgres
+      CORE_DB_PORT: 5432
+      CORE_DB_NAME: nova_test
+      CORE_DB_USER: nova_test
+      CORE_DB_PASSWORD: test_password_test
+      # Use WASM Prisma engine to avoid native binary issues in CI
+      PRISMA_CLIENT_ENGINE_TYPE: wasm
+      # Fallback POSTGRES_* vars (used if CORE_* not provided)
+      POSTGRES_HOST: nova-test-test-postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: nova_test
+      POSTGRES_USER: nova_test
+      POSTGRES_PASSWORD: test_password_test
+      TEST_ENV: test
+      FORCE_LISTEN: "true"
+      DISABLE_CLEANUP: "true"
+    ports:
+      - "4002:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      nova-test-test-postgres:
+        condition: service_healthy
+      nova-test-test-redis:
+        condition: service_healthy
+    networks:
+      - nova-test-test-network
+    volumes:
+      - ./apps/api:/app
+      - ./prisma/generated:/prisma/generated:ro
+      - /app/node_modules
+    command: ["npm", "start"]
+
+  # Core UI Service
+  nova-test-test-core:
+    build:
+      context: ./apps/core/nova-core
+      dockerfile: Dockerfile.dev
+    container_name: nova-test-test-core
+    environment:
+      NODE_ENV: test
+      PORT: 3001
+      REACT_APP_API_URL: http://localhost:4002
+      REACT_APP_TEST_ENV: test
+    ports:
+      - "4001:3001"
+    networks:
+      - nova-test-test-network
+    volumes:
+      - ./apps/core/nova-core:/app
+      - /app/node_modules
+    command: ["npm", "start"]
+
+  # Beacon Service (placeholder HTTP server for UAT/integration)
+  nova-test-test-beacon:
+    image: node:20-alpine
+    container_name: nova-test-test-beacon
+    environment:
+      NODE_ENV: test
+      PORT: 3002
+      API_URL: http://nova-test-test-api:3000
+      TEST_ENV: test
+    command: ["sh", "-c", "node -e 'require(\"http\").createServer((req,res)=>{res.end(\"Beacon placeholder\")}).listen(3002)' "]
+    ports:
+      - "4003:3002"
+    depends_on:
+      - nova-test-test-api
+    networks:
+      - nova-test-test-network
+
+  # Communications Service
+  nova-test-test-comms:
+    build:
+      context: ./apps/comms/nova-comms
+      dockerfile: Dockerfile.dev
+    container_name: nova-test-test-comms
+    environment:
+      NODE_ENV: test
+      PORT: 3003
+      API_URL: http://nova-test-test-api:3000
+      TEST_ENV: test
+    ports:
+      - "4004:3003"
+    depends_on:
+      - nova-test-test-api
+    networks:
+      - nova-test-test-network
+    volumes:
+      - ./apps/comms/nova-comms:/app
+      - /app/node_modules
+
+  # Test Monitoring (Simplified Sentinel)
+  nova-test-test-sentinel:
+    image: louislam/uptime-kuma:1-alpine
+    container_name: nova-test-test-sentinel
+    ports:
+      - "4081:3001"
+    volumes:
+      - nova-test-test-sentinel-data:/app/data
+    networks:
+      - nova-test-test-network
+    environment:
+      - NODE_ENV=test
+
+volumes:
+  nova-test-test-postgres-data:
+  nova-test-test-redis-data:
+  nova-test-test-sentinel-data:
+
+networks:
+  nova-test-test-network:
+    external: true

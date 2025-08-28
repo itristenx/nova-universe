@@ -1,0 +1,22 @@
+[
+  {
+    "title": "Test Ticket - High Priority",
+    "description": "This is a high priority test ticket for environment test",
+    "priority": "high",
+    "status": "open",
+    "assignee": "agent@test-test.nova"
+  },
+  {
+    "title": "Test Ticket - Medium Priority",
+    "description": "This is a medium priority test ticket",
+    "priority": "medium",
+    "status": "in_progress",
+    "assignee": "agent@test-test.nova"
+  },
+  {
+    "title": "Test Ticket - Low Priority",
+    "description": "This is a low priority test ticket",
+    "priority": "low",
+    "status": "resolved"
+  }
+]
