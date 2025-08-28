@@ -11,7 +11,9 @@ import {
   CustodyAction,
 } from '../../types/courier';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import { env } from '@/utils/index';
+
+const API_BASE_URL = env.apiUrl.replace('8080', '3000') + '/api';
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/courier`,

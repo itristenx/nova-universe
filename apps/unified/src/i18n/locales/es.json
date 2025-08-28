@@ -6,7 +6,34 @@
     "error": "Ha ocurrido un error",
     "success": "Éxito",
     "warning": "Advertencia",
-    "info": "Información"
+    "info": "Información",
+    "pwa": {
+      "installTitle": "Instalar Nova Universe",
+      "installDescription": "Obtén acceso más rápido y trabaja sin conexión con nuestra aplicación",
+      "install": "Instalar Aplicación",
+      "installing": "Instalando...",
+      "updateAvailable": "Una nueva versión está disponible. ¿Recargar para actualizar?"
+    },
+    "offline": {
+      "title": "Estás desconectado",
+      "description": "Verifica tu conexión e intenta de nuevo. Algunas funciones pueden estar disponibles sin conexión.",
+      "noConnection": "Sin conexión a internet",
+      "backOnline": "¡Estás de vuelta en línea!",
+      "connectionRestored": "Tu conexión a internet ha sido restaurada.",
+      "continue": "Continuar",
+      "tryAgain": "Intentar de Nuevo",
+      "retryAttempts": "Intentos de reintento: {{count}}",
+      "lastTrySeconds": "Último intento hace {{seconds}} segundos",
+      "lastTryMinutes": "Último intento hace {{minutes}} minutos",
+      "availableFeatures": "Disponible sin conexión:",
+      "feature": {
+        "viewCachedData": "Ver datos en caché",
+        "readKnowledgeBase": "Leer artículos de la base de conocimiento",
+        "submitFormsOffline": "Enviar formularios (en cola)",
+        "realTimeUpdates": "Actualizaciones en tiempo real no disponibles"
+      },
+      "tip": "Tu trabajo será guardado y sincronizado cuando vuelvas a estar en línea"
+    }
   },
   "apps": {
     "novaUnified": "Nova Unified",
@@ -105,7 +132,7 @@
     "tickets": "Tickets",
     "assets": "Activos",
     "users": "Usuarios",
-    "reports": "Reportes",
+    "reports": "Informes",
     "settings": "Configuración",
     "admin": "Administración",
     "profile": "Perfil",
@@ -118,7 +145,7 @@
     "close": "Cerrar",
     "back": "Atrás",
     "home": "Inicio",
-    "breadcrumb": "Ruta de navegación",
+    "breadcrumb": "Navegación por migas de pan",
     "goToDashboard": "Ir al Panel de Control",
     "spaces": "Espacios",
     "createTicket": "Crear Ticket",
@@ -565,7 +592,7 @@
     }
   },
   "accessibility": {
-    "skipToContent": "Saltar al contenido principal",
+    "skipToContent": "Saltar al contenido",
     "skipToNavigation": "Saltar a la navegación",
     "skipToSearch": "Saltar a la búsqueda",
     "openMenu": "Abrir menú",
@@ -588,7 +615,14 @@
     "previousPage": "Página anterior",
     "nextPage": "Página siguiente",
     "firstPage": "Primera página",
-    "lastPage": "Última página"
+    "lastPage": "Última página",
+    "toggleTheme": "Cambiar tema",
+    "languageSelector": "Selector de idioma",
+    "userMenu": "Menú de usuario",
+    "searchBox": "Caja de búsqueda",
+    "navigationMenu": "Menú de navegación",
+    "mainContent": "Contenido principal",
+    "breadcrumb": "Navegación de migas de pan"
   },
   "notifications": {
     "title": "Notificaciones",

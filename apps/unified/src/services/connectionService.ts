@@ -182,7 +182,7 @@ class ConnectionService {
    */
   private getAPIBaseURL(): string {
     // Use environment variable if available, otherwise default to localhost
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const apiUrl = process.env.VITE_API_URL || 'http://localhost:3000';
     console.log('🔍 Connection Service: Using API URL:', apiUrl);
     return apiUrl;
   }

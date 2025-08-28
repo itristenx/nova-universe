@@ -6,7 +6,34 @@
     "error": "Une erreur s'est produite",
     "success": "Succès",
     "warning": "Avertissement",
-    "info": "Information"
+    "info": "Information",
+    "pwa": {
+      "installTitle": "Installer Nova Universe",
+      "installDescription": "Obtenez un accès plus rapide et travaillez hors ligne avec notre application",
+      "install": "Installer l'Application",
+      "installing": "Installation...",
+      "updateAvailable": "Une nouvelle version est disponible. Recharger pour mettre à jour?"
+    },
+    "offline": {
+      "title": "Vous êtes hors ligne",
+      "description": "Vérifiez votre connexion et réessayez. Certaines fonctionnalités peuvent être disponibles hors ligne.",
+      "noConnection": "Aucune connexion internet",
+      "backOnline": "Vous êtes de retour en ligne!",
+      "connectionRestored": "Votre connexion internet a été restaurée.",
+      "continue": "Continuer",
+      "tryAgain": "Réessayer",
+      "retryAttempts": "Tentatives de retry: {{count}}",
+      "lastTrySeconds": "Dernière tentative il y a {{seconds}} secondes",
+      "lastTryMinutes": "Dernière tentative il y a {{minutes}} minutes",
+      "availableFeatures": "Disponible hors ligne:",
+      "feature": {
+        "viewCachedData": "Voir les données en cache",
+        "readKnowledgeBase": "Lire les articles de la base de connaissances",
+        "submitFormsOffline": "Soumettre des formulaires (en file d'attente)",
+        "realTimeUpdates": "Mises à jour en temps réel non disponibles"
+      },
+      "tip": "Votre travail sera sauvegardé et synchronisé lorsque vous serez de nouveau en ligne"
+    }
   },
   "auth": {
     "login": {
@@ -83,7 +110,11 @@
     "menu": "Menu",
     "close": "Fermer",
     "back": "Retour",
-    "home": "Accueil"
+    "home": "Accueil",
+    "searchPlaceholder": "Rechercher tickets, actifs, espaces...",
+    "breadcrumb": "Navigation fil d'Ariane",
+    "goToDashboard": "Aller au Tableau de Bord",
+    "spaces": "Espaces"
   },
   "dashboard": {
     "welcome": "Bienvenue sur Nova Universe",
@@ -442,7 +473,7 @@
     }
   },
   "accessibility": {
-    "skipToContent": "Aller au contenu principal",
+    "skipToContent": "Aller au contenu",
     "skipToNavigation": "Aller à la navigation",
     "skipToSearch": "Aller à la recherche",
     "openMenu": "Ouvrir le menu",
@@ -465,7 +496,14 @@
     "previousPage": "Page précédente",
     "nextPage": "Page suivante",
     "firstPage": "Première page",
-    "lastPage": "Dernière page"
+    "lastPage": "Dernière page",
+    "toggleTheme": "Basculer le thème",
+    "languageSelector": "Sélecteur de langue",
+    "userMenu": "Menu utilisateur",
+    "searchBox": "Boîte de recherche",
+    "navigationMenu": "Menu de navigation",
+    "mainContent": "Contenu principal",
+    "breadcrumb": "Navigation fil d'Ariane"
   },
   "notifications": {
     "title": "Notifications",

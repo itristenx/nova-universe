@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GlobeAltIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { applyRTLToDocument, useRTL } from '../utils/rtl';
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -16,6 +17,7 @@ interface LanguageSwitcherProps {
 export default function LanguageSwitcher({ className = '' }: LanguageSwitcherProps) {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const rtl = useRTL(i18n.language);
 
   const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0]!;
 
@@ -24,9 +26,8 @@ export default function LanguageSwitcher({ className = '' }: LanguageSwitcherPro
     localStorage.setItem('i18nextLng', langCode);
     setIsOpen(false);
 
-    // Update document direction for RTL languages
-    document.documentElement.dir = langCode === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = langCode;
+    // Apply comprehensive RTL configuration
+    applyRTLToDocument(langCode);
   };
 
   return (

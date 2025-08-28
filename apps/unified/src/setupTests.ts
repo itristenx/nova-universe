@@ -1,5 +1,12 @@
 import '@testing-library/jest-dom';
 
+// TextEncoder/TextDecoder polyfills for Node.js environment
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+}
+
 // Mock environment variables
 process.env.VITE_USE_MOCK_DATA = 'false';
 process.env.VITE_API_URL = 'http://localhost:8080';
