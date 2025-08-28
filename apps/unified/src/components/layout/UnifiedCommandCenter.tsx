@@ -209,6 +209,14 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
       action: () => navigate('/ai/automation'),
       category: 'AI',
     },
+    {
+      id: 'power-actions',
+      name: t('navigation:commandCenter.quickActions.powerActions'),
+      icon: BoltIcon,
+      action: () => navigate('/admin/power-actions'),
+      shortcut: '⌘P',
+      category: 'Admin',
+    },
   ];
 
   // Enhanced search function with AI scope integration and prepared for full API integration
@@ -367,7 +375,14 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
       // - Space search API for spaces scope
       setResults([]);
     } catch (_error) {
-      console.error('Search error:', error);
+      // Enhanced error handling for search operations
+      console.error('Search error:', {
+        query: searchQuery,
+        scope,
+        error: _error instanceof Error ? _error.message : _error,
+        timestamp: new Date().toISOString(),
+      });
+      
       setResults([]);
     } finally {
       setIsLoading(false);
@@ -648,6 +663,35 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
                           <span className="text-gray-700 dark:text-gray-300">{search}</span>
                         </button>
                       ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Bookmarked Items */}
+                {selectedScope === 'all' && !query && (
+                  <div className="border-t border-gray-100 px-4 py-2 dark:border-gray-800">
+                    <h3 className="mb-3 text-sm font-medium text-gray-600 dark:text-gray-400">
+                      {t('navigation:commandCenter.bookmarks.title')}
+                    </h3>
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => navigate('/tickets/favorites')}
+                        className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        <BookmarkIcon className="h-4 w-4 text-yellow-500" />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {t('navigation:commandCenter.bookmarks.favoriteTickets')}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => navigate('/dashboard/bookmarks')}
+                        className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        <BookmarkIcon className="h-4 w-4 text-yellow-500" />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {t('navigation:commandCenter.bookmarks.savedDashboards')}
+                        </span>
+                      </button>
                     </div>
                   </div>
                 )}

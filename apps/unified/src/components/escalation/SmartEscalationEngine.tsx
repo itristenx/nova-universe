@@ -494,9 +494,21 @@ export function SmartEscalationEngine({
       {selectedTab === 'events' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Escalation Events
-            </h3>
+            <div className="flex items-center gap-3">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Escalation Events
+              </h3>
+              <button
+                onClick={() => {
+                  // Trigger events refresh
+                  setEvents([...events]);
+                }}
+                className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                title="Refresh events"
+              >
+                <ArrowPathIcon className="h-4 w-4" />
+              </button>
+            </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {events.length} total events
             </div>
@@ -517,10 +529,13 @@ export function SmartEscalationEngine({
                       </h4>
                       <span
                         className={cn(
-                          'rounded-full px-2 py-1 text-xs font-medium',
+                          'rounded-full px-2 py-1 text-xs font-medium flex items-center gap-1',
                           getPriorityColor(event.priority),
                         )}
                       >
+                        {event.priority === 'critical' && (
+                          <ExclamationTriangleIcon className="h-3 w-3" />
+                        )}
                         {event.priority.toUpperCase()}
                       </span>
                       <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-400">
@@ -540,7 +555,10 @@ export function SmartEscalationEngine({
                           <span className="text-nova-700 dark:text-nova-300 text-sm font-medium">
                             AI Recommendation:
                           </span>
-                          <span className="text-nova-600 dark:text-nova-400 ml-2 text-sm">
+                          <span className="text-nova-600 dark:text-nova-400 ml-2 text-sm flex items-center gap-1">
+                            {event.recommendation.toLowerCase().includes('team') && (
+                              <UserGroupIcon className="h-3 w-3" />
+                            )}
                             {event.recommendation}
                           </span>
                         </div>

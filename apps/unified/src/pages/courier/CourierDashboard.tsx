@@ -25,7 +25,7 @@ const CourierDashboard: React.FC = () => {
       const data = await CourierService.getPackages(filters);
       setPackages(data);
     } catch (_error) {
-      console.error('Failed to load packages:', error);
+      console.error('Failed to load packages:', _error);
     } finally {
       setLoading(false);
     }

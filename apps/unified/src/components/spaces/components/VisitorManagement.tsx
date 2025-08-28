@@ -71,9 +71,15 @@ export function VisitorManagement({
   const [showNewVisitorForm, setShowNewVisitorForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data - would come from API
+  // Mock data - would come from API based on buildingId
   useEffect(() => {
-    const mockVisitors: Visitor[] = [
+    const loadVisitors = async () => {
+      setIsLoading(true);
+      try {
+        // In real implementation, this would fetch visitors for the specific buildingId
+        console.log(`Loading visitors for building: ${buildingId}`);
+        
+        const mockVisitors: Visitor[] = [
       {
         id: 'vis-001',
         firstName: 'John',
@@ -125,8 +131,17 @@ export function VisitorManagement({
         accessLevel: 'restricted',
       },
     ];
-    setVisitors(mockVisitors);
-  }, []);
+        
+        setVisitors(mockVisitors);
+      } catch (error) {
+        console.error('Failed to load visitors:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadVisitors();
+  }, [buildingId]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -182,7 +197,7 @@ export function VisitorManagement({
       );
       onVisitorCheckin?.(visitor.id);
     } catch (_error) {
-      console.error('Check-in failed:', error);
+      console.error('Check-in failed:', _error instanceof Error ? _error.message : String(_error));
     }
     setIsLoading(false);
   };
@@ -206,7 +221,7 @@ export function VisitorManagement({
       );
       onVisitorCheckout?.(visitor.id);
     } catch (_error) {
-      console.error('Check-out failed:', error);
+      console.error('Check-out failed:', _error instanceof Error ? _error.message : String(_error));
     }
     setIsLoading(false);
   };
@@ -290,19 +305,22 @@ export function VisitorManagement({
             />
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="filter-select"
-            aria-label="Filter by status"
-          >
-            <option value="">All Status</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="checked_in">Checked In</option>
-            <option value="checked_out">Checked Out</option>
-            <option value="no_show">No Show</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+          <div className="filter-container">
+            <Filter className="filter-icon" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="filter-select"
+              aria-label="Filter by status"
+            >
+              <option value="">All Status</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="checked_in">Checked In</option>
+              <option value="checked_out">Checked Out</option>
+              <option value="no_show">No Show</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
         </div>
 
         <div className="action-buttons">
@@ -431,7 +449,10 @@ export function VisitorManagement({
                       </div>
                       {selectedVisitor.phone && (
                         <div>
-                          <label>Phone:</label>
+                          <label className="flex items-center space-x-1">
+                            <Phone className="h-3 w-3" />
+                            <span>Phone:</span>
+                          </label>
                           <span>{selectedVisitor.phone}</span>
                         </div>
                       )}
@@ -465,7 +486,10 @@ export function VisitorManagement({
                       </div>
                       {selectedVisitor.badgeNumber && (
                         <div>
-                          <label>Badge Number:</label>
+                          <label className="flex items-center space-x-1">
+                            <Camera className="h-3 w-3" />
+                            <span>Badge ID:</span>
+                          </label>
                           <span>{selectedVisitor.badgeNumber}</span>
                         </div>
                       )}

@@ -46,7 +46,6 @@ import {
   Storage as DataIcon,
   Train as TrainIcon,
   QueryStats as QueryIcon,
-  Timeline as TimelineIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
@@ -182,6 +181,7 @@ export const AIControlTowerDashboard = () => {
       const metricsResponse = await apiService.get(`/ai-control-tower/towers/${tower.id}/metrics`);
       setMetrics(metricsResponse.data);
     } catch (_err) {
+      console.error('Failed to load tower metrics:', _err);
       showSnackbar('Failed to load tower metrics', 'error');
     }
   };
@@ -207,6 +207,7 @@ export const AIControlTowerDashboard = () => {
       setCreateTowerDialog(false);
       showSnackbar('Control tower created successfully', 'success');
     } catch (_err) {
+      console.error('Failed to create control tower:', _err);
       showSnackbar('Failed to create control tower', 'error');
     }
   };
@@ -221,6 +222,7 @@ export const AIControlTowerDashboard = () => {
       setCreateModelDialog(false);
       showSnackbar('AI model created successfully', 'success');
     } catch (_err) {
+      console.error('Failed to create AI model:', _err);
       showSnackbar('Failed to create AI model', 'error');
     }
   };
@@ -232,6 +234,7 @@ export const AIControlTowerDashboard = () => {
       showSnackbar('Training started successfully', 'success');
       loadDashboardData(); // Refresh data
     } catch (_err) {
+      console.error('Failed to start training:', _err);
       showSnackbar('Failed to start training', 'error');
     }
   };
@@ -472,7 +475,7 @@ export const AIControlTowerDashboard = () => {
           <Tab icon={<AIIcon />} label="Models" />
           <Tab icon={<TrainIcon />} label="Training" />
           <Tab icon={<DataIcon />} label="RAG Systems" />
-          <Tab icon={<TimelineIcon />} label="Analytics" />
+          <Tab icon={<AnalyticsIcon />} label="Analytics" />
           <Tab icon={<SecurityIcon />} label="Audit" />
         </Tabs>
       </Paper>
@@ -735,7 +738,7 @@ const AuditPanel = ({ towerId }) => (
   <EmptyState
     icon={<SecurityIcon sx={{ fontSize: 48 }} />}
     title="Audit Trail"
-    description="View comprehensive audit logs and compliance tracking."
+    description={`View comprehensive audit logs and compliance tracking for Tower ${towerId}.`}
   />
 );
 

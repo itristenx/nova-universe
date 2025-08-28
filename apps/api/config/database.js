@@ -2,6 +2,18 @@
 import { logger } from '../logger.js';
 
 /**
+ * Generate a secure password for development
+ */
+function generateSecurePassword() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let result = '';
+  for (let i = 0; i < 32; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+/**
  * Database configuration for PostgreSQL and MongoDB
  * Supports both local development and production environments
  */
@@ -19,14 +31,14 @@ export const databaseConfig = {
     password: (() => {
       const password = process.env.CORE_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
-        logger.error(
-          'CRITICAL: CORE_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment',
-        );
         if (process.env.NODE_ENV === 'production') {
+          logger.error('CRITICAL: CORE_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment');
           throw new Error('Database password is required in production environment');
         }
+        const devPassword = generateSecurePassword();
         logger.warn('Using fallback password for development only');
-        return 'nova_password';
+        logger.warn('⚠️  Database password generated automatically. Please set proper credentials in environment variables.');
+        return devPassword;
       }
       return password;
     })(),
@@ -68,14 +80,14 @@ export const databaseConfig = {
     password: (() => {
       const password = process.env.AUTH_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
-        logger.error(
-          'CRITICAL: AUTH_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment',
-        );
         if (process.env.NODE_ENV === 'production') {
+          logger.error('CRITICAL: AUTH_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment');
           throw new Error('Auth database password is required in production environment');
         }
+        const devPassword = generateSecurePassword();
         logger.warn('Using fallback password for development only');
-        return 'nova_password';
+        logger.warn('⚠️  Database password generated automatically. Please set proper credentials in environment variables.');
+        return devPassword;
       }
       return password;
     })(),
@@ -104,86 +116,72 @@ export const databaseConfig = {
   },
 
   audit_db: {
-    // Connection configuration
-    uri: process.env.AUDIT_DATABASE_URL || 'mongodb://localhost:27017/nova_audit',
-    username: process.env.AUDIT_DB_USER || 'nova_admin',
+    host: process.env.AUDIT_DB_HOST || process.env.POSTGRES_HOST || 'localhost',
+    port: parseInt(process.env.AUDIT_DB_PORT || process.env.POSTGRES_PORT || '5432'),
+    database: process.env.AUDIT_DB_NAME || process.env.POSTGRES_DB || 'nova_universe',
+    user: process.env.AUDIT_DB_USER || process.env.POSTGRES_USER || 'nova_admin',
     password: (() => {
-      const password = process.env.AUDIT_DB_PASSWORD;
+      const password = process.env.AUDIT_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
         if (process.env.NODE_ENV === 'production') {
-          throw new Error('AUDIT_DB_PASSWORD is required in production environment');
+          logger.error('CRITICAL: AUDIT_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment');
+          throw new Error('Audit database password is required in production environment');
         }
-        logger.warn('Using fallback password for MongoDB in development');
-        return generateSecurePassword();
+        const devPassword = generateSecurePassword();
+        logger.warn('Using fallback password for development only');
+        return devPassword;
       }
       return password;
     })(),
-
-    // Build connection URI with SSL options for production
-    get connectionUri() {
-      const baseUri = process.env.AUDIT_DATABASE_URL || 'mongodb://localhost:27017/nova_audit';
-      const sslOptions = process.env.NODE_ENV === 'production' ? '&ssl=true' : '';
-      return `${baseUri}${sslOptions}`;
+    ssl:
+      process.env.NODE_ENV === 'production'
+        ? {
+            rejectUnauthorized: process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false',
+            ca: process.env.POSTGRES_SSL_CA,
+            cert: process.env.POSTGRES_SSL_CERT,
+            key: process.env.POSTGRES_SSL_KEY,
+          }
+        : false,
+    pool: {
+      min: parseInt(process.env.POSTGRES_POOL_MIN || '2'),
+      max: parseInt(process.env.POSTGRES_POOL_MAX || '10'),
+      acquireTimeoutMillis: parseInt(process.env.POSTGRES_POOL_ACQUIRE_TIMEOUT || '60000'),
+      idleTimeoutMillis: parseInt(process.env.POSTGRES_POOL_IDLE_TIMEOUT || '30000'),
+      createTimeoutMillis: parseInt(process.env.POSTGRES_POOL_CREATE_TIMEOUT || '30000'),
+      destroyTimeoutMillis: parseInt(process.env.POSTGRES_POOL_DESTROY_TIMEOUT || '5000'),
+      reapIntervalMillis: parseInt(process.env.POSTGRES_POOL_REAP_INTERVAL || '1000'),
+      createRetryIntervalMillis: parseInt(process.env.POSTGRES_POOL_CREATE_RETRY_INTERVAL || '200'),
     },
+    statement_timeout: parseInt(process.env.POSTGRES_STATEMENT_TIMEOUT || '30000'),
+    query_timeout: parseInt(process.env.POSTGRES_QUERY_TIMEOUT || '30000'),
+    connectionTimeoutMillis: parseInt(process.env.POSTGRES_CONNECTION_TIMEOUT || '5000'),
+  },
 
-    // MongoDB client options
+  mongo: {
+    url: process.env.MONGO_URI || `mongodb://${process.env.MONGO_ROOT_USERNAME || 'admin'}:${process.env.MONGO_ROOT_PASSWORD || 'mongo_secure_pass_2024'}@${process.env.MONGO_HOST || 'localhost'}:${process.env.MONGO_PORT || '27017'}/${process.env.MONGO_DB || 'nova_logs'}?authSource=admin`,
     options: {
-      maxPoolSize: parseInt(process.env.MONGO_MAX_POOL_SIZE || '10'),
-      minPoolSize: parseInt(process.env.MONGO_MIN_POOL_SIZE || '2'),
-      maxIdleTimeMS: parseInt(process.env.MONGO_MAX_IDLE_TIME || '30000'),
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      maxPoolSize: parseInt(process.env.MONGO_POOL_SIZE || '10'),
       serverSelectionTimeoutMS: parseInt(process.env.MONGO_SERVER_SELECTION_TIMEOUT || '5000'),
       socketTimeoutMS: parseInt(process.env.MONGO_SOCKET_TIMEOUT || '45000'),
-      connectTimeoutMS: parseInt(process.env.MONGO_CONNECT_TIMEOUT || '10000'),
-      heartbeatFrequencyMS: parseInt(process.env.MONGO_HEARTBEAT_FREQUENCY || '10000'),
+      bufferMaxEntries: 0,
       retryWrites: true,
-      retryReads: true,
-      compressors: ['snappy', 'zlib'],
-
-      // Security options
-      authSource: process.env.MONGO_AUTH_SOURCE || 'admin',
-      authMechanism: process.env.MONGO_AUTH_MECHANISM || 'SCRAM-SHA-256',
+      w: 'majority',
     },
   },
 
-  // SQLite fallback for development/testing
-  sqlite: {
-    filename: process.env.SQLITE_DB || 'log.sqlite',
-    options: {
-      verbose: process.env.NODE_ENV === 'development',
-    },
+  redis: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+    password: process.env.REDIS_PASSWORD || 'redis_secure_pass_2024',
+    db: parseInt(process.env.REDIS_DB || '0'),
+    retryDelayOnFailover: 100,
+    enableReadyCheck: false,
+    maxRetriesPerRequest: 3,
+    lazyConnect: true,
   },
 };
-
-/**
- * Generate secure random password for database users
- * Used when no password is provided in environment
- */
-function generateSecurePassword() {
-  if (process.env.NODE_ENV === 'development') {
-    return 'dev_password_123!';
-  }
-
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error(
-      'CRITICAL: Database passwords must be explicitly set in production via environment variables',
-    );
-  }
-
-  // In non-production environments, generate a random password
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-  let password = '';
-  for (let i = 0; i < 32; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-
-  if (!process.env.CLI_MODE) {
-    logger.warn(
-      '⚠️  Database password generated automatically. Please set proper credentials in environment variables.',
-    );
-  }
-
-  return password;
-}
 
 /**
  * Validate database configuration
@@ -201,7 +199,13 @@ export function validateDatabaseConfig() {
   if (!databaseConfig.auth_db.user) errors.push('AUTH_DB_USER is required');
   if (!databaseConfig.auth_db.password) errors.push('AUTH_DB_PASSWORD is required');
 
-  if (!databaseConfig.audit_db.uri) errors.push('AUDIT_DATABASE_URL is required');
+  if (!databaseConfig.audit_db.host) errors.push('AUDIT_DB_HOST is required');
+  if (!databaseConfig.audit_db.database) errors.push('AUDIT_DB_NAME is required');
+  if (!databaseConfig.audit_db.user) errors.push('AUDIT_DB_USER is required');
+  if (!databaseConfig.audit_db.password) errors.push('AUDIT_DB_PASSWORD is required');
+
+  if (!databaseConfig.mongo.url) errors.push('MONGO_URI is required');
+  if (!databaseConfig.redis.host) errors.push('REDIS_HOST is required');
 
   // Production security checks
   if (process.env.NODE_ENV === 'production') {

@@ -146,6 +146,7 @@ export default function CreateTicketPage() {
       toast.success('Ticket created successfully!');
       navigate(`/tickets/${ticket.id}`);
     } catch (_error) {
+      console.error('Failed to create ticket:', _error);
       toast.error('Failed to create ticket');
     }
   };

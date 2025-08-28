@@ -1,5 +1,5 @@
-# AI Control Tower Database Schema
-# Enterprise-grade AI/ML/RAG system with custom training, audit trails, and governance
+// AI Control Tower Database Schema
+// Enterprise-grade AI/ML/RAG system with custom training, audit trails, and governance
 
 datasource ai_db {
   provider = "postgresql"
@@ -9,12 +9,12 @@ datasource ai_db {
 generator aiClient {
   provider = "prisma-client-js"
   output   = "../generated/ai"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  binaryTargets = ["native", "debian-openssl-3.0.x", "darwin"]
 }
 
-# ==============================================================================
-# AI CONTROL TOWER CORE MODELS
-# ==============================================================================
+// ==============================================================================
+// AI CONTROL TOWER CORE MODELS
+// ==============================================================================
 
 model AIControlTower {
   id                String              @id @default(uuid())
@@ -26,14 +26,14 @@ model AIControlTower {
   configuration     Json                @default("{}")
   metadata          Json                @default("{}")
   
-  # Relationships
+  //  Relationships
   models            AIModel[]
   pipelines         TrainingPipeline[]
   gateways          AIGateway[]
   auditTrails       AIAuditTrail[]
   customDatasets    CustomDataset[]
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -50,39 +50,39 @@ model AIModel {
   version           String              @default("1.0.0")
   status            ModelStatus         @default(TRAINING)
   
-  # Model Configuration
+  //  Model Configuration
   configuration     Json                @default("{}")
   hyperparameters   Json                @default("{}")
   architecture      Json                @default("{}")
   
-  # Training Information
+  //  Training Information
   trainingConfig    Json?               @map("training_config")
   trainingMetrics   Json?               @map("training_metrics")
   validationMetrics Json?               @map("validation_metrics")
   
-  # Model Assets
+  //  Model Assets
   modelPath         String?             @map("model_path")
   weightsPath       String?             @map("weights_path")
   configPath        String?             @map("config_path")
   
-  # Performance Metrics
+  //  Performance Metrics
   accuracy          Float?
   precision         Float?
   recall            Float?
   f1Score           Float?              @map("f1_score")
   loss              Float?
   
-  # Deployment Information
+  //  Deployment Information
   isDeployed        Boolean             @default(false) @map("is_deployed")
   deploymentUrl     String?             @map("deployment_url")
   deploymentConfig  Json?               @map("deployment_config")
   
-  # Audit and Compliance
+  //  Audit and Compliance
   approvalStatus    ApprovalStatus      @default(PENDING) @map("approval_status")
   approvedBy        String?             @map("approved_by")
   approvedAt        DateTime?           @map("approved_at")
   
-  # Relationships
+  //  Relationships
   controlTower      AIControlTower      @relation(fields: [controlTowerId], references: [id], onDelete: Cascade)
   trainingJobs      TrainingJob[]
   versions          ModelVersion[]
@@ -90,7 +90,7 @@ model AIModel {
   ragDocuments      RAGDocument[]
   auditTrails       AIAuditTrail[]
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -108,25 +108,25 @@ model ModelVersion {
   description       String?
   changelog         String?
   
-  # Version Assets
+  //  Version Assets
   modelPath         String              @map("model_path")
   weightsPath       String?             @map("weights_path")
   configPath        String?             @map("config_path")
   
-  # Performance Metrics
+  //  Performance Metrics
   metrics           Json                @default("{}")
   benchmarkResults  Json?               @map("benchmark_results")
   
-  # Version Management
+  //  Version Management
   isActive          Boolean             @default(false) @map("is_active")
   parentVersionId   String?             @map("parent_version_id")
   
-  # Relationships
+  //  Relationships
   model             AIModel             @relation(fields: [modelId], references: [id], onDelete: Cascade)
   parentVersion     ModelVersion?       @relation("ModelVersionHistory", fields: [parentVersionId], references: [id])
   childVersions     ModelVersion[]      @relation("ModelVersionHistory")
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -136,9 +136,9 @@ model ModelVersion {
   @@index([isActive])
 }
 
-# ==============================================================================
-# TRAINING PIPELINE MODELS
-# ==============================================================================
+// ==============================================================================
+// TRAINING PIPELINE MODELS
+// ==============================================================================
 
 model TrainingPipeline {
   id                String              @id @default(uuid())
@@ -146,19 +146,19 @@ model TrainingPipeline {
   name              String
   description       String?
   
-  # Pipeline Configuration
+  //  Pipeline Configuration
   configuration     Json                @default("{}")
-  schedule          String?             # Cron expression
+  schedule          String?             // Cron expression
   isActive          Boolean             @default(true) @map("is_active")
   
-  # Pipeline Stages
-  stages            Json                @default("[]") # Array of pipeline stages
+  //  Pipeline Stages
+  stages            Json                @default("[]") // Array of pipeline stages
   
-  # Relationships
+  //  Relationships
   controlTower      AIControlTower      @relation(fields: [controlTowerId], references: [id], onDelete: Cascade)
   jobs              TrainingJob[]
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -172,42 +172,42 @@ model TrainingJob {
   pipelineId        String?             @map("pipeline_id")
   modelId           String              @map("model_id")
   
-  # Job Information
+  //  Job Information
   name              String
   description       String?
   jobType           TrainingJobType     @map("job_type") @default(TRAINING)
   status            JobStatus           @default(QUEUED)
   
-  # Training Configuration
+  //  Training Configuration
   trainingConfig    Json                @map("training_config")
   datasetConfig     Json                @map("dataset_config")
   hyperparameters   Json                @default("{}")
   
-  # Job Progress
+  //  Job Progress
   progress          Float               @default(0.0)
   currentEpoch      Int?                @map("current_epoch")
   totalEpochs       Int?                @map("total_epochs")
   
-  # Job Results
+  //  Job Results
   finalMetrics      Json?               @map("final_metrics")
-  artifacts         Json?               # Paths to generated artifacts
-  logs              String?             # Training logs
+  artifacts         Json?               // Paths to generated artifacts
+  logs              String?             // Training logs
   
-  # Job Timing
+  //  Job Timing
   startedAt         DateTime?           @map("started_at")
   completedAt       DateTime?           @map("completed_at")
-  duration          Int?                # Duration in seconds
+  duration          Int?                // Duration in seconds
   
-  # Error Handling
+  //  Error Handling
   errorMessage      String?             @map("error_message")
   retryCount        Int                 @default(0) @map("retry_count")
   maxRetries        Int                 @default(3) @map("max_retries")
   
-  # Relationships
+  //  Relationships
   pipeline          TrainingPipeline?   @relation(fields: [pipelineId], references: [id], onDelete: SetNull)
   model             AIModel             @relation(fields: [modelId], references: [id], onDelete: Cascade)
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -218,9 +218,9 @@ model TrainingJob {
   @@index([jobType])
 }
 
-# ==============================================================================
-# CUSTOM TRAINING AND DATASETS
-# ==============================================================================
+// ==============================================================================
+// CUSTOM TRAINING AND DATASETS
+// ==============================================================================
 
 model CustomDataset {
   id                String              @id @default(uuid())
@@ -229,35 +229,35 @@ model CustomDataset {
   description       String?
   datasetType       DatasetType
   
-  # Dataset Configuration
+  //  Dataset Configuration
   schema            Json                @default("{}")
   metadata          Json                @default("{}")
   tags              String[]            @default([])
   
-  # Dataset Statistics
+  //  Dataset Statistics
   totalSamples      Int                 @default(0) @map("total_samples")
-  totalSize         BigInt              @default(0) @map("total_size") # Size in bytes
+  totalSize         BigInt              @default(0) @map("total_size") // Size in bytes
   
-  # Data Quality Metrics
+  //  Data Quality Metrics
   qualityScore      Float?              @map("quality_score")
   completeness      Float?
   consistency       Float?
   accuracy          Float?
   
-  # Storage Information
+  //  Storage Information
   storagePath       String              @map("storage_path")
   storageFormat     String              @map("storage_format") @default("parquet")
   compressionType   String?             @map("compression_type")
   
-  # Access Control
+  //  Access Control
   isPublic          Boolean             @default(false) @map("is_public")
   accessPolicy      Json?               @map("access_policy")
   
-  # Relationships
+  //  Relationships
   controlTower      AIControlTower      @relation(fields: [controlTowerId], references: [id], onDelete: Cascade)
   trainingSets      CustomTrainingSet[]
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -272,31 +272,31 @@ model CustomTrainingSet {
   modelId           String              @map("model_id")
   datasetId         String              @map("dataset_id")
   
-  # Training Set Configuration
+  //  Training Set Configuration
   name              String
   description       String?
   trainingConfig    Json                @map("training_config")
   
-  # Data Split Configuration
+  //  Data Split Configuration
   trainingSplit     Float               @default(0.8) @map("training_split")
   validationSplit   Float               @default(0.1) @map("validation_split")
   testSplit         Float               @default(0.1) @map("test_split")
   
-  # Training Results
+  //  Training Results
   trainingMetrics   Json?               @map("training_metrics")
   validationMetrics Json?               @map("validation_metrics")
   testMetrics       Json?               @map("test_metrics")
   
-  # Audit Information
+  //  Audit Information
   createdBy         String              @map("created_by")
   approvedBy        String?             @map("approved_by")
   approvedAt        DateTime?           @map("approved_at")
   
-  # Relationships
+  //  Relationships
   model             AIModel             @relation(fields: [modelId], references: [id], onDelete: Cascade)
   dataset           CustomDataset       @relation(fields: [datasetId], references: [id], onDelete: Cascade)
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -306,45 +306,45 @@ model CustomTrainingSet {
   @@index([datasetId])
 }
 
-# ==============================================================================
-# RAG (RETRIEVAL-AUGMENTED GENERATION) MODELS
-# ==============================================================================
+// ==============================================================================
+// RAG (RETRIEVAL-AUGMENTED GENERATION) MODELS
+// ==============================================================================
 
 model RAGSystem {
   id                String              @id @default(uuid())
   name              String
   description       String?
   
-  # RAG Configuration
+  //  RAG Configuration
   embeddingModel    String              @map("embedding_model")
   vectorDimensions  Int                 @map("vector_dimensions")
   chunkSize         Int                 @default(1000) @map("chunk_size")
   chunkOverlap      Int                 @default(200) @map("chunk_overlap")
   
-  # Retrieval Configuration
+  //  Retrieval Configuration
   retrievalStrategy String              @default("semantic") @map("retrieval_strategy")
   maxRetrievalDocs  Int                 @default(5) @map("max_retrieval_docs")
   similarityThreshold Float             @default(0.7) @map("similarity_threshold")
   
-  # Generation Configuration
+  //  Generation Configuration
   generativeModel   String              @map("generative_model")
   maxTokens         Int                 @default(2048) @map("max_tokens")
   temperature       Float               @default(0.7)
   
-  # System Prompts
+  //  System Prompts
   systemPrompt      String?             @map("system_prompt")
   contextPrompt     String?             @map("context_prompt")
   
-  # Performance Metrics
+  //  Performance Metrics
   avgResponseTime   Float?              @map("avg_response_time")
   avgRelevanceScore Float?              @map("avg_relevance_score")
   totalQueries      Int                 @default(0) @map("total_queries")
   
-  # Relationships
+  //  Relationships
   documents         RAGDocument[]
   queries           RAGQuery[]
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -356,32 +356,32 @@ model RAGDocument {
   ragSystemId       String?             @map("rag_system_id")
   modelId           String?             @map("model_id")
   
-  # Document Information
+  //  Document Information
   title             String
-  content           String              @db.Text
+  content           String              @ai_db.Text
   contentType       String              @default("text/plain") @map("content_type")
   source            String?
   url               String?
   
-  # Document Processing
+  //  Document Processing
   processed         Boolean             @default(false)
-  chunks            Json?               # Processed chunks with embeddings
-  embedding         Json?               # Document-level embedding
+  chunks            Json?               // Processed chunks with embeddings
+  embedding         Json?               // Document-level embedding
   
-  # Document Metadata
+  //  Document Metadata
   tags              String[]            @default([])
   category          String?
   language          String              @default("en")
   
-  # Quality Metrics
+  //  Quality Metrics
   qualityScore      Float?              @map("quality_score")
   readabilityScore  Float?              @map("readability_score")
   
-  # Relationships
+  //  Relationships
   ragSystem         RAGSystem?          @relation(fields: [ragSystemId], references: [id], onDelete: SetNull)
   model             AIModel?            @relation(fields: [modelId], references: [id], onDelete: SetNull)
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -396,32 +396,32 @@ model RAGQuery {
   id                String              @id @default(uuid())
   ragSystemId       String              @map("rag_system_id")
   
-  # Query Information
-  query             String              @db.Text
+  //  Query Information
+  query             String              @ai_db.Text
   queryEmbedding    Json?               @map("query_embedding")
   intent            String?
   
-  # Query Processing
-  retrievedDocs     Json?               @map("retrieved_docs") # IDs and scores of retrieved documents
-  generatedResponse String?             @db.Text @map("generated_response")
+  //  Query Processing
+  retrievedDocs     Json?               @map("retrieved_docs") // IDs and scores of retrieved documents
+  generatedResponse String?             @ai_db.Text @map("generated_response")
   
-  # Performance Metrics
-  retrievalTime     Float?              @map("retrieval_time") # milliseconds
-  generationTime    Float?              @map("generation_time") # milliseconds
-  totalTime         Float?              @map("total_time") # milliseconds
+  //  Performance Metrics
+  retrievalTime     Float?              @map("retrieval_time") // milliseconds
+  generationTime    Float?              @map("generation_time") // milliseconds
+  totalTime         Float?              @map("total_time") // milliseconds
   
-  # Quality Metrics
+  //  Quality Metrics
   relevanceScore    Float?              @map("relevance_score")
-  userFeedback      Int?                @map("user_feedback") # 1-5 rating
+  userFeedback      Int?                @map("user_feedback") // 1-5 rating
   
-  # User Information
+  //  User Information
   userId            String?             @map("user_id")
   sessionId         String?             @map("session_id")
   
-  # Relationships
+  //  Relationships
   ragSystem         RAGSystem           @relation(fields: [ragSystemId], references: [id], onDelete: Cascade)
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -432,9 +432,9 @@ model RAGQuery {
   @@index([createdAt])
 }
 
-# ==============================================================================
-# AI GATEWAY AND ROUTING
-# ==============================================================================
+// ==============================================================================
+// AI GATEWAY AND ROUTING
+// ==============================================================================
 
 model AIGateway {
   id                String              @id @default(uuid())
@@ -442,42 +442,42 @@ model AIGateway {
   name              String
   description       String?
   
-  # Gateway Configuration
+  //  Gateway Configuration
   endpoint          String              @unique
   apiVersion        String              @default("v1") @map("api_version")
   isActive          Boolean             @default(true) @map("is_active")
   
-  # Routing Configuration
+  //  Routing Configuration
   routingRules      Json                @default("[]") @map("routing_rules")
   loadBalancing     Json                @default("{}") @map("load_balancing")
   failoverConfig    Json                @default("{}") @map("failover_config")
   
-  # Security Configuration
+  //  Security Configuration
   authentication    Json                @default("{}")
   authorization     Json                @default("{}")
   rateLimiting      Json                @default("{}") @map("rate_limiting")
   
-  # Guardrails Configuration
+  //  Guardrails Configuration
   inputValidation   Json                @default("{}") @map("input_validation")
   outputFiltering   Json                @default("{}") @map("output_filtering")
   contentModeration Json                @default("{}") @map("content_moderation")
   
-  # Performance Configuration
+  //  Performance Configuration
   caching           Json                @default("{}")
-  timeout           Int                 @default(30000) # milliseconds
+  timeout           Int                 @default(30000) // milliseconds
   retryPolicy       Json                @default("{}") @map("retry_policy")
   
-  # Monitoring Configuration
+  //  Monitoring Configuration
   logging           Json                @default("{}")
   metrics           Json                @default("{}")
   alerting          Json                @default("{}")
   
-  # Relationships
+  //  Relationships
   controlTower      AIControlTower      @relation(fields: [controlTowerId], references: [id], onDelete: Cascade)
   providers         AIProvider[]
   requests          AIGatewayRequest[]
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -492,30 +492,30 @@ model AIProvider {
   name              String
   providerType      ProviderType        @map("provider_type")
   
-  # Provider Configuration
+  //  Provider Configuration
   endpoint          String
   apiKey            String?             @map("api_key")
   configuration     Json                @default("{}")
   
-  # Provider Capabilities
+  //  Provider Capabilities
   supportedModels   String[]            @default([]) @map("supported_models")
   capabilities      String[]            @default([])
   
-  # Provider Metrics
+  //  Provider Metrics
   isHealthy         Boolean             @default(true) @map("is_healthy")
   lastHealthCheck   DateTime?           @map("last_health_check")
-  responseTime      Float?              @map("response_time") # Average response time in ms
-  errorRate         Float?              @map("error_rate") # Error rate percentage
+  responseTime      Float?              @map("response_time") // Average response time in ms
+  errorRate         Float?              @map("error_rate") // Error rate percentage
   
-  # Cost Information
+  //  Cost Information
   costPerRequest    Float?              @map("cost_per_request")
   costPerToken      Float?              @map("cost_per_token")
   monthlySpend      Float?              @map("monthly_spend")
   
-  # Relationships
+  //  Relationships
   gateway           AIGateway           @relation(fields: [gatewayId], references: [id], onDelete: Cascade)
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -529,44 +529,44 @@ model AIGatewayRequest {
   id                String              @id @default(uuid())
   gatewayId         String              @map("gateway_id")
   
-  # Request Information
+  //  Request Information
   method            String
   path              String
   query             String?
   headers           Json?
   body              Json?
   
-  # Routing Information
+  //  Routing Information
   providerId        String?             @map("provider_id")
   modelId           String?             @map("model_id")
   routingDecision   Json?               @map("routing_decision")
   
-  # Response Information
+  //  Response Information
   statusCode        Int?                @map("status_code")
   responseHeaders   Json?               @map("response_headers")
   responseBody      Json?               @map("response_body")
   
-  # Performance Metrics
+  //  Performance Metrics
   requestTime       DateTime            @map("request_time")
-  responseTime      Float?              @map("response_time") # milliseconds
+  responseTime      Float?              @map("response_time") // milliseconds
   tokenCount        Int?                @map("token_count")
   
-  # Cost Information
+  //  Cost Information
   estimatedCost     Float?              @map("estimated_cost")
   
-  # Security Information
+  //  Security Information
   clientId          String?             @map("client_id")
   userId            String?             @map("user_id")
   ipAddress         String?             @map("ip_address")
   
-  # Error Information
+  //  Error Information
   errorCode         String?             @map("error_code")
   errorMessage      String?             @map("error_message")
   
-  # Relationships
+  //  Relationships
   gateway           AIGateway           @relation(fields: [gatewayId], references: [id], onDelete: Cascade)
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   
   @@map("ai_gateway_requests")
@@ -578,49 +578,49 @@ model AIGatewayRequest {
   @@index([userId])
 }
 
-# ==============================================================================
-# AUDIT AND COMPLIANCE MODELS
-# ==============================================================================
+// ==============================================================================
+// AUDIT AND COMPLIANCE MODELS
+// ==============================================================================
 
 model AIAuditTrail {
   id                String              @id @default(uuid())
   controlTowerId    String?             @map("control_tower_id")
   modelId           String?             @map("model_id")
   
-  # Audit Information
+  //  Audit Information
   eventType         AuditEventType      @map("event_type")
   action            String
   description       String?
   
-  # Entity Information
+  //  Entity Information
   entityType        String              @map("entity_type")
   entityId          String              @map("entity_id")
   
-  # User Information
+  //  User Information
   userId            String?             @map("user_id")
   userRole          String?             @map("user_role")
   userAgent         String?             @map("user_agent")
   ipAddress         String?             @map("ip_address")
   
-  # Data Changes
+  //  Data Changes
   oldValues         Json?               @map("old_values")
   newValues         Json?               @map("new_values")
   changedFields     String[]            @default([]) @map("changed_fields")
   
-  # Context Information
+  //  Context Information
   sessionId         String?             @map("session_id")
   requestId         String?             @map("request_id")
   metadata          Json?
   
-  # Risk Assessment
+  //  Risk Assessment
   riskLevel         RiskLevel           @default(LOW) @map("risk_level")
   complianceFlags   String[]            @default([]) @map("compliance_flags")
   
-  # Relationships
+  //  Relationships
   controlTower      AIControlTower?     @relation(fields: [controlTowerId], references: [id], onDelete: SetNull)
   model             AIModel?            @relation(fields: [modelId], references: [id], onDelete: SetNull)
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   
   @@map("ai_audit_trails")
@@ -637,28 +637,28 @@ model AIConfiguration {
   name              String              @unique
   category          String
   
-  # Configuration Value
+  //  Configuration Value
   value             Json
-  dataType          String              @map("data_type") # string, number, boolean, object, array
+  dataType          String              @map("data_type") // string, number, boolean, object, array
   
-  # Configuration Metadata
+  //  Configuration Metadata
   description       String?
   isSecret          Boolean             @default(false) @map("is_secret")
   isEditable        Boolean             @default(true) @map("is_editable")
   
-  # Validation Rules
+  //  Validation Rules
   validationRules   Json?               @map("validation_rules")
   defaultValue      Json?               @map("default_value")
   
-  # Change Management
+  //  Change Management
   lastModifiedBy    String?             @map("last_modified_by")
   changeReason      String?             @map("change_reason")
   version           Int                 @default(1)
   
-  # Environment Overrides
+  //  Environment Overrides
   environment       AIEnvironment?
   
-  # Timestamps
+  //  Timestamps
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   
@@ -667,9 +667,9 @@ model AIConfiguration {
   @@index([environment])
 }
 
-# ==============================================================================
-# ENUMS
-# ==============================================================================
+// ==============================================================================
+// ENUMS
+// ==============================================================================
 
 enum AIEnvironment {
   DEVELOPMENT

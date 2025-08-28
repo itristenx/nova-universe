@@ -110,6 +110,13 @@ export const useUserStore = create<UserState>()(
         const user = await userService.getUser(id);
         return user;
       } catch (error: any) {
+        // Enhanced error handling for user details fetching
+        console.error('Failed to fetch user details:', {
+          userId: id,
+          error: error instanceof Error ? error.message : error,
+          timestamp: new Date().toISOString(),
+        });
+        
         toast.error('Failed to fetch user details');
         return null;
       }
@@ -211,6 +218,13 @@ export const useUserStore = create<UserState>()(
         toast.success('User activated successfully');
         return true;
       } catch (error: any) {
+        // Enhanced error handling for user activation
+        console.error('Failed to activate user:', {
+          userId: id,
+          error: error instanceof Error ? error.message : error,
+          timestamp: new Date().toISOString(),
+        });
+        
         toast.error('Failed to activate user');
         return false;
       }
@@ -228,6 +242,13 @@ export const useUserStore = create<UserState>()(
         toast.success('User deactivated successfully');
         return true;
       } catch (error: any) {
+        // Enhanced error handling for user deactivation
+        console.error('Failed to deactivate user:', {
+          userId: id,
+          error: error instanceof Error ? error.message : error,
+          timestamp: new Date().toISOString(),
+        });
+        
         toast.error('Failed to deactivate user');
         return false;
       }
@@ -239,6 +260,13 @@ export const useUserStore = create<UserState>()(
         toast.success('Password reset successfully');
         return result.temporaryPassword || null;
       } catch (error: any) {
+        // Enhanced error handling for password reset
+        console.error('Failed to reset user password:', {
+          userId: id,
+          error: error instanceof Error ? error.message : error,
+          timestamp: new Date().toISOString(),
+        });
+        
         toast.error('Failed to reset password');
         return null;
       }
@@ -249,6 +277,12 @@ export const useUserStore = create<UserState>()(
         const roles = await userService.getRoles();
         set({ roles });
       } catch (error: any) {
+        // Enhanced error handling for roles fetching
+        console.error('Failed to fetch roles:', {
+          error: error instanceof Error ? error.message : error,
+          timestamp: new Date().toISOString(),
+        });
+        
         toast.error('Failed to fetch roles');
       }
     },

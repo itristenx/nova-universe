@@ -250,6 +250,14 @@ export const useDashboardStore = create<DashboardState>()(
         try {
           await get().updateWidget(id, { position });
         } catch (_error: any) {
+          // Enhanced error handling with detailed logging
+          console.error('Failed to save widget position:', {
+            widgetId: id,
+            position,
+            error: _error instanceof Error ? _error.message : _error,
+            timestamp: new Date().toISOString(),
+          });
+          
           // Revert on error
           set({ widgets });
           toast.error('Failed to save widget position');
@@ -269,6 +277,13 @@ export const useDashboardStore = create<DashboardState>()(
           });
           toast.success('Dashboard layout saved successfully');
         } catch (_error: any) {
+          // Enhanced error handling for layout saving
+          console.error('Failed to save dashboard layout:', {
+            layout: layout.name,
+            error: _error instanceof Error ? _error.message : _error,
+            timestamp: new Date().toISOString(),
+          });
+          
           set({ error: 'Failed to save dashboard layout' });
           toast.error('Failed to save dashboard layout');
         }
@@ -286,6 +301,14 @@ export const useDashboardStore = create<DashboardState>()(
             currentLayout: currentLayout?.id === id ? updatedLayout : currentLayout,
           });
         } catch (_error: any) {
+          // Enhanced error handling for layout updates
+          console.error('Failed to update dashboard layout:', {
+            layoutId: id,
+            updates: Object.keys(updates),
+            error: _error instanceof Error ? _error.message : _error,
+            timestamp: new Date().toISOString(),
+          });
+          
           set({ error: 'Failed to update dashboard layout' });
           toast.error('Failed to update dashboard layout');
         }
@@ -306,6 +329,13 @@ export const useDashboardStore = create<DashboardState>()(
 
           toast.success('Dashboard layout deleted successfully');
         } catch (_error: any) {
+          // Enhanced error handling for layout deletion
+          console.error('Failed to delete dashboard layout:', {
+            layoutId: id,
+            error: _error instanceof Error ? _error.message : _error,
+            timestamp: new Date().toISOString(),
+          });
+          
           set({ error: 'Failed to delete dashboard layout' });
           toast.error('Failed to delete dashboard layout');
         }
@@ -319,6 +349,14 @@ export const useDashboardStore = create<DashboardState>()(
           set({ layouts: [...layouts, newLayout] });
           toast.success('Dashboard layout duplicated successfully');
         } catch (_error: any) {
+          // Enhanced error handling for layout duplication
+          console.error('Failed to duplicate dashboard layout:', {
+            sourceLayoutId: id,
+            newName: name,
+            error: _error instanceof Error ? _error.message : _error,
+            timestamp: new Date().toISOString(),
+          });
+          
           set({ error: 'Failed to duplicate dashboard layout' });
           toast.error('Failed to duplicate dashboard layout');
         }
@@ -336,6 +374,14 @@ export const useDashboardStore = create<DashboardState>()(
           });
           toast.success('Dashboard created from template successfully');
         } catch (_error: any) {
+          // Enhanced error handling for template creation
+          console.error('Failed to create dashboard from template:', {
+            templateId,
+            newName: name,
+            error: _error instanceof Error ? _error.message : _error,
+            timestamp: new Date().toISOString(),
+          });
+          
           set({ error: 'Failed to create dashboard from template' });
           toast.error('Failed to create dashboard from template');
         }
@@ -372,6 +418,14 @@ export const useDashboardStore = create<DashboardState>()(
             get().updatePresence(users);
           });
         } catch (error: any) {
+          // Enhanced error handling for collaboration start
+          console.error('Failed to start collaboration:', {
+            resourceType,
+            resourceId,
+            error: error instanceof Error ? error.message : error,
+            timestamp: new Date().toISOString(),
+          });
+          
           toast.error('Failed to start collaboration');
         }
       },
@@ -386,6 +440,14 @@ export const useDashboardStore = create<DashboardState>()(
             presenceUsers: [],
           });
         } catch (error: any) {
+          // Enhanced error handling for collaboration stop
+          console.error('Failed to stop collaboration:', {
+            resourceType,
+            resourceId,
+            error: error instanceof Error ? error.message : error,
+            timestamp: new Date().toISOString(),
+          });
+          
           toast.error('Failed to stop collaboration');
         }
       },

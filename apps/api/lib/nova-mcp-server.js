@@ -599,6 +599,164 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
   }
 
   /**
+   * Handle ticket creation
+   */
+  async handleTicketCreation(ticketData) {
+    try {
+      const { title, description, priority = 'medium', category = 'incident', assignee } = ticketData;
+      
+      const result = await db.query(
+        'INSERT INTO tickets (title, description, priority, category, status, assignee_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+        [
+          title,
+          description,
+          priority,
+          category,
+          'new',
+          assignee || null,
+          new Date(),
+          new Date(),
+        ],
+      );
+
+      return result.rows[0];
+    } catch (error) {
+      logger.error('Ticket creation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle ticket update
+   */
+  async handleTicketUpdate(ticketData) {
+    try {
+      const { id, ...updateData } = ticketData;
+      
+      const fields = Object.keys(updateData);
+      const values = Object.values(updateData);
+      
+      if (fields.length === 0) {
+        throw new Error('No fields to update');
+      }
+
+      const setClause = fields.map((field, index) => `${field} = $${index + 2}`).join(', ');
+      const query = `UPDATE tickets SET ${setClause}, updated_at = $1 WHERE id = $${values.length + 2} RETURNING *`;
+
+      const result = await db.query(query, [new Date(), ...values, id]);
+      
+      if (result.rows.length === 0) {
+        throw new Error('Ticket not found');
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      logger.error('Ticket update failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle ticket escalation
+   */
+  async handleTicketEscalation(ticketData) {
+    try {
+      const { id, escalationReason, escalateTo } = ticketData;
+      
+      // Update ticket status and add escalation info
+      const result = await db.query(
+        'UPDATE tickets SET status = $1, priority = CASE WHEN priority != $2 THEN $2 ELSE priority END, updated_at = $3 WHERE id = $4 RETURNING *',
+        ['escalated', 'high', new Date(), id]
+      );
+
+      if (result.rows.length === 0) {
+        throw new Error('Ticket not found');
+      }
+
+      // Log escalation
+      await db.query(
+        'INSERT INTO logs (ticket_id, name, title, system, urgency, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+        [id, 'System', `Ticket escalated: ${escalationReason}`, 'nova-mcp', 'high', new Date()]
+      );
+
+      return {
+        ...result.rows[0],
+        escalationReason,
+        escalateTo,
+        escalatedAt: new Date()
+      };
+    } catch (error) {
+      logger.error('Ticket escalation failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle ticket resolution
+   */
+  async handleTicketResolution(ticketData) {
+    try {
+      const { id, resolution, resolvedBy } = ticketData;
+      
+      const result = await db.query(
+        'UPDATE tickets SET status = $1, resolution = $2, resolved_at = $3, updated_at = $4 WHERE id = $5 RETURNING *',
+        ['resolved', resolution, new Date(), new Date(), id]
+      );
+
+      if (result.rows.length === 0) {
+        throw new Error('Ticket not found');
+      }
+
+      // Log resolution
+      await db.query(
+        'INSERT INTO logs (ticket_id, name, title, system, urgency, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+        [id, resolvedBy || 'System', `Ticket resolved: ${resolution}`, 'nova-mcp', 'medium', new Date()]
+      );
+
+      return result.rows[0];
+    } catch (error) {
+      logger.error('Ticket resolution failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle ticket retrieval
+   */
+  async handleTicketRetrieval(ticketData) {
+    try {
+      const { id, status, priority } = ticketData;
+      
+      let query = 'SELECT * FROM tickets WHERE 1=1';
+      const params = [];
+      let paramIndex = 1;
+
+      if (id) {
+        query += ` AND id = $${paramIndex++}`;
+        params.push(id);
+      }
+
+      if (status) {
+        query += ` AND status = $${paramIndex++}`;
+        params.push(status);
+      }
+
+      if (priority) {
+        query += ` AND priority = $${paramIndex++}`;
+        params.push(priority);
+      }
+
+      query += ' ORDER BY created_at DESC';
+
+      const result = await db.query(query, params);
+      return result.rows;
+    } catch (error) {
+      logger.error('Ticket retrieval failed:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Start the MCP server with specified transport
    */
   async start(transportType = 'stdio', options = {}) {

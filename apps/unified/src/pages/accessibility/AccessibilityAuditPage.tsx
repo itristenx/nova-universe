@@ -78,7 +78,7 @@ export default function AccessibilityAuditPage() {
         setSettings(data.settings);
       }
     } catch (_error) {
-      console.warn('Accessibility API not available, using defaults:', error);
+      console.warn('Accessibility API not available, using defaults:', _error instanceof Error ? _error.message : String(_error));
     }
   };
 
@@ -96,7 +96,7 @@ export default function AccessibilityAuditPage() {
         setAuditResults([]);
       }
     } catch (_error) {
-      console.warn('Accessibility audit API unavailable, using fallback data:', error);
+      console.warn('Accessibility audit API unavailable, using fallback data:', _error instanceof Error ? _error.message : String(_error));
       // Fallback to empty state
       setAuditResults([]);
     }
@@ -133,6 +133,42 @@ export default function AccessibilityAuditPage() {
 
     // Focus indicators
     root.classList.toggle('enhanced-focus', newSettings.focusIndicators);
+  };
+
+  // Generate audit rules using the AccessibilityRule type
+  const generateAccessibilityRules = (): AccessibilityRule[] => {
+    return [
+      {
+        id: 'alt-text',
+        guideline: 'WCAG 1.1.1',
+        level: 'A',
+        category: 'perceivable',
+        title: 'Images have alternative text',
+        description: 'All images must have appropriate alternative text for screen readers',
+        impact: 'critical',
+        wcagReference: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html'
+      },
+      {
+        id: 'color-contrast',
+        guideline: 'WCAG 1.4.3',
+        level: 'AA',
+        category: 'perceivable',
+        title: 'Sufficient color contrast',
+        description: 'Text must have sufficient contrast against background colors',
+        impact: 'serious',
+        wcagReference: 'https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html'
+      },
+      {
+        id: 'keyboard-navigation',
+        guideline: 'WCAG 2.1.1',
+        level: 'A',
+        category: 'operable',
+        title: 'Keyboard accessible',
+        description: 'All functionality must be available from a keyboard',
+        impact: 'critical',
+        wcagReference: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html'
+      }
+    ];
   };
 
   const getStatusIcon = (status: string) => {
@@ -304,10 +340,10 @@ export default function AccessibilityAuditPage() {
               </div>
               <button
                 onClick={runAccessibilityAudit}
-                disabled={auditRunning}
+                disabled={auditRunning || loading}
                 className="rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 disabled:opacity-50"
               >
-                {auditRunning ? (
+                {auditRunning || loading ? (
                   <div className="flex items-center space-x-2">
                     <LoadingSpinner size="sm" />
                     <span>{t('accessibility:auditing')}</span>
@@ -441,16 +477,20 @@ export default function AccessibilityAuditPage() {
           <div className="space-y-6">
             {/* Visual Settings */}
             <div>
-              <h3 className="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                {t('accessibility:visualSettings')}
+              <h3 className="mb-3 flex items-center space-x-2 text-sm font-medium text-gray-900 dark:text-white">
+                <EyeIcon className="h-4 w-4" />
+                <span>{t('accessibility:visualSettings')}</span>
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t('accessibility:highContrast')}
-                    </label>
-                    <p className="text-xs text-gray-500">{t('accessibility:highContrastDesc')}</p>
+                  <div className="flex items-center space-x-2">
+                    <AdjustmentsHorizontalIcon className="h-4 w-4 text-gray-500" />
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('accessibility:highContrast')}
+                      </label>
+                      <p className="text-xs text-gray-500">{t('accessibility:highContrastDesc')}</p>
+                    </div>
                   </div>
                   <button
                     onClick={() => updateSetting('highContrast', !settings.highContrast)}
@@ -548,10 +588,36 @@ export default function AccessibilityAuditPage() {
 
             {/* Interaction Settings */}
             <div>
-              <h3 className="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                {t('accessibility:interactionSettings')}
+              <h3 className="mb-3 flex items-center space-x-2 text-sm font-medium text-gray-900 dark:text-white">
+                <CursorArrowRaysIcon className="h-4 w-4" />
+                <span>{t('accessibility:interactionSettings')}</span>
               </h3>
               <div className="space-y-4">
+                {/* Screen Reader Support */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <SpeakerWaveIcon className="h-4 w-4 text-gray-500" />
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('accessibility:screenReader')}
+                      </label>
+                      <p className="text-xs text-gray-500">{t('accessibility:screenReaderDesc')}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => updateSetting('screenReader', !settings.screenReader)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      settings.screenReader ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        settings.screenReader ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <div>
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -613,10 +679,23 @@ export default function AccessibilityAuditPage() {
               href="https://www.w3.org/WAI/WCAG21/quickref/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+              className="flex items-center space-x-1 text-sm text-blue-600 hover:underline dark:text-blue-400"
             >
-              {t('accessibility:viewFullGuidelines')} →
+              <DocumentTextIcon className="h-4 w-4" />
+              <span>{t('accessibility:viewFullGuidelines')} →</span>
             </a>
+          </div>
+
+          {/* Search Guidelines */}
+          <div className="mb-6">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder={t('accessibility:searchGuidelines')}
+                className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
+              />
+            </div>
           </div>
 
           <div className="space-y-6">

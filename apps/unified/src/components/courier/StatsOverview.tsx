@@ -21,7 +21,7 @@ const StatsOverview: React.FC = () => {
       const data = await CourierService.getPackageStats('24h');
       setStats(data);
     } catch (_error) {
-      console.error('Failed to load stats:', error);
+      console.error('Failed to load stats:', _error);
     } finally {
       setLoading(false);
     }

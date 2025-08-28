@@ -1,8 +1,27 @@
 // Database factory and abstraction layer
 import { logger } from '../logger.js';
 import { databaseConfig } from '../config/database.js';
-import postgresManager, { PostgreSQLManager } from './postgresql.js';
-import mongoManager from './mongodb.js';
+
+// Import database managers with graceful fallbacks
+let postgresManager, PostgreSQLManager, mongoManager;
+
+try {
+  const postgresModule = await import('./postgresql.js');
+  postgresManager = postgresModule.default;
+  PostgreSQLManager = postgresModule.PostgreSQLManager;
+} catch (error) {
+  logger.warn('PostgreSQL manager not available:', error.message);
+  postgresManager = null;
+  PostgreSQLManager = null;
+}
+
+try {
+  const mongoModule = await import('./mongodb.js');
+  mongoManager = mongoModule.default;
+} catch (error) {
+  logger.warn('MongoDB manager not available:', error.message);
+  mongoManager = null;
+}
 
 /**
  * Database Factory
@@ -14,7 +33,7 @@ class DatabaseFactory {
     this.initializationPromise = null;
     this.primaryDb = null;
     this.coreDb = postgresManager;
-    this.authDb = new PostgreSQLManager(databaseConfig.auth_db);
+    this.authDb = PostgreSQLManager ? new PostgreSQLManager(databaseConfig.auth_db) : null;
     this.auditDb = mongoManager;
     this.availableDatabases = new Set();
   }
@@ -44,11 +63,18 @@ class DatabaseFactory {
       }
 
       try {
-        await this.initializePostgreSQL();
-        await this.initializeAuthPostgreSQL();
-        if (process.env.MONGO_ENABLED === 'true') {
+        if (postgresManager) {
+          await this.initializePostgreSQL();
+        }
+        
+        if (PostgreSQLManager && this.authDb) {
+          await this.initializeAuthPostgreSQL();
+        }
+        
+        if (mongoManager && process.env.MONGO_ENABLED === 'true') {
           await this.initializeMongoDB();
         }
+        
         if (this.availableDatabases.size === 0) {
           const allowDegraded =
             process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development';
@@ -89,29 +115,48 @@ class DatabaseFactory {
    */
   async initializePostgreSQL() {
     try {
-      const success = await this.coreDb.initialize();
+      if (!postgresManager) {
+        logger.warn('PostgreSQL manager not available');
+        return false;
+      }
+
+      const success = await postgresManager.initialize();
       if (success) {
-        this.primaryDb = this.coreDb;
+        this.primaryDb = postgresManager;
         this.availableDatabases.add('core_db');
         logger.info('✅ Core PostgreSQL initialized');
+        return true;
       }
+      return false;
     } catch (error) {
       logger.error('❌ PostgreSQL initialization failed:', error.message);
       if (databaseConfig.primary === 'postgresql') {
-        throw error; // Fail fast if primary database fails
+        throw error;
       }
+      return false;
     }
   }
 
+  /**
+   * Initialize Auth PostgreSQL
+   */
   async initializeAuthPostgreSQL() {
     try {
+      if (!this.authDb) {
+        logger.warn('Auth PostgreSQL manager not available');
+        return false;
+      }
+
       const success = await this.authDb.initialize();
       if (success) {
         this.availableDatabases.add('auth_db');
         logger.info('✅ Auth PostgreSQL initialized');
+        return true;
       }
+      return false;
     } catch (error) {
       logger.error('❌ Auth PostgreSQL initialization failed:', error.message);
+      return false;
     }
   }
 
@@ -120,14 +165,21 @@ class DatabaseFactory {
    */
   async initializeMongoDB() {
     try {
-      const success = await this.auditDb.initialize();
+      if (!mongoManager) {
+        logger.warn('MongoDB manager not available');
+        return false;
+      }
+
+      const success = await mongoManager.initialize();
       if (success) {
         this.availableDatabases.add('audit_db');
-        logger.info('✅ MongoDB audit database initialized');
+        logger.info('✅ MongoDB initialized');
+        return true;
       }
+      return false;
     } catch (error) {
       logger.error('❌ MongoDB initialization failed:', error.message);
-      // MongoDB is optional, don't fail if it's not available
+      return false;
     }
   }
 

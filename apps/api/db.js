@@ -805,6 +805,33 @@ class DatabaseWrapper {
     return await this.prismaQuery(model, 'delete', { where });
   }
 
+  /**
+   * Get mock Prisma results for development
+   */
+  getMockPrismaResult(model, operation, params) {
+    let id;
+    switch (operation) {
+      case 'findMany':
+        return [];
+      case 'findUnique':
+      case 'findFirst':
+        return null;
+      case 'create':
+        return { id: uuidv4(), ...params.data };
+      case 'update':
+        id = params.where.id || params.where.key || uuidv4();
+        return { id, ...params.data };
+      case 'delete':
+        return { id: params.where.id || params.where.key || uuidv4() };
+      case 'updateMany':
+        return { count: 0 };
+      case 'deleteMany':
+        return { count: 0 };
+      default:
+        return null;
+    }
+  }
+
   // Compatibility: .get(sql, params, cb)
   get(sql, params, cb) {
     // If only two arguments and second is a function, shift

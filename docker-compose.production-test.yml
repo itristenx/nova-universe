@@ -1,0 +1,491 @@
+# Nova Universe - Production Test Environment
+# Consolidated Docker Compose for production testing with all services
+# Includes: API, DB, UI, GoAlert, Uptime-Kuma, and monitoring stack
+
+version: '3.8'
+
+services:
+  # ===================================================================
+  # DATABASE SERVICES
+  # ===================================================================
+
+  # PostgreSQL Database (Core Data with Prisma)
+  postgres:
+    image: postgres:15-alpine
+    container_name: nova-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nova_universe}
+      POSTGRES_USER: ${POSTGRES_USER:-nova_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nova_password}
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale=en_US.UTF-8'
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d
+      - ./backups/postgres:/backups
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-nova_admin} -d ${POSTGRES_DB:-nova_universe}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+    command: >
+      postgres
+      -c log_statement=all
+      -c log_destination=stderr
+      -c log_min_duration_statement=100
+      -c shared_preload_libraries=pg_stat_statements
+      -c max_connections=200
+      -c shared_buffers=512MB
+      -c effective_cache_size=2GB
+      -c maintenance_work_mem=128MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=32MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=8MB
+      -c min_wal_size=2GB
+      -c max_wal_size=8GB
+
+  # MongoDB Database (Logs and Telemetry)
+  mongodb:
+    image: mongo:7.0
+    container_name: nova-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-mongo_secure_pass_2024}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-nova_logs}
+    ports:
+      - '${MONGO_PORT:-27017}:27017'
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./scripts/mongo-init:/docker-entrypoint-initdb.d
+      - ./backups/mongodb:/backups
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      mongod
+      --bind_ip_all
+      --logpath=/var/log/mongodb/mongod.log
+      --logappend
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: nova-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-redis_secure_pass_2024}
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --timeout 300
+      --tcp-keepalive 60
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  # Elasticsearch (Search and Analytics)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: nova-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - cluster.name=nova-cluster
+      - node.name=nova-node-1
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms1g -Xmx1g'
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - '${ELASTIC_PORT:-9200}:9200'
+      - '9300:9300'
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./scripts/elasticsearch-config:/usr/share/elasticsearch/config/scripts
+      - ./backups/elasticsearch:/backups
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:9200/_cluster/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  # ===================================================================
+  # APPLICATION SERVICES
+  # ===================================================================
+
+  # Nova API (Backend)
+  nova-api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.prod
+    image: nova-universe/api:latest
+    container_name: nova-api
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - API_PORT=3000
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-nova_admin}:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/${POSTGRES_DB:-nova_universe}
+      - CORE_DATABASE_URL=postgresql://${POSTGRES_USER:-nova_admin}:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/${POSTGRES_DB:-nova_universe}
+      - CMDB_DATABASE_URL=postgresql://${POSTGRES_USER:-nova_admin}:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/${POSTGRES_DB:-nova_universe}
+      - INTEGRATION_DATABASE_URL=postgresql://${POSTGRES_USER:-nova_admin}:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/${POSTGRES_DB:-nova_universe}
+      - NOTIFICATION_DATABASE_URL=postgresql://${POSTGRES_USER:-nova_admin}:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/${POSTGRES_DB:-nova_universe}
+      - USER360_DATABASE_URL=postgresql://${POSTGRES_USER:-nova_admin}:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/${POSTGRES_DB:-nova_universe}
+      - AUTH_DATABASE_URL=postgresql://${POSTGRES_USER:-nova_admin}:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/${POSTGRES_DB:-nova_universe}
+      - AUDIT_DATABASE_URL=postgresql://${POSTGRES_USER:-nova_admin}:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/${POSTGRES_DB:-nova_universe}
+      - MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-mongo_secure_pass_2024}@mongodb:27017/${MONGO_DB:-nova_logs}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_secure_pass_2024}@redis:6379
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - JWT_SECRET=${JWT_SECRET:-your-super-secure-jwt-secret-key-here}
+      - SESSION_SECRET=${SESSION_SECRET:-nova-session-secret-2024}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-nova_universe}
+      - POSTGRES_USER=${POSTGRES_USER:-nova_admin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-nova_password}
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./logs/api:/app/logs
+      - ./uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+
+  # Nova Unified UI (Modern Admin Interface)
+  nova-unified:
+    build:
+      context: ./apps/unified
+      dockerfile: Dockerfile.prod
+    image: nova-universe/unified:latest
+    container_name: nova-unified
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://localhost:3000
+      - VITE_WS_URL=ws://localhost:3000
+    ports:
+      - '3001:3000'
+    networks:
+      - nova-network
+    depends_on:
+      nova-api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===================================================================
+  # MONITORING & ALERTING SERVICES
+  # ===================================================================
+
+  # GoAlert - Core alerting and escalation engine
+  nova-goalert:
+    image: goalert/goalert:latest
+    container_name: nova-goalert
+    restart: unless-stopped
+    ports:
+      - '8081:8081'
+    environment:
+      - GOALERT_DB_URL=postgres://goalert:${GOALERT_DB_PASSWORD:-goalert_pass}@nova-goalert-postgres:5432/goalert?sslmode=disable
+      - GOALERT_LISTEN=:8081
+      - GOALERT_PUBLIC_URL=http://localhost:8081
+      - GOALERT_API_ONLY=false
+      - GOALERT_LOG_LEVEL=info
+      - GOALERT_WEBHOOK_SECRET=${GOALERT_WEBHOOK_SECRET:-nova-goalert-webhook-secret}
+      - GOALERT_SMTP_FROM=${GOALERT_SMTP_FROM:-alerts@nova.local}
+      - GOALERT_SMTP_HOST=${GOALERT_SMTP_HOST:-localhost}
+      - GOALERT_SMTP_PORT=${GOALERT_SMTP_PORT:-587}
+      - GOALERT_TWILIO_SID=${TWILIO_SID:-}
+      - GOALERT_TWILIO_TOKEN=${TWILIO_TOKEN:-}
+      - GOALERT_SLACK_TOKEN=${SLACK_BOT_TOKEN:-}
+    networks:
+      - nova-network
+    depends_on:
+      nova-goalert-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8081/api/v2/user/profile']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # GoAlert Database
+  nova-goalert-postgres:
+    image: postgres:15-alpine
+    container_name: nova-goalert-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=goalert
+      - POSTGRES_USER=goalert
+      - POSTGRES_PASSWORD=${GOALERT_DB_PASSWORD:-goalert_pass}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - goalert-postgres-data:/var/lib/postgresql/data
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U goalert -d goalert']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Uptime Kuma - Monitoring backend
+  nova-uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: nova-uptime-kuma
+    restart: unless-stopped
+    ports:
+      - '3003:3001'
+    volumes:
+      - uptime-kuma-data:/app/data
+      - ./monitoring/kuma-config:/config
+    environment:
+      - UPTIME_KUMA_DISABLE_FRAME_SENTRY=1
+      - UPTIME_KUMA_PORT=3001
+      - NODE_ENV=production
+      - UPTIME_KUMA_CLOUDFLARED_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:-}
+      - UPTIME_KUMA_DISABLE_LOGIN=0
+      - UPTIME_KUMA_API_KEYS_ENABLED=1
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/api/ping']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ===================================================================
+  # MONITORING STACK
+  # ===================================================================
+
+  # Prometheus for metrics collection
+  nova-prometheus:
+    image: prom/prometheus:latest
+    container_name: nova-prometheus
+    restart: unless-stopped
+    ports:
+      - '9090:9090'
+    volumes:
+      - prometheus_data:/prometheus
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9090/-/healthy']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana for monitoring dashboards
+  nova-grafana:
+    image: grafana/grafana:latest
+    container_name: nova-grafana
+    restart: unless-stopped
+    ports:
+      - '3004:3000'
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-novasentinel}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana:/etc/grafana/provisioning
+    networks:
+      - nova-network
+    depends_on:
+      nova-prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Node Exporter for system metrics
+  nova-node-exporter:
+    image: prom/node-exporter:latest
+    container_name: nova-node-exporter
+    restart: unless-stopped
+    ports:
+      - '9100:9100'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - nova-network
+
+  # ===================================================================
+  # DEVELOPMENT TOOLS (Optional)
+  # ===================================================================
+
+  # pgAdmin for PostgreSQL Management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nova-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - '${PGADMIN_PORT:-8080}:80'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./scripts/pgadmin-servers.json:/pgladmin4/servers.json:ro
+    networks:
+      - nova-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - development
+
+  # Mongo Express (MongoDB Web Interface)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: nova-mongo-express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD:-mongo_secure_pass_2024}
+      ME_CONFIG_MONGODB_URL: mongodb://admin:${MONGO_ROOT_PASSWORD:-mongo_secure_pass_2024}@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGOEXPRESS_USERNAME:-admin}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGOEXPRESS_PASSWORD:-admin123}
+    ports:
+      - '${MONGOEXPRESS_PORT:-8081}:8081'
+    networks:
+      - nova-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - development
+
+  # Kibana (Elasticsearch Dashboard)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: nova-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - SERVER_NAME=nova-kibana
+      - SERVER_HOST=0.0.0.0
+    ports:
+      - '${KIBANA_PORT:-5601}:5601'
+    networks:
+      - nova-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    profiles:
+      - development
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  redis_data:
+    driver: local
+  goalert-postgres-data:
+    driver: local
+  uptime-kuma-data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  nova-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

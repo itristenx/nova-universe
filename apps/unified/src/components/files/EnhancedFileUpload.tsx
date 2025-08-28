@@ -75,10 +75,18 @@ export function EnhancedFileUpload({
             return rest;
           });
         } catch (_error) {
-          console.error('Upload failed:', error);
+          // Enhanced error handling for file upload failures
+          console.error('Upload failed:', {
+            fileName: file.name,
+            fileSize: file.size,
+            error: _error instanceof Error ? _error.message : _error,
+            context,
+            timestamp: new Date().toISOString(),
+          });
+          
           setErrors((prev) => [
             ...prev,
-            `Failed to upload "${file.name}": ${error instanceof Error ? error.message : 'Unknown error'}`,
+            `Failed to upload "${file.name}": ${_error instanceof Error ? _error.message : 'Unknown error'}`,
           ]);
           setUploadProgress((prev) => {
             const { [file.name]: _, ...rest } = prev;
@@ -101,7 +109,13 @@ export function EnhancedFileUpload({
         return updated;
       });
     } catch (_error) {
-      console.error('Failed to delete file:', error);
+      // Enhanced error handling for file deletion
+      console.error('Failed to delete file:', {
+        fileId,
+        error: _error instanceof Error ? _error.message : _error,
+        timestamp: new Date().toISOString(),
+      });
+      
       setErrors((prev) => [...prev, 'Failed to delete file']);
     }
   };

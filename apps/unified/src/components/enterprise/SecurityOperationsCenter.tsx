@@ -1155,6 +1155,9 @@ const SecurityOperationsCenter: React.FC<SecurityOperationsCenterProps> = ({
           <button style={styles.buttonSecondary} onClick={onCreateVulnerability}>
             🔓 Report Vulnerability
           </button>
+          <button style={styles.buttonSecondary} onClick={() => onExecutePlaybook?.('default-playbook')}>
+            ⚡ Execute Playbook
+          </button>
         </div>
       </div>
 

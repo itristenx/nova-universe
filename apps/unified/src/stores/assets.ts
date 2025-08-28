@@ -160,7 +160,7 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       set({
         currentAsset: null,
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to load asset',
+        error: _error instanceof Error ? _error.message : 'Failed to load asset',
       });
     }
   },
@@ -253,9 +253,9 @@ export const useAssetStore = create<AssetState>((set, get) => ({
     } catch (_error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to update assets',
+        error: _error instanceof Error ? _error.message : 'Failed to update assets',
       });
-      throw error;
+      throw _error;
     }
   },
 
@@ -270,9 +270,9 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       }));
     } catch (_error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to assign asset',
+        error: _error instanceof Error ? _error.message : 'Failed to assign asset',
       });
-      throw error;
+      throw _error;
     }
   },
 
@@ -287,9 +287,9 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       }));
     } catch (_error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to unassign asset',
+        error: _error instanceof Error ? _error.message : 'Failed to unassign asset',
       });
-      throw error;
+      throw _error;
     }
   },
 
@@ -304,9 +304,9 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       }));
     } catch (_error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to relocate asset',
+        error: _error instanceof Error ? _error.message : 'Failed to relocate asset',
       });
-      throw error;
+      throw _error;
     }
   },
 
@@ -321,9 +321,9 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       }));
     } catch (_error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to checkout asset',
+        error: _error instanceof Error ? _error.message : 'Failed to checkout asset',
       });
-      throw error;
+      throw _error;
     }
   },
 
@@ -338,9 +338,9 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       }));
     } catch (_error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to checkin asset',
+        error: _error instanceof Error ? _error.message : 'Failed to checkin asset',
       });
-      throw error;
+      throw _error;
     }
   },
 
@@ -388,7 +388,7 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       const categories = await assetService.getCategories();
       set({ categories });
     } catch (_error) {
-      console.error('Failed to load asset categories:', error);
+      console.error('Failed to load asset categories:', _error instanceof Error ? _error.message : String(_error));
     }
   },
 
@@ -397,7 +397,7 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       const types = await assetService.getTypes();
       set({ types });
     } catch (_error) {
-      console.error('Failed to load asset types:', error);
+      console.error('Failed to load asset types:', _error instanceof Error ? _error.message : String(_error));
     }
   },
 
@@ -406,7 +406,7 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       const locations = await assetService.getLocations();
       set({ locations });
     } catch (_error) {
-      console.error('Failed to load asset locations:', error);
+      console.error('Failed to load asset locations:', _error instanceof Error ? _error.message : String(_error));
     }
   },
 
@@ -416,7 +416,7 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       const records = await assetService.getMaintenanceRecords(assetId);
       set({ maintenanceRecords: records });
     } catch (_error) {
-      console.error('Failed to load maintenance records:', error);
+      console.error('Failed to load maintenance records:', _error instanceof Error ? _error.message : String(_error));
     }
   },
 
@@ -426,7 +426,7 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       const stats = await assetService.getAssetStats();
       set({ stats });
     } catch (_error) {
-      console.error('Failed to load asset stats:', error);
+      console.error('Failed to load asset stats:', _error instanceof Error ? _error.message : String(_error));
     }
   },
 
@@ -452,7 +452,7 @@ export const useAssetStore = create<AssetState>((set, get) => ({
     } catch (_error) {
       set({
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to search assets',
+        error: _error instanceof Error ? _error.message : 'Failed to search assets',
       });
     }
   },

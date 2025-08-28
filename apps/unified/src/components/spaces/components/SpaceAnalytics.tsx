@@ -247,6 +247,10 @@ export function SpaceAnalytics({
       <Card className="analytics-filters">
         <CardBody>
           <div className="filter-container">
+            <div className="filter-header">
+              <Filter className="icon-sm text-gray-500" />
+              <span className="filter-title">Analytics Filters</span>
+            </div>
             <div className="time-range-selector">
               <label htmlFor="time-range" className="sr-only">
                 Select time range
@@ -266,9 +270,12 @@ export function SpaceAnalytics({
             </div>
 
             <div className="building-selector">
-              <label htmlFor="building-select" className="sr-only">
-                Select building
-              </label>
+              <div className="building-selector-header">
+                <Building className="icon-sm text-gray-500" />
+                <label htmlFor="building-select" className="building-label">
+                  Building
+                </label>
+              </div>
               <select
                 id="building-select"
                 value={selectedBuilding}
@@ -403,7 +410,10 @@ export function SpaceAnalytics({
                   <div key={space.id} className="space-item">
                     <div className="space-rank">#{index + 1}</div>
                     <div className="space-info">
-                      <h4>{space.name}</h4>
+                      <div className="space-name-with-location">
+                        <MapPin className="icon-xs text-gray-500" />
+                        <h4>{space.name}</h4>
+                      </div>
                       <div className="space-stats">
                         <span>{space.bookings} bookings</span>
                         <span>{formatPercentage(space.utilization)} utilization</span>
@@ -423,7 +433,10 @@ export function SpaceAnalytics({
           {/* Space Type Metrics */}
           <Card className="space-type-metrics">
             <CardHeader>
-              <CardTitle>Space Type Performance</CardTitle>
+              <div className="card-header-with-icon">
+                <PieChart className="icon-sm text-blue-600" />
+                <CardTitle>Space Type Performance</CardTitle>
+              </div>
             </CardHeader>
             <CardBody>
               <div className="type-metrics-grid">
@@ -525,7 +538,11 @@ export function SpaceAnalytics({
             <CardBody>
               <div className="trend-chart">
                 {analyticsData.occupancyTrends.map((trend, index) => (
-                  <div key={trend.date} className="trend-bar">
+                  <div 
+                    key={trend.date} 
+                    className="trend-bar"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
                     <div
                       className={`occupancy-bar occupancy-bar-${Math.round(trend.occupancy / 10) * 10}`}
                       title={`${trend.date}: ${trend.occupancy}% occupancy`}

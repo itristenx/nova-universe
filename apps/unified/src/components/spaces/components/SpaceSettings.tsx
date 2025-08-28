@@ -116,9 +116,15 @@ export function SpaceSettings({
   const [hasChanges, setHasChanges] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Mock data - would come from API
+  // Mock data - would come from API based on buildingId
   useEffect(() => {
-    const mockSpaces: SpaceConfiguration[] = [
+    const loadBuildingSettings = async () => {
+      setIsLoading(true);
+      try {
+        // In real implementation, this would fetch data for the specific buildingId
+        console.log(`Loading settings for building: ${buildingId}`);
+        
+        const mockSpaces: SpaceConfiguration[] = [
       {
         id: 'meeting-001',
         name: 'Conference Room A',
@@ -168,8 +174,17 @@ export function SpaceSettings({
         },
       },
     ];
-    setSpaceConfigs(mockSpaces);
-  }, []);
+        
+        setSpaceConfigs(mockSpaces);
+      } catch (error) {
+        console.error('Failed to load building settings:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadBuildingSettings();
+  }, [buildingId]);
 
   const handleBuildingSettingsChange = (key: string, value: any) => {
     setBuildingSettings((prev) => ({
@@ -194,7 +209,7 @@ export function SpaceSettings({
       setHasChanges(false);
       onSettingsChange?.({ building: buildingSettings, spaces: spaceConfigs });
     } catch (_error) {
-      console.error('Failed to save settings:', error);
+      console.error('Failed to save settings:', _error instanceof Error ? _error.message : String(_error));
     }
     setIsLoading(false);
   };
@@ -216,7 +231,10 @@ export function SpaceSettings({
       {/* Header */}
       <div className="settings-header">
         <div className="header-info">
-          <h2>Space Settings</h2>
+          <h2 className="flex items-center space-x-2">
+            <MapPin className="h-6 w-6" />
+            <span>Space Settings</span>
+          </h2>
           <p>Configure building and space management settings</p>
         </div>
         <div className="header-actions">
@@ -265,7 +283,10 @@ export function SpaceSettings({
           <div className="settings-section">
             <Card>
               <CardHeader>
-                <h3>Building Hours & Operations</h3>
+                <h3 className="flex items-center space-x-2">
+                  <Clock className="h-5 w-5" />
+                  <span>Building Hours & Operations</span>
+                </h3>
               </CardHeader>
               <CardBody>
                 <div className="settings-grid">
@@ -415,7 +436,10 @@ export function SpaceSettings({
           <div className="settings-section">
             <Card>
               <CardHeader>
-                <h3>Security & Access Control</h3>
+                <h3 className="flex items-center space-x-2">
+                  <Lock className="h-5 w-5" />
+                  <span>Security & Access Control</span>
+                </h3>
               </CardHeader>
               <CardBody>
                 <div className="setting-group">
@@ -879,7 +903,10 @@ export function SpaceSettings({
                       </div>
 
                       <div className="config-section">
-                        <h4>Sensors & Monitoring</h4>
+                        <h4 className="flex items-center space-x-2">
+                          <Camera className="h-4 w-4" />
+                          <span>Sensors & Monitoring</span>
+                        </h4>
                         <div className="sensor-grid">
                           <label className="sensor-label">
                             <input

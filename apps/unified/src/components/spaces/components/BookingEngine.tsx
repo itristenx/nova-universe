@@ -355,7 +355,10 @@ export function BookingEngine({
               >
                 <ChevronLeft className="icon-sm" />
               </Button>
-              <h3 className="selected-date">{formatDate(selectedDate)}</h3>
+              <div className="selected-date-container">
+                <Calendar className="icon-sm" />
+                <h3 className="selected-date">{formatDate(selectedDate)}</h3>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -388,6 +391,12 @@ export function BookingEngine({
 
       {/* Space Search and Filters */}
       <Card className="space-filters">
+        <CardHeader>
+          <div className="filter-header">
+            <Filter className="icon-sm" />
+            <h4>Filter Spaces</h4>
+          </div>
+        </CardHeader>
         <CardBody>
           <div className="filter-container">
             <div className="search-container">
@@ -427,7 +436,10 @@ export function BookingEngine({
       <div className="booking-grid">
         {/* Time Column */}
         <div className="time-column">
-          <div className="time-header">Time</div>
+          <div className="time-header">
+            <Clock className="icon-sm" />
+            Time
+          </div>
           {timeSlots.map((slot) => (
             <div key={slot} className="time-slot">
               {slot}
@@ -523,9 +535,11 @@ export function BookingEngine({
       {showBookingForm && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <form onSubmit={handleSubmitBooking} className="booking-form">
-              <div className="form-header">
-                <h3>{editingBooking ? 'Edit Booking' : 'New Booking'}</h3>
+            <Card className="booking-form-card">
+              <CardHeader>
+                <CardTitle>
+                  {editingBooking ? 'Edit Booking' : 'New Booking'}
+                </CardTitle>
                 <Button
                   type="button"
                   variant="outline"
@@ -536,9 +550,9 @@ export function BookingEngine({
                 >
                   ×
                 </Button>
-              </div>
-
-              <div className="form-body">
+              </CardHeader>
+              <CardBody>
+                <form onSubmit={handleSubmitBooking} className="booking-form">
                 <div className="form-group">
                   <label htmlFor="booking-title">Title *</label>
                   <input
@@ -590,7 +604,10 @@ export function BookingEngine({
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="attendee-count">Attendee Count *</label>
+                  <label htmlFor="attendee-count">
+                    <User className="icon-sm" />
+                    Attendee Count *
+                  </label>
                   <input
                     id="attendee-count"
                     type="number"
@@ -659,13 +676,18 @@ export function BookingEngine({
                   Cancel
                 </Button>
                 <Button type="submit">
+                  <CheckCircle className="icon-sm" />
                   {editingBooking ? 'Update Booking' : 'Create Booking'}
                 </Button>
               </div>
-            </form>
+                </form>
+              </CardBody>
+            </Card>
           </div>
         </div>
       )}
     </div>
   );
-}
+};
+
+export default BookingEngine;

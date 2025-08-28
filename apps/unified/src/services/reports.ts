@@ -117,7 +117,7 @@ class ReportsService {
       });
       return response.data as OverviewMetrics;
     } catch (_error) {
-      console.error('Failed to fetch overview metrics:', error);
+      console.error('Failed to fetch overview metrics:', _error.message || _error);
       throw new Error('Failed to load overview metrics');
     }
   }
@@ -132,7 +132,7 @@ class ReportsService {
       });
       return response.data as TicketMetrics;
     } catch (_error) {
-      console.error('Failed to fetch ticket metrics:', error);
+      console.error('Failed to fetch ticket metrics:', _error.message || _error);
       throw new Error('Failed to load ticket metrics');
     }
   }
@@ -147,7 +147,7 @@ class ReportsService {
       });
       return response.data as TicketTrendData;
     } catch (_error) {
-      console.error('Failed to fetch ticket trends:', error);
+      console.error('Failed to fetch ticket trends:', _error.message || _error);
       throw new Error('Failed to load ticket trends');
     }
   }
@@ -162,7 +162,7 @@ class ReportsService {
       });
       return response.data as AssetMetrics;
     } catch (_error) {
-      console.error('Failed to fetch asset metrics:', error);
+      console.error('Failed to fetch asset metrics:', _error.message || _error);
       throw new Error('Failed to load asset metrics');
     }
   }
@@ -177,7 +177,7 @@ class ReportsService {
       });
       return response.data as AssetReportData;
     } catch (_error) {
-      console.error('Failed to fetch asset report data:', error);
+      console.error('Failed to fetch asset report data:', _error.message || _error);
       throw new Error('Failed to load asset report data');
     }
   }
@@ -192,7 +192,7 @@ class ReportsService {
       });
       return response.data as UserMetrics;
     } catch (_error) {
-      console.error('Failed to fetch user metrics:', error);
+      console.error('Failed to fetch user metrics:', _error.message || _error);
       throw new Error('Failed to load user metrics');
     }
   }
@@ -207,7 +207,7 @@ class ReportsService {
       });
       return response.data as UserReportData;
     } catch (_error) {
-      console.error('Failed to fetch user report data:', error);
+      console.error('Failed to fetch user report data:', _error.message || _error);
       throw new Error('Failed to load user report data');
     }
   }
@@ -222,7 +222,7 @@ class ReportsService {
       });
       return response.data as SpaceMetrics;
     } catch (_error) {
-      console.error('Failed to fetch space metrics:', error);
+      console.error('Failed to fetch space metrics:', _error.message || _error);
       throw new Error('Failed to load space metrics');
     }
   }
@@ -237,7 +237,7 @@ class ReportsService {
       });
       return response.data as SpaceReportData;
     } catch (_error) {
-      console.error('Failed to fetch space report data:', error);
+      console.error('Failed to fetch space report data:', _error.message || _error);
       throw new Error('Failed to load space report data');
     }
   }
@@ -263,7 +263,7 @@ class ReportsService {
       );
       return response.data as Blob;
     } catch (_error) {
-      console.error('Failed to export report:', error);
+      console.error('Failed to export report:', _error.message || _error);
       throw new Error('Failed to export report');
     }
   }
@@ -284,7 +284,7 @@ class ReportsService {
         suggested: Array<{ label: string; value: string; start: string; end: string }>;
       };
     } catch (_error) {
-      console.error('Failed to fetch date ranges:', error);
+      console.error('Failed to fetch date ranges:', _error.message || _error);
       throw new Error('Failed to load date ranges');
     }
   }
@@ -311,7 +311,7 @@ class ReportsService {
         charts: Record<string, ChartData>;
       };
     } catch (_error) {
-      console.error('Failed to fetch custom report:', error);
+      console.error('Failed to fetch custom report:', _error.message || _error);
       throw new Error('Failed to load custom report');
     }
   }
@@ -346,7 +346,7 @@ class ReportsService {
         nextRun: string;
       }>;
     } catch (_error) {
-      console.error('Failed to fetch report schedules:', error);
+      console.error('Failed to fetch report schedules:', _error.message || _error);
       throw new Error('Failed to load report schedules');
     }
   }
@@ -370,7 +370,7 @@ class ReportsService {
         await apiClient.post('/reports/schedules', schedule);
       }
     } catch (_error) {
-      console.error('Failed to save report schedule:', error);
+      console.error('Failed to save report schedule:', _error.message || _error);
       throw new Error('Failed to save report schedule');
     }
   }
@@ -382,7 +382,7 @@ class ReportsService {
     try {
       await apiClient.delete(`/reports/schedules/${scheduleId}`);
     } catch (_error) {
-      console.error('Failed to delete report schedule:', error);
+      console.error('Failed to delete report schedule:', _error.message || _error);
       throw new Error('Failed to delete report schedule');
     }
   }

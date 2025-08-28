@@ -42,6 +42,9 @@ const EnhancedDeepWorkMode = lazy(() => import('@pages/deepwork/EnhancedDeepWork
 // Queue Management pages
 const EnhancedQueueManagement = lazy(() => import('@pages/queue/EnhancedQueueManagement'));
 
+// Unified Monitoring pages
+const UnifiedMonitoringDashboard = lazy(() => import('@pages/monitoring/UnifiedMonitoringDashboard'));
+
 // Communication pages
 const EnhancedCommunicationHub = lazy(
   () => import('@pages/communication/EnhancedCommunicationHub'),
@@ -311,7 +314,8 @@ function App() {
                       <Route path="/offline" element={<OfflinePage />} />
 
                       {/* System monitoring routes */}
-                      <Route path="/monitoring" element={<MonitoringPage />} />
+                      <Route path="/monitoring" element={<UnifiedMonitoringDashboard />} />
+                      <Route path="/monitoring/legacy" element={<MonitoringPage />} />
                       <Route path="/status" element={<ServiceStatusPage />} />
 
                       {/* Learning and development routes */}

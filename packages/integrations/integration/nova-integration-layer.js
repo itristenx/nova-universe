@@ -18,10 +18,12 @@ let axios;
     // Try standard ESM import
     axios = (await import('axios')).default || (await import('axios'));
   } catch (e) {
+    console.error('Failed to import axios via ESM:', e.message);
     try {
       // Fallback: attempt CJS path if needed
       axios = (await import('axios/index.js')).default;
     } catch (e2) {
+      console.error('Failed to import axios via CJS fallback:', e2.message);
       // As a last resort, throw an error to indicate axios is required
       throw new Error('Failed to import axios. Please ensure axios is installed as a dependency.');
     }
@@ -61,6 +63,7 @@ export class IConnector {
 
   // Lifecycle Management
   async initialize(config) {
+    console.log(`Initializing connector with config:`, JSON.stringify(config, null, 2));
     throw new Error('initialize() must be implemented by subclass');
   }
 
@@ -82,11 +85,26 @@ export class IConnector {
   }
 
   async push(action) {
+    console.log(`Executing push action:`, JSON.stringify(action, null, 2));
     throw new Error('push() must be implemented by subclass');
   }
 
   // Configuration and Capabilities
   validateConfig(config) {
+    if (!config || typeof config !== 'object') {
+      return { valid: false, errors: ['Config must be a valid object'] };
+    }
+    
+    const requiredFields = ['id', 'type'];
+    const missingFields = requiredFields.filter(field => !config[field]);
+    
+    if (missingFields.length > 0) {
+      return { 
+        valid: false, 
+        errors: [`Missing required fields: ${missingFields.join(', ')}`] 
+      };
+    }
+    
     return { valid: true, errors: [] };
   }
 
@@ -168,6 +186,36 @@ const SyncResultSchema = {
   data: 'array',
 };
 
+// ============================================================================
+// CRYPTO UTILITIES
+// ============================================================================
+
+/**
+ * Security utilities for connector configuration and data encryption
+ */
+class SecurityUtils {
+  static generateSecureId() {
+    return crypto.randomUUID();
+  }
+
+  static hashConfig(config) {
+    const configStr = JSON.stringify(config, Object.keys(config).sort());
+    return crypto.createHash('sha256').update(configStr).digest('hex');
+  }
+
+  static encryptSensitiveData(data, key) {
+    if (!key) return data;
+    const cipher = crypto.createCipher('aes-256-gcm', key);
+    let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
+  }
+
+  static generateSignature(data, secret) {
+    return crypto.createHmac('sha256', secret).update(data).digest('hex');
+  }
+}
+
 /**
  * Nova Integration Layer - Main Engine
  * Implements Enterprise Service Bus pattern with message routing
@@ -180,6 +228,7 @@ export class NovaIntegrationLayer extends EventEmitter {
     this.config = config;
     this.circuitBreakers = new Map();
     this.rateLimiters = new Map();
+    this.securityUtils = SecurityUtils;
     this.initialized = false;
 
     // Initialize logging
@@ -683,7 +732,7 @@ export class NovaIntegrationLayer extends EventEmitter {
             const synthResult = await this.mergeProfilesWithSynth(primaryProfile, secondaryProfile);
             mergedData = synthResult || this.mergeProfileData(primaryProfile, secondaryProfile);
           } catch (synthError) {
-            this.logger.warn('Nova Synth merge failed, falling back to standard merge');
+            this.logger.warn('Nova Synth merge failed, falling back to standard merge:', synthError.message);
             mergedData = this.mergeProfileData(primaryProfile, secondaryProfile);
           }
           break;
@@ -1255,7 +1304,7 @@ export class NovaIntegrationLayer extends EventEmitter {
           const circuitBreakerModule = await import('opossum');
           CircuitBreaker = circuitBreakerModule.default;
         } catch (importError) {
-          this.logger.warn('Circuit breaker not available - continuing without fault tolerance');
+          this.logger.warn('Circuit breaker not available - continuing without fault tolerance:', importError.message);
           return;
         }
       }

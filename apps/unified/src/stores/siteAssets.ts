@@ -84,7 +84,7 @@ export const useSiteAssetsStore = create<SiteAssetsState>((set, get) => ({
         filters: currentFilters,
       });
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load assets';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load assets';
       set({
         error: errorMessage,
         isLoading: false,
@@ -117,7 +117,7 @@ export const useSiteAssetsStore = create<SiteAssetsState>((set, get) => ({
 
       return asset;
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload asset';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to upload asset';
       set({
         error: errorMessage,
         isUploading: false,
@@ -148,7 +148,7 @@ export const useSiteAssetsStore = create<SiteAssetsState>((set, get) => ({
 
       return updatedAsset;
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update asset';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to update asset';
       set({ error: errorMessage });
       toast.error(errorMessage);
       return null;
@@ -172,7 +172,7 @@ export const useSiteAssetsStore = create<SiteAssetsState>((set, get) => ({
       // Reload stats
       get().loadStats();
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete asset';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to delete asset';
       set({ error: errorMessage });
       toast.error(errorMessage);
     }
@@ -197,7 +197,7 @@ export const useSiteAssetsStore = create<SiteAssetsState>((set, get) => ({
       set({ assets: updatedAssets });
       toast.success(`Asset ${newStatus ? 'activated' : 'deactivated'}`);
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update asset status';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to update asset status';
       set({ error: errorMessage });
       toast.error(errorMessage);
     }
@@ -220,7 +220,7 @@ export const useSiteAssetsStore = create<SiteAssetsState>((set, get) => ({
 
       toast.success('Asset downloaded');
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to download asset';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to download asset';
       toast.error(errorMessage);
     }
   },
@@ -278,7 +278,7 @@ export const useSiteAssetsStore = create<SiteAssetsState>((set, get) => ({
       // Reload stats
       get().loadStats();
     } catch (_error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete assets';
+      const errorMessage = _error instanceof Error ? _error.message : 'Failed to delete assets';
       set({ error: errorMessage });
       toast.error(errorMessage);
     }
@@ -309,7 +309,7 @@ export const useSiteAssetsStore = create<SiteAssetsState>((set, get) => ({
       const categories = await siteAssetsService.getCategories();
       set({ categories });
     } catch (_error) {
-      console.error('Failed to load categories:', error);
+      console.error('Failed to load categories:', _error instanceof Error ? _error.message : String(_error));
     }
   },
 
@@ -319,7 +319,7 @@ export const useSiteAssetsStore = create<SiteAssetsState>((set, get) => ({
       const stats = await siteAssetsService.getAssetStats();
       set({ stats });
     } catch (_error) {
-      console.error('Failed to load asset stats:', error);
+      console.error('Failed to load asset stats:', _error instanceof Error ? _error.message : String(_error));
     }
   },
 

@@ -51,7 +51,7 @@ export function UserCreateModal({ isOpen, onClose, onSuccess }: UserCreateModalP
       const rolesData = await userService.getRoles();
       setRoles(rolesData);
     } catch (_error) {
-      console.error('Failed to load form data:', error);
+      console.error('Failed to load form data:', _error);
       toast.error('Failed to load form data');
     }
   };

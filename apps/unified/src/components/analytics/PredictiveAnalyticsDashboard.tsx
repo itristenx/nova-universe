@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import {
   ChartBarIcon,
   ArrowTrendingUpIcon,
@@ -338,27 +337,34 @@ export function PredictiveAnalyticsDashboard({
       </div>
 
       {/* Last Updated */}
-      <div className="text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <CalendarIcon className="h-4 w-4" />
         Last updated: {lastUpdated.toLocaleString()}
       </div>
 
       {/* Category Filter */}
-      <div className="flex flex-wrap gap-2">
-        {categories.map((category) => (
-          <button
-            key={category.id}
-            onClick={() => setSelectedCategory(category.id)}
-            className={cn(
-              'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-              selectedCategory === category.id
-                ? 'bg-nova-100 dark:bg-nova-900/20 text-nova-700 dark:text-nova-300'
-                : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800',
-            )}
-          >
-            {category.icon}
-            {category.name}
-          </button>
-        ))}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <FunnelIcon className="h-4 w-4" />
+          Filter by Category
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={cn(
+                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                selectedCategory === category.id
+                  ? 'bg-nova-100 dark:bg-nova-900/20 text-nova-700 dark:text-nova-300'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800',
+              )}
+            >
+              {category.icon}
+              {category.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Key Metrics Grid */}
@@ -454,7 +460,7 @@ export function PredictiveAnalyticsDashboard({
           {predictions.map((prediction, index) => (
             <div
               key={prediction.id}
-              className="dark:hover:bg-gray-750 cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50 dark:border-gray-700"
+              className={`dark:hover:bg-gray-750 cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50 dark:border-gray-700 opacity-0 animate-fade-in-delay-${index}`}
               onClick={() => onPredictionClick?.(prediction)}
             >
               <div className="flex items-start gap-4">

@@ -40,9 +40,9 @@ export function AssetOverview() {
       try {
         return await assetService.getAssetStats();
       } catch (_error) {
-        console.error('Failed to load asset statistics:', error);
+        console.error('Failed to load asset statistics:', _error);
         toast.error('Failed to load asset statistics');
-        throw error;
+        throw _error;
       }
     },
     refetchInterval: 60000, // Refresh every minute
@@ -71,9 +71,9 @@ export function AssetOverview() {
           { field: 'updatedAt', direction: 'desc' },
         ]);
       } catch (_error) {
-        console.error('Failed to load recent assets:', error);
+        console.error('Failed to load recent assets:', _error);
         toast.error('Failed to load recent assets');
-        throw error;
+        throw _error;
       }
     },
     refetchInterval: 60000,
@@ -233,7 +233,7 @@ export function AssetOverview() {
       toast.success('Asset data refreshed');
     } catch (_error) {
       // Individual errors are already handled in the query functions
-      console.error('Failed to refresh asset data:', error);
+      console.error('Failed to refresh asset data:', _error);
     }
   };
 

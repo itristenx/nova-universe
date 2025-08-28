@@ -12,7 +12,6 @@ import {
   BellIcon,
   XMarkIcon,
   PaperAirplaneIcon,
-  LinkIcon,
   ClockIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
@@ -622,9 +621,9 @@ export function RealTimeCollaboration({
                           </div>
                           <button
                             className="text-nova-600 dark:text-nova-400 hover:text-nova-700 dark:hover:text-nova-300"
-                            title="Download attachment"
+                            title="Open attachment in new window"
                           >
-                            <LinkIcon className="h-4 w-4" />
+                            <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                           </button>
                         </div>
                       ))}

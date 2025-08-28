@@ -140,7 +140,7 @@ export default function MobileFeaturesDemo() {
     >
       {/* Mobile Header */}
       <MobileHeader
-        title="Mobile Features Demo"
+        title={t('mobile.demo.title', 'Mobile Features Demo')}
         leftAction={{
           icon: (
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,7 +153,7 @@ export default function MobileFeaturesDemo() {
             </svg>
           ),
           onClick: () => window.history.back(),
-          label: 'Go back',
+          label: t('common:actions.goBack', 'Go back'),
         }}
         rightActions={[
           {
@@ -174,7 +174,7 @@ export default function MobileFeaturesDemo() {
               </svg>
             ),
             onClick: () => console.log('Settings clicked'),
-            label: 'Settings',
+            label: t('common:actions.settings', 'Settings'),
           },
         ]}
       />
@@ -183,10 +183,10 @@ export default function MobileFeaturesDemo() {
       <div className="border-b border-gray-200 bg-white px-4 dark:border-gray-700 dark:bg-gray-800">
         <div className="flex space-x-1 overflow-x-auto">
           {[
-            { key: 'pull-refresh', label: 'Pull to Refresh' },
-            { key: 'camera', label: 'Camera' },
-            { key: 'gestures', label: 'Gestures' },
-            { key: 'knowledge', label: 'Knowledge Base' },
+            { key: 'pull-refresh', label: t('mobile.demo.tabs.pullRefresh', 'Pull to Refresh') },
+            { key: 'camera', label: t('mobile.demo.tabs.camera', 'Camera') },
+            { key: 'gestures', label: t('mobile.demo.tabs.gestures', 'Gestures') },
+            { key: 'knowledge', label: t('mobile.demo.tabs.knowledge', 'Knowledge Base') },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -224,11 +224,15 @@ export default function MobileFeaturesDemo() {
 
               <MobileList>
                 {sampleTickets.map((ticket, index) => (
-                  <MobileCard key={ticket.id} padding="md">
+                  <MobileCard 
+                    key={ticket.id} 
+                    padding="md"
+                    className="animate-fade-in-up"
+                  >
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-medium text-gray-900 dark:text-white">
-                          {ticket.title}
+                          #{index + 1} - {ticket.title}
                         </h4>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                           {ticket.id} • {ticket.assignee}

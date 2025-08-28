@@ -155,7 +155,7 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
         setSecurityAlerts(mockSecurityAlerts);
       }
     } catch (_error) {
-      console.error('Failed to load user profile:', error);
+      console.error('Failed to load user profile:', _error.message || _error);
     } finally {
       setLoading(false);
     }
@@ -399,7 +399,10 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">MFA Enabled</span>
+                    <div className="flex items-center space-x-2">
+                      <LockClosedIcon className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">MFA Enabled</span>
+                    </div>
                     {profile.mfa_enabled ? (
                       <CheckCircleIcon className="h-5 w-5 text-green-500" />
                     ) : (
@@ -431,7 +434,8 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="flex items-center space-x-2 text-sm font-medium text-gray-900 dark:text-white">
+                      <KeyIcon className="h-4 w-4 text-gray-400" />
                       Security Score
                     </div>
                     <div
@@ -458,7 +462,11 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                   >
                     <div className="mb-3 flex items-start justify-between">
                       <div className="flex items-center space-x-3">
-                        <CpuChipIcon className="h-8 w-8 text-blue-600" />
+                        {asset.type === 'phone' ? (
+                          <WifiIcon className="h-8 w-8 text-blue-600" />
+                        ) : (
+                          <CpuChipIcon className="h-8 w-8 text-blue-600" />
+                        )}
                         <div>
                           <h4 className="font-medium text-gray-900 dark:text-white">
                             {asset.name}
@@ -546,6 +554,14 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
+                          <button
+                            type="button"
+                            className="inline-flex items-center rounded-md bg-white px-2 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            onClick={() => console.log('View alert details:', alert.id)}
+                          >
+                            <EyeIcon className="mr-1 h-3 w-3" />
+                            View
+                          </button>
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
                               alert.severity === 'critical'
@@ -584,7 +600,7 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                 Recent Tickets
               </h3>
               <div className="py-8 text-center">
-                <TicketIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                <DocumentIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
                 <p className="text-gray-500 dark:text-gray-400">No recent tickets</p>
               </div>
             </div>

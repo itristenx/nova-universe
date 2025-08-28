@@ -30,6 +30,7 @@ import beaconRouter from './routes/beacon.js';
 import goalertProxyRouter from './routes/goalert-proxy.js';
 import uptimeKumaProxyRouter from './routes/uptime-kuma-proxy.js';
 import uptimeKumaWebSocketRouter from './routes/uptime-kuma-websocket.js';
+import unifiedMonitoringRouter from './routes/unified-monitoring.js';
 import alertsRouter from './routes/alerts.js';
 import cmdbRouter from './routes/cmdb.js';
 import cmdbExtendedRouter from './routes/cmdbExtended.js';
@@ -258,14 +259,24 @@ import WebSocketManager from './websocket/events.js';
 const wsManager = new WebSocketManager(io);
 app.wsManager = wsManager;
 
-// Initialize Uptime Kuma WebSocket handler
+// Initialize Uptime Kuma WebSocket handler (only if Uptime Kuma is available)
 import {
   initializeUptimeKumaWebSocket,
   shutdownUptimeKumaWebSocket,
 } from './websocket/uptime-kuma-handler.js';
-initializeUptimeKumaWebSocket().catch((error) => {
-  logger.error('Failed to initialize Uptime Kuma WebSocket handler', { error: error.message });
-});
+
+// Only initialize Uptime Kuma WebSocket if the service is configured and available
+if (process.env.UPTIME_KUMA_URL || process.env.ENABLE_UPTIME_KUMA === 'true') {
+  logger.info('Uptime Kuma integration enabled, initializing WebSocket handler...');
+  initializeUptimeKumaWebSocket().catch((error) => {
+    logger.warn('Uptime Kuma WebSocket handler not available (this is normal if Uptime Kuma is not running)', { 
+      error: error.message,
+      note: 'Set UPTIME_KUMA_URL or ENABLE_UPTIME_KUMA=true to enable this integration'
+    });
+  });
+} else {
+  logger.info('Uptime Kuma integration disabled (set UPTIME_KUMA_URL or ENABLE_UPTIME_KUMA=true to enable)');
+}
 
 // Graceful shutdown handler
 process.on('SIGTERM', () => {
@@ -2287,8 +2298,8 @@ v2Router.use('/beacon', beaconRouter); // Nova Beacon - Kiosk Management v2
 v2Router.use('/goalert', goalertProxyRouter); // GoAlert Proxy for alerting
 
 // v2 aliases for monitoring (backward compatibility)
-v2Router.use('/monitoring', monitoringRouter);
-v2Router.use('/sentinel', monitoringRouter);
+v2Router.use('/monitoring', unifiedMonitoringRouter); // Unified Monitoring & Alerting API
+v2Router.use('/sentinel', monitoringRouter); // Legacy Nova-Sentinel routes
 
 // === API v1 ROUTES (Legacy/Deprecated Version) ===
 

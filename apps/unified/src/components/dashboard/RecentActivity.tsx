@@ -41,9 +41,9 @@ export function RecentActivity() {
       try {
         return await analyticsService.getRecentActivity(userRole === 'admin' ? 8 : 6);
       } catch (_error) {
-        console.error('Failed to load recent activity:', error);
+        console.error('Failed to load recent activity:', _error);
         toast.error('Failed to load recent activity');
-        throw error;
+        throw _error;
       }
     },
     refetchInterval: 30000, // Refresh every 30 seconds

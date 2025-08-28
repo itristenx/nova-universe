@@ -76,6 +76,7 @@ interface MaintenanceRecord extends BaseRecord {
   asset_id: string;
   asset: Asset;
   maintenance_type: MaintenanceType;
+  priority: Priority;
   scheduled_date: string;
   completed_date?: string;
   technician_id?: string;
@@ -728,8 +729,23 @@ const AssetManagementDashboard: React.FC<AssetManagementDashboardProps> = ({
                     setSelectedAsset(asset);
                     setAssetDialogOpen(true);
                   }}
+                  title="View Asset"
                 >
                   👁️
+                </button>
+                <button
+                  style={styles.actionButton}
+                  onClick={() => onAssetUpdate?.(asset.id, asset)}
+                  title="Edit Asset"
+                >
+                  ✏️
+                </button>
+                <button
+                  style={styles.actionButton}
+                  onClick={() => onAssetDelete?.(asset.id)}
+                  title="Delete Asset"
+                >
+                  🗑️
                 </button>
                 <button
                   style={styles.actionButton}
@@ -737,6 +753,7 @@ const AssetManagementDashboard: React.FC<AssetManagementDashboardProps> = ({
                     setSelectedAsset(asset);
                     setMaintenanceDialogOpen(true);
                   }}
+                  title="Schedule Maintenance"
                 >
                   🔧
                 </button>

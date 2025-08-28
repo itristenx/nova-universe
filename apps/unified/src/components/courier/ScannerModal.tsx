@@ -36,7 +36,7 @@ const ScannerModal: React.FC<ScannerModalProps> = ({ isOpen, onClose, onScanComp
       onScanComplete(result.package);
       onClose();
     } catch (_error) {
-      console.error('Scan failed:', error);
+      console.error('Scan failed:', _error);
       alert('Failed to scan package. Please try again.');
     } finally {
       setIsScanning(false);

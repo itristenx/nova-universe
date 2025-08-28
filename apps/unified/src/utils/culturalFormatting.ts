@@ -44,6 +44,14 @@ export function formatDate(
   try {
     return new Intl.DateTimeFormat(formatLocale, defaultOptions).format(dateObj);
   } catch (_error) {
+    // Enhanced error handling for date formatting fallback
+    console.warn('Date formatting fallback triggered:', {
+      originalLocale: formatLocale,
+      fallbackLocale: 'en-US',
+      error: _error instanceof Error ? _error.message : _error,
+      dateValue: dateObj.toISOString(),
+    });
+    
     // Fallback to English if locale is not supported
     return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObj);
   }
@@ -69,6 +77,14 @@ export function formatTime(
   try {
     return new Intl.DateTimeFormat(formatLocale, defaultOptions).format(dateObj);
   } catch (_error) {
+    // Enhanced error handling for time formatting fallback
+    console.warn('Time formatting fallback triggered:', {
+      originalLocale: formatLocale,
+      fallbackLocale: 'en-US',
+      error: _error instanceof Error ? _error.message : _error,
+      timeZone: options.timeZone,
+    });
+    
     return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObj);
   }
 }
@@ -96,6 +112,14 @@ export function formatDateTime(
   try {
     return new Intl.DateTimeFormat(formatLocale, defaultOptions).format(dateObj);
   } catch (_error) {
+    // Enhanced error handling for datetime formatting fallback
+    console.warn('DateTime formatting fallback triggered:', {
+      originalLocale: formatLocale,
+      fallbackLocale: 'en-US',
+      error: _error instanceof Error ? _error.message : _error,
+      timeZone: options.timeZone,
+    });
+    
     return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObj);
   }
 }
@@ -129,6 +153,14 @@ export function formatRelativeTime(
       return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year');
     }
   } catch (_error) {
+    // Enhanced error handling for relative time formatting fallback
+    console.warn('Relative time formatting fallback triggered:', {
+      originalLocale: formatLocale,
+      fallbackLocale: 'en-US',
+      error: _error instanceof Error ? _error.message : _error,
+      timeDifferenceSeconds: diffInSeconds,
+    });
+    
     // Fallback to English
     const rtf = new Intl.RelativeTimeFormat('en-US', { numeric: 'auto' });
     if (Math.abs(diffInSeconds) < 60) {
@@ -152,6 +184,15 @@ export function formatNumber(
   try {
     return new Intl.NumberFormat(formatLocale, intlOptions).format(number);
   } catch (_error) {
+    // Enhanced error handling for number formatting fallback
+    console.warn('Number formatting fallback triggered:', {
+      originalLocale: formatLocale,
+      fallbackLocale: 'en-US',
+      error: _error instanceof Error ? _error.message : _error,
+      numberValue: number,
+      options: intlOptions,
+    });
+    
     return new Intl.NumberFormat('en-US', intlOptions).format(number);
   }
 }
@@ -176,6 +217,16 @@ export function formatCurrency(
   try {
     return new Intl.NumberFormat(formatLocale, defaultOptions).format(amount);
   } catch (_error) {
+    // Enhanced error handling for currency formatting fallback
+    console.warn('Currency formatting fallback triggered:', {
+      originalLocale: formatLocale,
+      originalCurrency: currencyCode,
+      fallbackLocale: 'en-US',
+      fallbackCurrency: 'USD',
+      error: _error instanceof Error ? _error.message : _error,
+      amount,
+    });
+    
     // Fallback
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -203,6 +254,14 @@ export function formatPercentage(
   try {
     return new Intl.NumberFormat(formatLocale, defaultOptions).format(value);
   } catch (_error) {
+    // Enhanced error handling for percentage formatting fallback
+    console.warn('Percentage formatting fallback triggered:', {
+      originalLocale: formatLocale,
+      fallbackLocale: 'en-US',
+      error: _error instanceof Error ? _error.message : _error,
+      percentageValue: value,
+    });
+    
     return new Intl.NumberFormat('en-US', defaultOptions).format(value);
   }
 }
@@ -225,6 +284,15 @@ export function formatFileSize(bytes: number, options: FormatOptions = {}): stri
     });
     return `${formatter.format(value)} ${sizes[i]}`;
   } catch (_error) {
+    // Enhanced error handling for file size formatting fallback
+    console.warn('File size formatting fallback triggered:', {
+      originalLocale: formatLocale,
+      error: _error instanceof Error ? _error.message : _error,
+      fileSize: bytes,
+      calculatedValue: value,
+      unit: sizes[i],
+    });
+    
     return `${value.toFixed(2)} ${sizes[i]}`;
   }
 }
