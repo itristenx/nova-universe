@@ -35,12 +35,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.12.0
- * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+ * Prisma Client JS version: 6.14.0
+ * Query Engine version: 717184b7b35ea05dfa71a3236b7af656013e1e49
  */
 Prisma.prismaVersion = {
-  client: "6.12.0",
-  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
+  client: "6.14.0",
+  engine: "717184b7b35ea05dfa71a3236b7af656013e1e49"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -107,7 +107,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/tneibarger/nova-universe/prisma/generated/auth",
+      "value": "/home/runner/work/nova-universe/nova-universe/prisma/generated/auth",
       "fromEnvVar": null
     },
     "config": {
@@ -116,7 +116,7 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin-arm64",
+        "value": "debian-openssl-3.0.x",
         "native": true
       },
       {
@@ -129,21 +129,21 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/tneibarger/nova-universe/prisma/auth/schema.prisma",
+    "sourceFilePath": "/home/runner/work/nova-universe/nova-universe/prisma/auth/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../auth",
-  "clientVersion": "6.12.0",
-  "engineVersion": "8047c96bbd92db98a2abc7c9323ce77c02c89dbc",
+  "clientVersion": "6.14.0",
+  "engineVersion": "717184b7b35ea05dfa71a3236b7af656013e1e49",
   "datasourceNames": [
     "auth_db"
   ],
   "activeProvider": "postgresql",
   "postinstall": false,
+  "ciName": "GitHub Actions",
   "inlineDatasources": {
     "auth_db": {
       "url": {
