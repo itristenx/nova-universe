@@ -341,6 +341,7 @@ export class TicketService {
    */
   static async assignTicket(ticketId, assignmentData) {
     try {
+      const prismaClient = await getPrismaClient();
       const ticket = await prismaClient.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
@@ -517,6 +518,7 @@ export class TicketService {
    */
   static async resolveTicket(ticketId, resolutionData) {
     try {
+      const prismaClient = await getPrismaClient();
       const resolvedAt = new Date();
 
       const ticket = await prismaClient.enhancedSupportTicket.update({
@@ -558,6 +560,7 @@ export class TicketService {
    */
   static async closeTicket(ticketId, closeData) {
     try {
+      const prismaClient = await getPrismaClient();
       const closedAt = new Date();
 
       const ticket = await prismaClient.enhancedSupportTicket.update({
@@ -597,6 +600,7 @@ export class TicketService {
    */
   static async reopenTicket(ticketId, reopenData) {
     try {
+      const prismaClient = await getPrismaClient();
       const ticket = await prismaClient.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
