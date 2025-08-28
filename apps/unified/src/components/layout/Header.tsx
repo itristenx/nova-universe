@@ -75,11 +75,11 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
           <AppSwitcher currentApp="unified" />
         </div>
 
-        {/* Center section - Command Center */}
-        <div className="mx-4 max-w-xl flex-1">
+        {/* Center section - Command Center & Quick Search */}
+        <div className="mx-4 max-w-xl flex-1 flex items-center gap-2">
           <button
             onClick={() => setSearchOpen(true)}
-            className="flex w-full items-center gap-3 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-left text-gray-500 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+            className="flex flex-1 items-center gap-3 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-left text-gray-500 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
           >
             <CommandLineIcon className="h-4 w-4" />
             <span className="hidden sm:inline">{t('navigation:searchPlaceholder')}</span>
@@ -92,6 +92,15 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
                 K
               </kbd>
             </div>
+          </button>
+          
+          {/* Quick Search Button */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            title={t('navigation:quickSearch')}
+            className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            <MagnifyingGlassIcon className="h-5 w-5" />
           </button>
         </div>
 

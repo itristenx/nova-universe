@@ -145,13 +145,33 @@ export function MobileLayout({ children, sidebar, header, className }: MobileLay
 
       {/* Touch gesture indicators for mobile */}
       {isMobile && !isSidebarOpen && (
-        <div className="fixed bottom-4 left-4 z-30">
+        <div className="fixed bottom-4 left-4 z-30 flex flex-col gap-2">
           <button
             onClick={() => setIsSidebarOpen(true)}
             className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-all hover:bg-blue-700 active:scale-95"
             aria-label={t('openSidebar')}
           >
             <Bars3Icon className="h-6 w-6" />
+          </button>
+        </div>
+      )}
+
+      {/* Mobile navigation controls */}
+      {isMobile && (
+        <div className="fixed bottom-4 right-4 z-30 flex gap-2">
+          <button
+            onClick={() => window.history.back()}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 text-white shadow-lg transition-all hover:bg-gray-700 active:scale-95"
+            aria-label={t('goBack')}
+          >
+            <ChevronLeftIcon className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => window.history.forward()}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 text-white shadow-lg transition-all hover:bg-gray-700 active:scale-95"
+            aria-label={t('goForward')}
+          >
+            <ChevronRightIcon className="h-5 w-5" />
           </button>
         </div>
       )}

@@ -39,7 +39,12 @@ export function UserMenu({ children }: UserMenuProps) {
     try {
       await logout();
     } catch (_error) {
-      console.error('Logout failed:', error);
+      // Enhanced error handling for logout failure
+      console.error('Logout failed:', {
+        error: _error instanceof Error ? _error.message : _error,
+        timestamp: new Date().toISOString(),
+        userId: user?.id,
+      });
     }
   };
 
