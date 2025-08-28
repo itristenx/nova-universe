@@ -6,7 +6,34 @@
     "error": "حدث خطأ",
     "success": "نجح",
     "warning": "تحذير",
-    "info": "معلومات"
+    "info": "معلومات",
+    "pwa": {
+      "installTitle": "تثبيت Nova Universe",
+      "installDescription": "احصل على وصول أسرع واعمل دون اتصال مع تطبيقنا",
+      "install": "تثبيت التطبيق",
+      "installing": "جاري التثبيت...",
+      "updateAvailable": "يتوفر إصدار جديد. إعادة تحميل للتحديث؟"
+    },
+    "offline": {
+      "title": "أنت غير متصل",
+      "description": "تحقق من اتصالك وحاول مرة أخرى. قد تكون بعض الميزات متاحة دون اتصال.",
+      "noConnection": "لا يوجد اتصال بالإنترنت",
+      "backOnline": "عدت متصلاً!",
+      "connectionRestored": "تم استعادة اتصال الإنترنت.",
+      "continue": "متابعة",
+      "tryAgain": "حاول مرة أخرى",
+      "retryAttempts": "محاولات إعادة المحاولة: {{count}}",
+      "lastTrySeconds": "المحاولة الأخيرة منذ {{seconds}} ثانية",
+      "lastTryMinutes": "المحاولة الأخيرة منذ {{minutes}} دقيقة",
+      "availableFeatures": "متاح دون اتصال:",
+      "feature": {
+        "viewCachedData": "عرض البيانات المخزنة مؤقتاً",
+        "readKnowledgeBase": "قراءة مقالات قاعدة المعرفة",
+        "submitFormsOffline": "إرسال النماذج (في الطابور)",
+        "realTimeUpdates": "التحديثات في الوقت الفعلي غير متاحة"
+      },
+      "tip": "سيتم حفظ عملك ومزامنته عندما تعود متصلاً"
+    }
   },
   "auth": {
     "login": {
@@ -91,7 +118,8 @@
     "createAsset": "إنشاء أصل",
     "floorPlan": "مخطط الطابق",
     "administration": "الإدارة",
-    "siteAssets": "أصول الموقع"
+    "siteAssets": "أصول الموقع",
+    "searchPlaceholder": "البحث في التذاكر والأصول والمساحات..."
   },
   "dashboard": {
     "welcome": "مرحباً بك في Nova Universe",
@@ -450,7 +478,7 @@
     }
   },
   "accessibility": {
-    "skipToContent": "الانتقال إلى المحتوى الرئيسي",
+    "skipToContent": "تخطي إلى المحتوى",
     "skipToNavigation": "الانتقال إلى التنقل",
     "skipToSearch": "الانتقال إلى البحث",
     "openMenu": "فتح القائمة",
@@ -473,7 +501,14 @@
     "previousPage": "الصفحة السابقة",
     "nextPage": "الصفحة التالية",
     "firstPage": "الصفحة الأولى",
-    "lastPage": "الصفحة الأخيرة"
+    "lastPage": "الصفحة الأخيرة",
+    "toggleTheme": "تبديل السمة",
+    "languageSelector": "محدد اللغة",
+    "userMenu": "قائمة المستخدم",
+    "searchBox": "صندوق البحث",
+    "navigationMenu": "قائمة التنقل",
+    "mainContent": "المحتوى الرئيسي",
+    "breadcrumb": "مسار التنقل"
   },
   "notifications": {
     "title": "الإشعارات",
