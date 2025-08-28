@@ -25,8 +25,8 @@ cp .env.example .env
 ```
 
 **CRITICAL TIMING NOTES:**
-- **Dependencies**: 30 seconds, set timeout to 60+ seconds
-- **Prisma generation**: 15 seconds, set timeout to 30+ seconds  
+- **Dependencies**: 24 seconds, set timeout to 60+ seconds
+- **Prisma generation**: 9.5 seconds, set timeout to 30+ seconds  
 - **Test environment setup**: 3-5 minutes, set timeout to 10+ minutes
 - **Docker-based operations**: 2-10 minutes, set timeout to 15+ minutes
 
