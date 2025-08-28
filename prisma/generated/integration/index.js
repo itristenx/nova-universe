@@ -35,12 +35,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.13.0
- * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
+ * Prisma Client JS version: 6.12.0
+ * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
  */
 Prisma.prismaVersion = {
-  client: "6.13.0",
-  engine: "361e86d0ea4987e9f53a565309b3eed797a6bcbd"
+  client: "6.12.0",
+  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -452,7 +452,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/workspace/prisma/generated/integration",
+      "value": "/home/runner/work/nova-universe/nova-universe/prisma/generated/integration",
       "fromEnvVar": null
     },
     "config": {
@@ -470,20 +470,22 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/workspace/prisma/integration/schema.prisma",
+    "sourceFilePath": "/home/runner/work/nova-universe/nova-universe/prisma/integration/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../integration",
-  "clientVersion": "6.13.0",
-  "engineVersion": "361e86d0ea4987e9f53a565309b3eed797a6bcbd",
+  "clientVersion": "6.12.0",
+  "engineVersion": "8047c96bbd92db98a2abc7c9323ce77c02c89dbc",
   "datasourceNames": [
     "integration_db"
   ],
   "activeProvider": "postgresql",
   "postinstall": false,
+  "ciName": "GitHub Actions",
   "inlineDatasources": {
     "integration_db": {
       "url": {
