@@ -9,6 +9,15 @@ import { AutoClassificationService } from './autoClassification.service.js';
 import { SearchService } from './search.service.js';
 import { ExportService } from './export.service.js';
 
+// Get Prisma client for enhanced ITSM models
+let prisma = null;
+async function getPrismaClient() {
+  if (!prisma) {
+    prisma = await db.getPrismaClient();
+  }
+  return prisma;
+}
+
 /**
  * Enhanced Ticket Service - Production Ready ITSM Implementation
  * Based on ITIL standards and industry best practices
@@ -19,6 +28,8 @@ export class TicketService {
    */
   static async getTickets(filters = {}, user) {
     try {
+      const prismaClient = await getPrismaClient();
+      
       const {
         page = 1,
         limit = 25,
@@ -48,7 +59,7 @@ export class TicketService {
 
       // Execute queries
       const [tickets, totalCount] = await Promise.all([
-        db.enhancedSupportTicket.findMany({
+        prismaClient.enhancedSupportTicket.findMany({
           where: whereClause,
           include: {
             requester: {
@@ -78,7 +89,7 @@ export class TicketService {
           skip,
           take: limit,
         }),
-        db.enhancedSupportTicket.count({ where: whereClause }),
+        prismaClient.enhancedSupportTicket.count({ where: whereClause }),
       ]);
 
       // Calculate pagination
@@ -97,7 +108,7 @@ export class TicketService {
           itemsPerPage: limit,
         },
         totalFiltered: totalCount,
-        totalUnfiltered: await db.enhancedSupportTicket.count(),
+        totalUnfiltered: await prismaClient.enhancedSupportTicket.count(),
         appliedFilters: Object.keys(filterOptions).filter(
           (key) => filterOptions[key] !== undefined,
         ),
@@ -113,9 +124,10 @@ export class TicketService {
    */
   static async getTicketById(ticketId, include = [], user) {
     try {
+      const prismaClient = await getPrismaClient();
       const includeClause = this.buildIncludeClause(include);
 
-      const ticket = await db.enhancedSupportTicket.findFirst({
+      const ticket = await prismaClient.enhancedSupportTicket.findFirst({
         where: {
           id: ticketId,
           ...(await this.getAccessFilter(user)),
@@ -329,7 +341,7 @@ export class TicketService {
    */
   static async assignTicket(ticketId, assignmentData) {
     try {
-      const ticket = await db.enhancedSupportTicket.update({
+      const ticket = await prismaClient.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
           assignedToUserId: assignmentData.assignedToUserId,
@@ -507,7 +519,7 @@ export class TicketService {
     try {
       const resolvedAt = new Date();
 
-      const ticket = await db.enhancedSupportTicket.update({
+      const ticket = await prismaClient.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
           state: 'RESOLVED',
@@ -548,7 +560,7 @@ export class TicketService {
     try {
       const closedAt = new Date();
 
-      const ticket = await db.enhancedSupportTicket.update({
+      const ticket = await prismaClient.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
           state: 'CLOSED',
@@ -585,7 +597,7 @@ export class TicketService {
    */
   static async reopenTicket(ticketId, reopenData) {
     try {
-      const ticket = await db.enhancedSupportTicket.update({
+      const ticket = await prismaClient.enhancedSupportTicket.update({
         where: { id: ticketId },
         data: {
           state: 'REOPENED',
@@ -709,7 +721,8 @@ export class TicketService {
    */
   static async getTicketStats(params) {
     try {
-      const { period, groupBy, assignedToMe, createdByMe, user } = params;
+      const prismaClient = await getPrismaClient();
+      const { period, groupBy, assignedToMe, createdByMe, user } = params || {};
 
       const dateRange = this.getDateRange(period);
       const whereClause = {
@@ -730,17 +743,17 @@ export class TicketService {
 
       // Basic counts
       const [total, open, resolved, closed, breached] = await Promise.all([
-        db.enhancedSupportTicket.count({ where: whereClause }),
-        db.enhancedSupportTicket.count({
+        prismaClient.enhancedSupportTicket.count({ where: whereClause }),
+        prismaClient.enhancedSupportTicket.count({
           where: { ...whereClause, state: { in: ['NEW', 'ASSIGNED', 'IN_PROGRESS', 'PENDING'] } },
         }),
-        db.enhancedSupportTicket.count({
+        prismaClient.enhancedSupportTicket.count({
           where: { ...whereClause, state: 'RESOLVED' },
         }),
-        db.enhancedSupportTicket.count({
+        prismaClient.enhancedSupportTicket.count({
           where: { ...whereClause, state: 'CLOSED' },
         }),
-        db.enhancedSupportTicket.count({
+        prismaClient.enhancedSupportTicket.count({
           where: {
             ...whereClause,
             OR: [{ responseTimeBreached: true }, { resolutionTimeBreached: true }],
