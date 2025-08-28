@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import { BrowserRouter } from 'react-router-dom';
-import i18n from '../i18n/index';
+import { i18n } from '../i18n/index';
 import ServiceStatusPage from '../pages/monitoring/ServiceStatusPage';
 import CosmoAIPage from '../pages/ai/CosmoAIPage';
 import KnowledgeCommunityPage from '../pages/knowledge/KnowledgeCommunityPage';

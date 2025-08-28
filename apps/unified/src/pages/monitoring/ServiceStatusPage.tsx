@@ -99,7 +99,7 @@ export default function ServiceStatusPage() {
         setIncidents([]);
         setMaintenance([]);
       }
-    } catch (_error) {
+    } catch (error) {
       console.warn('Service status API unavailable, using fallback data:', error);
       // Fallback to empty state
       setServices([]);

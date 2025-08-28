@@ -623,14 +623,27 @@ export function formatNumber(value: number, locale = 'en-US'): string {
 
 /**
  * Environment and configuration utilities
+ * Compatible with both Vite (import.meta.env) and Jest (process.env)
  */
+function getEnvVar(key: string, defaultValue?: string): string | undefined {
+  // In test environment, use process.env
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return process.env[key] || defaultValue;
+  }
+  // In development/production, try process.env first, then fallback to default
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env[key] || defaultValue;
+  }
+  return defaultValue;
+}
+
 export const env = {
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080',
-  wsUrl: import.meta.env.VITE_WS_URL || 'ws://localhost:8080',
-  devTools: import.meta.env.VITE_DEV_TOOLS === 'true',
-  useMockData: import.meta.env.VITE_USE_MOCK_DATA === 'true',
-  profileUpdatesEnabled: import.meta.env.VITE_PROFILE_UPDATES_ENABLED === 'true',
-  enabledFeatures: import.meta.env.VITE_ENABLED_FEATURES?.split(',') || [],
+  apiUrl: getEnvVar('VITE_API_URL', 'http://localhost:8080'),
+  wsUrl: getEnvVar('VITE_WS_URL', 'ws://localhost:8080'),
+  devTools: getEnvVar('VITE_DEV_TOOLS') === 'true',
+  useMockData: getEnvVar('VITE_USE_MOCK_DATA') === 'true',
+  profileUpdatesEnabled: getEnvVar('VITE_PROFILE_UPDATES_ENABLED') === 'true',
+  enabledFeatures: getEnvVar('VITE_ENABLED_FEATURES')?.split(',') || [],
 };
 
 /**

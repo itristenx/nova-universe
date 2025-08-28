@@ -102,7 +102,7 @@ export default function KnowledgeCommunityPage() {
           setChallenges([]);
           setLeaderboard([]);
         }
-      } catch (_error) {
+      } catch (error) {
         console.warn('Knowledge community API unavailable, using fallback data:', error);
         // Fallback to empty state
         setArticles([]);

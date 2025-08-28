@@ -50,7 +50,7 @@ i18n
   .init({
     fallbackLng,
     lng: fallbackLng, // Explicitly set to English by default
-    debug: import.meta.env.DEV,
+    debug: process.env.NODE_ENV === 'development',
 
     ns: [
       'app',
