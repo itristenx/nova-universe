@@ -107,7 +107,7 @@ export class SpaceAnalytics {
     };
   }
 
-  detectSeasonality(timeRange) {
+  detectSeasonality(_timeRange) {
     const patterns = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'];
     return patterns[Math.floor(Math.random() * patterns.length)];
   }
@@ -136,9 +136,9 @@ export class SpaceAnalytics {
       logger.debug('Calculating space metrics with filters:', filters);
 
       // Apply any date range filters
-      const dateRange = filters?.dateRange || {};
-      const spaceTypes = filters?.spaceTypes || [];
-      const departments = filters?.departments || [];
+      const _dateRange = filters?.dateRange || {};
+      const _spaceTypes = filters?.spaceTypes || [];
+      const _departments = filters?.departments || [];
 
       // Check cache first
       const cacheKey = this.generateCacheKey(filters);
@@ -272,7 +272,7 @@ export class SpaceAnalytics {
     return trends.reverse();
   }
 
-  generateRecommendations(spaceId, period) {
+  generateRecommendations(_spaceId, _period) {
     const recommendations = [
       'Consider adding more flexible booking options',
       'Optimize room layout for better capacity utilization',
@@ -346,7 +346,7 @@ export class SpaceAnalytics {
     return `${headers}\n${values}`;
   }
 
-  convertToPDF(data) {
+  convertToPDF(_data) {
     // Mock PDF conversion
     return Buffer.from('PDF content would be generated here');
   }

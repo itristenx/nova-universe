@@ -82,7 +82,7 @@ const requestHandler = (req, res) => {
         mockData.tickets.push(newTicket);
         res.writeHead(201, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(newTicket));
-      } catch (error) {
+      } catch (_error) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid JSON' }));
       }
@@ -108,7 +108,7 @@ const requestHandler = (req, res) => {
         mockData.users.push(newUser);
         res.writeHead(201, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(newUser));
-      } catch (error) {
+      } catch (_error) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid JSON' }));
       }
@@ -135,7 +135,7 @@ const requestHandler = (req, res) => {
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Invalid credentials' }));
         }
-      } catch (error) {
+      } catch (_error) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid JSON' }));
       }
@@ -162,7 +162,7 @@ const requestHandler = (req, res) => {
           res.writeHead(404, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Ticket not found' }));
         }
-      } catch (error) {
+      } catch (_error) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid JSON' }));
       }
