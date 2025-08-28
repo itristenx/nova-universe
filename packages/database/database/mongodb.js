@@ -1,8 +1,8 @@
 // database/mongodb.js
 // MongoDB database manager with authentication and security features
 import { MongoClient } from 'mongodb';
-import { logger } from '../nova-api/logger.js';
-import { databaseConfig } from '../nova-api/config/database.js';
+import { logger } from '../../../apps/api/logger.js';
+import { databaseConfig } from '../../../apps/api/config/database.js';
 
 export class MongoDBManager {
   constructor(config = null) {

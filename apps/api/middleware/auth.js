@@ -227,3 +227,9 @@ export const createRateLimit = (windowMs, max, message = 'Too many requests') =>
     },
   });
 };
+
+/**
+ * Alias for authenticateJWT for backward compatibility
+ * Ensures that the request has valid authentication
+ */
+export const ensureAuth = authenticateJWT;

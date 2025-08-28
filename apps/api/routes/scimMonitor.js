@@ -1,30 +1,62 @@
 // nova-api/routes/scimMonitor.js
 // SCIM Monitoring and Logging Routes
 import express from 'express';
-// import { PrismaClient } from '../../../prisma/generated/core/index.js';
+import { PrismaClient } from '../../../prisma/generated/core/index.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimiter } from '../middleware/rateLimiter.js';
 import { logger } from '../logger.js';
 
+// Single Prisma client instance for this module
+let prismaClient = null;
+
 async function getPrisma() {
   if (process.env.PRISMA_DISABLED === 'true') return null;
-  try {
-    const mod = await import('../../../prisma/generated/core/index.js');
-    const PrismaClient = mod.PrismaClient;
-    return new PrismaClient({
-      datasources: { core_db: { url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL } },
-    });
-  } catch {
-    return null;
+  
+  if (!prismaClient) {
+    try {
+      prismaClient = new PrismaClient({
+        datasources: { 
+          core_db: { 
+            url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL 
+          } 
+        },
+      });
+    } catch (error) {
+      logger.error('Failed to initialize Prisma client:', error);
+      return null;
+    }
   }
+  
+  return prismaClient;
 }
 
 const router = express.Router();
 
 router.get('/health', async (req, res) => {
   const prisma = await getPrisma();
-  if (!prisma) return res.json({ status: 'degraded', prisma: 'unavailable' });
-  return res.json({ status: 'ok' });
+  if (!prisma) {
+    return res.json({ 
+      status: 'degraded', 
+      prisma: 'unavailable',
+      message: 'Database connection failed or disabled'
+    });
+  }
+  
+  try {
+    // Test the database connection
+    await prisma.$queryRaw`SELECT 1`;
+    return res.json({ 
+      status: 'ok',
+      prisma: 'connected' 
+    });
+  } catch (error) {
+    logger.error('Database health check failed:', error);
+    return res.json({ 
+      status: 'degraded', 
+      prisma: 'connection_error',
+      message: 'Database connection test failed'
+    });
+  }
 });
 
 // Rate limiter for SCIM monitoring endpoints

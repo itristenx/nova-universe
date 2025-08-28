@@ -140,6 +140,10 @@ elasticsearch-data/
 *.bak
 *.tmp
 
+# Prisma generated files
+/prisma/generated/*/
+!prisma/generated/*/schema.prisma
+
 # Xcode user data and build products
 *.xcodeproj/**/xcuserdata/
 *.xcworkspace/**/xcuserdata/

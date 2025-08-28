@@ -1,8 +1,8 @@
 // database/postgresql.js
 // PostgreSQL database manager with connection pooling and SSL support
 import pg from 'pg';
-import { logger } from '../nova-api/logger.js';
-import { databaseConfig } from '../nova-api/config/database.js';
+import { logger } from '../../../apps/api/logger.js';
+import { databaseConfig } from '../../../apps/api/config/database.js';
 
 const { Pool } = pg;
 

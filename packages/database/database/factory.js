@@ -2,8 +2,8 @@
 // Database factory for unified access to PostgreSQL, MongoDB, and SQLite
 import { PostgreSQLManager } from './postgresql.js';
 import { MongoDBManager } from './mongodb.js';
-import { logger } from '../nova-api/logger.js';
-import { databaseConfig } from '../nova-api/config/database.js';
+import { logger } from '../../../apps/api/logger.js';
+import { databaseConfig } from '../../../apps/api/config/database.js';
 
 export class DatabaseFactory {
   constructor() {
