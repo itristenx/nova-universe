@@ -23,7 +23,7 @@
     "socket.io": "^4.7.5",
     "node-cron": "^3.0.3",
     "uuid": "^9.0.1",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.2",
     "jsonwebtoken": "^9.0.2",
     "sqlite3": "^5.1.6",
     "better-sqlite3": "^9.1.1",
