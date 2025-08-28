@@ -4,8 +4,8 @@ datasource core_db {
 }
 
 generator coreClient {
-  provider      = "prisma-client-js"
-  output        = "../generated/core"
+  provider = "prisma-client-js"
+  output   = "../generated/core"
   binaryTargets = ["native", "debian-openssl-3.0.x", "darwin"]
 }
 
@@ -51,22 +51,6 @@ model User {
   vipProxiesAsProxy                                 VipProxy[]           @relation("VipProxyUser")
   vipSlaHistory                                     VipSlaHistory[]
   agentAvailability                                 AgentAvailability[]  @relation("AgentAvailabilityUser")
-
-  // Enhanced ITSM relationships
-  requestedTickets    EnhancedSupportTicket[] @relation("TicketRequester")
-  assignedTickets     EnhancedSupportTicket[] @relation("TicketAssignedUser")
-  managedGroups       TicketGroup[]           @relation("GroupManager")
-  groupMemberships    GroupMember[]           @relation("GroupMemberUser")
-  ticketComments      TicketComment[]         @relation("CommentUser")
-  uploadedAttachments TicketAttachment[]      @relation("AttachmentUploader")
-  watchedTickets      TicketWatcher[]         @relation("TicketWatcher")
-  addedWatchers       TicketWatcher[]         @relation("WatcherAddedBy")
-  ticketHistory       TicketHistory[]         @relation("HistoryUser")
-  escalationsCreated  TicketEscalation[]      @relation("EscalatingUser")
-  escalationsReceived TicketEscalation[]      @relation("EscalatedToUser")
-  timeEntries         TicketTimeEntry[]       @relation("TimeEntryUser")
-  createdLinks        TicketLink[]            @relation("LinkCreator")
-  approvals           TicketApproval[]        @relation("TicketApprover")
 
   @@map("users")
 }
@@ -150,37 +134,37 @@ model Log {
 }
 
 model Config {
-  key             String          @id
-  value           String?
-  valueType       String?         @map("value_type") // "string", "number", "boolean", "json", "array"
-  description     String?
-  isPublic        Boolean         @default(false) @map("is_public") // Can be exposed to public API
-  category        String? // "branding", "security", "features", "integrations", "performance"
-  subcategory     String?         @map("subcategory") // More granular categorization
-  isUIEditable    Boolean         @default(true) @map("is_ui_editable") // Can be edited via UI
-  isRequired      Boolean         @default(false) @map("is_required") // Required for system operation
-  defaultValue    String?         @map("default_value") // Default fallback value
-  validationRules Json?           @map("validation_rules") // JSON validation schema
-  displayOrder    Int?            @map("display_order") // Order for UI display
-  helpText        String?         @map("help_text") // Additional help text for UI
-  isAdvanced      Boolean         @default(false) @map("is_advanced") // Show in advanced settings only
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
-  updatedBy       String?         @map("updated_by") // User ID who last updated
-  history         ConfigHistory[]
+  key           String   @id
+  value         String?
+  valueType     String?  @map("value_type") // "string", "number", "boolean", "json", "array"
+  description   String?
+  isPublic      Boolean  @default(false) @map("is_public") // Can be exposed to public API
+  category      String?  // "branding", "security", "features", "integrations", "performance"
+  subcategory   String?  @map("subcategory") // More granular categorization
+  isUIEditable  Boolean  @default(true) @map("is_ui_editable") // Can be edited via UI
+  isRequired    Boolean  @default(false) @map("is_required") // Required for system operation
+  defaultValue  String?  @map("default_value") // Default fallback value
+  validationRules Json?  @map("validation_rules") // JSON validation schema
+  displayOrder  Int?     @map("display_order") // Order for UI display
+  helpText      String?  @map("help_text") // Additional help text for UI
+  isAdvanced    Boolean  @default(false) @map("is_advanced") // Show in advanced settings only
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  updatedBy     String?  @map("updated_by") // User ID who last updated
+  history       ConfigHistory[]
 
   @@map("config")
 }
 
 model ConfigHistory {
-  id           Int      @id @default(autoincrement())
-  configKey    String   @map("config_key")
-  config       Config   @relation(fields: [configKey], references: [key], onDelete: Cascade)
-  oldValue     String?  @map("old_value")
-  newValue     String?  @map("new_value")
-  changedBy    String?  @map("changed_by") // User ID who made the change
+  id          Int       @id @default(autoincrement())
+  configKey   String    @map("config_key")
+  config      Config    @relation(fields: [configKey], references: [key], onDelete: Cascade)
+  oldValue    String?   @map("old_value")
+  newValue    String?   @map("new_value")
+  changedBy   String?   @map("changed_by") // User ID who made the change
   changeReason String?  @map("change_reason") // Optional reason for change
-  createdAt    DateTime @default(now()) @map("created_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
   @@map("config_history")
 }
@@ -190,7 +174,7 @@ model ConfigTemplate {
   name        String   @unique
   description String?
   category    String
-  template    Json // Template configuration as JSON
+  template    Json     // Template configuration as JSON
   isDefault   Boolean  @default(false) @map("is_default")
   createdBy   String?  @map("created_by")
   createdAt   DateTime @default(now()) @map("created_at")
@@ -200,24 +184,24 @@ model ConfigTemplate {
 }
 
 model Kiosk {
-  id             String                       @id
-  lastSeen       DateTime?                    @map("last_seen")
+  id             String                         @id
+  lastSeen       DateTime?                      @map("last_seen")
   version        String?
-  active         Boolean                      @default(false)
-  logoUrl        String?                      @map("logo_url")
-  bgUrl          String?                      @map("bg_url")
-  statusEnabled  Boolean                      @default(false) @map("status_enabled")
-  currentStatus  String?                      @map("current_status")
-  openMsg        String?                      @map("open_msg")
-  closedMsg      String?                      @map("closed_msg")
-  errorMsg       String?                      @map("error_msg")
-  meetingMsg     String?                      @map("meeting_msg")
-  brbMsg         String?                      @map("brb_msg")
-  lunchMsg       String?                      @map("lunch_msg")
-  unavailableMsg String?                      @map("unavailable_msg")
+  active         Boolean                        @default(false)
+  logoUrl        String?                        @map("logo_url")
+  bgUrl          String?                        @map("bg_url")
+  statusEnabled  Boolean                        @default(false) @map("status_enabled")
+  currentStatus  String?                        @map("current_status")
+  openMsg        String?                        @map("open_msg")
+  closedMsg      String?                        @map("closed_msg")
+  errorMsg       String?                        @map("error_msg")
+  meetingMsg     String?                        @map("meeting_msg")
+  brbMsg         String?                        @map("brb_msg")
+  lunchMsg       String?                        @map("lunch_msg")
+  unavailableMsg String?                        @map("unavailable_msg")
   schedule       Json?
-  createdAt      DateTime                     @default(now()) @map("created_at")
-  updatedAt      DateTime                     @updatedAt @map("updated_at")
+  createdAt      DateTime                       @default(now()) @map("created_at")
+  updatedAt      DateTime                       @updatedAt @map("updated_at")
   activations    KioskActivation[]
   assetRegistry  KioskAssetRegistry[]
   syncFailures   HelixSyncFailure[]
@@ -319,8 +303,8 @@ model KbArticle {
   comments         KbArticleComment[]
   currentVersionId Int?               @map("current_version_id")
   currentVersion   KbArticleVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id])
-  isPublished      Boolean            @default(false) @map("is_published")
-  tags             String[]
+  isPublished Boolean @default(false) @map("is_published")
+  tags        String[]
   // Add tenantId if multi-tenant
   // tenantId    String?   @map("tenant_id")
 
@@ -546,16 +530,16 @@ model KioskAssetRegistry {
 }
 
 model HelixSyncFailure {
-  id           Int            @id @default(autoincrement())
-  kioskId      String         @map("kiosk_id")
-  assetId      Int            @map("asset_id")
-  errorMessage String         @map("error_message")
-  metadata     Json?          @map("metadata")
-  retryCount   Int            @default(0) @map("retry_count")
-  nextRetryAt  DateTime       @map("next_retry_at")
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
-  kiosk        Kiosk          @relation(fields: [kioskId], references: [id], onDelete: Cascade)
+  id           Int      @id @default(autoincrement())
+  kioskId      String   @map("kiosk_id")
+  assetId      Int      @map("asset_id")
+  errorMessage String   @map("error_message")
+  metadata     Json?    @map("metadata")
+  retryCount   Int      @default(0) @map("retry_count")
+  nextRetryAt  DateTime @map("next_retry_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  kiosk        Kiosk    @relation(fields: [kioskId], references: [id], onDelete: Cascade)
   asset        InventoryAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
 
   @@unique([kioskId, assetId])
@@ -621,18 +605,18 @@ model ScimMapping {
 }
 
 model ScimLog {
-  id           String   @id @default(uuid())
-  operation    String // "create", "update", "delete", "get", "list"
-  entityType   String   @map("entity_type") // "user", "group", etc.
-  entityId     String?  @map("entity_id") // External ID or internal ID
-  statusCode   Int      @map("status_code")
-  message      String?
-  requestBody  Json?    @map("request_body")
-  responseBody Json?    @map("response_body")
-  userAgent    String?  @map("user_agent")
-  ipAddress    String?  @map("ip_address")
-  duration     Int? // Request duration in milliseconds
-  createdAt    DateTime @default(now()) @map("created_at")
+  id          String   @id @default(uuid())
+  operation   String   // "create", "update", "delete", "get", "list"
+  entityType  String   @map("entity_type") // "user", "group", etc.
+  entityId    String?  @map("entity_id") // External ID or internal ID
+  statusCode  Int      @map("status_code")
+  message     String?
+  requestBody Json?    @map("request_body")
+  responseBody Json?   @map("response_body")
+  userAgent   String?  @map("user_agent")
+  ipAddress   String?  @map("ip_address")
+  duration    Int?     // Request duration in milliseconds
+  createdAt   DateTime @default(now()) @map("created_at")
 
   @@map("scim_logs")
 }
@@ -749,522 +733,43 @@ model AgentAvailability {
   status      String   @default("active") // active, away, offline, break
   lastUpdated DateTime @default(now()) @map("last_updated")
   createdAt   DateTime @default(now()) @map("created_at")
-
+  
   user User @relation("AgentAvailabilityUser", fields: [userId], references: [id], onDelete: Cascade)
-
+  
   @@unique([userId, queueName])
   @@map("agent_availability")
 }
 
 model QueueMetrics {
-  id                  String   @id @default(uuid())
-  queueName           String   @map("queue_name")
-  totalAgents         Int      @default(0) @map("total_agents")
-  availableAgents     Int      @default(0) @map("available_agents")
-  totalTickets        Int      @default(0) @map("total_tickets")
-  openTickets         Int      @default(0) @map("open_tickets")
-  avgResponseTime     Float    @default(0) @map("avg_response_time")
-  avgResolutionTime   Float    @default(0) @map("avg_resolution_time")
-  slaBreaches         Int      @default(0) @map("sla_breaches")
-  highPriorityTickets Int      @default(0) @map("high_priority_tickets")
-  capacityUtilization Float    @default(0) @map("capacity_utilization") // 0-100%
-  averageWaitTime     Float    @default(0) @map("average_wait_time")
-  thresholdWarning    Boolean  @default(false) @map("threshold_warning")
-  thresholdCritical   Boolean  @default(false) @map("threshold_critical")
-  lastCalculated      DateTime @default(now()) @map("last_calculated")
-
+  id                    String   @id @default(uuid())
+  queueName             String   @map("queue_name")
+  totalAgents           Int      @default(0) @map("total_agents")
+  availableAgents       Int      @default(0) @map("available_agents")
+  totalTickets          Int      @default(0) @map("total_tickets")
+  openTickets           Int      @default(0) @map("open_tickets")
+  avgResponseTime       Float    @default(0) @map("avg_response_time")
+  avgResolutionTime     Float    @default(0) @map("avg_resolution_time")
+  slaBreaches           Int      @default(0) @map("sla_breaches")
+  highPriorityTickets   Int      @default(0) @map("high_priority_tickets")
+  capacityUtilization   Float    @default(0) @map("capacity_utilization") // 0-100%
+  averageWaitTime       Float    @default(0) @map("average_wait_time")
+  thresholdWarning      Boolean  @default(false) @map("threshold_warning")
+  thresholdCritical     Boolean  @default(false) @map("threshold_critical")
+  lastCalculated        DateTime @default(now()) @map("last_calculated")
+  
   @@unique([queueName])
   @@map("queue_metrics")
 }
 
 model QueueAlert {
-  id            String    @id @default(uuid())
-  queueName     String    @map("queue_name")
-  alertType     String    @map("alert_type") // warning, critical, capacity_exceeded
-  message       String
-  isActive      Boolean   @default(true) @map("is_active")
-  alertedAt     DateTime  @default(now()) @map("alerted_at")
-  resolvedAt    DateTime? @map("resolved_at")
-  notifiedUsers String[]  @map("notified_users")
-
-  @@map("queue_alerts")
-}
-
-// Enhanced ITSM Models - Integrated from separate schemas for production use
-
-// Enums for Enhanced ITSM
-enum TicketType {
-  INCIDENT
-  REQUEST
-  PROBLEM
-  CHANGE
-  TASK
-  HR
-  OPS
-  ISAC
-  FEEDBACK
-}
-
-enum TicketState {
-  NEW
-  ASSIGNED
-  IN_PROGRESS
-  PENDING
-  ON_HOLD
-  RESOLVED
-  CLOSED
-  CANCELLED
-  REOPENED
-}
-
-enum Priority {
-  CRITICAL
-  HIGH
-  MEDIUM
-  LOW
-}
-
-enum TicketSource {
-  PORTAL
-  EMAIL
-  PHONE
-  SLACK
-  WALK_IN
-  KIOSK
-  API
-}
-
-enum ApprovalStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
-}
-
-enum EscalationStatus {
-  ACTIVE
-  RESOLVED
-  CANCELLED
-}
-
-enum TimeType {
-  WORK
-  BREAK
-  RESEARCH
-  DOCUMENTATION
-  TRAVEL
-  TRAINING
-}
-
-enum RelationshipType {
-  BLOCKS
-  BLOCKED_BY
-  DUPLICATES
-  DUPLICATED_BY
-  RELATES_TO
-  PARENT_OF
-  CHILD_OF
-  DEPENDS_ON
-  DEPENDENCY_FOR
-}
-
-// Enhanced Support Ticket model to replace basic SupportTicket
-model EnhancedSupportTicket {
-  id               String  @id @default(uuid())
-  ticketNumber     String  @unique
-  title            String
-  description      String
-  shortDescription String? @map("short_description")
-
-  // Basic classification
-  type     TicketType  @default(REQUEST)
-  state    TicketState @default(NEW)
-  priority Priority    @default(MEDIUM)
-  urgency  Priority    @default(MEDIUM)
-  impact   Priority    @default(MEDIUM)
-
-  // Categorization
-  category          String?
-  subcategory       String?
-  businessService   String? @map("business_service")
-  configurationItem String? @map("configuration_item")
-
-  // User relationships
-  userId            String  @map("user_id")
-  assignedToUserId  String? @map("assigned_to_user_id")
-  assignedToGroupId String? @map("assigned_to_group_id")
-  assignedToQueueId String? @map("assigned_to_queue_id")
-
-  // Source and channel
-  source                TicketSource @default(PORTAL)
-  channel               String?
-  location              String?
-  costCenter            String?      @map("cost_center")
-  businessJustification String?      @map("business_justification")
-
-  // Resolution
-  resolution String?
-  closeNotes String? @map("close_notes")
-
-  // Metadata
-  tags                 String[] @default([])
-  customFields         Json?    @map("custom_fields")
-  isVip                Boolean  @default(false) @map("is_vip")
-  isEscalated          Boolean  @default(false) @map("is_escalated")
-  confidentialityLevel String   @default("internal") @map("confidentiality_level")
-
-  // Customer satisfaction
-  satisfactionRating  Int?    @map("satisfaction_rating")
-  satisfactionComment String? @map("satisfaction_comment")
-
-  // SLA and timing
-  slaId                    String?   @map("sla_id")
-  responseTimeTarget       Int?      @map("response_time_target") // in minutes
-  resolutionTimeTarget     Int?      @map("resolution_time_target") // in minutes
-  responseTimeBreached     Boolean   @default(false) @map("response_time_breached")
-  resolutionTimeBreached   Boolean   @default(false) @map("resolution_time_breached")
-  responseTimeBreachedAt   DateTime? @map("response_time_breached_at")
-  resolutionTimeBreachedAt DateTime? @map("resolution_time_breached_at")
-  responseTime             Int?      @map("response_time") // actual time in minutes
-  resolutionTime           Int?      @map("resolution_time") // actual time in minutes
-
-  // Timestamps
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  closedAt        DateTime? @map("closed_at")
-  resolvedAt      DateTime? @map("resolved_at")
-  firstResponseAt DateTime? @map("first_response_at")
-  lastActivityAt  DateTime? @map("last_activity_at")
-  dueDate         DateTime? @map("due_date")
-
-  // Parent/child relationships
-  parentTicketId String? @map("parent_ticket_id")
-
-  // Relationships
-  requester     User                    @relation("TicketRequester", fields: [userId], references: [id])
-  assignedUser  User?                   @relation("TicketAssignedUser", fields: [assignedToUserId], references: [id])
-  assignedGroup TicketGroup?            @relation(fields: [assignedToGroupId], references: [id])
-  assignedQueue TicketQueue?            @relation(fields: [assignedToQueueId], references: [id])
-  sla           SlaDefinition?          @relation(fields: [slaId], references: [id])
-  parentTicket  EnhancedSupportTicket?  @relation("TicketHierarchy", fields: [parentTicketId], references: [id])
-  childTickets  EnhancedSupportTicket[] @relation("TicketHierarchy")
-
-  // Related entities
-  comments          TicketComment[]
-  attachments       TicketAttachment[]
-  watchers          TicketWatcher[]
-  history           TicketHistory[]
-  escalations       TicketEscalation[]
-  timeEntries       TicketTimeEntry[]
-  linkedTickets     TicketLink[]       @relation("SourceTicketLink")
-  linkedFromTickets TicketLink[]       @relation("TargetTicketLink")
-  approvals         TicketApproval[]
-  workflowInstances WorkflowInstance[]
-  slaBreach         SlaBreach[]
-
-  @@index([state, priority, assignedToUserId])
-  @@index([createdAt, state])
-  @@index([slaId])
-  @@index([userId])
-  @@map("enhanced_support_tickets")
-}
-
-// Supporting Ticket Models
-
-model TicketComment {
-  id         String   @id @default(uuid())
-  ticketId   String   @map("ticket_id")
-  userId     String   @map("user_id")
-  content    String
-  isInternal Boolean  @default(false) @map("is_internal")
-  isSystem   Boolean  @default(false) @map("is_system")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  ticket      EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user        User                  @relation("CommentUser", fields: [userId], references: [id])
-  attachments CommentAttachment[]
-
-  @@index([ticketId, createdAt])
-  @@map("ticket_comments")
-}
-
-model TicketAttachment {
-  id           String   @id @default(uuid())
-  ticketId     String   @map("ticket_id")
-  uploadedBy   String   @map("uploaded_by")
-  filename     String
-  originalName String   @map("original_name")
-  mimeType     String   @map("mime_type")
-  fileSize     Int      @map("file_size")
-  fileKey      String   @map("file_key") // S3 key or file path
-  isPublic     Boolean  @default(false) @map("is_public")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  ticket   EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  uploader User                  @relation("AttachmentUploader", fields: [uploadedBy], references: [id])
-
-  @@index([ticketId])
-  @@map("ticket_attachments")
-}
-
-model CommentAttachment {
-  id           String   @id @default(uuid())
-  commentId    String   @map("comment_id")
-  filename     String
-  originalName String   @map("original_name")
-  mimeType     String   @map("mime_type")
-  fileSize     Int      @map("file_size")
-  fileKey      String   @map("file_key")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  comment TicketComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-
-  @@map("comment_attachments")
-}
-
-model TicketWatcher {
-  ticketId  String    @map("ticket_id")
-  userId    String    @map("user_id")
-  watchType WatchType @default(MANUAL) @map("watch_type")
-  addedBy   String?   @map("added_by")
-  addedAt   DateTime  @default(now()) @map("added_at")
-
-  ticket      EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user        User                  @relation("TicketWatcher", fields: [userId], references: [id], onDelete: Cascade)
-  addedByUser User?                 @relation("WatcherAddedBy", fields: [addedBy], references: [id])
-
-  @@id([ticketId, userId])
-  @@map("ticket_watchers")
-}
-
-model TicketHistory {
-  id           String        @id @default(uuid())
-  ticketId     String        @map("ticket_id")
-  userId       String?       @map("user_id") // null for system actions
-  action       HistoryAction
-  fieldChanged String?       @map("field_changed")
-  oldValue     String?       @map("old_value")
-  newValue     String?       @map("new_value")
-  description  String?
-  metadata     Json?
-  createdAt    DateTime      @default(now()) @map("created_at")
-
-  ticket EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user   User?                 @relation("HistoryUser", fields: [userId], references: [id])
-
-  @@index([ticketId, createdAt])
-  @@index([action, createdAt])
-  @@map("ticket_history")
-}
-
-model TicketEscalation {
-  id               String           @id @default(uuid())
-  ticketId         String           @map("ticket_id")
-  escalationLevel  Int              @map("escalation_level")
-  escalatedBy      String           @map("escalated_by")
-  escalatedTo      String?          @map("escalated_to")
-  escalatedToGroup String?          @map("escalated_to_group")
-  reason           String
-  status           EscalationStatus @default(ACTIVE)
-  createdAt        DateTime         @default(now()) @map("created_at")
-  resolvedAt       DateTime?        @map("resolved_at")
-
-  ticket              EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  escalatingUser      User                  @relation("EscalatingUser", fields: [escalatedBy], references: [id])
-  escalatedToUser     User?                 @relation("EscalatedToUser", fields: [escalatedTo], references: [id])
-  escalatedToGroupRel TicketGroup?          @relation(fields: [escalatedToGroup], references: [id])
-
-  @@index([ticketId, escalationLevel])
-  @@map("ticket_escalations")
-}
-
-model TicketTimeEntry {
-  id          String    @id @default(uuid())
-  ticketId    String    @map("ticket_id")
-  userId      String    @map("user_id")
-  duration    Int // in minutes
-  description String?
-  timeType    TimeType  @default(WORK) @map("time_type")
-  billable    Boolean   @default(false)
-  startTime   DateTime  @map("start_time")
-  endTime     DateTime? @map("end_time")
-  createdAt   DateTime  @default(now()) @map("created_at")
-
-  ticket EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user   User                  @relation("TimeEntryUser", fields: [userId], references: [id])
-
-  @@index([ticketId, startTime])
-  @@index([userId, startTime])
-  @@map("ticket_time_entries")
-}
-
-model TicketLink {
-  id               String           @id @default(uuid())
-  sourceTicketId   String           @map("source_ticket_id")
-  targetTicketId   String           @map("target_ticket_id")
-  relationshipType RelationshipType @map("relationship_type")
-  createdBy        String           @map("created_by")
-  createdAt        DateTime         @default(now()) @map("created_at")
-
-  sourceTicket EnhancedSupportTicket @relation("SourceTicketLink", fields: [sourceTicketId], references: [id], onDelete: Cascade)
-  targetTicket EnhancedSupportTicket @relation("TargetTicketLink", fields: [targetTicketId], references: [id], onDelete: Cascade)
-  creator      User                  @relation("LinkCreator", fields: [createdBy], references: [id])
-
-  @@index([sourceTicketId])
-  @@index([targetTicketId])
-  @@map("ticket_links")
-}
-
-// Supporting ITSM Models
-
-model TicketGroup {
   id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  managerId   String?  @map("manager_id")
-  email       String?
+  queueName   String   @map("queue_name")
+  alertType   String   @map("alert_type") // warning, critical, capacity_exceeded
+  message     String
   isActive    Boolean  @default(true) @map("is_active")
-  metadata    Json?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  manager     User?                   @relation("GroupManager", fields: [managerId], references: [id])
-  members     GroupMember[]
-  tickets     EnhancedSupportTicket[]
-  escalations TicketEscalation[]
-  queues      TicketQueue[]
-
-  @@map("ticket_groups")
-}
-
-model GroupMember {
-  groupId  String   @map("group_id")
-  userId   String   @map("user_id")
-  role     String   @default("member")
-  joinedAt DateTime @default(now()) @map("joined_at")
-
-  group TicketGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user  User        @relation("GroupMemberUser", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([groupId, userId])
-  @@map("group_members")
-}
-
-model TicketQueue {
-  id              String   @id @default(uuid())
-  name            String   @unique
-  description     String?
-  groupId         String?  @map("group_id")
-  isActive        Boolean  @default(true) @map("is_active")
-  autoAssignment  Boolean  @default(false) @map("auto_assignment")
-  assignmentRules Json?    @map("assignment_rules")
-  maxCapacity     Int?     @map("max_capacity")
-  businessHours   Json?    @map("business_hours")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  group   TicketGroup?            @relation(fields: [groupId], references: [id])
-  tickets EnhancedSupportTicket[]
-
-  @@map("ticket_queues")
-}
-
-model SlaDefinition {
-  id              String     @id @default(uuid())
-  name            String     @unique
-  description     String?
-  isActive        Boolean    @default(true) @map("is_active")
-  responseTime    Int        @map("response_time") // minutes
-  resolutionTime  Int        @map("resolution_time") // minutes
-  priority        Priority   @default(MEDIUM)
-  ticketType      TicketType @default(REQUEST) @map("ticket_type")
-  category        String?
-  businessHours   Json?      @map("business_hours")
-  escalationRules Json?      @map("escalation_rules")
-  createdAt       DateTime   @default(now()) @map("created_at")
-  updatedAt       DateTime   @updatedAt @map("updated_at")
-
-  tickets  EnhancedSupportTicket[]
-  breaches SlaBreach[]
-
-  @@map("sla_definitions")
-}
-
-model SlaBreach {
-  id         String    @id @default(uuid())
-  ticketId   String    @map("ticket_id")
-  slaId      String    @map("sla_id")
-  breachType String    @map("breach_type") // response, resolution
-  targetTime DateTime  @map("target_time")
-  actualTime DateTime? @map("actual_time")
-  breachTime DateTime  @map("breach_time")
-  isResolved Boolean   @default(false) @map("is_resolved")
-  resolvedAt DateTime? @map("resolved_at")
-
-  ticket EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  sla    SlaDefinition         @relation(fields: [slaId], references: [id])
-
-  @@index([ticketId])
-  @@index([slaId, breachType])
-  @@map("sla_breaches")
-}
-
-model WorkflowInstance {
-  id            String    @id @default(uuid())
-  ticketId      String    @map("ticket_id")
-  workflowId    String    @map("workflow_id")
-  currentStepId String?   @map("current_step_id")
-  status        String    @default("active")
-  startedAt     DateTime  @default(now()) @map("started_at")
-  completedAt   DateTime? @map("completed_at")
-  context       Json?
-
-  ticket EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-
-  @@index([ticketId])
-  @@index([workflowId, status])
-  @@map("workflow_instances")
-}
-
-model TicketApproval {
-  id          String         @id @default(uuid())
-  ticketId    String         @map("ticket_id")
-  approverId  String         @map("approver_id")
-  status      ApprovalStatus @default(PENDING)
-  requestedAt DateTime       @default(now()) @map("requested_at")
-  respondedAt DateTime?      @map("responded_at")
-  comments    String?
-
-  ticket   EnhancedSupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  approver User                  @relation("TicketApprover", fields: [approverId], references: [id])
-
-  @@index([ticketId])
-  @@index([approverId, status])
-  @@map("ticket_approvals")
-}
-
-// Additional Enums
-enum WatchType {
-  MANUAL
-  AUTO_ASSIGNED
-  AUTO_REQUESTER
-  AUTO_MENTION
-}
-
-enum HistoryAction {
-  CREATED
-  UPDATED
-  ASSIGNED
-  REASSIGNED
-  STATUS_CHANGED
-  PRIORITY_CHANGED
-  COMMENTED
-  ESCALATED
-  RESOLVED
-  CLOSED
-  REOPENED
-  LINKED
-  ATTACHMENT_ADDED
-  ATTACHMENT_REMOVED
+  alertedAt   DateTime @default(now()) @map("alerted_at")
+  resolvedAt  DateTime? @map("resolved_at")
+  notifiedUsers String[] @map("notified_users")
+  
+  @@map("queue_alerts")
 }

@@ -680,6 +680,231 @@ exports.Prisma.QueueAlertScalarFieldEnum = {
   notifiedUsers: 'notifiedUsers'
 };
 
+exports.Prisma.EnhancedSupportTicketScalarFieldEnum = {
+  id: 'id',
+  ticketNumber: 'ticketNumber',
+  title: 'title',
+  description: 'description',
+  shortDescription: 'shortDescription',
+  type: 'type',
+  state: 'state',
+  priority: 'priority',
+  urgency: 'urgency',
+  impact: 'impact',
+  category: 'category',
+  subcategory: 'subcategory',
+  businessService: 'businessService',
+  configurationItem: 'configurationItem',
+  userId: 'userId',
+  assignedToUserId: 'assignedToUserId',
+  assignedToGroupId: 'assignedToGroupId',
+  assignedToQueueId: 'assignedToQueueId',
+  source: 'source',
+  channel: 'channel',
+  location: 'location',
+  costCenter: 'costCenter',
+  businessJustification: 'businessJustification',
+  resolution: 'resolution',
+  closeNotes: 'closeNotes',
+  tags: 'tags',
+  customFields: 'customFields',
+  isVip: 'isVip',
+  isEscalated: 'isEscalated',
+  confidentialityLevel: 'confidentialityLevel',
+  satisfactionRating: 'satisfactionRating',
+  satisfactionComment: 'satisfactionComment',
+  slaId: 'slaId',
+  responseTimeTarget: 'responseTimeTarget',
+  resolutionTimeTarget: 'resolutionTimeTarget',
+  responseTimeBreached: 'responseTimeBreached',
+  resolutionTimeBreached: 'resolutionTimeBreached',
+  responseTimeBreachedAt: 'responseTimeBreachedAt',
+  resolutionTimeBreachedAt: 'resolutionTimeBreachedAt',
+  responseTime: 'responseTime',
+  resolutionTime: 'resolutionTime',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  closedAt: 'closedAt',
+  resolvedAt: 'resolvedAt',
+  firstResponseAt: 'firstResponseAt',
+  lastActivityAt: 'lastActivityAt',
+  dueDate: 'dueDate',
+  parentTicketId: 'parentTicketId'
+};
+
+exports.Prisma.TicketCommentScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  userId: 'userId',
+  content: 'content',
+  isInternal: 'isInternal',
+  isSystem: 'isSystem',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TicketAttachmentScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  uploadedBy: 'uploadedBy',
+  filename: 'filename',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  fileSize: 'fileSize',
+  fileKey: 'fileKey',
+  isPublic: 'isPublic',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CommentAttachmentScalarFieldEnum = {
+  id: 'id',
+  commentId: 'commentId',
+  filename: 'filename',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  fileSize: 'fileSize',
+  fileKey: 'fileKey',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TicketWatcherScalarFieldEnum = {
+  ticketId: 'ticketId',
+  userId: 'userId',
+  watchType: 'watchType',
+  addedBy: 'addedBy',
+  addedAt: 'addedAt'
+};
+
+exports.Prisma.TicketHistoryScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  userId: 'userId',
+  action: 'action',
+  fieldChanged: 'fieldChanged',
+  oldValue: 'oldValue',
+  newValue: 'newValue',
+  description: 'description',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TicketEscalationScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  escalationLevel: 'escalationLevel',
+  escalatedBy: 'escalatedBy',
+  escalatedTo: 'escalatedTo',
+  escalatedToGroup: 'escalatedToGroup',
+  reason: 'reason',
+  status: 'status',
+  createdAt: 'createdAt',
+  resolvedAt: 'resolvedAt'
+};
+
+exports.Prisma.TicketTimeEntryScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  userId: 'userId',
+  duration: 'duration',
+  description: 'description',
+  timeType: 'timeType',
+  billable: 'billable',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TicketLinkScalarFieldEnum = {
+  id: 'id',
+  sourceTicketId: 'sourceTicketId',
+  targetTicketId: 'targetTicketId',
+  relationshipType: 'relationshipType',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TicketGroupScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  managerId: 'managerId',
+  email: 'email',
+  isActive: 'isActive',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GroupMemberScalarFieldEnum = {
+  groupId: 'groupId',
+  userId: 'userId',
+  role: 'role',
+  joinedAt: 'joinedAt'
+};
+
+exports.Prisma.TicketQueueScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  groupId: 'groupId',
+  isActive: 'isActive',
+  autoAssignment: 'autoAssignment',
+  assignmentRules: 'assignmentRules',
+  maxCapacity: 'maxCapacity',
+  businessHours: 'businessHours',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SlaDefinitionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive',
+  responseTime: 'responseTime',
+  resolutionTime: 'resolutionTime',
+  priority: 'priority',
+  ticketType: 'ticketType',
+  category: 'category',
+  businessHours: 'businessHours',
+  escalationRules: 'escalationRules',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SlaBreachScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  slaId: 'slaId',
+  breachType: 'breachType',
+  targetTime: 'targetTime',
+  actualTime: 'actualTime',
+  breachTime: 'breachTime',
+  isResolved: 'isResolved',
+  resolvedAt: 'resolvedAt'
+};
+
+exports.Prisma.WorkflowInstanceScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  workflowId: 'workflowId',
+  currentStepId: 'currentStepId',
+  status: 'status',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  context: 'context'
+};
+
+exports.Prisma.TicketApprovalScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  approverId: 'approverId',
+  status: 'status',
+  requestedAt: 'requestedAt',
+  respondedAt: 'respondedAt',
+  comments: 'comments'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -709,7 +934,104 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.TicketType = exports.$Enums.TicketType = {
+  INCIDENT: 'INCIDENT',
+  REQUEST: 'REQUEST',
+  PROBLEM: 'PROBLEM',
+  CHANGE: 'CHANGE',
+  TASK: 'TASK',
+  HR: 'HR',
+  OPS: 'OPS',
+  ISAC: 'ISAC',
+  FEEDBACK: 'FEEDBACK'
+};
 
+exports.TicketState = exports.$Enums.TicketState = {
+  NEW: 'NEW',
+  ASSIGNED: 'ASSIGNED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  PENDING: 'PENDING',
+  ON_HOLD: 'ON_HOLD',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED',
+  CANCELLED: 'CANCELLED',
+  REOPENED: 'REOPENED'
+};
+
+exports.Priority = exports.$Enums.Priority = {
+  CRITICAL: 'CRITICAL',
+  HIGH: 'HIGH',
+  MEDIUM: 'MEDIUM',
+  LOW: 'LOW'
+};
+
+exports.TicketSource = exports.$Enums.TicketSource = {
+  PORTAL: 'PORTAL',
+  EMAIL: 'EMAIL',
+  PHONE: 'PHONE',
+  SLACK: 'SLACK',
+  WALK_IN: 'WALK_IN',
+  KIOSK: 'KIOSK',
+  API: 'API'
+};
+
+exports.WatchType = exports.$Enums.WatchType = {
+  MANUAL: 'MANUAL',
+  AUTO_ASSIGNED: 'AUTO_ASSIGNED',
+  AUTO_REQUESTER: 'AUTO_REQUESTER',
+  AUTO_MENTION: 'AUTO_MENTION'
+};
+
+exports.HistoryAction = exports.$Enums.HistoryAction = {
+  CREATED: 'CREATED',
+  UPDATED: 'UPDATED',
+  ASSIGNED: 'ASSIGNED',
+  REASSIGNED: 'REASSIGNED',
+  STATUS_CHANGED: 'STATUS_CHANGED',
+  PRIORITY_CHANGED: 'PRIORITY_CHANGED',
+  COMMENTED: 'COMMENTED',
+  ESCALATED: 'ESCALATED',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED',
+  REOPENED: 'REOPENED',
+  LINKED: 'LINKED',
+  ATTACHMENT_ADDED: 'ATTACHMENT_ADDED',
+  ATTACHMENT_REMOVED: 'ATTACHMENT_REMOVED'
+};
+
+exports.EscalationStatus = exports.$Enums.EscalationStatus = {
+  ACTIVE: 'ACTIVE',
+  RESOLVED: 'RESOLVED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.TimeType = exports.$Enums.TimeType = {
+  WORK: 'WORK',
+  BREAK: 'BREAK',
+  RESEARCH: 'RESEARCH',
+  DOCUMENTATION: 'DOCUMENTATION',
+  TRAVEL: 'TRAVEL',
+  TRAINING: 'TRAINING'
+};
+
+exports.RelationshipType = exports.$Enums.RelationshipType = {
+  BLOCKS: 'BLOCKS',
+  BLOCKED_BY: 'BLOCKED_BY',
+  DUPLICATES: 'DUPLICATES',
+  DUPLICATED_BY: 'DUPLICATED_BY',
+  RELATES_TO: 'RELATES_TO',
+  PARENT_OF: 'PARENT_OF',
+  CHILD_OF: 'CHILD_OF',
+  DEPENDS_ON: 'DEPENDS_ON',
+  DEPENDENCY_FOR: 'DEPENDENCY_FOR'
+};
+
+exports.ApprovalStatus = exports.$Enums.ApprovalStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
@@ -758,7 +1080,23 @@ exports.Prisma.ModelName = {
   VipSlaHistory: 'VipSlaHistory',
   AgentAvailability: 'AgentAvailability',
   QueueMetrics: 'QueueMetrics',
-  QueueAlert: 'QueueAlert'
+  QueueAlert: 'QueueAlert',
+  EnhancedSupportTicket: 'EnhancedSupportTicket',
+  TicketComment: 'TicketComment',
+  TicketAttachment: 'TicketAttachment',
+  CommentAttachment: 'CommentAttachment',
+  TicketWatcher: 'TicketWatcher',
+  TicketHistory: 'TicketHistory',
+  TicketEscalation: 'TicketEscalation',
+  TicketTimeEntry: 'TicketTimeEntry',
+  TicketLink: 'TicketLink',
+  TicketGroup: 'TicketGroup',
+  GroupMember: 'GroupMember',
+  TicketQueue: 'TicketQueue',
+  SlaDefinition: 'SlaDefinition',
+  SlaBreach: 'SlaBreach',
+  WorkflowInstance: 'WorkflowInstance',
+  TicketApproval: 'TicketApproval'
 };
 
 /**

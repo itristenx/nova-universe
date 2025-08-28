@@ -1,265 +1,441 @@
 import express from 'express';
-import { body, validationResult } from 'express-validator';
-import db from '../db.js';
-import { generateTypedTicketId } from '../utils/dbUtils.js';
-import { normalizeTicketType } from '../utils/utils.js';
+import { body, query, param, validationResult } from 'express-validator';
 import { logger } from '../logger.js';
-import { authenticateJWT } from '../middleware/auth.js';
+import { authenticateJWT, requirePermission } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
+import { TicketService } from '../services/enhanced-ticket.service.js';
+import { NotificationService } from '../services/notification-simple.service.js';
+import { AuditService } from '../services/audit-simple.service.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs/promises';
 
 const router = express.Router();
 
-// Simple in-memory store to support environments without full DB schema
-const memoryTickets = new Map();
-const memoryComments = new Map();
-
-// Legacy random ID generator kept for in-memory fallback only
-function generateTicketNumber() {
-  const n = Math.floor(Math.random() * 100000)
-    .toString()
-    .padStart(5, '0');
-  return `INC${n}`;
-}
-
-// List tickets (protected)
-router.get('/', authenticateJWT, createRateLimit(60 * 1000, 120), async (req, res) => {
-  try {
-    // Prefer DB if tickets table exists; otherwise return memory-backed tickets
+// Configure multer for ticket file uploads
+const storage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    const uploadDir = process.env.UPLOAD_PATH || './uploads/tickets';
     try {
-      const result = await db.query(
-        'SELECT id, ticket_id AS ticket_number, title, description, status, created_at FROM tickets ORDER BY created_at DESC LIMIT 100',
-      );
-      const tickets = (result.rows || []).map((r) => ({
-        id: r.id,
-        ticket_number: r.ticket_number || r.ticket_id,
-        title: r.title,
-        description: r.description,
-        status: r.status || 'open',
-        created_at: r.created_at,
-      }));
-      return res.json(tickets);
-    } catch {
-      return res.json(Array.from(memoryTickets.values()));
+      await fs.mkdir(uploadDir, { recursive: true });
+      cb(null, uploadDir);
+    } catch (error) {
+      cb(error);
     }
-  } catch (error) {
-    logger.error('List tickets error', { error: error.message });
-    res.status(500).json({ error: 'Failed to list tickets' });
-  }
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  },
 });
 
-// Create ticket (protected)
-router.post(
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    // Security: restrict file types
+    const allowedMimes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'application/pdf',
+      'text/plain',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('File type not allowed'), false);
+    }
+  },
+});
+
+/**
+ * Enhanced Tickets API - Using ITSM Industry Standards
+ * This replaces the basic ticket implementation with full ITSM features
+ */
+
+/**
+ * @route GET /api/v1/tickets
+ * @description Get tickets with advanced filtering, sorting, and pagination
+ * @access Protected
+ */
+router.get(
   '/',
   authenticateJWT,
-  createRateLimit(60 * 1000, 60),
+  createRateLimit(60 * 1000, 240),
   [
-    body('title').isString().isLength({ min: 1, max: 255 }).withMessage('Title is required'),
-    body('description').isString().isLength({ min: 1 }).withMessage('Description is required'),
-    body('priority')
+    // Pagination
+    query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+    query('perPage')
       .optional()
-      .isString()
-      .isIn(['low', 'medium', 'high', 'critical'])
-      .withMessage('Invalid priority'),
-    body('category').optional().isString(),
-    body('type')
+      .isInt({ min: 1, max: 100 })
+      .withMessage('PerPage must be between 1 and 100'),
+
+    // Filtering
+    query('status')
       .optional()
-      .isString()
-      .isIn(['INC', 'REQ', 'PRB', 'CHG', 'TASK', 'HR', 'OPS', 'ISAC', 'FB'])
-      .withMessage('Invalid type code'),
+      .isIn([
+        'NEW',
+        'ASSIGNED',
+        'IN_PROGRESS',
+        'PENDING',
+        'ON_HOLD',
+        'RESOLVED',
+        'CLOSED',
+        'CANCELLED',
+        'REOPENED',
+      ]),
+    query('priority').optional().isIn(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+    query('type')
+      .optional()
+      .isIn(['INCIDENT', 'REQUEST', 'PROBLEM', 'CHANGE', 'TASK', 'HR', 'OPS', 'ISAC', 'FEEDBACK']),
+    query('assignee').optional().isString(),
+    query('requester').optional().isString(),
+    query('category').optional().isString(),
+    query('search').optional().isString(),
+    query('slaBreached').optional().isBoolean(),
+    query('overdue').optional().isBoolean(),
+
+    // Sorting
+    query('sortBy')
+      .optional()
+      .isIn(['createdAt', 'updatedAt', 'priority', 'state', 'ticketNumber']),
+    query('sortOrder').optional().isIn(['asc', 'desc']),
   ],
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-
-      const { title, description, priority = 'medium', category = 'technical', type } = req.body;
-      const typeCode = normalizeTicketType(type || 'INC');
-
-      // Try to get typed ticket ID from database, fallback to in-memory generator
-      let ticketNumber;
-      try {
-        ticketNumber = await generateTypedTicketId(typeCode);
-      } catch (error) {
-        logger.warn('Database ticket ID generation failed, using fallback:', error.message);
-        ticketNumber = generateTicketNumber();
-      }
-
-      // Attempt DB insert first
-      try {
-        const id = (await import('uuid')).v4();
-        const now = new Date().toISOString();
-        const result = await db.query(
-          'INSERT INTO tickets (id, ticket_id, type_code, title, description, priority, category, status, requested_by_id, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, ticket_id',
-          [
-            id,
-            ticketNumber,
-            typeCode,
-            title,
-            description,
-            priority,
-            category,
-            'open',
-            req.user.id,
-            now,
-            now,
-          ],
-        );
-        return res.status(201).json({
-          id: result.rows[0].id,
-          type: typeCode,
-          title,
-          status: 'open',
-          ticket_number: result.rows[0].ticket_id,
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array(),
         });
-      } catch {
-        // Fallback to memory-backed ticket
-        const id = (await import('crypto')).randomUUID();
-        const ticket = {
-          id,
-          type: typeCode,
-          title,
-          description,
-          priority,
-          category,
-          status: 'open',
-          ticket_number: ticketNumber,
-        };
-        memoryTickets.set(id, ticket);
-        return res.status(201).json(ticket);
       }
+
+      const filters = {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.perPage) || 25,
+        sortBy: req.query.sortBy || 'createdAt',
+        sortOrder: req.query.sortOrder || 'desc',
+        search: req.query.search,
+        status: req.query.status,
+        priority: req.query.priority,
+        type: req.query.type,
+        assignee: req.query.assignee,
+        requester: req.query.requester,
+        category: req.query.category,
+        slaBreached: req.query.slaBreached === 'true',
+        overdue: req.query.overdue === 'true',
+      };
+
+      const result = await TicketService.getTickets(filters, req.user);
+
+      res.json({
+        success: true,
+        data: result.tickets,
+        meta: {
+          page: result.pagination.currentPage,
+          perPage: result.pagination.itemsPerPage,
+          total: result.pagination.totalCount,
+          totalPages: result.pagination.totalPages,
+          hasNext: result.pagination.hasNextPage,
+          hasPrev: result.pagination.hasPreviousPage,
+        },
+      });
     } catch (error) {
-      logger.error('Create ticket error', { error: error.message });
-      res.status(500).json({ error: 'Failed to create ticket' });
+      logger.error('Error fetching tickets:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch tickets',
+        errorCode: 'TICKETS_FETCH_ERROR',
+      });
     }
   },
 );
 
-// Get ticket by id (protected)
-router.get('/:id', authenticateJWT, createRateLimit(60 * 1000, 240), async (req, res) => {
-  try {
-    const { id } = req.params;
+/**
+ * @route GET /api/v1/tickets/:id
+ * @description Get detailed ticket information
+ * @access Protected
+ */
+router.get(
+  '/:id',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 300),
+  [
+    param('id').isString().withMessage('Ticket ID must be a string'),
+    query('include').optional().isString(), // comments,attachments,history,time_entries,watchers,links
+  ],
+  async (req, res) => {
     try {
-      const result = await db.query(
-        'SELECT id, ticket_id AS ticket_number, title, description, status FROM tickets WHERE id = $1',
-        [id],
-      );
-      if (result.rows && result.rows.length > 0) {
-        const r = result.rows[0];
-        return res.json({
-          id: r.id,
-          title: r.title,
-          description: r.description,
-          status: r.status || 'open',
-          ticket_number: r.ticket_number || r.ticket_id,
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array(),
         });
       }
-    } catch {
-      // ignore and try memory
+
+      const ticketId = req.params.id;
+      const include = req.query.include ? req.query.include.split(',') : [];
+
+      const ticket = await TicketService.getTicketById(ticketId, include, req.user);
+
+      if (!ticket) {
+        return res.status(404).json({
+          success: false,
+          error: 'Ticket not found',
+          errorCode: 'TICKET_NOT_FOUND',
+        });
+      }
+
+      // Log access for audit
+      try {
+        await AuditService.logTicketAccess(ticketId, req.user.id, req.ip);
+      } catch (auditError) {
+        logger.warn('Failed to log ticket access:', auditError);
+      }
+
+      res.json({
+        success: true,
+        data: ticket,
+      });
+    } catch (error) {
+      logger.error('Error fetching ticket:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch ticket',
+        errorCode: 'TICKET_FETCH_ERROR',
+      });
     }
+  },
+);
 
-    const ticket = memoryTickets.get(id);
-    if (!ticket) return res.status(404).json({ error: 'Not found' });
-    return res.json(ticket);
-  } catch (error) {
-    logger.error('Get ticket error', { error: error.message });
-    res.status(500).json({ error: 'Failed to get ticket' });
-  }
-});
+/**
+ * @route POST /api/v1/tickets
+ * @description Create a new ticket
+ * @access Protected
+ */
+router.post(
+  '/',
+  authenticateJWT,
+  upload.array('attachments', 10),
+  createRateLimit(60 * 1000, 30),
+  [
+    body('title')
+      .isString()
+      .trim()
+      .isLength({ min: 1, max: 255 })
+      .withMessage('Title is required and must be under 255 characters'),
+    body('description')
+      .isString()
+      .trim()
+      .isLength({ min: 1 })
+      .withMessage('Description is required'),
+    body('shortDescription').optional().isString().isLength({ max: 160 }),
+    body('type')
+      .optional()
+      .isIn(['INCIDENT', 'REQUEST', 'PROBLEM', 'CHANGE', 'TASK', 'HR', 'OPS', 'ISAC', 'FEEDBACK']),
+    body('priority').optional().isIn(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+    body('urgency').optional().isIn(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+    body('impact').optional().isIn(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+    body('category').optional().isString(),
+    body('subcategory').optional().isString(),
+    body('assigneeId').optional().isString(),
+    body('assignedGroupId').optional().isString(),
+    body('tags').optional().isArray(),
+    body('customFields').optional().isObject(),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array(),
+        });
+      }
 
-// Update ticket (protected)
-router.patch(
+      const ticketData = {
+        title: req.body.title,
+        description: req.body.description,
+        shortDescription: req.body.shortDescription,
+        type: req.body.type || 'REQUEST',
+        priority: req.body.priority || 'MEDIUM',
+        urgency: req.body.urgency || 'MEDIUM',
+        impact: req.body.impact || 'MEDIUM',
+        category: req.body.category,
+        subcategory: req.body.subcategory,
+        userId: req.user.id, // requester
+        assignedToUserId: req.body.assigneeId,
+        assignedToGroupId: req.body.assignedGroupId,
+        tags: req.body.tags || [],
+        customFields: req.body.customFields,
+        source: 'PORTAL',
+      };
+
+      const ticket = await TicketService.createTicket(ticketData, req.files || [], req.user);
+
+      res.status(201).json({
+        success: true,
+        data: ticket,
+        message: 'Ticket created successfully',
+      });
+    } catch (error) {
+      logger.error('Error creating ticket:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create ticket',
+        errorCode: 'TICKET_CREATE_ERROR',
+      });
+    }
+  },
+);
+
+/**
+ * @route PUT /api/v1/tickets/:id
+ * @description Update a ticket
+ * @access Protected
+ */
+router.put(
   '/:id',
   authenticateJWT,
   createRateLimit(60 * 1000, 120),
   [
-    body('status')
+    param('id').isString().withMessage('Ticket ID must be a string'),
+    body('title').optional().isString().trim().isLength({ min: 1, max: 255 }),
+    body('description').optional().isString().trim().isLength({ min: 1 }),
+    body('state')
       .optional()
-      .isIn(['open', 'in_progress', 'resolved', 'closed', 'on_hold'])
-      .withMessage('Invalid status'),
+      .isIn(['NEW', 'ASSIGNED', 'IN_PROGRESS', 'PENDING', 'ON_HOLD', 'RESOLVED', 'CLOSED', 'CANCELLED', 'REOPENED']),
+    body('priority').optional().isIn(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+    body('assigneeId').optional().isString(),
+    body('assignedGroupId').optional().isString(),
+    body('resolution').optional().isString(),
+    body('closeNotes').optional().isString(),
+    body('tags').optional().isArray(),
+    body('customFields').optional().isObject(),
   ],
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-      const { id } = req.params;
-      const { status } = req.body;
-
-      try {
-        const updates = [];
-        const values = [];
-        let idx = 1;
-        if (status) {
-          updates.push(`status = $${idx++}`);
-          values.push(status);
-        }
-        updates.push(`updated_at = CURRENT_TIMESTAMP`);
-        values.push(id);
-        const q = `UPDATE tickets SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, ticket_id, title, status`;
-        const result = await db.query(q, values);
-        if (result.rows && result.rows.length > 0) {
-          const r = result.rows[0];
-          return res.json({
-            id: r.id,
-            title: r.title,
-            status: r.status,
-            ticket_number: r.ticket_id,
-          });
-        }
-      } catch {
-        // ignore and update memory
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array(),
+        });
       }
 
-      const ticket = memoryTickets.get(id);
-      if (!ticket) return res.status(404).json({ error: 'Not found' });
-      if (status) ticket.status = status;
-      memoryTickets.set(id, ticket);
-      return res.json(ticket);
+      const ticketId = req.params.id;
+      const updateData = req.body;
+
+      const ticket = await TicketService.updateTicket(ticketId, updateData, req.user);
+
+      if (!ticket) {
+        return res.status(404).json({
+          success: false,
+          error: 'Ticket not found',
+          errorCode: 'TICKET_NOT_FOUND',
+        });
+      }
+
+      res.json({
+        success: true,
+        data: ticket,
+        message: 'Ticket updated successfully',
+      });
     } catch (error) {
-      logger.error('Update ticket error', { error: error.message });
-      res.status(500).json({ error: 'Failed to update ticket' });
+      logger.error('Error updating ticket:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update ticket',
+        errorCode: 'TICKET_UPDATE_ERROR',
+      });
     }
   },
 );
 
-// Add comment to ticket (protected)
+/**
+ * @route POST /api/v1/tickets/:id/comments
+ * @description Add a comment to a ticket
+ * @access Protected
+ */
 router.post(
   '/:id/comments',
   authenticateJWT,
-  createRateLimit(60 * 1000, 240),
+  createRateLimit(60 * 1000, 60),
   [
-    body('content').isString().isLength({ min: 1, max: 5000 }).withMessage('Content is required'),
-    body('type').optional().isIn(['public', 'internal']).withMessage('Invalid comment type'),
+    param('id').isString().withMessage('Ticket ID must be a string'),
+    body('content').isString().trim().isLength({ min: 1 }).withMessage('Comment content is required'),
+    body('isInternal').optional().isBoolean(),
   ],
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: errors.array(),
+        });
       }
-      const { id } = req.params;
-      const { content, type = 'internal' } = req.body;
 
-      // Ensure ticket exists (memory fallback)
-      let exists = false;
-      try {
-        const r = await db.query('SELECT 1 FROM tickets WHERE id = $1', [id]);
-        exists = !!(r.rows && r.rows.length > 0);
-      } catch {
-        exists = memoryTickets.has(id);
-      }
-      if (!exists) return res.status(404).json({ error: 'Ticket not found' });
+      const ticketId = req.params.id;
+      const { content, isInternal = false } = req.body;
 
-      const comment = { id: (await import('crypto')).randomUUID(), ticketId: id, content, type };
-      if (!memoryComments.has(id)) memoryComments.set(id, []);
-      memoryComments.get(id).push(comment);
-      return res.status(201).json(comment);
+      const comment = await TicketService.addComment(ticketId, {
+        content,
+        isInternal,
+        userId: req.user.id,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: comment,
+        message: 'Comment added successfully',
+      });
     } catch (error) {
-      logger.error('Add comment error', { error: error.message });
-      res.status(500).json({ error: 'Failed to add comment' });
+      logger.error('Error adding comment:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to add comment',
+        errorCode: 'COMMENT_CREATE_ERROR',
+      });
+    }
+  },
+);
+
+/**
+ * @route GET /api/v1/tickets/stats
+ * @description Get ticket statistics for dashboard
+ * @access Protected
+ */
+router.get(
+  '/stats',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 60),
+  async (req, res) => {
+    try {
+      const stats = await TicketService.getTicketStats(req.user);
+
+      res.json({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      logger.error('Error fetching ticket stats:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch ticket statistics',
+        errorCode: 'STATS_FETCH_ERROR',
+      });
     }
   },
 );
