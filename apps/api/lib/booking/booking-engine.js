@@ -88,7 +88,7 @@ export class BookingEngine {
     return {
       name: 'capacity',
       validate: async (bookingData) => {
-        const { spaceId, attendees } = bookingData;
+        const { attendees } = bookingData;
         
         // Mock implementation - would query database in production
         const spaceCapacity = Math.floor(Math.random() * 20) + 5;
@@ -464,7 +464,7 @@ export class BookingEngine {
     }
   }
 
-  async getUserPermissions(userId) {
+  async getUserPermissions(_userId) {
     // Mock implementation - would query database in production
     return {
       canBookSpaces: true,
@@ -536,7 +536,7 @@ export class BookingEngine {
   async getUserBookings(userId, filters = {}) {
     const userBookings = [];
     
-    for (const [id, booking] of this.bookings) {
+    for (const [_id, booking] of this.bookings) {
       if (booking.userId === userId) {
         // Apply filters
         if (filters.status && booking.status !== filters.status) continue;
