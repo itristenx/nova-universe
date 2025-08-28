@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.12.0
- * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+ * Prisma Client JS version: 6.14.0
+ * Query Engine version: 717184b7b35ea05dfa71a3236b7af656013e1e49
  */
 Prisma.prismaVersion = {
-  client: "6.12.0",
-  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
+  client: "6.14.0",
+  engine: "717184b7b35ea05dfa71a3236b7af656013e1e49"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -113,11 +113,163 @@ Prisma.NullTypes = {
  * Enums
  */
 
-undefined
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  eventType: 'eventType',
+  action: 'action',
+  resource: 'resource',
+  resourceId: 'resourceId',
+  userId: 'userId',
+  sessionId: 'sessionId',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  method: 'method',
+  path: 'path',
+  oldValues: 'oldValues',
+  newValues: 'newValues',
+  changes: 'changes',
+  severity: 'severity',
+  category: 'category',
+  source: 'source',
+  correlation: 'correlation',
+  metadata: 'metadata',
+  tags: 'tags',
+  timestamp: 'timestamp',
+  duration: 'duration',
+  retentionDate: 'retentionDate',
+  complianceFlags: 'complianceFlags'
+};
+
+exports.Prisma.SecurityEventScalarFieldEnum = {
+  id: 'id',
+  eventType: 'eventType',
+  severity: 'severity',
+  userId: 'userId',
+  description: 'description',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  location: 'location',
+  threatLevel: 'threatLevel',
+  confidence: 'confidence',
+  indicators: 'indicators',
+  status: 'status',
+  assignedTo: 'assignedTo',
+  response: 'response',
+  timestamp: 'timestamp',
+  firstSeen: 'firstSeen',
+  lastSeen: 'lastSeen',
+  resolvedAt: 'resolvedAt',
+  metadata: 'metadata',
+  tags: 'tags'
+};
+
+exports.Prisma.SystemLogScalarFieldEnum = {
+  id: 'id',
+  level: 'level',
+  message: 'message',
+  source: 'source',
+  component: 'component',
+  error: 'error',
+  stackTrace: 'stackTrace',
+  requestId: 'requestId',
+  sessionId: 'sessionId',
+  userId: 'userId',
+  duration: 'duration',
+  memory: 'memory',
+  metadata: 'metadata',
+  tags: 'tags',
+  timestamp: 'timestamp',
+  indexed: 'indexed',
+  archived: 'archived'
+};
+
+exports.Prisma.ActivityTraceScalarFieldEnum = {
+  id: 'id',
+  traceId: 'traceId',
+  spanId: 'spanId',
+  parentSpanId: 'parentSpanId',
+  operation: 'operation',
+  service: 'service',
+  method: 'method',
+  path: 'path',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  duration: 'duration',
+  status: 'status',
+  statusCode: 'statusCode',
+  userId: 'userId',
+  sessionId: 'sessionId',
+  cpu: 'cpu',
+  memory: 'memory',
+  ioOperations: 'ioOperations',
+  tags: 'tags',
+  metadata: 'metadata'
+};
+
+exports.Prisma.ComplianceLogScalarFieldEnum = {
+  id: 'id',
+  regulation: 'regulation',
+  eventType: 'eventType',
+  dataCategory: 'dataCategory',
+  dataSubjectId: 'dataSubjectId',
+  dataSubjectType: 'dataSubjectType',
+  action: 'action',
+  purpose: 'purpose',
+  legalBasis: 'legalBasis',
+  dataFields: 'dataFields',
+  processor: 'processor',
+  controller: 'controller',
+  consentId: 'consentId',
+  consentStatus: 'consentStatus',
+  retentionPeriod: 'retentionPeriod',
+  disposalDate: 'disposalDate',
+  userId: 'userId',
+  ipAddress: 'ipAddress',
+  timestamp: 'timestamp',
+  metadata: 'metadata'
+};
+
+exports.Prisma.PerformanceMetricScalarFieldEnum = {
+  id: 'id',
+  metricName: 'metricName',
+  metricType: 'metricType',
+  value: 'value',
+  unit: 'unit',
+  service: 'service',
+  endpoint: 'endpoint',
+  method: 'method',
+  statusCode: 'statusCode',
+  dimensions: 'dimensions',
+  tags: 'tags',
+  timestamp: 'timestamp',
+  interval: 'interval',
+  count: 'count',
+  min: 'min',
+  max: 'max',
+  avg: 'avg',
+  p50: 'p50',
+  p95: 'p95',
+  p99: 'p99'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
 
 
 exports.Prisma.ModelName = {
-
+  AuditLog: 'AuditLog',
+  SecurityEvent: 'SecurityEvent',
+  SystemLog: 'SystemLog',
+  ActivityTrace: 'ActivityTrace',
+  ComplianceLog: 'ComplianceLog',
+  PerformanceMetric: 'PerformanceMetric'
 };
 
 /**

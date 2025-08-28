@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.12.0
- * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
+ * Prisma Client JS version: 6.14.0
+ * Query Engine version: 717184b7b35ea05dfa71a3236b7af656013e1e49
  */
 Prisma.prismaVersion = {
-  client: "6.12.0",
-  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
+  client: "6.14.0",
+  engine: "717184b7b35ea05dfa71a3236b7af656013e1e49"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -120,9 +120,131 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.SessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sessionToken: 'sessionToken',
+  expires: 'expires',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AuthProviderScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  name: 'name',
+  isEnabled: 'isEnabled',
+  configuration: 'configuration',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserProviderScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  providerId: 'providerId',
+  providerUserId: 'providerUserId',
+  providerUsername: 'providerUsername',
+  metadata: 'metadata',
+  isActive: 'isActive',
+  lastLoginAt: 'lastLoginAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PasswordResetScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  token: 'token',
+  expires: 'expires',
+  used: 'used',
+  ipAddress: 'ipAddress',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LoginAttemptScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  success: 'success',
+  failReason: 'failReason',
+  timestamp: 'timestamp'
+};
+
+exports.Prisma.AccountLockoutScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  attemptCount: 'attemptCount',
+  lockedUntil: 'lockedUntil',
+  lastAttemptAt: 'lastAttemptAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MfaDeviceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  deviceType: 'deviceType',
+  deviceName: 'deviceName',
+  secret: 'secret',
+  phoneNumber: 'phoneNumber',
+  isVerified: 'isVerified',
+  isActive: 'isActive',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ApiKeyScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  keyHash: 'keyHash',
+  permissions: 'permissions',
+  lastUsedAt: 'lastUsedAt',
+  expiresAt: 'expiresAt',
+  isActive: 'isActive',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
 
 exports.Prisma.ModelName = {
-
+  Session: 'Session',
+  AuthProvider: 'AuthProvider',
+  UserProvider: 'UserProvider',
+  PasswordReset: 'PasswordReset',
+  LoginAttempt: 'LoginAttempt',
+  AccountLockout: 'AccountLockout',
+  MfaDevice: 'MfaDevice',
+  ApiKey: 'ApiKey'
 };
 
 /**

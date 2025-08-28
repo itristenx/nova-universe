@@ -160,3 +160,7 @@ fastlane/test_output/
 deployment-logs/
 *.deployment.log
 >>>>>>> Incoming (Background Agent changes)
+
+# Prisma generated clients (build artifacts)
+prisma/generated/*/
+!prisma/generated/**/schema.prisma
