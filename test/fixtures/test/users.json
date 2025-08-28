@@ -1,0 +1,23 @@
+{
+  "admin": {
+    "email": "admin@test-test.nova",
+    "password": "TestAdmin123!",
+    "role": "admin",
+    "firstName": "Test",
+    "lastName": "Admin"
+  },
+  "user": {
+    "email": "user@test-test.nova",
+    "password": "TestUser123!",
+    "role": "user",
+    "firstName": "Test",
+    "lastName": "User"
+  },
+  "agent": {
+    "email": "agent@test-test.nova",
+    "password": "TestAgent123!",
+    "role": "agent",
+    "firstName": "Test",
+    "lastName": "Agent"
+  }
+}
