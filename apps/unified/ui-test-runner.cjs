@@ -247,11 +247,12 @@ class UITestRunner {
 
     // Install Playwright browsers if needed
     try {
+      const playwrightTimeout = parseInt(process.env.PLAYWRIGHT_INSTALL_TIMEOUT || '300000');
       execSync('npx playwright install --with-deps', { 
         stdio: 'pipe',
-        timeout: 300000 
+        timeout: playwrightTimeout
       });
-      console.log('  ✅ Playwright browsers are ready');
+      console.log(`  ✅ Playwright browsers are ready (timeout: ${playwrightTimeout} ms)`);
     } catch (error) {
       console.log('  ⚠️ Could not install Playwright browsers');
     }
