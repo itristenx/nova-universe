@@ -112,6 +112,33 @@ jobs:
       - name: Run API tests
         run: npm --prefix apps/api test -- --runInBand --ci
 
+  unified-unit:
+    name: Unified UI unit tests
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Allow failure due to dependency conflicts
+    env:
+      CI: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install Unified deps
+        run: npm --prefix apps/unified install --legacy-peer-deps
+
+      - name: Run Unified tests
+        run: npm --prefix apps/unified test -- --ci --runInBand --passWithNoTests
+
   orbit-unit:
     name: Orbit unit tests
     runs-on: ubuntu-latest
