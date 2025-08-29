@@ -113,10 +113,10 @@ export class DatabaseTestHelper {
 
   private async connectMongoDB(): Promise<void> {
     if (!this.mongoClient) {
-      const connectionString = this.config.connectionString || 
-        `mongodb://${this.config.username}:${this.config.password}@${this.config.host}:${this.config.port}/${this.config.database}`;
-      
-      this.mongoClient = new MongoClient(connectionString);
+      if (!this.config.connectionString) {
+        throw new Error('MongoDB connection string must be provided via environment variable or secure configuration.');
+      }
+      this.mongoClient = new MongoClient(this.config.connectionString);
       await this.mongoClient.connect();
     }
   }
