@@ -199,27 +199,49 @@ class UITestRunner {
   async setupTestEnvironment() {
     console.log('🔧 Setting up test environment...');
 
+    // Helper for fetch with timeout
+    async function fetchWithTimeout(url, timeoutMs) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeout);
+        return response;
+      } catch (err) {
+        clearTimeout(timeout);
+        throw err;
+      }
+    }
+
     // Check if UI server is running
     try {
-      const response = await fetch(this.config.baseURL);
+      const response = await fetchWithTimeout(this.config.baseURL, 5000);
       if (!response.ok) {
         throw new Error(`UI server not responding: ${response.status}`);
       }
       console.log('  ✅ UI server is running');
     } catch (error) {
-      console.log('  ⚠️ UI server is not running');
+      if (error.name === 'AbortError') {
+        console.log('  ⚠️ UI server check timed out');
+      } else {
+        console.log('  ⚠️ UI server is not running');
+      }
       console.log('  Please ensure the UI server is running at:', this.config.baseURL);
     }
 
     // Check API server
     try {
-      const response = await fetch(`${this.config.apiURL}/health`);
+      const response = await fetchWithTimeout(`${this.config.apiURL}/health`, 5000);
       if (!response.ok) {
         throw new Error(`API server not responding: ${response.status}`);
       }
       console.log('  ✅ API server is running');
     } catch (error) {
-      console.log('  ⚠️ API server is not running');
+      if (error.name === 'AbortError') {
+        console.log('  ⚠️ API server check timed out');
+      } else {
+        console.log('  ⚠️ API server is not running');
+      }
       console.log('  Some tests may be skipped');
     }
 
