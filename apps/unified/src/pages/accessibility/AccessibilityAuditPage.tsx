@@ -78,7 +78,10 @@ export default function AccessibilityAuditPage() {
         setSettings(data.settings);
       }
     } catch (_error) {
-      console.warn('Accessibility API not available, using defaults:', _error instanceof Error ? _error.message : String(_error));
+      console.warn(
+        'Accessibility API not available, using defaults:',
+        _error instanceof Error ? _error.message : String(_error),
+      );
     }
   };
 
@@ -96,7 +99,10 @@ export default function AccessibilityAuditPage() {
         setAuditResults([]);
       }
     } catch (_error) {
-      console.warn('Accessibility audit API unavailable, using fallback data:', _error instanceof Error ? _error.message : String(_error));
+      console.warn(
+        'Accessibility audit API unavailable, using fallback data:',
+        _error instanceof Error ? _error.message : String(_error),
+      );
       // Fallback to empty state
       setAuditResults([]);
     }
@@ -146,7 +152,7 @@ export default function AccessibilityAuditPage() {
         title: 'Images have alternative text',
         description: 'All images must have appropriate alternative text for screen readers',
         impact: 'critical',
-        wcagReference: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html'
+        wcagReference: 'https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html',
       },
       {
         id: 'color-contrast',
@@ -156,7 +162,7 @@ export default function AccessibilityAuditPage() {
         title: 'Sufficient color contrast',
         description: 'Text must have sufficient contrast against background colors',
         impact: 'serious',
-        wcagReference: 'https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html'
+        wcagReference: 'https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html',
       },
       {
         id: 'keyboard-navigation',
@@ -166,8 +172,8 @@ export default function AccessibilityAuditPage() {
         title: 'Keyboard accessible',
         description: 'All functionality must be available from a keyboard',
         impact: 'critical',
-        wcagReference: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html'
-      }
+        wcagReference: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html',
+      },
     ];
   };
 
@@ -689,11 +695,11 @@ export default function AccessibilityAuditPage() {
           {/* Search Guidelines */}
           <div className="mb-6">
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder={t('accessibility:searchGuidelines')}
-                className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
+                className="w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-10 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
               />
             </div>
           </div>

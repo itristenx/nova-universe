@@ -158,7 +158,7 @@ export function MobileLayout({ children, sidebar, header, className }: MobileLay
 
       {/* Mobile navigation controls */}
       {isMobile && (
-        <div className="fixed bottom-4 right-4 z-30 flex gap-2">
+        <div className="fixed right-4 bottom-4 z-30 flex gap-2">
           <button
             onClick={() => window.history.back()}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 text-white shadow-lg transition-all hover:bg-gray-700 active:scale-95"

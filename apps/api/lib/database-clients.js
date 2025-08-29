@@ -25,10 +25,10 @@ export async function getCoreClient() {
       coreClient = new PrismaClient({
         datasources: {
           core_db: {
-            url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL
-          }
+            url: process.env.CORE_DATABASE_URL || process.env.DATABASE_URL,
+          },
         },
-        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
       });
     } catch (error) {
       logger.error('Failed to initialize core Prisma client:', error);
@@ -48,10 +48,10 @@ export async function getAuthClient() {
       authClient = new PrismaClient({
         datasources: {
           auth_db: {
-            url: process.env.AUTH_DATABASE_URL || process.env.DATABASE_URL
-          }
+            url: process.env.AUTH_DATABASE_URL || process.env.DATABASE_URL,
+          },
         },
-        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
       });
     } catch (error) {
       logger.error('Failed to initialize auth Prisma client:', error);
@@ -71,10 +71,10 @@ export async function getAuditClient() {
       auditClient = new PrismaClient({
         datasources: {
           audit_db: {
-            url: process.env.AUDIT_DATABASE_URL || process.env.MONGO_URI
-          }
+            url: process.env.AUDIT_DATABASE_URL || process.env.MONGO_URI,
+          },
         },
-        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
       });
     } catch (error) {
       logger.error('Failed to initialize audit Prisma client:', error);
@@ -94,10 +94,10 @@ export async function getCmdbClient() {
       cmdbClient = new PrismaClient({
         datasources: {
           cmdb_db: {
-            url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL
-          }
+            url: process.env.CMDB_DATABASE_URL || process.env.DATABASE_URL,
+          },
         },
-        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
       });
     } catch (error) {
       logger.error('Failed to initialize CMDB Prisma client:', error);
@@ -117,10 +117,10 @@ export async function getNotificationClient() {
       notificationClient = new PrismaClient({
         datasources: {
           notification_db: {
-            url: process.env.NOTIFICATION_DATABASE_URL || process.env.DATABASE_URL
-          }
+            url: process.env.NOTIFICATION_DATABASE_URL || process.env.DATABASE_URL,
+          },
         },
-        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
       });
     } catch (error) {
       logger.error('Failed to initialize notification Prisma client:', error);
@@ -140,10 +140,10 @@ export async function getUser360Client() {
       user360Client = new PrismaClient({
         datasources: {
           user360_db: {
-            url: process.env.USER360_DATABASE_URL || process.env.DATABASE_URL
-          }
+            url: process.env.USER360_DATABASE_URL || process.env.DATABASE_URL,
+          },
         },
-        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
       });
     } catch (error) {
       logger.error('Failed to initialize User360 Prisma client:', error);
@@ -163,10 +163,10 @@ export async function getIntegrationClient() {
       integrationClient = new PrismaClient({
         datasources: {
           integration_db: {
-            url: process.env.INTEGRATION_DATABASE_URL || process.env.DATABASE_URL
-          }
+            url: process.env.INTEGRATION_DATABASE_URL || process.env.DATABASE_URL,
+          },
         },
-        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
       });
     } catch (error) {
       logger.error('Failed to initialize integration Prisma client:', error);
@@ -186,10 +186,10 @@ export async function getAiClient() {
       aiClient = new PrismaClient({
         datasources: {
           ai_db: {
-            url: process.env.AI_DATABASE_URL || process.env.DATABASE_URL
-          }
+            url: process.env.AI_DATABASE_URL || process.env.DATABASE_URL,
+          },
         },
-        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
       });
     } catch (error) {
       logger.error('Failed to initialize AI Prisma client:', error);
@@ -211,7 +211,7 @@ export async function checkDatabaseHealth() {
     notification: false,
     user360: false,
     integration: false,
-    ai: false
+    ai: false,
   };
 
   try {

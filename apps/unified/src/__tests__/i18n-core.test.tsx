@@ -19,7 +19,7 @@ describe('I18n Core Integration', () => {
 
     test('should support required languages', () => {
       const supportedLanguages = ['en', 'es', 'fr', 'ar'];
-      supportedLanguages.forEach(lang => {
+      supportedLanguages.forEach((lang) => {
         expect(i18n.hasResourceBundle(lang, 'common')).toBe(true);
       });
     });
@@ -29,17 +29,17 @@ describe('I18n Core Integration', () => {
     test('should have consistent translation keys across locales', async () => {
       await i18n.changeLanguage('en');
       const enKeys = i18n.getResourceBundle('en', 'common');
-      
+
       const languages = ['es', 'fr', 'ar'];
-      
+
       for (const lang of languages) {
         await i18n.changeLanguage(lang);
         const langKeys = i18n.getResourceBundle(lang, 'common');
-        
+
         // Check if key structures are similar (basic check)
         expect(typeof langKeys).toBe('object');
         expect(langKeys).not.toBeNull();
-        
+
         // Check for essential app keys
         if (enKeys?.app) {
           expect(langKeys?.app).toBeDefined();
@@ -53,10 +53,10 @@ describe('I18n Core Integration', () => {
         'serviceStatus:title',
         'serviceStatus:allSystemsOperational',
         'serviceStatus:refresh',
-        'serviceStatus:lastUpdated'
+        'serviceStatus:lastUpdated',
       ];
-      
-      requiredKeys.forEach(key => {
+
+      requiredKeys.forEach((key) => {
         expect(i18n.exists(key)).toBe(true);
       });
     });
@@ -66,10 +66,10 @@ describe('I18n Core Integration', () => {
         'cosmoAI:title',
         'cosmoAI:welcome',
         'cosmoAI:newChat',
-        'cosmoAI:sendMessage'
+        'cosmoAI:sendMessage',
       ];
-      
-      requiredKeys.forEach(key => {
+
+      requiredKeys.forEach((key) => {
         expect(i18n.exists(key)).toBe(true);
       });
     });
@@ -79,10 +79,10 @@ describe('I18n Core Integration', () => {
         'auth:login:title',
         'auth:login:welcome',
         'auth:emailPlaceholder',
-        'auth:passwordPlaceholder'
+        'auth:passwordPlaceholder',
       ];
-      
-      requiredKeys.forEach(key => {
+
+      requiredKeys.forEach((key) => {
         expect(i18n.exists(key)).toBe(true);
       });
     });
@@ -92,13 +92,13 @@ describe('I18n Core Integration', () => {
     test('should change language successfully', async () => {
       await i18n.changeLanguage('es');
       expect(i18n.language).toBe('es');
-      
+
       await i18n.changeLanguage('fr');
       expect(i18n.language).toBe('fr');
-      
+
       await i18n.changeLanguage('ar');
       expect(i18n.language).toBe('ar');
-      
+
       await i18n.changeLanguage('en');
       expect(i18n.language).toBe('en');
     });
@@ -107,10 +107,10 @@ describe('I18n Core Integration', () => {
       // Test app name translation
       await i18n.changeLanguage('en');
       const enName = i18n.t('app:name');
-      
+
       await i18n.changeLanguage('es');
       const esName = i18n.t('app:name');
-      
+
       // Both should be defined and should be the same for app name
       expect(enName).toBeDefined();
       expect(esName).toBeDefined();
@@ -123,7 +123,7 @@ describe('I18n Core Integration', () => {
     test('should support Arabic RTL direction', async () => {
       await i18n.changeLanguage('ar');
       expect(i18n.language).toBe('ar');
-      
+
       // Arabic translations should exist
       const arabicTitle = i18n.t('app:name');
       expect(arabicTitle).toBeDefined();
@@ -135,7 +135,7 @@ describe('I18n Core Integration', () => {
     test('should handle missing keys gracefully', () => {
       const missingKey = 'nonexistent:missing:key';
       const result = i18n.t(missingKey);
-      
+
       // Should return the key itself or some fallback, not crash
       expect(result).toBeDefined();
       expect(typeof result).toBe('string');
@@ -143,7 +143,7 @@ describe('I18n Core Integration', () => {
 
     test('should fallback to English for missing translations', async () => {
       await i18n.changeLanguage('es');
-      
+
       // Try a key that might not exist in Spanish
       const result = i18n.t('some:potentially:missing:key');
       expect(result).toBeDefined();

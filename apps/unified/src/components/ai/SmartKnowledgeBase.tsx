@@ -302,7 +302,10 @@ export function SmartKnowledgeBase({ initialQuery = '', contextData }: SmartKnow
                       {article.title}
                     </h3>
                     {article.views > 100 && (
-                      <ArrowTrendingUpIcon className="h-4 w-4 text-orange-500" title={t('knowledge:article.trending')} />
+                      <ArrowTrendingUpIcon
+                        className="h-4 w-4 text-orange-500"
+                        title={t('knowledge:article.trending')}
+                      />
                     )}
                     <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                       {article.relevanceScore}% {t('knowledge:article.relevant')}

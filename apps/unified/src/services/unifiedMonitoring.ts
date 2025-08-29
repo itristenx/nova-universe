@@ -1,5 +1,3 @@
-
-
 import { apiClient } from './api';
 import { io, Socket } from 'socket.io-client';
 
@@ -188,7 +186,8 @@ class UnifiedMonitoringService {
     try {
       const params = new URLSearchParams();
       if (filters?.status) params.append('status', filters.status);
-      if (filters?.escalation_policy_id) params.append('escalation_policy_id', filters.escalation_policy_id);
+      if (filters?.escalation_policy_id)
+        params.append('escalation_policy_id', filters.escalation_policy_id);
       if (filters?.labels) params.append('labels', JSON.stringify(filters.labels));
 
       const response = await apiClient.get(`/api/v2/monitoring/services?${params.toString()}`);
@@ -209,7 +208,9 @@ class UnifiedMonitoringService {
     }
   }
 
-  async createService(service: Omit<NovaService, 'id' | 'created_at' | 'updated_at'>): Promise<NovaService> {
+  async createService(
+    service: Omit<NovaService, 'id' | 'created_at' | 'updated_at'>,
+  ): Promise<NovaService> {
     try {
       const response = await apiClient.post('/api/v2/monitoring/services', service);
       return (response as any).data.data;
@@ -247,7 +248,9 @@ class UnifiedMonitoringService {
       const params = new URLSearchParams();
       if (service_id) params.append('service_id', service_id);
 
-      const response = await apiClient.get(`/api/v2/monitoring/integration-keys?${params.toString()}`);
+      const response = await apiClient.get(
+        `/api/v2/monitoring/integration-keys?${params.toString()}`,
+      );
       return (response as any).data.data || [];
     } catch (error) {
       console.error('Failed to fetch integration keys:', error);
@@ -255,7 +258,9 @@ class UnifiedMonitoringService {
     }
   }
 
-  async createIntegrationKey(integrationKey: Omit<NovaIntegrationKey, 'id' | 'created_at' | 'updated_at'>): Promise<NovaIntegrationKey> {
+  async createIntegrationKey(
+    integrationKey: Omit<NovaIntegrationKey, 'id' | 'created_at' | 'updated_at'>,
+  ): Promise<NovaIntegrationKey> {
     try {
       const response = await apiClient.post('/api/v2/monitoring/integration-keys', integrationKey);
       return (response as any).data.data;
@@ -283,7 +288,9 @@ class UnifiedMonitoringService {
       const params = new URLSearchParams();
       if (service_id) params.append('service_id', service_id);
 
-      const response = await apiClient.get(`/api/v2/monitoring/heartbeat-monitors?${params.toString()}`);
+      const response = await apiClient.get(
+        `/api/v2/monitoring/heartbeat-monitors?${params.toString()}`,
+      );
       return (response as any).data.data || [];
     } catch (error) {
       console.error('Failed to fetch heartbeat monitors:', error);
@@ -291,9 +298,14 @@ class UnifiedMonitoringService {
     }
   }
 
-  async createHeartbeatMonitor(heartbeatMonitor: Omit<NovaHeartbeatMonitor, 'id' | 'created_at' | 'updated_at'>): Promise<NovaHeartbeatMonitor> {
+  async createHeartbeatMonitor(
+    heartbeatMonitor: Omit<NovaHeartbeatMonitor, 'id' | 'created_at' | 'updated_at'>,
+  ): Promise<NovaHeartbeatMonitor> {
     try {
-      const response = await apiClient.post('/api/v2/monitoring/heartbeat-monitors', heartbeatMonitor);
+      const response = await apiClient.post(
+        '/api/v2/monitoring/heartbeat-monitors',
+        heartbeatMonitor,
+      );
       return (response as any).data.data;
     } catch (error) {
       console.error('Failed to create heartbeat monitor:', error);
@@ -301,9 +313,15 @@ class UnifiedMonitoringService {
     }
   }
 
-  async updateHeartbeatMonitor(id: string, updates: Partial<NovaHeartbeatMonitor>): Promise<NovaHeartbeatMonitor> {
+  async updateHeartbeatMonitor(
+    id: string,
+    updates: Partial<NovaHeartbeatMonitor>,
+  ): Promise<NovaHeartbeatMonitor> {
     try {
-      const response = await apiClient.patch(`/api/v2/monitoring/heartbeat-monitors/${id}`, updates);
+      const response = await apiClient.patch(
+        `/api/v2/monitoring/heartbeat-monitors/${id}`,
+        updates,
+      );
       return (response as any).data.data;
     } catch (error) {
       console.error(`Failed to update heartbeat monitor ${id}:`, error);
@@ -334,7 +352,9 @@ class UnifiedMonitoringService {
     }
   }
 
-  async createEscalationPolicy(policy: Omit<NovaEscalationPolicy, 'id' | 'created_at' | 'updated_at'>): Promise<NovaEscalationPolicy> {
+  async createEscalationPolicy(
+    policy: Omit<NovaEscalationPolicy, 'id' | 'created_at' | 'updated_at'>,
+  ): Promise<NovaEscalationPolicy> {
     try {
       const response = await apiClient.post('/api/v2/monitoring/escalation-policies', policy);
       return (response as any).data.data;
@@ -344,9 +364,15 @@ class UnifiedMonitoringService {
     }
   }
 
-  async updateEscalationPolicy(id: string, updates: Partial<NovaEscalationPolicy>): Promise<NovaEscalationPolicy> {
+  async updateEscalationPolicy(
+    id: string,
+    updates: Partial<NovaEscalationPolicy>,
+  ): Promise<NovaEscalationPolicy> {
     try {
-      const response = await apiClient.patch(`/api/v2/monitoring/escalation-policies/${id}`, updates);
+      const response = await apiClient.patch(
+        `/api/v2/monitoring/escalation-policies/${id}`,
+        updates,
+      );
       return (response as any).data.data;
     } catch (error) {
       console.error(`Failed to update escalation policy ${id}:`, error);
@@ -372,7 +398,9 @@ class UnifiedMonitoringService {
       const params = new URLSearchParams();
       if (schedule_id) params.append('schedule_id', schedule_id);
 
-      const response = await apiClient.get(`/api/v2/monitoring/schedule-overrides?${params.toString()}`);
+      const response = await apiClient.get(
+        `/api/v2/monitoring/schedule-overrides?${params.toString()}`,
+      );
       return (response as any).data.data || [];
     } catch (error) {
       console.error('Failed to fetch schedule overrides:', error);
@@ -380,7 +408,9 @@ class UnifiedMonitoringService {
     }
   }
 
-  async createScheduleOverride(override: Omit<NovaScheduleOverride, 'id' | 'created_at' | 'updated_at'>): Promise<NovaScheduleOverride> {
+  async createScheduleOverride(
+    override: Omit<NovaScheduleOverride, 'id' | 'created_at' | 'updated_at'>,
+  ): Promise<NovaScheduleOverride> {
     try {
       const response = await apiClient.post('/api/v2/monitoring/schedule-overrides', override);
       return (response as any).data.data;
@@ -408,7 +438,9 @@ class UnifiedMonitoringService {
       const params = new URLSearchParams();
       if (service_id) params.append('service_id', service_id);
 
-      const response = await apiClient.get(`/api/v2/monitoring/service-notices?${params.toString()}`);
+      const response = await apiClient.get(
+        `/api/v2/monitoring/service-notices?${params.toString()}`,
+      );
       return (response as any).data.data || [];
     } catch (error) {
       console.error('Failed to fetch service notices:', error);
@@ -416,7 +448,9 @@ class UnifiedMonitoringService {
     }
   }
 
-  async createServiceNotice(notice: Omit<NovaServiceNotice, 'id' | 'created_at' | 'updated_at'>): Promise<NovaServiceNotice> {
+  async createServiceNotice(
+    notice: Omit<NovaServiceNotice, 'id' | 'created_at' | 'updated_at'>,
+  ): Promise<NovaServiceNotice> {
     try {
       const response = await apiClient.post('/api/v2/monitoring/service-notices', notice);
       return (response as any).data.data;
@@ -426,7 +460,10 @@ class UnifiedMonitoringService {
     }
   }
 
-  async updateServiceNotice(id: string, updates: Partial<NovaServiceNotice>): Promise<NovaServiceNotice> {
+  async updateServiceNotice(
+    id: string,
+    updates: Partial<NovaServiceNotice>,
+  ): Promise<NovaServiceNotice> {
     try {
       const response = await apiClient.patch(`/api/v2/monitoring/service-notices/${id}`, updates);
       return (response as any).data.data;
@@ -454,7 +491,9 @@ class UnifiedMonitoringService {
       const params = new URLSearchParams();
       if (service_id) params.append('service_id', service_id);
 
-      const response = await apiClient.get(`/api/v2/monitoring/service-labels?${params.toString()}`);
+      const response = await apiClient.get(
+        `/api/v2/monitoring/service-labels?${params.toString()}`,
+      );
       return (response as any).data.data || [];
     } catch (error) {
       console.error('Failed to fetch service labels:', error);
@@ -462,7 +501,9 @@ class UnifiedMonitoringService {
     }
   }
 
-  async createServiceLabel(label: Omit<NovaServiceLabel, 'id' | 'created_at'>): Promise<NovaServiceLabel> {
+  async createServiceLabel(
+    label: Omit<NovaServiceLabel, 'id' | 'created_at'>,
+  ): Promise<NovaServiceLabel> {
     try {
       const response = await apiClient.post('/api/v2/monitoring/service-labels', label);
       return (response as any).data.data;
@@ -485,7 +526,10 @@ class UnifiedMonitoringService {
   // ALERT METRICS
   // ========================================================================
 
-  async getAlertMetrics(service_id?: string, time_period: '24h' | '7d' | '30d' = '24h'): Promise<NovaAlertMetrics[]> {
+  async getAlertMetrics(
+    service_id?: string,
+    time_period: '24h' | '7d' | '30d' = '24h',
+  ): Promise<NovaAlertMetrics[]> {
     try {
       const params = new URLSearchParams();
       if (service_id) params.append('service_id', service_id);
@@ -499,8 +543,6 @@ class UnifiedMonitoringService {
     }
   }
 }
-
-
 
 // Export singleton instance
 const unifiedMonitoringService = new UnifiedMonitoringService();

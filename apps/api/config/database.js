@@ -32,12 +32,16 @@ export const databaseConfig = {
       const password = process.env.CORE_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
         if (process.env.NODE_ENV === 'production') {
-          logger.error('CRITICAL: CORE_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment');
+          logger.error(
+            'CRITICAL: CORE_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment',
+          );
           throw new Error('Database password is required in production environment');
         }
         const devPassword = generateSecurePassword();
         logger.warn('Using fallback password for development only');
-        logger.warn('⚠️  Database password generated automatically. Please set proper credentials in environment variables.');
+        logger.warn(
+          '⚠️  Database password generated automatically. Please set proper credentials in environment variables.',
+        );
         return devPassword;
       }
       return password;
@@ -81,12 +85,16 @@ export const databaseConfig = {
       const password = process.env.AUTH_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
         if (process.env.NODE_ENV === 'production') {
-          logger.error('CRITICAL: AUTH_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment');
+          logger.error(
+            'CRITICAL: AUTH_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment',
+          );
           throw new Error('Auth database password is required in production environment');
         }
         const devPassword = generateSecurePassword();
         logger.warn('Using fallback password for development only');
-        logger.warn('⚠️  Database password generated automatically. Please set proper credentials in environment variables.');
+        logger.warn(
+          '⚠️  Database password generated automatically. Please set proper credentials in environment variables.',
+        );
         return devPassword;
       }
       return password;
@@ -124,7 +132,9 @@ export const databaseConfig = {
       const password = process.env.AUDIT_DB_PASSWORD || process.env.POSTGRES_PASSWORD;
       if (!password) {
         if (process.env.NODE_ENV === 'production') {
-          logger.error('CRITICAL: AUDIT_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment');
+          logger.error(
+            'CRITICAL: AUDIT_DB_PASSWORD or POSTGRES_PASSWORD must be set for production deployment',
+          );
           throw new Error('Audit database password is required in production environment');
         }
         const devPassword = generateSecurePassword();
@@ -158,7 +168,9 @@ export const databaseConfig = {
   },
 
   mongo: {
-    url: process.env.MONGO_URI || `mongodb://${process.env.MONGO_ROOT_USERNAME || 'admin'}:${process.env.MONGO_ROOT_PASSWORD || 'mongo_secure_pass_2024'}@${process.env.MONGO_HOST || 'localhost'}:${process.env.MONGO_PORT || '27017'}/${process.env.MONGO_DB || 'nova_logs'}?authSource=admin`,
+    url:
+      process.env.MONGO_URI ||
+      `mongodb://${process.env.MONGO_ROOT_USERNAME || 'admin'}:${process.env.MONGO_ROOT_PASSWORD || 'mongo_secure_pass_2024'}@${process.env.MONGO_HOST || 'localhost'}:${process.env.MONGO_PORT || '27017'}/${process.env.MONGO_DB || 'nova_logs'}?authSource=admin`,
     options: {
       useNewUrlParser: true,
       useUnifiedTopology: true,

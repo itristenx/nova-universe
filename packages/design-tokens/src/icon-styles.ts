@@ -8,7 +8,7 @@ import { NovaIconSize, NovaIconColor, NovaIconVariant } from './types';
 // Icon size classes for Tailwind CSS
 export const iconSizeClasses: Record<NovaIconSize, string> = {
   xs: 'w-3 h-3',
-  sm: 'w-4 h-4', 
+  sm: 'w-4 h-4',
   md: 'w-5 h-5',
   lg: 'w-6 h-6',
   xl: 'w-8 h-8',
@@ -31,10 +31,13 @@ export const iconColorClasses: Record<NovaIconColor, string> = {
 };
 
 // Icon variants with predefined styles
-export const iconVariants: Record<NovaIconVariant, {
-  size: NovaIconSize;
-  className: string;
-}> = {
+export const iconVariants: Record<
+  NovaIconVariant,
+  {
+    size: NovaIconSize;
+    className: string;
+  }
+> = {
   nav: {
     size: 'md',
     className: 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white',
@@ -68,10 +71,10 @@ export const iconSizes: Record<NovaIconSize, number> = {
 export const getIconStyle = (
   size: NovaIconSize = 'md',
   color: NovaIconColor = 'default',
-  variant?: NovaIconVariant
+  variant?: NovaIconVariant,
 ): string => {
   const sizeClass = iconSizeClasses[size];
   const colorClass = variant ? iconVariants[variant].className : iconColorClasses[color];
-  
+
   return `${sizeClass} ${colorClass}`.trim();
 };

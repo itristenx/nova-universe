@@ -989,7 +989,10 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     }
   }
 
-  private async calculateBiasScore(testData: unknown[], protectedAttribute: string): Promise<number> {
+  private async calculateBiasScore(
+    testData: unknown[],
+    protectedAttribute: string,
+  ): Promise<number> {
     // Demographic parity difference (absolute)
     if (!Array.isArray(testData) || testData.length === 0) return 0;
     const groups = new Map<string, { positives: number; total: number }>();
@@ -1006,7 +1009,10 @@ export class NovaAIMonitoringSystem extends EventEmitter {
     return Math.abs(max - min); // 0..1 (0 is best)
   }
 
-  private async calculateDriftScore(currentData: unknown[], baselineData: unknown[]): Promise<number> {
+  private async calculateDriftScore(
+    currentData: unknown[],
+    baselineData: unknown[],
+  ): Promise<number> {
     // Population Stability Index (PSI) for a single numeric feature if available
     if (
       !Array.isArray(currentData) ||

@@ -382,7 +382,7 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
         error: _error instanceof Error ? _error.message : _error,
         timestamp: new Date().toISOString(),
       });
-      
+
       setResults([]);
     } finally {
       setIsLoading(false);

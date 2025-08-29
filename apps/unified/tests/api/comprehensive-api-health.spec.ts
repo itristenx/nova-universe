@@ -8,7 +8,7 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
 
   test.beforeAll(async () => {
     apiBaseUrl = process.env.TEST_API_URL || 'http://localhost:3000';
-    
+
     // Attempt to get authentication token for API tests
     try {
       const response = await axios.post(`${apiBaseUrl}/auth/login`, {
@@ -71,24 +71,19 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
     test('should validate API response times are acceptable', async () => {
       test.skip(!authToken, 'No authentication token available');
 
-      const endpoints = [
-        '/api/health',
-        '/api/tickets',
-        '/api/users',
-        '/api/assets',
-      ];
+      const endpoints = ['/api/health', '/api/tickets', '/api/users', '/api/assets'];
 
       const headers = { Authorization: `Bearer ${authToken}` };
 
       for (const endpoint of endpoints) {
         const startTime = Date.now();
         try {
-          await axios.get(`${apiBaseUrl}${endpoint}`, { 
+          await axios.get(`${apiBaseUrl}${endpoint}`, {
             headers,
-            timeout: 5000 
+            timeout: 5000,
           });
           const responseTime = Date.now() - startTime;
-          
+
           expect(responseTime).toBeLessThan(2000); // Should respond within 2 seconds
           console.log(`✅ ${endpoint} responded in ${responseTime}ms`);
         } catch (error) {
@@ -105,22 +100,23 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
       test.skip(!authToken, 'No authentication token available');
 
       const headers = { Authorization: `Bearer ${authToken}` };
-      
+
       // Make multiple rapid requests to test rate limiting
       const rapidRequests = Array.from({ length: 20 }, () =>
-        axios.get(`${apiBaseUrl}/api/health`, { headers, timeout: 1000 })
-          .catch(error => error.response)
+        axios
+          .get(`${apiBaseUrl}/api/health`, { headers, timeout: 1000 })
+          .catch((error) => error.response),
       );
 
       const responses = await Promise.all(rapidRequests);
-      
+
       // Check if any responses indicate rate limiting
-      const rateLimitedResponses = responses.filter(
-        response => response?.status === 429
-      );
+      const rateLimitedResponses = responses.filter((response) => response?.status === 429);
 
       if (rateLimitedResponses.length > 0) {
-        console.log(`✅ Rate limiting is working (${rateLimitedResponses.length} requests rate limited)`);
+        console.log(
+          `✅ Rate limiting is working (${rateLimitedResponses.length} requests rate limited)`,
+        );
       } else {
         console.log('ℹ️ No rate limiting detected (may not be configured)');
       }
@@ -144,16 +140,15 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
         const createResponse = await axios.post(
           `${apiBaseUrl}/api/organizations`,
           testOrganization,
-          { headers }
+          { headers },
         );
         expect(createResponse.status).toBe(201);
         const orgId = createResponse.data.id;
 
         // Read organization
-        const readResponse = await axios.get(
-          `${apiBaseUrl}/api/organizations/${orgId}`,
-          { headers }
-        );
+        const readResponse = await axios.get(`${apiBaseUrl}/api/organizations/${orgId}`, {
+          headers,
+        });
         expect(readResponse.status).toBe(200);
         expect(readResponse.data.name).toBe(testOrganization.name);
 
@@ -162,20 +157,22 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
         const updateResponse = await axios.put(
           `${apiBaseUrl}/api/organizations/${orgId}`,
           updateData,
-          { headers }
+          { headers },
         );
         expect(updateResponse.status).toBe(200);
 
         // Delete organization
-        const deleteResponse = await axios.delete(
-          `${apiBaseUrl}/api/organizations/${orgId}`,
-          { headers }
-        );
+        const deleteResponse = await axios.delete(`${apiBaseUrl}/api/organizations/${orgId}`, {
+          headers,
+        });
         expect(deleteResponse.status).toBe(204);
 
         console.log('✅ Database CRUD operations via API successful');
       } catch (error) {
-        console.log('❌ Database operations via API failed:', error.response?.data || error.message);
+        console.log(
+          '❌ Database operations via API failed:',
+          error.response?.data || error.message,
+        );
         throw error;
       }
     });
@@ -188,7 +185,8 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
       try {
         // Get initial counts
         const initialTicketsResponse = await axios.get(`${apiBaseUrl}/api/tickets`, { headers });
-        const initialCount = initialTicketsResponse.data.total || initialTicketsResponse.data.length || 0;
+        const initialCount =
+          initialTicketsResponse.data.total || initialTicketsResponse.data.length || 0;
 
         // Create a new ticket
         const testTicket = {
@@ -198,17 +196,16 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
           status: 'OPEN',
         };
 
-        const createResponse = await axios.post(
-          `${apiBaseUrl}/api/tickets`,
-          testTicket,
-          { headers }
-        );
+        const createResponse = await axios.post(`${apiBaseUrl}/api/tickets`, testTicket, {
+          headers,
+        });
         expect(createResponse.status).toBe(201);
 
         // Verify count increased
         const updatedTicketsResponse = await axios.get(`${apiBaseUrl}/api/tickets`, { headers });
-        const updatedCount = updatedTicketsResponse.data.total || updatedTicketsResponse.data.length || 0;
-        
+        const updatedCount =
+          updatedTicketsResponse.data.total || updatedTicketsResponse.data.length || 0;
+
         expect(updatedCount).toBe(initialCount + 1);
 
         // Cleanup
@@ -218,7 +215,10 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
 
         console.log('✅ Data consistency validation successful');
       } catch (error) {
-        console.log('❌ Data consistency validation failed:', error.response?.data || error.message);
+        console.log(
+          '❌ Data consistency validation failed:',
+          error.response?.data || error.message,
+        );
         throw error;
       }
     });
@@ -230,7 +230,7 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
 
       // Set up API request monitoring
       const apiRequests: any[] = [];
-      
+
       page.route('**/api/**', (route) => {
         apiRequests.push({
           method: route.request().method(),
@@ -269,12 +269,12 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
       await testHelper.verifyToast(page, 'Ticket created successfully', 'success');
 
       // Verify API calls were made
-      const loginRequest = apiRequests.find(req => req.url.includes('/auth/login'));
-      const ticketsGetRequest = apiRequests.find(req => 
-        req.method === 'GET' && req.url.includes('/api/tickets')
+      const loginRequest = apiRequests.find((req) => req.url.includes('/auth/login'));
+      const ticketsGetRequest = apiRequests.find(
+        (req) => req.method === 'GET' && req.url.includes('/api/tickets'),
       );
-      const ticketCreateRequest = apiRequests.find(req => 
-        req.method === 'POST' && req.url.includes('/api/tickets')
+      const ticketCreateRequest = apiRequests.find(
+        (req) => req.method === 'POST' && req.url.includes('/api/tickets'),
       );
 
       expect(loginRequest).toBeTruthy();
@@ -360,19 +360,23 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
       const notificationBadge = page.locator('[data-testid="notification-badge"]');
       if (await notificationBadge.isVisible()) {
         const initialCount = await notificationBadge.textContent();
-        
+
         // Create a new ticket via API to trigger notification
         try {
           const headers = { Authorization: `Bearer ${authToken}` };
-          await axios.post(`${apiBaseUrl}/api/tickets`, {
-            title: 'Real-time Test Ticket',
-            description: 'Testing real-time notifications',
-            priority: 'HIGH',
-          }, { headers });
+          await axios.post(
+            `${apiBaseUrl}/api/tickets`,
+            {
+              title: 'Real-time Test Ticket',
+              description: 'Testing real-time notifications',
+              priority: 'HIGH',
+            },
+            { headers },
+          );
 
           // Wait for potential notification update
           await page.waitForTimeout(2000);
-          
+
           const updatedCount = await notificationBadge.textContent();
           if (updatedCount !== initialCount) {
             console.log('✅ Real-time notification update detected');
@@ -396,41 +400,49 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
 
       // Test concurrent read operations
       const readPromises = Array.from({ length: concurrentRequests }, () =>
-        axios.get(`${apiBaseUrl}/api/tickets`, { headers, timeout: 10000 })
+        axios.get(`${apiBaseUrl}/api/tickets`, { headers, timeout: 10000 }),
       );
 
       const startTime = Date.now();
       const readResults = await Promise.allSettled(readPromises);
       const readTime = Date.now() - startTime;
 
-      const successfulReads = readResults.filter(result => result.status === 'fulfilled');
-      const failedReads = readResults.filter(result => result.status === 'rejected');
+      const successfulReads = readResults.filter((result) => result.status === 'fulfilled');
+      const failedReads = readResults.filter((result) => result.status === 'rejected');
 
       expect(successfulReads.length).toBeGreaterThan(concurrentRequests * 0.8); // 80% success rate
       expect(readTime).toBeLessThan(10000); // Should complete within 10 seconds
 
-      console.log(`✅ Concurrent reads: ${successfulReads.length}/${concurrentRequests} successful in ${readTime}ms`);
+      console.log(
+        `✅ Concurrent reads: ${successfulReads.length}/${concurrentRequests} successful in ${readTime}ms`,
+      );
 
       // Test batch operations
       const batchPromises = Array.from({ length: requestsPerBatch }, (_, i) =>
-        axios.post(`${apiBaseUrl}/api/tickets`, {
-          title: `Load Test Ticket ${i} ${Date.now()}`,
-          description: 'Load testing ticket',
-          priority: 'LOW',
-        }, { headers })
+        axios.post(
+          `${apiBaseUrl}/api/tickets`,
+          {
+            title: `Load Test Ticket ${i} ${Date.now()}`,
+            description: 'Load testing ticket',
+            priority: 'LOW',
+          },
+          { headers },
+        ),
       );
 
       const batchStartTime = Date.now();
       const batchResults = await Promise.allSettled(batchPromises);
       const batchTime = Date.now() - batchStartTime;
 
-      const successfulCreations = batchResults.filter(result => result.status === 'fulfilled');
+      const successfulCreations = batchResults.filter((result) => result.status === 'fulfilled');
       expect(successfulCreations.length).toBeGreaterThan(requestsPerBatch * 0.8);
 
-      console.log(`✅ Batch operations: ${successfulCreations.length}/${requestsPerBatch} successful in ${batchTime}ms`);
+      console.log(
+        `✅ Batch operations: ${successfulCreations.length}/${requestsPerBatch} successful in ${batchTime}ms`,
+      );
 
       // Cleanup created tickets
-      const cleanupPromises = successfulCreations.map(result => {
+      const cleanupPromises = successfulCreations.map((result) => {
         if (result.status === 'fulfilled' && result.value.data.id) {
           return axios.delete(`${apiBaseUrl}/api/tickets/${result.value.data.id}`, { headers });
         }
@@ -447,24 +459,30 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
 
       // Make multiple rapid database-intensive requests
       const connectionPromises = Array.from({ length: connectionTestRequests }, (_, i) =>
-        axios.get(`${apiBaseUrl}/api/tickets?limit=1&offset=${i}`, { headers })
-          .catch(error => ({ error: true, status: error.response?.status }))
+        axios
+          .get(`${apiBaseUrl}/api/tickets?limit=1&offset=${i}`, { headers })
+          .catch((error) => ({ error: true, status: error.response?.status })),
       );
 
       const startTime = Date.now();
       const results = await Promise.all(connectionPromises);
       const duration = Date.now() - startTime;
 
-      const successful = results.filter(result => !result.error);
-      const errors = results.filter(result => result.error);
+      const successful = results.filter((result) => !result.error);
+      const errors = results.filter((result) => result.error);
 
       expect(successful.length).toBeGreaterThan(connectionTestRequests * 0.9); // 90% success rate
       expect(duration).toBeLessThan(15000); // Should complete within 15 seconds
 
-      console.log(`✅ Connection pooling test: ${successful.length}/${connectionTestRequests} successful in ${duration}ms`);
+      console.log(
+        `✅ Connection pooling test: ${successful.length}/${connectionTestRequests} successful in ${duration}ms`,
+      );
 
       if (errors.length > 0) {
-        console.log(`⚠️ Errors detected:`, errors.map(e => e.status));
+        console.log(
+          `⚠️ Errors detected:`,
+          errors.map((e) => e.status),
+        );
       }
     });
   });
@@ -514,19 +532,31 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
       test.skip(!authToken, 'No authentication token available');
 
       const headers = { Authorization: `Bearer ${authToken}` };
-      
+
       // Comprehensive set of malicious payloads
       const maliciousPayloads = [
         // Basic XSS
-        { title: '<script>alert("xss")</script>', description: 'Normal description', priority: 'HIGH' },
+        {
+          title: '<script>alert("xss")</script>',
+          description: 'Normal description',
+          priority: 'HIGH',
+        },
         // Advanced XSS
-        { title: '"><img src=x onerror=alert(1)>', description: 'Normal description', priority: 'HIGH' },
+        {
+          title: '"><img src=x onerror=alert(1)>',
+          description: 'Normal description',
+          priority: 'HIGH',
+        },
         { title: '<svg/onload=alert("xss")>', description: 'Normal description', priority: 'HIGH' },
-        { title: '<body onload=alert("xss")>', description: 'Normal description', priority: 'HIGH' },
+        {
+          title: '<body onload=alert("xss")>',
+          description: 'Normal description',
+          priority: 'HIGH',
+        },
         // SQL Injection variants
         { title: 'Normal title', description: "' OR '1'='1'; --", priority: 'HIGH' },
         { title: 'Normal title', description: 'DROP TABLE users; --', priority: 'HIGH' },
-        { title: 'Normal title', description: 'admin\' --', priority: 'HIGH' },
+        { title: 'Normal title', description: "admin' --", priority: 'HIGH' },
         // LDAP Injection
         { title: 'Normal title', description: '*)(uid=*))(|(uid=*))', priority: 'HIGH' },
         { title: 'Normal title', description: ')(|(userPassword=*))', priority: 'HIGH' },
@@ -538,19 +568,27 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
 
       for (const maliciousData of maliciousPayloads) {
         try {
-          const response = await axios.post(`${apiBaseUrl}/api/tickets`, maliciousData, { headers });
-          
+          const response = await axios.post(`${apiBaseUrl}/api/tickets`, maliciousData, {
+            headers,
+          });
+
           if (response.status === 201) {
             // Check if malicious content was sanitized
             const ticketId = response.data.id;
-            const getResponse = await axios.get(`${apiBaseUrl}/api/tickets/${ticketId}`, { headers });
+            const getResponse = await axios.get(`${apiBaseUrl}/api/tickets/${ticketId}`, {
+              headers,
+            });
 
             // Check for XSS vectors
             expect(getResponse.data.title).not.toMatch(/<script>|<img|<svg|onload=|onerror=|<body/);
             // Check for SQL injection
-            expect(getResponse.data.description).not.toMatch(/SELECT \* FROM|DROP TABLE|OR '1'='1|--|admin' --/);
+            expect(getResponse.data.description).not.toMatch(
+              /SELECT \* FROM|DROP TABLE|OR '1'='1|--|admin' --/,
+            );
             // Check for LDAP injection
-            expect(getResponse.data.description).not.toMatch(/\*\)\(uid=\*\)\|\(uid=\*\)|\)\(\|\(userPassword=\*\)/);
+            expect(getResponse.data.description).not.toMatch(
+              /\*\)\(uid=\*\)\|\(uid=\*\)|\)\(\|\(userPassword=\*\)/,
+            );
             // Check for path traversal
             expect(getResponse.data.title).not.toContain('../etc/passwd');
             // Check for command injection
@@ -559,13 +597,21 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
             // Cleanup
             await axios.delete(`${apiBaseUrl}/api/tickets/${ticketId}`, { headers });
 
-            console.log(`✅ Input sanitization working properly for payload: ${JSON.stringify(maliciousData)}`);
+            console.log(
+              `✅ Input sanitization working properly for payload: ${JSON.stringify(maliciousData)}`,
+            );
           }
         } catch (error) {
           if (error.response?.status === 400) {
-            console.log(`✅ Malicious input properly rejected for payload: ${JSON.stringify(maliciousData)}`);
+            console.log(
+              `✅ Malicious input properly rejected for payload: ${JSON.stringify(maliciousData)}`,
+            );
           } else {
-            console.log(`❌ Unexpected error with malicious input:`, error.response?.status, maliciousData);
+            console.log(
+              `❌ Unexpected error with malicious input:`,
+              error.response?.status,
+              maliciousData,
+            );
           }
         }
       }
@@ -576,7 +622,7 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
     test('should handle network timeouts gracefully', async ({ page }) => {
       // Mock slow API responses
       await page.route('**/api/tickets', async (route) => {
-        await new Promise(resolve => setTimeout(resolve, 5000)); // 5 second delay
+        await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -603,7 +649,7 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
       // Verify graceful error handling
       const errorMessage = page.locator('[data-testid="error-message"]');
       const retryButton = page.locator('[data-testid="retry-button"]');
-      
+
       const hasError = await errorMessage.isVisible();
       const hasRetry = await retryButton.isVisible();
 
@@ -652,7 +698,7 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
       if (await retryButton.isVisible()) {
         await retryButton.click();
         await testHelper.waitForPageLoad(page);
-        
+
         // Should eventually succeed
         await expect(page.locator('[data-testid="tickets-list"]')).toBeVisible();
         console.log('✅ Recovery from temporary API failures successful');

@@ -8,7 +8,17 @@ import { iconSizeClasses, iconColorClasses, iconVariants } from '../icon-styles'
 
 // Define basic types
 export type NovaIconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
-export type NovaIconColor = 'default' | 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'error' | 'info' | 'muted' | 'inverse';
+export type NovaIconColor =
+  | 'default'
+  | 'primary'
+  | 'secondary'
+  | 'accent'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'info'
+  | 'muted'
+  | 'inverse';
 export type NovaIconVariant = 'nav' | 'button' | 'status' | 'action';
 
 // Define NovaIconProps interface
@@ -32,7 +42,7 @@ export const iconMappings: Record<string, string> = {
   settings: 'settings',
   notifications: 'bell',
   profile: 'user',
-  
+
   // Action icons
   add: 'plus',
   edit: 'edit',
@@ -44,13 +54,13 @@ export const iconMappings: Record<string, string> = {
   search: 'search',
   filter: 'filter',
   sort: 'arrow-up-down',
-  
+
   // Status icons
   success: 'check-circle',
   warning: 'alert-triangle',
   error: 'alert-circle',
   info: 'info',
-  
+
   // Feature icons
   spaces: 'building',
   bookings: 'calendar',
@@ -66,11 +76,11 @@ export const iconMappings: Record<string, string> = {
 export const getIconClass = (
   size: NovaIconSize = 'md',
   color: NovaIconColor = 'default',
-  variant?: NovaIconVariant
+  variant?: NovaIconVariant,
 ): string => {
   const sizeClass = iconSizeClasses[size];
   const colorClass = variant ? iconVariants[variant].className : iconColorClasses[color];
-  
+
   return `${sizeClass} ${colorClass}`.trim();
 };
 
@@ -80,17 +90,19 @@ export const getIconClass = (
 export const getNovaIcon = async (iconName: string) => {
   // Implementation note: This function requires Lucide React to be installed
   // in the consuming application: npm install lucide-react
-  
+
   const getLucideIcon = async (iconName: string) => {
     const pascalCase = iconName
       .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join('')
-    
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('');
+
     // Try to import Lucide icons dynamically
     try {
       // Dynamic import for Lucide React (optional dependency)
-      const LucideIcons = await import(/* webpackChunkName: "lucide-react" */ 'lucide-react').catch(() => null);
+      const LucideIcons = await import(/* webpackChunkName: "lucide-react" */ 'lucide-react').catch(
+        () => null,
+      );
       if (LucideIcons) {
         return LucideIcons[pascalCase as keyof typeof LucideIcons];
       }
@@ -98,7 +110,7 @@ export const getNovaIcon = async (iconName: string) => {
       console.warn(`Lucide React not available for icon: ${iconName}`, error);
     }
     return null;
-  }
+  };
 
   // Try to get the Lucide icon first
   const LucideIcon = await getLucideIcon(iconName);
@@ -109,19 +121,17 @@ export const getNovaIcon = async (iconName: string) => {
   throw new Error(`Icon implementation needed for: ${iconName}`);
 };
 
-
-
 /**
  * Nova Icon Component
  * Returns a properly styled icon component
  */
-export const NovaIcon: React.FC<NovaIconProps> = ({ 
-  name, 
-  size, 
-  color, 
-  variant, 
-  className, 
-  ..._props 
+export const NovaIcon: React.FC<NovaIconProps> = ({
+  name,
+  size,
+  color,
+  variant,
+  className,
+  ..._props
 }) => {
   // Implementation would go here
   // This is a placeholder for the actual icon component

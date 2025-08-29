@@ -529,7 +529,7 @@ export function SmartEscalationEngine({
                       </h4>
                       <span
                         className={cn(
-                          'rounded-full px-2 py-1 text-xs font-medium flex items-center gap-1',
+                          'flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium',
                           getPriorityColor(event.priority),
                         )}
                       >
@@ -555,7 +555,7 @@ export function SmartEscalationEngine({
                           <span className="text-nova-700 dark:text-nova-300 text-sm font-medium">
                             AI Recommendation:
                           </span>
-                          <span className="text-nova-600 dark:text-nova-400 ml-2 text-sm flex items-center gap-1">
+                          <span className="text-nova-600 dark:text-nova-400 ml-2 flex items-center gap-1 text-sm">
                             {event.recommendation.toLowerCase().includes('team') && (
                               <UserGroupIcon className="h-3 w-3" />
                             )}

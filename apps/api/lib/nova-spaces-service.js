@@ -71,7 +71,7 @@ export class NovaSpacesService extends EventEmitter {
           country: 'USA',
           floors: 5,
           totalSpaces: 25,
-          totalVisitors: 12
+          totalVisitors: 12,
         },
         {
           id: 'building_2',
@@ -81,36 +81,37 @@ export class NovaSpacesService extends EventEmitter {
           country: 'USA',
           floors: 3,
           totalSpaces: 15,
-          totalVisitors: 8
-        }
+          totalVisitors: 8,
+        },
       ];
 
       // Apply filters
       let filteredBuildings = buildings;
-      
+
       if (search) {
-        filteredBuildings = filteredBuildings.filter(building => 
-          building.name.toLowerCase().includes(search.toLowerCase()) ||
-          building.address.toLowerCase().includes(search.toLowerCase())
+        filteredBuildings = filteredBuildings.filter(
+          (building) =>
+            building.name.toLowerCase().includes(search.toLowerCase()) ||
+            building.address.toLowerCase().includes(search.toLowerCase()),
         );
       }
-      
+
       if (city) {
-        filteredBuildings = filteredBuildings.filter(building => 
-          building.city.toLowerCase() === city.toLowerCase()
+        filteredBuildings = filteredBuildings.filter(
+          (building) => building.city.toLowerCase() === city.toLowerCase(),
         );
       }
-      
+
       if (country) {
-        filteredBuildings = filteredBuildings.filter(building => 
-          building.country.toLowerCase() === country.toLowerCase()
+        filteredBuildings = filteredBuildings.filter(
+          (building) => building.country.toLowerCase() === country.toLowerCase(),
         );
       }
 
       return {
         buildings: filteredBuildings,
         total: filteredBuildings.length,
-        filters
+        filters,
       };
     } catch (error) {
       logger.error('Failed to get buildings:', error);
@@ -136,18 +137,18 @@ export class NovaSpacesService extends EventEmitter {
             name: 'Ground Floor',
             spaces: [
               { id: 'space_1', name: 'Lobby', status: 'public' },
-              { id: 'space_2', name: 'Reception', status: 'public' }
-            ]
+              { id: 'space_2', name: 'Reception', status: 'public' },
+            ],
           },
           {
             id: 'floor_2',
             name: 'First Floor',
             spaces: [
               { id: 'space_3', name: 'Conference Room A', status: 'bookable' },
-              { id: 'space_4', name: 'Meeting Room B', status: 'bookable' }
-            ]
-          }
-        ]
+              { id: 'space_4', name: 'Meeting Room B', status: 'bookable' },
+            ],
+          },
+        ],
       };
 
       return building;
@@ -174,7 +175,7 @@ export class NovaSpacesService extends EventEmitter {
           type: 'conference',
           status: 'available',
           capacity: 20,
-          amenities: ['projector', 'whiteboard', 'video_conferencing']
+          amenities: ['projector', 'whiteboard', 'video_conferencing'],
         },
         {
           id: 'space_2',
@@ -184,37 +185,37 @@ export class NovaSpacesService extends EventEmitter {
           type: 'meeting',
           status: 'booked',
           capacity: 8,
-          amenities: ['whiteboard', 'video_conferencing']
-        }
+          amenities: ['whiteboard', 'video_conferencing'],
+        },
       ];
 
       // Apply filters
       let filteredSpaces = spaces;
-      
+
       if (buildingId) {
-        filteredSpaces = filteredSpaces.filter(space => space.buildingId === buildingId);
+        filteredSpaces = filteredSpaces.filter((space) => space.buildingId === buildingId);
       }
-      
+
       if (floorId) {
-        filteredSpaces = filteredSpaces.filter(space => space.floorId === floorId);
+        filteredSpaces = filteredSpaces.filter((space) => space.floorId === floorId);
       }
-      
+
       if (type) {
-        filteredSpaces = filteredSpaces.filter(space => space.type === type);
+        filteredSpaces = filteredSpaces.filter((space) => space.type === type);
       }
-      
+
       if (status) {
-        filteredSpaces = filteredSpaces.filter(space => space.status === status);
+        filteredSpaces = filteredSpaces.filter((space) => space.status === status);
       }
-      
+
       if (capacity) {
-        filteredSpaces = filteredSpaces.filter(space => space.capacity >= capacity);
+        filteredSpaces = filteredSpaces.filter((space) => space.capacity >= capacity);
       }
 
       return {
         spaces: filteredSpaces,
         total: filteredSpaces.length,
-        filters
+        filters,
       };
     } catch (error) {
       logger.error('Failed to get spaces:', error);
@@ -243,8 +244,8 @@ export class NovaSpacesService extends EventEmitter {
           tuesday: { open: '08:00', close: '18:00' },
           wednesday: { open: '08:00', close: '18:00' },
           thursday: { open: '08:00', close: '18:00' },
-          friday: { open: '08:00', close: '18:00' }
-        }
+          friday: { open: '08:00', close: '18:00' },
+        },
       };
 
       return space;
@@ -424,15 +425,18 @@ export class NovaSpacesService extends EventEmitter {
 
   startBackgroundTasks() {
     // Start calendar sync every 15 minutes
-    setInterval(async () => {
-      try {
-        if (this.initialized) {
-          await this.integrations.syncAllCalendars();
+    setInterval(
+      async () => {
+        try {
+          if (this.initialized) {
+            await this.integrations.syncAllCalendars();
+          }
+        } catch (error) {
+          logger.error('Error in calendar sync:', error);
         }
-      } catch (error) {
-        logger.error('Error in calendar sync:', error);
-      }
-    }, 15 * 60 * 1000); // Every 15 minutes
+      },
+      15 * 60 * 1000,
+    ); // Every 15 minutes
   }
 
   // =====================================
@@ -450,9 +454,9 @@ export class NovaSpacesService extends EventEmitter {
         integrations: this.integrations.initialized,
         booking: this.bookingEngine.initialized,
         visitor: this.visitorManager.initialized,
-        iot: this.iotManager.initialized
+        iot: this.iotManager.initialized,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -462,19 +466,19 @@ export class NovaSpacesService extends EventEmitter {
   async healthCheck() {
     try {
       const status = await this.getStatus();
-      const allServicesHealthy = Object.values(status.services).every(healthy => healthy);
-      
+      const allServicesHealthy = Object.values(status.services).every((healthy) => healthy);
+
       return {
         healthy: allServicesHealthy,
         status,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       logger.error('Health check failed:', error);
       return {
         healthy: false,
         error: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }

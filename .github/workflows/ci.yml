@@ -107,10 +107,10 @@ jobs:
           cache: pnpm
 
       - name: Install API deps
-        run: pnpm -C apps/api install --no-frozen-lockfile
+        run: npm --prefix apps/api install
 
       - name: Run API tests
-        run: pnpm -C apps/api test -- --runInBand --ci
+        run: npm --prefix apps/api test -- --runInBand --ci
 
   orbit-unit:
     name: Orbit unit tests

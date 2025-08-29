@@ -76,7 +76,7 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
         </div>
 
         {/* Center section - Command Center & Quick Search */}
-        <div className="mx-4 max-w-xl flex-1 flex items-center gap-2">
+        <div className="mx-4 flex max-w-xl flex-1 items-center gap-2">
           <button
             onClick={() => setSearchOpen(true)}
             className="flex flex-1 items-center gap-3 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-left text-gray-500 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
@@ -93,7 +93,7 @@ export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: Heade
               </kbd>
             </div>
           </button>
-          
+
           {/* Quick Search Button */}
           <button
             onClick={() => setSearchOpen(true)}

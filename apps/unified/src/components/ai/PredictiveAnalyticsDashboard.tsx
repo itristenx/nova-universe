@@ -76,7 +76,7 @@ export function PredictiveAnalyticsDashboard() {
             confidence: 87,
             impact: 'medium',
             timeline: 'Next 7 days',
-            action: 'Scale Resources'
+            action: 'Scale Resources',
           },
           {
             id: 'server-health',
@@ -86,8 +86,8 @@ export function PredictiveAnalyticsDashboard() {
             confidence: 92,
             impact: 'high',
             timeline: 'Next 3 days',
-            action: 'Optimize Database'
-          }
+            action: 'Optimize Database',
+          },
         ]);
         setMetrics([
           {
@@ -98,7 +98,7 @@ export function PredictiveAnalyticsDashboard() {
             trend: 'up',
             prediction: 'Expected to grow 15% next week',
             icon: UserGroupIcon,
-            color: 'text-blue-600'
+            color: 'text-blue-600',
           },
           {
             id: 'servers',
@@ -108,8 +108,8 @@ export function PredictiveAnalyticsDashboard() {
             trend: 'down',
             prediction: 'May need attention soon',
             icon: ServerIcon,
-            color: 'text-green-600'
-          }
+            color: 'text-green-600',
+          },
         ]);
       } finally {
         setIsLoading(false);

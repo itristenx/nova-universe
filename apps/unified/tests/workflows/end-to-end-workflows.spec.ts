@@ -99,7 +99,7 @@ test.describe('End-to-End User Workflows', () => {
       // Step 11: Verify ticket status in list
       await page.click('[data-testid="back-to-list"]');
       await testHelper.waitForPageLoad(page);
-      
+
       // Apply filter to show resolved tickets
       await page.selectOption('[data-testid="status-filter"]', 'RESOLVED');
       await page.click('[data-testid="apply-filter-button"]');
@@ -134,9 +134,12 @@ test.describe('End-to-End User Workflows', () => {
       // Open ticket and escalate
       await page.click(`text=${escalationTicketTitle}`);
       await page.click('[data-testid="escalate-button"]');
-      
+
       // Fill escalation form
-      await page.fill('[data-testid="escalation-reason"]', 'SLA breach - requires immediate attention');
+      await page.fill(
+        '[data-testid="escalation-reason"]',
+        'SLA breach - requires immediate attention',
+      );
       await page.click('[data-testid="confirm-escalation"]');
       await testHelper.verifyToast(page, 'Ticket escalated successfully', 'success');
 
@@ -355,11 +358,7 @@ test.describe('End-to-End User Workflows', () => {
   test.describe('Performance and Load Testing', () => {
     test('should handle concurrent user actions', async ({ page, context }) => {
       // Create multiple pages to simulate concurrent users
-      const pages = await Promise.all([
-        context.newPage(),
-        context.newPage(),
-        context.newPage(),
-      ]);
+      const pages = await Promise.all([context.newPage(), context.newPage(), context.newPage()]);
 
       // Login all users concurrently
       const loginPromises = pages.map(async (userPage) => {
@@ -379,7 +378,7 @@ test.describe('End-to-End User Workflows', () => {
       const actionPromises = pages.map(async (userPage, index) => {
         await userPage.click('[data-testid="nav-tickets"]');
         await userPage.click('[data-testid="new-ticket-button"]');
-        
+
         await testHelper.fillFormFields(userPage, {
           '[data-testid="ticket-title-input"]': `Concurrent Ticket ${index} ${Date.now()}`,
           '[data-testid="ticket-description-input"]': `Created by concurrent user ${index}`,
@@ -397,7 +396,7 @@ test.describe('End-to-End User Workflows', () => {
       console.log(`✅ Concurrent operations completed in ${concurrentTime}ms`);
 
       // Close additional pages
-      await Promise.all(pages.map(p => p.close()));
+      await Promise.all(pages.map((p) => p.close()));
     });
 
     test('should load large datasets efficiently', async ({ page }) => {

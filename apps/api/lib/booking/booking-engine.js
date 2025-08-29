@@ -16,13 +16,13 @@ export class BookingEngine {
   async initialize() {
     try {
       logger.info('Booking Engine initializing...');
-      
+
       // Initialize booking system
       await this.setupBookingSystem();
-      
+
       // Start background processes
       this.startBackgroundProcesses();
-      
+
       this.initialized = true;
       logger.info('Booking Engine initialized successfully');
     } catch (error) {
@@ -33,20 +33,20 @@ export class BookingEngine {
 
   async setupBookingSystem() {
     logger.debug('Setting up booking system');
-    
+
     // Initialize booking validators
     this.validators = {
       time: this.createTimeValidator(),
       capacity: this.createCapacityValidator(),
       permissions: this.createPermissionsValidator(),
-      conflicts: this.createConflictValidator()
+      conflicts: this.createConflictValidator(),
     };
-    
+
     // Initialize booking processors
     this.processors = {
       confirmation: this.createConfirmationProcessor(),
       notification: this.createNotificationProcessor(),
-      integration: this.createIntegrationProcessor()
+      integration: this.createIntegrationProcessor(),
     };
   }
 
@@ -55,32 +55,32 @@ export class BookingEngine {
       name: 'time',
       validate: async (bookingData) => {
         const { startTime, endTime } = bookingData;
-        
+
         if (!startTime || !endTime) {
           throw new Error('Start time and end time are required');
         }
-        
+
         const start = new Date(startTime);
         const end = new Date(endTime);
-        
+
         if (start >= end) {
           throw new Error('Start time must be before end time');
         }
-        
+
         if (start < new Date()) {
           throw new Error('Cannot book in the past');
         }
-        
+
         // Check if booking is within business hours (8 AM - 6 PM)
         const startHour = start.getHours();
         const endHour = end.getHours();
-        
+
         if (startHour < 8 || endHour > 18) {
           throw new Error('Bookings must be within business hours (8 AM - 6 PM)');
         }
-        
+
         return { valid: true, start, end };
-      }
+      },
     };
   }
 
@@ -89,17 +89,19 @@ export class BookingEngine {
       name: 'capacity',
       validate: async (bookingData) => {
         const { attendees } = bookingData;
-        
+
         // Mock implementation - would query database in production
         const spaceCapacity = Math.floor(Math.random() * 20) + 5;
         const attendeeCount = attendees?.length || 1;
-        
+
         if (attendeeCount > spaceCapacity) {
-          throw new Error(`Space capacity (${spaceCapacity}) exceeded by attendee count (${attendeeCount})`);
+          throw new Error(
+            `Space capacity (${spaceCapacity}) exceeded by attendee count (${attendeeCount})`,
+          );
         }
-        
+
         return { valid: true, capacity: spaceCapacity, attendeeCount };
-      }
+      },
     };
   }
 
@@ -109,17 +111,17 @@ export class BookingEngine {
       validate: async (bookingData, userId) => {
         // Mock implementation - would check user permissions in production
         const userPermissions = await this.getUserPermissions(userId);
-        
+
         if (!userPermissions.canBookSpaces) {
           throw new Error('User does not have permission to book spaces');
         }
-        
+
         if (bookingData.isRecurring && !userPermissions.canBookRecurring) {
           throw new Error('User does not have permission to book recurring spaces');
         }
-        
+
         return { valid: true, permissions: userPermissions };
-      }
+      },
     };
   }
 
@@ -128,16 +130,16 @@ export class BookingEngine {
       name: 'conflicts',
       validate: async (bookingData) => {
         const { spaceId, startTime, endTime } = bookingData;
-        
+
         // Check for existing bookings that conflict
         const conflicts = await this.checkForConflicts(spaceId, startTime, endTime);
-        
+
         if (conflicts.length > 0) {
           throw new Error(`Booking conflicts found: ${conflicts.length} overlapping bookings`);
         }
-        
+
         return { valid: true, conflicts: [] };
-      }
+      },
     };
   }
 
@@ -146,17 +148,17 @@ export class BookingEngine {
       name: 'confirmation',
       process: async (booking) => {
         logger.debug(`Processing confirmation for booking ${booking.id}`);
-        
+
         // Generate confirmation details
         const confirmation = {
           bookingId: booking.id,
           confirmationNumber: `CONF-${Date.now()}`,
           status: 'confirmed',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         };
-        
+
         return confirmation;
-      }
+      },
     };
   }
 
@@ -165,23 +167,23 @@ export class BookingEngine {
       name: 'notification',
       process: async (booking) => {
         logger.debug(`Processing notifications for booking ${booking.id}`);
-        
+
         // Send notifications to attendees
         const notifications = [];
-        
+
         if (booking.attendees) {
           for (const attendee of booking.attendees) {
             notifications.push({
               type: 'email',
               recipient: attendee,
               subject: `Space Booking Confirmed: ${booking.title}`,
-              message: `Your booking for ${booking.spaceName} has been confirmed.`
+              message: `Your booking for ${booking.spaceName} has been confirmed.`,
             });
           }
         }
-        
+
         return notifications;
-      }
+      },
     };
   }
 
@@ -190,21 +192,21 @@ export class BookingEngine {
       name: 'integration',
       process: async (booking) => {
         logger.debug(`Processing integrations for booking ${booking.id}`);
-        
+
         // Process calendar integrations
         const integrations = [];
-        
+
         if (booking.calendarIntegration) {
           integrations.push({
             type: 'calendar',
             platform: booking.calendarIntegration,
             action: 'create_event',
-            status: 'pending'
+            status: 'pending',
           });
         }
-        
+
         return integrations;
-      }
+      },
     };
   }
 
@@ -239,15 +241,15 @@ export class BookingEngine {
         userId,
         createdAt: new Date().toISOString(),
         status: 'pending',
-        confirmationNumber: null
+        confirmationNumber: null,
       };
 
       // Process the booking
       const processedBooking = await this.processBooking(booking);
-      
+
       // Store the booking
       this.bookings.set(processedBooking.id, processedBooking);
-      
+
       // Update availability cache
       this.updateAvailabilityCache(processedBooking);
 
@@ -261,9 +263,9 @@ export class BookingEngine {
 
   async runValidations(bookingData, userId) {
     logger.debug('Running booking validations');
-    
+
     const validationResults = {};
-    
+
     for (const [name, validator] of Object.entries(this.validators)) {
       try {
         const result = await validator.validate(bookingData, userId);
@@ -273,30 +275,30 @@ export class BookingEngine {
         throw error;
       }
     }
-    
+
     logger.debug('All validations passed');
     return validationResults;
   }
 
   async processBooking(booking) {
     logger.debug(`Processing booking ${booking.id}`);
-    
+
     // Process confirmation
     const confirmation = await this.processors.confirmation.process(booking);
     booking.confirmationNumber = confirmation.confirmationNumber;
     booking.status = confirmation.status;
-    
+
     // Process notifications
     const notifications = await this.processors.notification.process(booking);
     booking.notifications = notifications;
-    
+
     // Process integrations
     const integrations = await this.processors.integration.process(booking);
     booking.integrations = integrations;
-    
+
     // Update timestamp
     booking.updatedAt = new Date().toISOString();
-    
+
     return booking;
   }
 
@@ -305,7 +307,7 @@ export class BookingEngine {
       logger.debug(`Checking availability for space ${spaceId}`, {
         startTime,
         endTime,
-        options
+        options,
       });
 
       // Validate inputs
@@ -337,7 +339,7 @@ export class BookingEngine {
 
       // Check for conflicts
       const conflicts = await this.checkForConflicts(spaceId, startTime, endTime);
-      
+
       // Apply options if provided
       const includeBuffer = options?.buffer || false;
       const checkRecurring = options?.recurring || false;
@@ -349,13 +351,13 @@ export class BookingEngine {
         timeSlot: { startTime, endTime },
         conflicts,
         suggestions: await this.generateSuggestions(spaceId, startTime, endTime, conflicts),
-        options: { includeBuffer, checkRecurring }
+        options: { includeBuffer, checkRecurring },
       };
 
       // Cache the result
       this.availabilityCache.set(cacheKey, {
         data: availability,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return availability;
@@ -368,7 +370,7 @@ export class BookingEngine {
   async checkForConflicts(spaceId, startTime, endTime) {
     // Mock implementation - would query database in production
     const conflicts = [];
-    
+
     // Simulate some random conflicts
     if (Math.random() > 0.8) {
       conflicts.push({
@@ -378,11 +380,11 @@ export class BookingEngine {
           id: `existing_${Date.now()}`,
           startTime: new Date(startTime).toISOString(),
           endTime: new Date(endTime).toISOString(),
-          title: 'Existing Meeting'
-        }
+          title: 'Existing Meeting',
+        },
       });
     }
-    
+
     return conflicts;
   }
 
@@ -398,15 +400,15 @@ export class BookingEngine {
         spaceId,
         startTime: new Date(new Date(startTime).getTime() + 30 * 60 * 1000).toISOString(),
         endTime: new Date(new Date(endTime).getTime() + 30 * 60 * 1000).toISOString(),
-        reason: '30 minutes later to avoid conflict'
+        reason: '30 minutes later to avoid conflict',
       },
       {
         type: 'alternative_space',
         spaceId: `space_${Math.floor(Math.random() * 100)}`,
         startTime,
         endTime,
-        reason: 'Similar space available at requested time'
-      }
+        reason: 'Similar space available at requested time',
+      },
     ];
 
     return suggestions;
@@ -427,7 +429,7 @@ export class BookingEngine {
         location = null,
         amenities = [],
         timeSlot = null,
-        excludeSpaceIds = []
+        excludeSpaceIds = [],
       } = criteria;
 
       // Mock implementation - would query database in production
@@ -439,7 +441,7 @@ export class BookingEngine {
           location: location || 'Floor 2',
           amenities: [...amenities, 'video_conferencing'],
           availability: 'available',
-          matchScore: 0.95
+          matchScore: 0.95,
         },
         {
           spaceId: 'alt_space_2',
@@ -448,15 +450,15 @@ export class BookingEngine {
           location: location || 'Floor 1',
           amenities: [...amenities, 'whiteboard'],
           availability: 'available',
-          matchScore: 0.87
-        }
+          matchScore: 0.87,
+        },
       ].filter((space) => !excludeSpaceIds.includes(space.spaceId));
 
       return {
         alternatives,
         searchCriteria: criteria,
         totalFound: alternatives.length,
-        timeSlot
+        timeSlot,
       };
     } catch (error) {
       logger.error('Failed to find alternative spaces:', error);
@@ -471,51 +473,54 @@ export class BookingEngine {
       canBookRecurring: Math.random() > 0.3,
       canBookVipSpaces: Math.random() > 0.7,
       maxBookingDuration: 4 * 60 * 60 * 1000, // 4 hours
-      maxAdvanceBooking: 30 * 24 * 60 * 60 * 1000 // 30 days
+      maxAdvanceBooking: 30 * 24 * 60 * 60 * 1000, // 30 days
     };
   }
 
   updateAvailabilityCache(booking) {
     // Invalidate related cache entries
     const cacheKeys = Array.from(this.availabilityCache.keys());
-    const relatedKeys = cacheKeys.filter(key => key.includes(booking.spaceId));
-    
+    const relatedKeys = cacheKeys.filter((key) => key.includes(booking.spaceId));
+
     for (const key of relatedKeys) {
       this.availabilityCache.delete(key);
     }
-    
+
     logger.debug(`Invalidated ${relatedKeys.length} cache entries for space ${booking.spaceId}`);
   }
 
   startBackgroundProcesses() {
     // Start background processes
-    setInterval(async () => {
-      try {
-        await this.cleanupExpiredBookings();
-        await this.updateAvailabilityMetrics();
-      } catch (error) {
-        logger.error('Error in background processes:', error);
-      }
-    }, 10 * 60 * 1000); // Every 10 minutes
+    setInterval(
+      async () => {
+        try {
+          await this.cleanupExpiredBookings();
+          await this.updateAvailabilityMetrics();
+        } catch (error) {
+          logger.error('Error in background processes:', error);
+        }
+      },
+      10 * 60 * 1000,
+    ); // Every 10 minutes
   }
 
   async cleanupExpiredBookings() {
     logger.debug('Cleaning up expired bookings');
-    
+
     const now = new Date();
     const expiredBookings = [];
-    
+
     for (const [id, booking] of this.bookings) {
       if (new Date(booking.endTime) < now) {
         expiredBookings.push(id);
       }
     }
-    
+
     // Remove expired bookings
     for (const id of expiredBookings) {
       this.bookings.delete(id);
     }
-    
+
     if (expiredBookings.length > 0) {
       logger.info(`Cleaned up ${expiredBookings.length} expired bookings`);
     }
@@ -523,7 +528,7 @@ export class BookingEngine {
 
   async updateAvailabilityMetrics() {
     logger.debug('Updating availability metrics');
-    
+
     // This would update real-time availability metrics
     // For now, just log the update
     logger.debug('Availability metrics updated');
@@ -535,45 +540,45 @@ export class BookingEngine {
 
   async getUserBookings(userId, filters = {}) {
     const userBookings = [];
-    
+
     for (const booking of this.bookings.values()) {
       if (booking.userId === userId) {
         // Apply filters
         if (filters.status && booking.status !== filters.status) continue;
         if (filters.spaceId && booking.spaceId !== filters.spaceId) continue;
-        
+
         userBookings.push(booking);
       }
     }
-    
+
     return userBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
 
   async cancelBooking(bookingId, userId, reason = '') {
     try {
       const booking = await this.getBookingById(bookingId);
-      
+
       if (!booking) {
         throw new Error('Booking not found');
       }
-      
+
       if (booking.userId !== userId) {
         throw new Error('User can only cancel their own bookings');
       }
-      
+
       if (booking.status === 'cancelled') {
         throw new Error('Booking is already cancelled');
       }
-      
+
       // Update booking status
       booking.status = 'cancelled';
       booking.cancelledAt = new Date().toISOString();
       booking.cancellationReason = reason;
       booking.updatedAt = new Date().toISOString();
-      
+
       // Update availability cache
       this.updateAvailabilityCache(booking);
-      
+
       logger.info(`Booking ${bookingId} cancelled by user ${userId}`);
       return { success: true, booking };
     } catch (error) {

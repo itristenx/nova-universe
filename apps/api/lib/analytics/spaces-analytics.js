@@ -15,13 +15,13 @@ export class SpaceAnalytics {
   async initialize() {
     try {
       logger.info('Space Analytics initializing...');
-      
+
       // Initialize analytics engine
       await this.setupAnalyticsEngine();
-      
+
       // Start background metrics collection
       this.startMetricsCollection();
-      
+
       this.initialized = true;
       logger.info('Space Analytics initialized successfully');
     } catch (error) {
@@ -33,13 +33,13 @@ export class SpaceAnalytics {
   async setupAnalyticsEngine() {
     // Setup analytics engine components
     logger.debug('Setting up analytics engine');
-    
+
     // Initialize metrics collectors
     this.metricsCollectors = {
       utilization: this.createUtilizationCollector(),
       occupancy: this.createOccupancyCollector(),
       trends: this.createTrendsCollector(),
-      performance: this.createPerformanceCollector()
+      performance: this.createPerformanceCollector(),
     };
   }
 
@@ -53,9 +53,9 @@ export class SpaceAnalytics {
           timeRange,
           utilization: Math.random() * 100,
           peakHours: ['09:00', '14:00', '16:00'],
-          averageDuration: Math.floor(Math.random() * 120) + 30
+          averageDuration: Math.floor(Math.random() * 120) + 30,
         };
-      }
+      },
     };
   }
 
@@ -69,9 +69,9 @@ export class SpaceAnalytics {
           timeRange,
           totalBookings: Math.floor(Math.random() * 50) + 10,
           uniqueUsers: Math.floor(Math.random() * 20) + 5,
-          averageGroupSize: Math.floor(Math.random() * 8) + 2
+          averageGroupSize: Math.floor(Math.random() * 8) + 2,
         };
-      }
+      },
     };
   }
 
@@ -85,9 +85,9 @@ export class SpaceAnalytics {
           timeRange,
           trend: Math.random() > 0.5 ? 'increasing' : 'decreasing',
           changeRate: Math.random() * 20,
-          seasonality: this.detectSeasonality(timeRange)
+          seasonality: this.detectSeasonality(timeRange),
         };
-      }
+      },
     };
   }
 
@@ -101,9 +101,9 @@ export class SpaceAnalytics {
           timeRange,
           responseTime: Math.random() * 1000,
           availability: Math.random() * 100,
-          satisfaction: Math.random() * 5
+          satisfaction: Math.random() * 5,
         };
-      }
+      },
     };
   }
 
@@ -114,18 +114,21 @@ export class SpaceAnalytics {
 
   startMetricsCollection() {
     // Start background metrics collection every 5 minutes
-    setInterval(async () => {
-      try {
-        await this.collectAllMetrics();
-      } catch (error) {
-        logger.error('Error in background metrics collection:', error);
-      }
-    }, 5 * 60 * 1000);
+    setInterval(
+      async () => {
+        try {
+          await this.collectAllMetrics();
+        } catch (error) {
+          logger.error('Error in background metrics collection:', error);
+        }
+      },
+      5 * 60 * 1000,
+    );
   }
 
   async collectAllMetrics() {
     logger.debug('Collecting all metrics...');
-    
+
     // This would iterate through all spaces and collect metrics
     // For now, just log the collection
     logger.debug('Metrics collection completed');
@@ -152,11 +155,11 @@ export class SpaceAnalytics {
 
       // Collect metrics from all collectors
       const metrics = await this.collectMetrics(filters);
-      
+
       // Cache the results
       this.metricsCache.set(cacheKey, {
         data: metrics,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return metrics;
@@ -177,10 +180,10 @@ export class SpaceAnalytics {
       filteredBy: {
         dateRange: filters?.dateRange || {},
         spaceTypes: filters?.spaceTypes || [],
-        departments: filters?.departments || []
+        departments: filters?.departments || [],
       },
       peakUsageHours: this.generatePeakHours(),
-      popularSpaces: this.generatePopularSpaces()
+      popularSpaces: this.generatePopularSpaces(),
     };
 
     // Apply filters
@@ -198,7 +201,7 @@ export class SpaceAnalytics {
       trends.push({
         date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         bookings: Math.floor(Math.random() * 20) + 5,
-        utilization: Math.random() * 100
+        utilization: Math.random() * 100,
       });
     }
     return trends.reverse();
@@ -207,15 +210,16 @@ export class SpaceAnalytics {
   generatePeakHours() {
     const hours = [];
     for (let i = 0; i < 24; i++) {
-      if (i >= 8 && i <= 18) { // Business hours
+      if (i >= 8 && i <= 18) {
+        // Business hours
         hours.push({
           hour: i,
-          utilization: Math.random() * 80 + 20
+          utilization: Math.random() * 80 + 20,
         });
       } else {
         hours.push({
           hour: i,
-          utilization: Math.random() * 20
+          utilization: Math.random() * 20,
         });
       }
     }
@@ -228,7 +232,7 @@ export class SpaceAnalytics {
       id: `space_${index + 1}`,
       name,
       utilization: Math.random() * 100,
-      bookings: Math.floor(Math.random() * 50) + 10
+      bookings: Math.floor(Math.random() * 50) + 10,
     }));
   }
 
@@ -247,8 +251,8 @@ export class SpaceAnalytics {
           totalBookings: Math.floor(Math.random() * 100) + 20,
           averageDuration: Math.floor(Math.random() * 120) + 30,
           peakHours: this.generatePeakHours(),
-          userSatisfaction: Math.random() * 5
-        }
+          userSatisfaction: Math.random() * 5,
+        },
       };
 
       return report;
@@ -261,12 +265,12 @@ export class SpaceAnalytics {
   generateTrends(period) {
     const trends = [];
     const periods = period === 'week' ? 7 : period === 'month' ? 30 : 365;
-    
+
     for (let i = 0; i < periods; i++) {
       trends.push({
         date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         utilization: Math.random() * 100,
-        bookings: Math.floor(Math.random() * 10) + 1
+        bookings: Math.floor(Math.random() * 10) + 1,
       });
     }
     return trends.reverse();
@@ -277,7 +281,7 @@ export class SpaceAnalytics {
       'Consider adding more flexible booking options',
       'Optimize room layout for better capacity utilization',
       'Implement dynamic pricing during peak hours',
-      'Add technology upgrades for better user experience'
+      'Add technology upgrades for better user experience',
     ];
 
     return recommendations.slice(0, Math.floor(Math.random() * 3) + 1);
@@ -286,11 +290,11 @@ export class SpaceAnalytics {
   async trackUtilization() {
     try {
       logger.debug('Tracking space utilization');
-      
+
       // This would update real-time utilization metrics
       // For now, just log the tracking
       logger.debug('Utilization tracking completed');
-      
+
       return { success: true, timestamp: new Date().toISOString() };
     } catch (error) {
       logger.error('Error tracking utilization:', error);
@@ -305,7 +309,7 @@ export class SpaceAnalytics {
         averageUtilization: 0,
         topPerformingSpaces: [],
         trends: [],
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
 
       // This would aggregate data from all spaces
@@ -320,9 +324,9 @@ export class SpaceAnalytics {
   async exportAnalytics(format = 'json', filters = {}) {
     try {
       logger.debug(`Exporting analytics in ${format} format`);
-      
+
       const data = await this.getSpaceMetrics(filters);
-      
+
       switch (format.toLowerCase()) {
         case 'json':
           return JSON.stringify(data, null, 2);

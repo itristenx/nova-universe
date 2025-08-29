@@ -538,8 +538,8 @@ export function SpaceAnalytics({
             <CardBody>
               <div className="trend-chart">
                 {analyticsData.occupancyTrends.map((trend, index) => (
-                  <div 
-                    key={trend.date} 
+                  <div
+                    key={trend.date}
                     className="trend-bar"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >

@@ -294,11 +294,16 @@ export function WorkflowAutomationEngine() {
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1">
-                      <div className={`text-lg font-bold ${workflow.statistics.successRate < 80 ? 'text-red-600' : 'text-green-600'}`}>
+                      <div
+                        className={`text-lg font-bold ${workflow.statistics.successRate < 80 ? 'text-red-600' : 'text-green-600'}`}
+                      >
                         {workflow.statistics.successRate}%
                       </div>
                       {workflow.statistics.successRate < 80 && (
-                        <ExclamationTriangleIcon className="h-4 w-4 text-red-500" title="Low success rate" />
+                        <ExclamationTriangleIcon
+                          className="h-4 w-4 text-red-500"
+                          title="Low success rate"
+                        />
                       )}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -367,8 +372,12 @@ export function WorkflowAutomationEngine() {
                   <div className="flex-1">
                     <div className="mb-2 flex items-center gap-2">
                       <div className="flex items-center gap-2">
-                        {template.category === 'team-collaboration' && <UserGroupIcon className="h-4 w-4 text-blue-500" />}
-                        {template.category === 'documentation' && <DocumentTextIcon className="h-4 w-4 text-green-500" />}
+                        {template.category === 'team-collaboration' && (
+                          <UserGroupIcon className="h-4 w-4 text-blue-500" />
+                        )}
+                        {template.category === 'documentation' && (
+                          <DocumentTextIcon className="h-4 w-4 text-green-500" />
+                        )}
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                           {template.name}
                         </h3>

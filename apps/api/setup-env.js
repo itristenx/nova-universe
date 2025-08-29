@@ -29,7 +29,7 @@ function generateSecureString(length = 32) {
  */
 function createDefaultEnv() {
   const envPath = path.join(__dirname, '.env');
-  
+
   // Check if .env already exists
   if (fs.existsSync(envPath)) {
     console.log('⚠️  .env file already exists. Skipping creation.');
@@ -193,7 +193,7 @@ DEBUG_DB_CONNECTION=true
  */
 function main() {
   console.log('🚀 Setting up Nova Universe API environment...');
-  
+
   try {
     createDefaultEnv();
     console.log('✅ Environment setup complete');

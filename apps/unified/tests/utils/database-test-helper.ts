@@ -43,7 +43,7 @@ export class DatabaseTestHelper {
 
   private getConfigFromEnvironment(): DatabaseConfig {
     const dbUrl = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL;
-    
+
     if (dbUrl?.includes('postgresql://') || dbUrl?.includes('postgres://')) {
       return {
         type: 'postgresql',
@@ -52,7 +52,7 @@ export class DatabaseTestHelper {
         port: parseInt(process.env.DB_PORT || '5432'),
         database: process.env.DB_NAME || 'nova_universe_test',
         username: process.env.DB_USER || 'nova_admin',
-        password: process.env.DB_PASSWORD || 'nova_password'
+        password: process.env.DB_PASSWORD || 'nova_password',
       };
     } else if (dbUrl?.includes('mongodb://')) {
       return {
@@ -62,10 +62,10 @@ export class DatabaseTestHelper {
         port: parseInt(process.env.MONGO_PORT || '27017'),
         database: process.env.MONGO_DB || 'nova_universe_test',
         username: process.env.MONGO_USER || '',
-        password: process.env.MONGO_PASSWORD || ''
+        password: process.env.MONGO_PASSWORD || '',
       };
     }
-    
+
     // Default to PostgreSQL
     return {
       type: 'postgresql',
@@ -73,7 +73,7 @@ export class DatabaseTestHelper {
       port: 5432,
       database: 'nova_universe_test',
       username: 'nova_admin',
-      password: 'nova_password'
+      password: 'nova_password',
     };
   }
 
@@ -114,7 +114,9 @@ export class DatabaseTestHelper {
   private async connectMongoDB(): Promise<void> {
     if (!this.mongoClient) {
       if (!this.config.connectionString) {
-        throw new Error('MongoDB connection string must be provided via environment variable or secure configuration.');
+        throw new Error(
+          'MongoDB connection string must be provided via environment variable or secure configuration.',
+        );
       }
       this.mongoClient = new MongoClient(this.config.connectionString);
       await this.mongoClient.connect();
@@ -130,12 +132,12 @@ export class DatabaseTestHelper {
         WHERE table_schema = 'public' 
         ORDER BY table_name
       `);
-      return result?.rows?.map(row => row.table_name) || [];
+      return result?.rows?.map((row) => row.table_name) || [];
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
       const db = this.mongoClient?.db(this.config.database);
       const collections = await db?.listCollections().toArray();
-      return collections?.map(col => col.name) || [];
+      return collections?.map((col) => col.name) || [];
     }
     return [];
   }
@@ -156,12 +158,14 @@ export class DatabaseTestHelper {
         WHERE t.schemaname = 'public'
         ORDER BY t.tablename, i.indexname
       `);
-      return result?.rows?.map(row => ({
-        table: row.table,
-        column: row.column,
-        indexName: row.index_name,
-        unique: row.unique
-      })) || [];
+      return (
+        result?.rows?.map((row) => ({
+          table: row.table,
+          column: row.column,
+          indexName: row.index_name,
+          unique: row.unique,
+        })) || []
+      );
     }
     return [];
   }
@@ -185,12 +189,14 @@ export class DatabaseTestHelper {
         WHERE tc.constraint_type = 'FOREIGN KEY'
         ORDER BY tc.table_name
       `);
-      return result?.rows?.map(row => ({
-        table: row.table,
-        column: row.column,
-        referencedTable: row.referenced_table,
-        referencedColumn: row.referenced_column
-      })) || [];
+      return (
+        result?.rows?.map((row) => ({
+          table: row.table,
+          column: row.column,
+          referencedTable: row.referenced_table,
+          referencedColumn: row.referenced_column,
+        })) || []
+      );
     }
     return [];
   }
@@ -199,18 +205,21 @@ export class DatabaseTestHelper {
   async createUser(userData: any): Promise<string> {
     if (this.config.type === 'postgresql') {
       await this.connectPostgreSQL();
-      const result = await this.pgPool?.query(`
+      const result = await this.pgPool?.query(
+        `
         INSERT INTO users (email, first_name, last_name, role, status, created_at)
         VALUES ($1, $2, $3, $4, $5, NOW())
         RETURNING id
-      `, [userData.email, userData.firstName, userData.lastName, userData.role, userData.status]);
+      `,
+        [userData.email, userData.firstName, userData.lastName, userData.role, userData.status],
+      );
       return result?.rows?.[0]?.id;
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
       const db = this.mongoClient?.db(this.config.database);
       const result = await db?.collection('users').insertOne({
         ...userData,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
       return result?.insertedId?.toString();
     }
@@ -245,18 +254,21 @@ export class DatabaseTestHelper {
   async createOrganization(orgData: any): Promise<string> {
     if (this.config.type === 'postgresql') {
       await this.connectPostgreSQL();
-      const result = await this.pgPool?.query(`
+      const result = await this.pgPool?.query(
+        `
         INSERT INTO organizations (name, description, created_at)
         VALUES ($1, $2, NOW())
         RETURNING id
-      `, [orgData.name, orgData.description]);
+      `,
+        [orgData.name, orgData.description],
+      );
       return result?.rows?.[0]?.id;
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
       const db = this.mongoClient?.db(this.config.database);
       const result = await db?.collection('organizations').insertOne({
         ...orgData,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
       return result?.insertedId?.toString();
     }
@@ -291,18 +303,21 @@ export class DatabaseTestHelper {
   async createCategory(categoryData: any): Promise<string> {
     if (this.config.type === 'postgresql') {
       await this.connectPostgreSQL();
-      const result = await this.pgPool?.query(`
+      const result = await this.pgPool?.query(
+        `
         INSERT INTO categories (name, description, organization_id, created_at)
         VALUES ($1, $2, $3, NOW())
         RETURNING id
-      `, [categoryData.name, categoryData.description, categoryData.organizationId]);
+      `,
+        [categoryData.name, categoryData.description, categoryData.organizationId],
+      );
       return result?.rows?.[0]?.id;
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
       const db = this.mongoClient?.db(this.config.database);
       const result = await db?.collection('categories').insertOne({
         ...categoryData,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
       return result?.insertedId?.toString();
     }
@@ -324,25 +339,28 @@ export class DatabaseTestHelper {
   async createTicket(ticketData: any): Promise<string> {
     if (this.config.type === 'postgresql') {
       await this.connectPostgreSQL();
-      const result = await this.pgPool?.query(`
+      const result = await this.pgPool?.query(
+        `
         INSERT INTO tickets (title, description, priority, status, category_id, organization_id, created_at)
         VALUES ($1, $2, $3, $4, $5, $6, NOW())
         RETURNING id
-      `, [
-        ticketData.title,
-        ticketData.description,
-        ticketData.priority,
-        ticketData.status,
-        ticketData.categoryId,
-        ticketData.organizationId
-      ]);
+      `,
+        [
+          ticketData.title,
+          ticketData.description,
+          ticketData.priority,
+          ticketData.status,
+          ticketData.categoryId,
+          ticketData.organizationId,
+        ],
+      );
       return result?.rows?.[0]?.id;
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
       const db = this.mongoClient?.db(this.config.database);
       const result = await db?.collection('tickets').insertOne({
         ...ticketData,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
       return result?.insertedId?.toString();
     }
@@ -379,14 +397,16 @@ export class DatabaseTestHelper {
   async updateTicketStatus(id: string, status: string): Promise<void> {
     if (this.config.type === 'postgresql') {
       await this.connectPostgreSQL();
-      await this.pgPool?.query('UPDATE tickets SET status = $1, updated_at = NOW() WHERE id = $2', [status, id]);
+      await this.pgPool?.query('UPDATE tickets SET status = $1, updated_at = NOW() WHERE id = $2', [
+        status,
+        id,
+      ]);
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
       const db = this.mongoClient?.db(this.config.database);
-      await db?.collection('tickets').updateOne(
-        { _id: id },
-        { $set: { status, updatedAt: new Date() } }
-      );
+      await db
+        ?.collection('tickets')
+        .updateOne({ _id: id }, { $set: { status, updatedAt: new Date() } });
     }
   }
 
@@ -407,13 +427,14 @@ export class DatabaseTestHelper {
       const offset = (page - 1) * limit;
       const result = await this.pgPool?.query(
         'SELECT * FROM tickets ORDER BY created_at DESC LIMIT $1 OFFSET $2',
-        [limit, offset]
+        [limit, offset],
       );
       return result?.rows || [];
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
       const db = this.mongoClient?.db(this.config.database);
-      const tickets = await db?.collection('tickets')
+      const tickets = await db
+        ?.collection('tickets')
         .find({})
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
@@ -429,13 +450,13 @@ export class DatabaseTestHelper {
       await this.connectPostgreSQL();
       const result = await this.pgPool?.query(
         'SELECT COUNT(*) as count FROM tickets WHERE organization_id = $1',
-        [organizationId]
+        [organizationId],
       );
       return parseInt(result?.rows?.[0]?.count || '0');
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
       const db = this.mongoClient?.db(this.config.database);
-      return await db?.collection('tickets').countDocuments({ organizationId }) || 0;
+      return (await db?.collection('tickets').countDocuments({ organizationId })) || 0;
     }
     return 0;
   }
@@ -443,11 +464,14 @@ export class DatabaseTestHelper {
   async addTicketComment(ticketId: string, commentData: any): Promise<string> {
     if (this.config.type === 'postgresql') {
       await this.connectPostgreSQL();
-      const result = await this.pgPool?.query(`
+      const result = await this.pgPool?.query(
+        `
         INSERT INTO comments (ticket_id, user_id, content, created_at)
         VALUES ($1, $2, $3, NOW())
         RETURNING id
-      `, [ticketId, commentData.userId, commentData.content]);
+      `,
+        [ticketId, commentData.userId, commentData.content],
+      );
       return result?.rows?.[0]?.id;
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
@@ -455,7 +479,7 @@ export class DatabaseTestHelper {
       const result = await db?.collection('comments').insertOne({
         ticketId,
         ...commentData,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
       return result?.insertedId?.toString();
     }
@@ -466,24 +490,27 @@ export class DatabaseTestHelper {
   async createAsset(assetData: any): Promise<string> {
     if (this.config.type === 'postgresql') {
       await this.connectPostgreSQL();
-      const result = await this.pgPool?.query(`
+      const result = await this.pgPool?.query(
+        `
         INSERT INTO assets (name, type, status, serial_number, organization_id, created_at)
         VALUES ($1, $2, $3, $4, $5, NOW())
         RETURNING id
-      `, [
-        assetData.name,
-        assetData.type,
-        assetData.status,
-        assetData.serialNumber,
-        assetData.organizationId
-      ]);
+      `,
+        [
+          assetData.name,
+          assetData.type,
+          assetData.status,
+          assetData.serialNumber,
+          assetData.organizationId,
+        ],
+      );
       return result?.rows?.[0]?.id;
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
       const db = this.mongoClient?.db(this.config.database);
       const result = await db?.collection('assets').insertOne({
         ...assetData,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
       return result?.insertedId?.toString();
     }
@@ -506,14 +533,16 @@ export class DatabaseTestHelper {
   async updateAssetStatus(id: string, status: string): Promise<void> {
     if (this.config.type === 'postgresql') {
       await this.connectPostgreSQL();
-      await this.pgPool?.query('UPDATE assets SET status = $1, updated_at = NOW() WHERE id = $2', [status, id]);
+      await this.pgPool?.query('UPDATE assets SET status = $1, updated_at = NOW() WHERE id = $2', [
+        status,
+        id,
+      ]);
     } else if (this.config.type === 'mongodb') {
       await this.connectMongoDB();
       const db = this.mongoClient?.db(this.config.database);
-      await db?.collection('assets').updateOne(
-        { _id: id },
-        { $set: { status, updatedAt: new Date() } }
-      );
+      await db
+        ?.collection('assets')
+        .updateOne({ _id: id }, { $set: { status, updatedAt: new Date() } });
     }
   }
 

@@ -3,11 +3,13 @@
 ## 🚀 Quick Setup (Recommended)
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - Docker & Docker Compose
 - pnpm (recommended) or npm
 
 ### 1. Clone and Setup
+
 ```bash
 git clone <your-repo>
 cd nova-universe
@@ -15,6 +17,7 @@ cd nova-universe
 ```
 
 ### 2. Start Development Environment
+
 ```bash
 ./dev.sh
 ```
@@ -24,17 +27,20 @@ The app will be available at: http://localhost:5173
 ## 🐳 Docker Services
 
 ### Core Services (Always Running)
+
 - **PostgreSQL**: Core database on port 5432
-- **MongoDB**: Logs and telemetry on port 27017  
+- **MongoDB**: Logs and telemetry on port 27017
 - **Redis**: Caching on port 6379
 
 ### Optional Services (Full Profile)
+
 - **pgAdmin**: PostgreSQL management on port 8080
 - **Mongo Express**: MongoDB management on port 8081
 - **Elasticsearch**: Search and analytics on port 9200
 - **Kibana**: Elasticsearch dashboard on port 5601
 
 ### Service Management
+
 ```bash
 # Start core services only
 docker-compose up -d postgres mongodb redis
@@ -55,6 +61,7 @@ docker-compose down
 ## 🛠️ Development Commands
 
 ### Unified App
+
 ```bash
 cd apps/unified
 
@@ -72,6 +79,7 @@ pnpm test
 ```
 
 ### Database Management
+
 ```bash
 # Run Prisma migrations
 cd prisma
@@ -118,6 +126,7 @@ ADMIN_PASSWORD=admin123
 ### Common Issues
 
 **Docker not running**
+
 ```bash
 # Start Docker Desktop or Docker daemon
 # On macOS: open Docker Desktop
@@ -125,6 +134,7 @@ ADMIN_PASSWORD=admin123
 ```
 
 **Port conflicts**
+
 ```bash
 # Check what's using the ports
 lsof -i :5432  # PostgreSQL
@@ -134,6 +144,7 @@ lsof -i :5173  # Unified UI
 ```
 
 **Database connection issues**
+
 ```bash
 # Restart database services
 docker-compose restart postgres mongodb redis
@@ -144,6 +155,7 @@ docker-compose logs mongodb
 ```
 
 **Dependencies not installed**
+
 ```bash
 # Clean install
 rm -rf node_modules package-lock.json
@@ -151,6 +163,7 @@ pnpm install
 ```
 
 ### Reset Everything
+
 ```bash
 # Stop all services
 docker-compose down

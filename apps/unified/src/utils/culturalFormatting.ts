@@ -51,7 +51,7 @@ export function formatDate(
       error: _error instanceof Error ? _error.message : _error,
       dateValue: dateObj.toISOString(),
     });
-    
+
     // Fallback to English if locale is not supported
     return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObj);
   }
@@ -84,7 +84,7 @@ export function formatTime(
       error: _error instanceof Error ? _error.message : _error,
       timeZone: options.timeZone,
     });
-    
+
     return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObj);
   }
 }
@@ -119,7 +119,7 @@ export function formatDateTime(
       error: _error instanceof Error ? _error.message : _error,
       timeZone: options.timeZone,
     });
-    
+
     return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObj);
   }
 }
@@ -160,7 +160,7 @@ export function formatRelativeTime(
       error: _error instanceof Error ? _error.message : _error,
       timeDifferenceSeconds: diffInSeconds,
     });
-    
+
     // Fallback to English
     const rtf = new Intl.RelativeTimeFormat('en-US', { numeric: 'auto' });
     if (Math.abs(diffInSeconds) < 60) {
@@ -192,7 +192,7 @@ export function formatNumber(
       numberValue: number,
       options: intlOptions,
     });
-    
+
     return new Intl.NumberFormat('en-US', intlOptions).format(number);
   }
 }
@@ -226,7 +226,7 @@ export function formatCurrency(
       error: _error instanceof Error ? _error.message : _error,
       amount,
     });
-    
+
     // Fallback
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -261,7 +261,7 @@ export function formatPercentage(
       error: _error instanceof Error ? _error.message : _error,
       percentageValue: value,
     });
-    
+
     return new Intl.NumberFormat('en-US', defaultOptions).format(value);
   }
 }
@@ -292,7 +292,7 @@ export function formatFileSize(bytes: number, options: FormatOptions = {}): stri
       calculatedValue: value,
       unit: sizes[i],
     });
-    
+
     return `${value.toFixed(2)} ${sizes[i]}`;
   }
 }

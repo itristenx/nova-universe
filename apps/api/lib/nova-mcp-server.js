@@ -603,20 +603,17 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
    */
   async handleTicketCreation(ticketData) {
     try {
-      const { title, description, priority = 'medium', category = 'incident', assignee } = ticketData;
-      
+      const {
+        title,
+        description,
+        priority = 'medium',
+        category = 'incident',
+        assignee,
+      } = ticketData;
+
       const result = await db.query(
         'INSERT INTO tickets (title, description, priority, category, status, assignee_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-        [
-          title,
-          description,
-          priority,
-          category,
-          'new',
-          assignee || null,
-          new Date(),
-          new Date(),
-        ],
+        [title, description, priority, category, 'new', assignee || null, new Date(), new Date()],
       );
 
       return result.rows[0];
@@ -632,10 +629,10 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
   async handleTicketUpdate(ticketData) {
     try {
       const { id, ...updateData } = ticketData;
-      
+
       const fields = Object.keys(updateData);
       const values = Object.values(updateData);
-      
+
       if (fields.length === 0) {
         throw new Error('No fields to update');
       }
@@ -644,7 +641,7 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
       const query = `UPDATE tickets SET ${setClause}, updated_at = $1 WHERE id = $${values.length + 2} RETURNING *`;
 
       const result = await db.query(query, [new Date(), ...values, id]);
-      
+
       if (result.rows.length === 0) {
         throw new Error('Ticket not found');
       }
@@ -662,11 +659,11 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
   async handleTicketEscalation(ticketData) {
     try {
       const { id, escalationReason, escalateTo } = ticketData;
-      
+
       // Update ticket status and add escalation info
       const result = await db.query(
         'UPDATE tickets SET status = $1, priority = CASE WHEN priority != $2 THEN $2 ELSE priority END, updated_at = $3 WHERE id = $4 RETURNING *',
-        ['escalated', 'high', new Date(), id]
+        ['escalated', 'high', new Date(), id],
       );
 
       if (result.rows.length === 0) {
@@ -676,14 +673,14 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
       // Log escalation
       await db.query(
         'INSERT INTO logs (ticket_id, name, title, system, urgency, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
-        [id, 'System', `Ticket escalated: ${escalationReason}`, 'nova-mcp', 'high', new Date()]
+        [id, 'System', `Ticket escalated: ${escalationReason}`, 'nova-mcp', 'high', new Date()],
       );
 
       return {
         ...result.rows[0],
         escalationReason,
         escalateTo,
-        escalatedAt: new Date()
+        escalatedAt: new Date(),
       };
     } catch (error) {
       logger.error('Ticket escalation failed:', error);
@@ -697,10 +694,10 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
   async handleTicketResolution(ticketData) {
     try {
       const { id, resolution, resolvedBy } = ticketData;
-      
+
       const result = await db.query(
         'UPDATE tickets SET status = $1, resolution = $2, resolved_at = $3, updated_at = $4 WHERE id = $5 RETURNING *',
-        ['resolved', resolution, new Date(), new Date(), id]
+        ['resolved', resolution, new Date(), new Date(), id],
       );
 
       if (result.rows.length === 0) {
@@ -710,7 +707,14 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
       // Log resolution
       await db.query(
         'INSERT INTO logs (ticket_id, name, title, system, urgency, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
-        [id, resolvedBy || 'System', `Ticket resolved: ${resolution}`, 'nova-mcp', 'medium', new Date()]
+        [
+          id,
+          resolvedBy || 'System',
+          `Ticket resolved: ${resolution}`,
+          'nova-mcp',
+          'medium',
+          new Date(),
+        ],
       );
 
       return result.rows[0];
@@ -726,7 +730,7 @@ Structure your response clearly and cite specific Nova knowledge base sources wh
   async handleTicketRetrieval(ticketData) {
     try {
       const { id, status, priority } = ticketData;
-      
+
       let query = 'SELECT * FROM tickets WHERE 1=1';
       const params = [];
       let paramIndex = 1;

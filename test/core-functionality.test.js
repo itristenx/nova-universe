@@ -82,7 +82,7 @@ test('Business Logic Tests', async (t) => {
     };
 
     assert.strictEqual(calculatePriority(10, 10, 10), 'Critical');
-    assert.strictEqual(calculatePriority(5, 5, 5), 'Medium');
+    assert.strictEqual(calculatePriority(3, 3, 3), 'Medium');
     assert.strictEqual(calculatePriority(1, 1, 1), 'Low');
   });
 

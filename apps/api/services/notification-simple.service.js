@@ -17,12 +17,12 @@ export class NotificationService {
         title: ticket.title,
         requester: user.email,
         assignedTo: ticket.assignedToUserId,
-        priority: ticket.priority
+        priority: ticket.priority,
       });
-      
+
       // In production, this would send actual notifications
       // via email, Slack, push notifications, etc.
-      
+
       return true;
     } catch (error) {
       logger.error('Failed to send ticket creation notification:', error);
@@ -39,9 +39,9 @@ export class NotificationService {
         ticketId: ticket.id,
         ticketNumber: ticket.ticketNumber,
         assignedTo: assignedUser.email,
-        assignedBy: assigner.email
+        assignedBy: assigner.email,
       });
-      
+
       return true;
     } catch (error) {
       logger.error('Failed to send assignment notification:', error);
@@ -58,9 +58,9 @@ export class NotificationService {
         ticketId: ticket.id,
         ticketNumber: ticket.ticketNumber,
         commenter: commenter.email,
-        isInternal: comment.isInternal
+        isInternal: comment.isInternal,
       });
-      
+
       return true;
     } catch (error) {
       logger.error('Failed to send comment notification:', error);
@@ -78,9 +78,9 @@ export class NotificationService {
         ticketNumber: ticket.ticketNumber,
         breachType,
         priority: ticket.priority,
-        assignedTo: ticket.assignedToUserId
+        assignedTo: ticket.assignedToUserId,
       });
-      
+
       return true;
     } catch (error) {
       logger.error('Failed to send SLA breach notification:', error);

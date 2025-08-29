@@ -30,6 +30,7 @@ chmod +x scripts/unified-monitoring-integration.sh
 ```
 
 **Expected Output:**
+
 ```
 ================================
 Nova Unified Monitoring Integration
@@ -59,6 +60,7 @@ Integration completed successfully!
 ## Step 2: Verify the Integration
 
 ### Check Database Tables
+
 ```bash
 # Connect to your database
 psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME
@@ -78,6 +80,7 @@ psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME
 ```
 
 ### Test API Endpoints
+
 ```bash
 # Test system health endpoint
 curl -H "Authorization: Bearer YOUR_TOKEN" \
@@ -95,7 +98,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ## Step 3: Access the Unified Dashboard
 
 1. **Open your browser** and navigate to the Nova Unified UI
-2. **Go to** `/monitoring` 
+2. **Go to** `/monitoring`
 3. **You should see** the new Unified Monitoring Dashboard with:
    - Overview tab with system health metrics
    - Monitors tab for service monitoring
@@ -106,6 +109,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ## Step 4: Create Your First Monitor
 
 ### Via API
+
 ```bash
 curl -X POST \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -122,6 +126,7 @@ curl -X POST \
 ```
 
 ### Via UI
+
 1. Go to **Monitoring** → **Monitors** tab
 2. Click **Add Monitor** button
 3. Fill in the form:
@@ -142,6 +147,7 @@ curl -X POST \
 ## Step 6: Configure Legacy System Integration
 
 ### Update Environment Variables
+
 ```bash
 # Add to your .env file
 UPTIME_KUMA_URL=http://localhost:3001
@@ -151,6 +157,7 @@ LEGACY_API_ENABLED=true
 ```
 
 ### Test Legacy Integration
+
 ```bash
 # Test Uptime Kuma proxy (still works)
 curl -H "Authorization: Bearer YOUR_TOKEN" \
@@ -164,6 +171,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ## Step 7: Verify Everything Works
 
 ### Checklist
+
 - [ ] Unified dashboard loads correctly
 - [ ] Can create new monitors
 - [ ] Real-time updates work
@@ -177,6 +185,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ### Common Issues
 
 #### "Database connection failed"
+
 ```bash
 # Check if PostgreSQL is running
 sudo systemctl status postgresql
@@ -186,6 +195,7 @@ psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "SELECT 1;"
 ```
 
 #### "API endpoint not found"
+
 ```bash
 # Check if Nova API is running
 curl http://localhost:3000/api/v2/health
@@ -195,6 +205,7 @@ grep -r "unified-monitoring" apps/api/index.js
 ```
 
 #### "WebSocket connection failed"
+
 ```bash
 # Check WebSocket configuration
 grep -r "websocket" apps/api/index.js
@@ -204,6 +215,7 @@ netstat -an | grep :3000
 ```
 
 ### Debug Mode
+
 ```bash
 # Enable debug logging
 export DEBUG_MONITORING=true
@@ -218,18 +230,21 @@ tail -f logs/server.log
 ## Next Steps
 
 ### Immediate Actions
+
 1. **Test all functionality** thoroughly
 2. **Create sample monitors** for your services
 3. **Configure notification channels**
 4. **Set up escalation policies**
 
 ### Short Term (1-2 weeks)
+
 1. **Migrate existing monitors** from legacy systems
 2. **Train users** on new interface
 3. **Configure monitoring policies**
 4. **Set up alerting rules**
 
 ### Medium Term (1-2 months)
+
 1. **Deprecate legacy UIs**
 2. **Remove old API endpoints**
 3. **Optimize performance**
@@ -238,12 +253,14 @@ tail -f logs/server.log
 ## Support
 
 ### Getting Help
+
 - **Documentation**: `docs/UNIFIED_MONITORING_INTEGRATION.md`
 - **Integration Script**: `scripts/unified-monitoring-integration.sh`
 - **API Routes**: `apps/api/routes/unified-monitoring.js`
 - **UI Components**: `apps/unified/src/pages/monitoring/`
 
 ### Quick Commands
+
 ```bash
 # Check integration status
 psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "SELECT COUNT(*) FROM monitors;"
@@ -265,7 +282,7 @@ You've successfully implemented the unified monitoring integration when:
 ✅ **Legacy APIs** continue to function  
 ✅ **Database schema** is properly created  
 ✅ **All endpoints** respond correctly  
-✅ **Users can access** monitoring functions  
+✅ **Users can access** monitoring functions
 
 ## 🎉 Congratulations!
 
@@ -275,4 +292,4 @@ You've successfully consolidated Nova-Sentinel and Nova-Alert into a unified Nov
 
 ---
 
-*Need help? Check the full documentation at `docs/UNIFIED_MONITORING_INTEGRATION.md` or contact the Nova development team.*
+_Need help? Check the full documentation at `docs/UNIFIED_MONITORING_INTEGRATION.md` or contact the Nova development team._

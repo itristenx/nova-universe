@@ -34,11 +34,11 @@ export function getRTLConfig(locale: string): RTLConfig {
  */
 export function applyRTLToDocument(locale: string): void {
   const config = getRTLConfig(locale);
-  
+
   // Set document direction
   document.documentElement.dir = config.direction;
   document.documentElement.lang = locale;
-  
+
   // Add RTL class to body for CSS targeting
   if (config.direction === 'rtl') {
     document.body.classList.add('rtl');
@@ -55,7 +55,7 @@ export function applyRTLToDocument(locale: string): void {
 export function getRTLClasses(locale: string): string {
   const config = getRTLConfig(locale);
   const isRTL = config.direction === 'rtl';
-  
+
   return [
     isRTL ? 'rtl' : 'ltr',
     isRTL ? 'text-right' : 'text-left',
@@ -69,7 +69,7 @@ export function getRTLClasses(locale: string): string {
  */
 export function getDirectionalSpacing(
   locale: string,
-  spacing: string = '4'
+  spacing: string = '4',
 ): {
   marginStart: string;
   marginEnd: string;
@@ -77,7 +77,7 @@ export function getDirectionalSpacing(
   paddingEnd: string;
 } {
   const isRTL = getRTLConfig(locale).direction === 'rtl';
-  
+
   return {
     marginStart: isRTL ? `mr-${spacing}` : `ml-${spacing}`,
     marginEnd: isRTL ? `ml-${spacing}` : `mr-${spacing}`,
@@ -94,7 +94,7 @@ export function useRTL(locale?: string) {
   const currentLocale = locale || document.documentElement.lang || 'en';
   const config = getRTLConfig(currentLocale);
   const isRTL = config.direction === 'rtl';
-  
+
   return {
     isRTL,
     direction: config.direction,
@@ -120,10 +120,10 @@ export function getRTLIconRotation(locale: string, baseRotation: number = 0): nu
 export function getRTLPositioning(
   locale: string,
   position: 'start' | 'end',
-  value: string = '0'
+  value: string = '0',
 ): string {
   const isRTL = getRTLConfig(locale).direction === 'rtl';
-  
+
   if (position === 'start') {
     return isRTL ? `right-${value}` : `left-${value}`;
   } else {
@@ -137,10 +137,10 @@ export function getRTLPositioning(
 export function getRTLBorderRadius(
   locale: string,
   side: 'start' | 'end',
-  size: string = 'md'
+  size: string = 'md',
 ): string {
   const isRTL = getRTLConfig(locale).direction === 'rtl';
-  
+
   if (side === 'start') {
     return isRTL ? `rounded-r-${size}` : `rounded-l-${size}`;
   } else {

@@ -19,7 +19,9 @@ class UITestRunner {
     return {
       baseURL: process.env.TEST_BASE_URL || 'http://localhost:5173',
       apiURL: process.env.TEST_API_URL || 'http://localhost:3000',
-      databaseURL: process.env.TEST_DATABASE_URL || 'postgresql://nova_admin:nova_password@localhost:5432/nova_universe_test',
+      databaseURL:
+        process.env.TEST_DATABASE_URL ||
+        'postgresql://nova_admin:nova_password@localhost:5432/nova_universe_test',
       testUser: {
         email: process.env.TEST_USER_EMAIL || 'testuser@nova.com',
         password: process.env.TEST_USER_PASSWORD || 'TestUser123!',
@@ -119,9 +121,9 @@ class UITestRunner {
 
     // Determine which tests to run
     const suitesToRun = this.determineSuitesToRun(options.suites, options.tags);
-    
+
     console.log(`📋 Running ${suitesToRun.length} test suite(s):`);
-    suitesToRun.forEach(suite => {
+    suitesToRun.forEach((suite) => {
       console.log(`  • ${suite.name}: ${suite.description}`);
     });
     console.log('');
@@ -140,7 +142,7 @@ class UITestRunner {
     // Run each test suite
     for (const suite of suitesToRun) {
       console.log(`🧪 Running ${suite.name} tests...`);
-      
+
       const result = await this.runTestSuite(suite, {
         headed: options.headed,
         debug: options.debug,
@@ -181,15 +183,13 @@ class UITestRunner {
 
     // Filter by specific suites
     if (suites && suites.length > 0) {
-      filteredSuites = filteredSuites.filter(suite =>
-        suites.includes(suite.name)
-      );
+      filteredSuites = filteredSuites.filter((suite) => suites.includes(suite.name));
     }
 
     // Filter by tags
     if (tags && tags.length > 0) {
-      filteredSuites = filteredSuites.filter(suite =>
-        tags.some(tag => suite.tags.includes(tag))
+      filteredSuites = filteredSuites.filter((suite) =>
+        tags.some((tag) => suite.tags.includes(tag)),
       );
     }
 
@@ -248,9 +248,9 @@ class UITestRunner {
     // Install Playwright browsers if needed
     try {
       const playwrightTimeout = parseInt(process.env.PLAYWRIGHT_INSTALL_TIMEOUT || '300000');
-      execSync('npx playwright install --with-deps', { 
+      execSync('npx playwright install --with-deps', {
         stdio: 'pipe',
-        timeout: playwrightTimeout
+        timeout: playwrightTimeout,
       });
       console.log(`  ✅ Playwright browsers are ready (timeout: ${playwrightTimeout} ms)`);
     } catch (error) {
@@ -283,12 +283,12 @@ TEST_WORKERS=${this.config.workers}
 
   async runTestSuite(suite, options) {
     const startTime = Date.now();
-    
+
     try {
       const command = this.buildPlaywrightCommand(suite, options);
-      
+
       console.log(`  Running: ${command}`);
-      
+
       const output = execSync(command, {
         stdio: 'pipe',
         encoding: 'utf8',
@@ -300,7 +300,7 @@ TEST_WORKERS=${this.config.workers}
       });
 
       const result = this.parseTestOutput(output);
-      
+
       return {
         name: suite.name,
         passed: result.passed,
@@ -311,7 +311,7 @@ TEST_WORKERS=${this.config.workers}
       };
     } catch (error) {
       console.error(`❌ Test suite ${suite.name} failed:`, error.message);
-      
+
       return {
         name: suite.name,
         passed: 0,
@@ -363,13 +363,13 @@ TEST_WORKERS=${this.config.workers}
       const jsonMatch = output.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const result = JSON.parse(jsonMatch[0]);
-        
+
         const passed = result.stats?.passed || 0;
         const failed = result.stats?.failed || 0;
         const total = passed + failed;
-        
+
         const errors = result.errors || [];
-        
+
         return { passed, failed, total, errors };
       }
     } catch (parseError) {
@@ -379,11 +379,11 @@ TEST_WORKERS=${this.config.workers}
     // Fallback text parsing
     const passedMatch = output.match(/(\d+) passed/);
     const failedMatch = output.match(/(\d+) failed/);
-    
+
     const passed = passedMatch ? parseInt(passedMatch[1]) : 0;
     const failed = failedMatch ? parseInt(failedMatch[1]) : 0;
     const total = passed + failed;
-    
+
     const errors = [];
     const errorMatches = output.match(/Error: .+/g);
     if (errorMatches) {
@@ -424,8 +424,8 @@ TEST_WORKERS=${this.config.workers}
   }
 
   generateHTMLReport(data) {
-    const passRate = (data.summary.passedTests / data.summary.totalTests * 100).toFixed(1);
-    
+    const passRate = ((data.summary.passedTests / data.summary.totalTests) * 100).toFixed(1);
+
     return `
 <!DOCTYPE html>
 <html>
@@ -465,7 +465,9 @@ TEST_WORKERS=${this.config.workers}
     </div>
 
     <h2>Test Suites</h2>
-    ${data.suites.map((suite) => `
+    ${data.suites
+      .map(
+        (suite) => `
         <div class="suite">
             <h3>${suite.name}</h3>
             <p>Duration: ${(suite.duration / 1000).toFixed(1)}s</p>
@@ -474,16 +476,22 @@ TEST_WORKERS=${this.config.workers}
                 <span class="failed">${suite.failed} failed</span> | 
                 ${suite.total} total
             </p>
-            ${suite.errors.length > 0 ? `
+            ${
+              suite.errors.length > 0
+                ? `
                 <details>
                     <summary>Errors (${suite.errors.length})</summary>
                     <ul>
                         ${suite.errors.map((error) => `<li>${error}</li>`).join('')}
                     </ul>
                 </details>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
-    `).join('')}
+    `,
+      )
+      .join('')}
 
     <h2>Configuration</h2>
     <pre>${JSON.stringify(data.config, null, 2)}</pre>
@@ -493,8 +501,8 @@ TEST_WORKERS=${this.config.workers}
   }
 
   generateMarkdownReport(data) {
-    const passRate = (data.summary.passedTests / data.summary.totalTests * 100).toFixed(1);
-    
+    const passRate = ((data.summary.passedTests / data.summary.totalTests) * 100).toFixed(1);
+
     return `
 # 🧪 Nova Universe UI Test Report
 
@@ -511,17 +519,25 @@ TEST_WORKERS=${this.config.workers}
 
 ## Test Suites
 
-${data.suites.map((suite) => `
+${data.suites
+  .map(
+    (suite) => `
 ### ${suite.name}
 
 - **Duration:** ${(suite.duration / 1000).toFixed(1)}s
 - **Results:** ${suite.passed} passed, ${suite.failed} failed, ${suite.total} total
 
-${suite.errors.length > 0 ? `
+${
+  suite.errors.length > 0
+    ? `
 **Errors:**
 ${suite.errors.map((error) => `- ${error}`).join('\n')}
-` : '✅ No errors'}
-`).join('')}
+`
+    : '✅ No errors'
+}
+`,
+  )
+  .join('')}
 
 ## Configuration
 
@@ -538,14 +554,14 @@ ${JSON.stringify(data.config, null, 2)}
     console.log(`📊 Total Tests: ${summary.totalTests}`);
     console.log(`✅ Passed: ${summary.passedTests}`);
     console.log(`❌ Failed: ${summary.failedTests}`);
-    console.log(`📈 Pass Rate: ${(summary.passedTests / summary.totalTests * 100).toFixed(1)}%`);
+    console.log(`📈 Pass Rate: ${((summary.passedTests / summary.totalTests) * 100).toFixed(1)}%`);
     console.log('');
 
     if (summary.failedTests > 0) {
       console.log('❌ FAILED TEST SUITES:');
       suiteResults
-        .filter(suite => suite.failed > 0)
-        .forEach(suite => {
+        .filter((suite) => suite.failed > 0)
+        .forEach((suite) => {
           console.log(`  • ${suite.name}: ${suite.failed} failed`);
         });
       console.log('');
@@ -557,7 +573,7 @@ ${JSON.stringify(data.config, null, 2)}
 
   async cleanup() {
     console.log('🧹 Cleaning up test environment...');
-    
+
     // Remove temporary files
     try {
       execSync('rm -f .env.test.local', { stdio: 'pipe' });

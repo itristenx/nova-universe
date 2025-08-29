@@ -188,13 +188,13 @@ export class SentimentAnalysisEngine {
     const doc = nlp(text);
     const entities = doc.people().out('array');
     const places = doc.places().out('array');
-    
+
     // Tokenize using natural
     const tokens = tokenizer.tokenize(text.toLowerCase());
-    
+
     // Stem words for better matching
-    const stemmedTokens = tokens.map(token => stemmer.stem(token));
-    
+    const stemmedTokens = tokens.map((token) => stemmer.stem(token));
+
     return {
       original: text,
       tokens,
@@ -202,7 +202,7 @@ export class SentimentAnalysisEngine {
       entities,
       places,
       sentences: doc.sentences().out('array'),
-      wordCount: tokens.length
+      wordCount: tokens.length,
     };
   }
 
@@ -210,16 +210,16 @@ export class SentimentAnalysisEngine {
     try {
       // Preprocess the text first
       const preprocessed = this.preprocessText(text);
-      
+
       // Basic sentiment analysis with enhanced tokens
       const basicSentiment = this.sentimentAnalyzer.analyze(text);
-      
+
       // Use preprocessed data for better analysis
       const enhancedAnalysis = {
         ...basicSentiment,
         wordCount: preprocessed.wordCount,
         entities: preprocessed.entities,
-        complexity: preprocessed.sentences.length > 1 ? 'complex' : 'simple'
+        complexity: preprocessed.sentences.length > 1 ? 'complex' : 'simple',
       };
 
       // Enhanced emotion classification
@@ -257,7 +257,7 @@ export class SentimentAnalysisEngine {
         preprocessedData: {
           tokenCount: preprocessed.tokens.length,
           entityCount: preprocessed.entities.length,
-          sentenceCount: preprocessed.sentences.length
+          sentenceCount: preprocessed.sentences.length,
         },
       };
     } catch (error) {
@@ -1001,7 +1001,7 @@ class EscalationPredictor {
     // This would use a trained ML model in production
     // For now, using rule-based approach with context awareness
     let escalationScore = 0.0;
-    
+
     // Consider context factors
     const contextMultiplier = context.previousEscalations ? 1.5 : 1.0;
     const timeMultiplier = context.responseTime > 24 ? 1.3 : 1.0;
@@ -1033,8 +1033,8 @@ class EscalationPredictor {
       contextFactors: {
         previousEscalations: context.previousEscalations || 0,
         responseTime: context.responseTime || 0,
-        priority: context.priority || 'normal'
-      }
+        priority: context.priority || 'normal',
+      },
     };
   }
 }
@@ -1083,28 +1083,32 @@ class CulturalContextAnalyzer {
     // Analyze cultural communication patterns
     const textLower = text.toLowerCase();
     const markers = {};
-    
+
     // Time orientation based on urgency language
-    if (textLower.includes('asap') || textLower.includes('urgent') || textLower.includes('immediately')) {
+    if (
+      textLower.includes('asap') ||
+      textLower.includes('urgent') ||
+      textLower.includes('immediately')
+    ) {
       markers.timeOrientation = 'urgent';
     } else if (textLower.includes('when convenient') || textLower.includes('no rush')) {
       markers.timeOrientation = 'relaxed';
     } else {
       markers.timeOrientation = 'punctual';
     }
-    
+
     // Context level based on explicitness
     const wordCount = text.split(' ').length;
     const explicitnessRatio = wordCount > 50 ? 'high' : wordCount > 20 ? 'medium' : 'low';
     markers.contextLevel = explicitnessRatio;
-    
+
     // Hierarchy expectations from context
     if (context.userRole === 'manager' || context.department === 'executive') {
       markers.hierarchyExpectation = 'hierarchical';
     } else {
       markers.hierarchyExpectation = 'flat';
     }
-    
+
     return markers;
   }
 }
@@ -1693,12 +1697,12 @@ class ModelManager {
     // Implementation would check and enforce rate limits for specific model
     const rateLimitKey = `rate_limit_${modelId}`;
     const currentTime = Date.now();
-    
+
     return {
       allowed: true,
       modelId: modelId,
       key: rateLimitKey,
-      timestamp: currentTime
+      timestamp: currentTime,
     };
   }
 

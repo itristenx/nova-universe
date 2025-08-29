@@ -18,9 +18,9 @@ export class AuditService {
         userId,
         ipAddress,
         action: 'VIEW',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       return true;
     } catch (error) {
       logger.error('Failed to log ticket access:', error);
@@ -41,11 +41,11 @@ export class AuditService {
         data: {
           title: ticketData.title,
           type: ticketData.type,
-          priority: ticketData.priority
+          priority: ticketData.priority,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       return true;
     } catch (error) {
       logger.error('Failed to log ticket creation:', error);
@@ -63,9 +63,9 @@ export class AuditService {
         userId,
         action: 'UPDATE',
         changes,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       return true;
     } catch (error) {
       logger.error('Failed to log ticket update:', error);

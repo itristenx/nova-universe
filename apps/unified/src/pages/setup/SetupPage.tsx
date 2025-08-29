@@ -56,7 +56,7 @@ export const SetupPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -65,12 +65,12 @@ export const SetupPage: React.FC = () => {
   // If setup is already complete, show redirect message
   if (isSetupComplete) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
             Setup Already Complete
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="mb-6 text-gray-600 dark:text-gray-400">
             Your organization is already configured. Redirecting...
           </p>
           <LoadingSpinner />
@@ -82,9 +82,9 @@ export const SetupPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-8 text-center">
+            <h1 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">
               Welcome to Nova Universe
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400">
@@ -95,7 +95,7 @@ export const SetupPage: React.FC = () => {
           <SetupWizard
             onComplete={handleSetupComplete}
             onCancel={handleSetupCancel}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl"
+            className="rounded-lg bg-white shadow-xl dark:bg-gray-800"
           />
         </div>
       </div>

@@ -479,7 +479,7 @@ export const useGuidedFlowStore = create<GuidedFlowState>((set, get) => ({
         error: _error instanceof Error ? _error.message : _error,
         timestamp: new Date().toISOString(),
       });
-      
+
       set({ error: 'Failed to load guided flows', isLoading: false });
     }
   },

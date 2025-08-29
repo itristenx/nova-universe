@@ -231,14 +231,17 @@ export function NovaSpacesDashboard({ className }: NovaSpacesProps) {
                 aria-label="Filter spaces by floor"
               >
                 <option value="">All Floors</option>
-                {Array.from(new Set(spaces
-                  .filter(s => !selectedBuilding || s.building === selectedBuilding)
-                  .map((s) => s.floor)))
-                  .map((floor) => (
-                    <option key={floor} value={floor}>
-                      Floor {floor}
-                    </option>
-                  ))}
+                {Array.from(
+                  new Set(
+                    spaces
+                      .filter((s) => !selectedBuilding || s.building === selectedBuilding)
+                      .map((s) => s.floor),
+                  ),
+                ).map((floor) => (
+                  <option key={floor} value={floor}>
+                    Floor {floor}
+                  </option>
+                ))}
               </select>
 
               <label htmlFor="type-select" className="sr-only">
@@ -347,8 +350,8 @@ export function NovaSpacesDashboard({ className }: NovaSpacesProps) {
               <CardBody>
                 {/* Bookings Overview */}
                 <div className="bookings-overview mb-6">
-                  <h3 className="text-lg font-semibold mb-4">Today's Bookings</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <h3 className="mb-4 text-lg font-semibold">Today's Bookings</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div className="stat-card">
                       <div className="stat-content">
                         <p className="stat-label">Total Bookings</p>
@@ -359,14 +362,18 @@ export function NovaSpacesDashboard({ className }: NovaSpacesProps) {
                     <div className="stat-card">
                       <div className="stat-content">
                         <p className="stat-label">Confirmed</p>
-                        <p className="stat-value">{bookings?.filter(b => b.status === 'confirmed')?.length || 0}</p>
+                        <p className="stat-value">
+                          {bookings?.filter((b) => b.status === 'confirmed')?.length || 0}
+                        </p>
                       </div>
                       <div className="status-indicator available"></div>
                     </div>
                     <div className="stat-card">
                       <div className="stat-content">
                         <p className="stat-label">Pending</p>
-                        <p className="stat-value">{bookings?.filter(b => b.status === 'pending')?.length || 0}</p>
+                        <p className="stat-value">
+                          {bookings?.filter((b) => b.status === 'pending')?.length || 0}
+                        </p>
                       </div>
                       <div className="status-indicator occupied"></div>
                     </div>
@@ -394,7 +401,7 @@ export function NovaSpacesDashboard({ className }: NovaSpacesProps) {
                 <CardTitle>Interactive Floor Plans</CardTitle>
               </CardHeader>
               <CardBody>
-                <SpaceFloorPlan 
+                <SpaceFloorPlan
                   buildingId={selectedBuilding || undefined}
                   floorId={selectedFloor || undefined}
                   onSpaceSelect={(spaceId) => {

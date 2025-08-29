@@ -258,9 +258,9 @@ export function RealTimeCollaboration({
           messages: [...prev.messages, newMsg],
           lastActivity: new Date(),
         }));
-        
+
         // Add notification for new message
-        setNotifications(prev => [...prev, newMsg.id]);
+        setNotifications((prev) => [...prev, newMsg.id]);
       }
     }, 3000);
 
@@ -427,9 +427,11 @@ export function RealTimeCollaboration({
                 <VideoCameraIcon className="h-4 w-4" />
               </button>
             )}
-            
+
             <button
-              onClick={() => {/* Audio call handler */}}
+              onClick={() => {
+                /* Audio call handler */
+              }}
               className="hover:text-nova-600 dark:hover:text-nova-400 rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
               title="Start audio call"
             >
@@ -445,7 +447,7 @@ export function RealTimeCollaboration({
                 <ShareIcon className="h-4 w-4" />
               </button>
             )}
-            
+
             <button
               onClick={() => setNotifications([])}
               className="hover:text-nova-600 dark:hover:text-nova-400 relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
@@ -592,7 +594,7 @@ export function RealTimeCollaboration({
                     </div>
                     {message.userId === currentUser.id && (
                       <button
-                        className="ml-auto opacity-0 group-hover:opacity-100 rounded p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-opacity"
+                        className="ml-auto rounded p-1 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-gray-600 dark:hover:text-gray-300"
                         title="Edit message"
                       >
                         <PencilIcon className="h-3 w-3" />

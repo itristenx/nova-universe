@@ -224,11 +224,7 @@ export default function MobileFeaturesDemo() {
 
               <MobileList>
                 {sampleTickets.map((ticket, index) => (
-                  <MobileCard 
-                    key={ticket.id} 
-                    padding="md"
-                    className="animate-fade-in-up"
-                  >
+                  <MobileCard key={ticket.id} padding="md" className="animate-fade-in-up">
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-medium text-gray-900 dark:text-white">

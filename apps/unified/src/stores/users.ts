@@ -116,7 +116,7 @@ export const useUserStore = create<UserState>()(
           error: error instanceof Error ? error.message : error,
           timestamp: new Date().toISOString(),
         });
-        
+
         toast.error('Failed to fetch user details');
         return null;
       }
@@ -224,7 +224,7 @@ export const useUserStore = create<UserState>()(
           error: error instanceof Error ? error.message : error,
           timestamp: new Date().toISOString(),
         });
-        
+
         toast.error('Failed to activate user');
         return false;
       }
@@ -248,7 +248,7 @@ export const useUserStore = create<UserState>()(
           error: error instanceof Error ? error.message : error,
           timestamp: new Date().toISOString(),
         });
-        
+
         toast.error('Failed to deactivate user');
         return false;
       }
@@ -266,7 +266,7 @@ export const useUserStore = create<UserState>()(
           error: error instanceof Error ? error.message : error,
           timestamp: new Date().toISOString(),
         });
-        
+
         toast.error('Failed to reset password');
         return null;
       }
@@ -282,7 +282,7 @@ export const useUserStore = create<UserState>()(
           error: error instanceof Error ? error.message : error,
           timestamp: new Date().toISOString(),
         });
-        
+
         toast.error('Failed to fetch roles');
       }
     },

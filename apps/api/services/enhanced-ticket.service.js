@@ -29,7 +29,7 @@ export class TicketService {
   static async getTickets(filters = {}, user) {
     try {
       const prismaClient = await getPrismaClient();
-      
+
       const {
         page = 1,
         limit = 25,

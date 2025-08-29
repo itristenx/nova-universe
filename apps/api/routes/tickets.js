@@ -313,7 +313,17 @@ router.put(
     body('description').optional().isString().trim().isLength({ min: 1 }),
     body('state')
       .optional()
-      .isIn(['NEW', 'ASSIGNED', 'IN_PROGRESS', 'PENDING', 'ON_HOLD', 'RESOLVED', 'CLOSED', 'CANCELLED', 'REOPENED']),
+      .isIn([
+        'NEW',
+        'ASSIGNED',
+        'IN_PROGRESS',
+        'PENDING',
+        'ON_HOLD',
+        'RESOLVED',
+        'CLOSED',
+        'CANCELLED',
+        'REOPENED',
+      ]),
     body('priority').optional().isIn(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
     body('assigneeId').optional().isString(),
     body('assignedGroupId').optional().isString(),
@@ -373,7 +383,11 @@ router.post(
   createRateLimit(60 * 1000, 60),
   [
     param('id').isString().withMessage('Ticket ID must be a string'),
-    body('content').isString().trim().isLength({ min: 1 }).withMessage('Comment content is required'),
+    body('content')
+      .isString()
+      .trim()
+      .isLength({ min: 1 })
+      .withMessage('Comment content is required'),
     body('isInternal').optional().isBoolean(),
   ],
   async (req, res) => {
@@ -417,27 +431,22 @@ router.post(
  * @description Get ticket statistics for dashboard
  * @access Protected
  */
-router.get(
-  '/stats',
-  authenticateJWT,
-  createRateLimit(60 * 1000, 60),
-  async (req, res) => {
-    try {
-      const stats = await TicketService.getTicketStats(req.user);
+router.get('/stats', authenticateJWT, createRateLimit(60 * 1000, 60), async (req, res) => {
+  try {
+    const stats = await TicketService.getTicketStats(req.user);
 
-      res.json({
-        success: true,
-        data: stats,
-      });
-    } catch (error) {
-      logger.error('Error fetching ticket stats:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch ticket statistics',
-        errorCode: 'STATS_FETCH_ERROR',
-      });
-    }
-  },
-);
+    res.json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    logger.error('Error fetching ticket stats:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch ticket statistics',
+      errorCode: 'STATS_FETCH_ERROR',
+    });
+  }
+});
 
 export default router;

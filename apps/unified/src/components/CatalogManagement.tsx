@@ -379,8 +379,10 @@ export default function CatalogManagement() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-500">Filtered by:</span>
                         <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                          {departmentCostCenters.find(d => d.department_name === selectedDepartment)?.department_name || selectedDepartment}
-                          <button 
+                          {departmentCostCenters.find(
+                            (d) => d.department_name === selectedDepartment,
+                          )?.department_name || selectedDepartment}
+                          <button
                             onClick={() => setSelectedDepartment('')}
                             className="ml-1 rounded-full p-0.5 hover:bg-blue-200"
                           >
@@ -412,42 +414,45 @@ export default function CatalogManagement() {
                   <div className="mt-6">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       {departmentCostCenters
-                        .filter(dept => !selectedDepartment || dept.department_name === selectedDepartment)
+                        .filter(
+                          (dept) =>
+                            !selectedDepartment || dept.department_name === selectedDepartment,
+                        )
                         .map((dept) => (
-                        <div key={dept.id} className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
-                          <div className="mb-2 flex items-center justify-between">
-                            <h4 className="font-semibold text-gray-900 dark:text-white">
-                              {dept.department_name}
-                            </h4>
-                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
-                              {dept.cost_center_code}
-                            </span>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600 dark:text-gray-400">
-                                Monthly Budget:
-                              </span>
-                              <span className="text-gray-900 dark:text-white">
-                                ${dept.monthly_budget.toLocaleString()}
+                          <div key={dept.id} className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+                            <div className="mb-2 flex items-center justify-between">
+                              <h4 className="font-semibold text-gray-900 dark:text-white">
+                                {dept.department_name}
+                              </h4>
+                              <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                                {dept.cost_center_code}
                               </span>
                             </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600 dark:text-gray-400">Utilized:</span>
-                              <span className="text-gray-900 dark:text-white">$0</span>
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">
+                                  Monthly Budget:
+                                </span>
+                                <span className="text-gray-900 dark:text-white">
+                                  ${dept.monthly_budget.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">Utilized:</span>
+                                <span className="text-gray-900 dark:text-white">$0</span>
+                              </div>
+                              <div className="h-2 w-full rounded-full bg-gray-200">
+                                <div className="h-2 w-0 rounded-full bg-blue-600"></div>
+                              </div>
+                              <button
+                                onClick={() => showDepartmentUsers(dept.department_name)}
+                                className="mt-2 w-full text-xs text-blue-600 hover:text-blue-700"
+                              >
+                                View Department Users
+                              </button>
                             </div>
-                            <div className="h-2 w-full rounded-full bg-gray-200">
-                              <div className="h-2 w-0 rounded-full bg-blue-600"></div>
-                            </div>
-                            <button
-                              onClick={() => showDepartmentUsers(dept.department_name)}
-                              className="mt-2 w-full text-xs text-blue-600 hover:text-blue-700"
-                            >
-                              View Department Users
-                            </button>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
                 </div>

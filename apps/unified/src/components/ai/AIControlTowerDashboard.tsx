@@ -417,11 +417,11 @@ export const AIControlTowerDashboard = () => {
                 </Box>
                 <Box display="flex" gap={1} mt={2}>
                   <Badge badgeContent={metrics.audit.highRiskEvents} color="error">
-                    <Chip 
-                      size="small" 
-                      label="High Risk" 
-                      color="error" 
-                      variant="outlined" 
+                    <Chip
+                      size="small"
+                      label="High Risk"
+                      color="error"
+                      variant="outlined"
                       icon={<WarningIcon />}
                     />
                   </Badge>

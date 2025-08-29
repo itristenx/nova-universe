@@ -94,17 +94,17 @@ export class IConnector {
     if (!config || typeof config !== 'object') {
       return { valid: false, errors: ['Config must be a valid object'] };
     }
-    
+
     const requiredFields = ['id', 'type'];
-    const missingFields = requiredFields.filter(field => !config[field]);
-    
+    const missingFields = requiredFields.filter((field) => !config[field]);
+
     if (missingFields.length > 0) {
-      return { 
-        valid: false, 
-        errors: [`Missing required fields: ${missingFields.join(', ')}`] 
+      return {
+        valid: false,
+        errors: [`Missing required fields: ${missingFields.join(', ')}`],
       };
     }
-    
+
     return { valid: true, errors: [] };
   }
 
@@ -732,7 +732,10 @@ export class NovaIntegrationLayer extends EventEmitter {
             const synthResult = await this.mergeProfilesWithSynth(primaryProfile, secondaryProfile);
             mergedData = synthResult || this.mergeProfileData(primaryProfile, secondaryProfile);
           } catch (synthError) {
-            this.logger.warn('Nova Synth merge failed, falling back to standard merge:', synthError.message);
+            this.logger.warn(
+              'Nova Synth merge failed, falling back to standard merge:',
+              synthError.message,
+            );
             mergedData = this.mergeProfileData(primaryProfile, secondaryProfile);
           }
           break;
@@ -1304,7 +1307,10 @@ export class NovaIntegrationLayer extends EventEmitter {
           const circuitBreakerModule = await import('opossum');
           CircuitBreaker = circuitBreakerModule.default;
         } catch (importError) {
-          this.logger.warn('Circuit breaker not available - continuing without fault tolerance:', importError.message);
+          this.logger.warn(
+            'Circuit breaker not available - continuing without fault tolerance:',
+            importError.message,
+          );
           return;
         }
       }

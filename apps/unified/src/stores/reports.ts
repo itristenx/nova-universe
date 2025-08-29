@@ -130,7 +130,8 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
         isLoading: false,
       });
     } catch (_error) {
-      const errorMessage = _error instanceof Error ? _error.message : 'Failed to load overview data';
+      const errorMessage =
+        _error instanceof Error ? _error.message : 'Failed to load overview data';
       set({
         error: errorMessage,
         isLoading: false,

@@ -35,22 +35,26 @@ This document outlines the comprehensive integration strategy to unify Nova-Sent
 ## Key Benefits
 
 ### 1. **Unified User Experience**
+
 - Single interface for all monitoring and alerting functions
 - Consistent design language and user workflows
 - Integrated dashboard with real-time updates
 
 ### 2. **Simplified Management**
+
 - One database to maintain and backup
 - Single authentication system
 - Unified configuration management
 
 ### 3. **Enhanced Functionality**
+
 - Cross-system alert correlation
 - Unified escalation policies
 - Integrated incident management
 - Real-time system health overview
 
 ### 4. **Operational Efficiency**
+
 - Reduced system complexity
 - Lower maintenance overhead
 - Faster incident response
@@ -59,24 +63,28 @@ This document outlines the comprehensive integration strategy to unify Nova-Sent
 ## Implementation Strategy
 
 ### Phase 1: Database Consolidation
+
 - [x] Create unified monitoring schema
 - [x] Migrate existing Uptime Kuma data
 - [x] Migrate existing GoAlert data
 - [x] Establish data relationships
 
 ### Phase 2: API Unification
+
 - [x] Create unified monitoring API endpoints
 - [x] Implement data transformation layers
 - [x] Add authentication and authorization
 - [x] Enable real-time updates
 
 ### Phase 3: UI Integration
+
 - [x] Build unified monitoring dashboard
 - [x] Integrate with existing Nova UI
 - [x] Add real-time monitoring widgets
 - [x] Implement alert management interface
 
 ### Phase 4: Legacy System Deprecation
+
 - [ ] Redirect legacy UIs to unified interface
 - [ ] Deprecate old API endpoints
 - [ ] Remove legacy database tables
@@ -87,6 +95,7 @@ This document outlines the comprehensive integration strategy to unify Nova-Sent
 ### Core Tables
 
 #### `monitors`
+
 Central table for all monitoring targets, regardless of source system.
 
 ```sql
@@ -109,6 +118,7 @@ CREATE TABLE monitors (
 ```
 
 #### `nova_alerts`
+
 Unified alert store that consolidates alerts from all sources.
 
 ```sql
@@ -129,6 +139,7 @@ CREATE TABLE nova_alerts (
 ```
 
 #### `monitor_incidents`
+
 Track and manage monitoring incidents with ticket integration.
 
 ```sql
@@ -158,6 +169,7 @@ CREATE TABLE monitor_incidents (
 ### Unified Monitoring API (v2)
 
 #### Monitor Management
+
 ```
 GET    /api/v2/monitoring/monitors          # List all monitors
 GET    /api/v2/monitoring/monitors/:id      # Get specific monitor
@@ -167,6 +179,7 @@ DELETE /api/v2/monitoring/monitors/:id      # Delete monitor
 ```
 
 #### Alert Management
+
 ```
 GET    /api/v2/monitoring/alerts            # List all alerts
 GET    /api/v2/monitoring/alerts/:id        # Get specific alert
@@ -175,6 +188,7 @@ POST   /api/v2/monitoring/alerts/:id/resolve # Resolve alert
 ```
 
 #### System Health
+
 ```
 GET    /api/v2/monitoring/system-health     # Overall system health
 GET    /api/v2/monitoring/oncall-schedules  # On-call schedules
@@ -182,7 +196,9 @@ GET    /api/v2/monitoring/maintenance       # Maintenance windows
 ```
 
 ### Legacy API Support (v1)
+
 Legacy endpoints remain available for backward compatibility:
+
 ```
 GET    /api/v1/uptime-kuma/monitors        # Legacy Uptime Kuma
 GET    /api/v1/goalert/alerts              # Legacy GoAlert
@@ -195,6 +211,7 @@ GET    /api/v1/goalert/alerts              # Legacy GoAlert
 The unified dashboard provides a comprehensive view of all monitoring and alerting functions:
 
 #### Overview Tab
+
 - System health metrics
 - Active monitor count
 - Alert summary
@@ -202,6 +219,7 @@ The unified dashboard provides a comprehensive view of all monitoring and alerti
 - Quick action buttons
 
 #### Monitors Tab
+
 - List all monitoring targets
 - Real-time status updates
 - Monitor configuration
@@ -209,6 +227,7 @@ The unified dashboard provides a comprehensive view of all monitoring and alerti
 - Maintenance scheduling
 
 #### Alerts Tab
+
 - Active and historical alerts
 - Severity-based filtering
 - Assignment and escalation
@@ -216,12 +235,14 @@ The unified dashboard provides a comprehensive view of all monitoring and alerti
 - Alert correlation
 
 #### On-Call Tab
+
 - Current on-call schedules
 - User assignments
 - Schedule management
 - Contact information
 
 #### Maintenance Tab
+
 - Scheduled maintenance windows
 - Affected services
 - Status tracking
@@ -230,6 +251,7 @@ The unified dashboard provides a comprehensive view of all monitoring and alerti
 ### Real-Time Updates
 
 The interface provides real-time updates through WebSocket connections:
+
 - Monitor status changes
 - New alert notifications
 - System health updates
@@ -302,6 +324,7 @@ REAL_TIME_UPDATES_ENABLED=true
 ### Service Configuration
 
 #### Nova-Sentinel Integration
+
 ```json
 {
   "service_name": "uptime_kuma",
@@ -315,6 +338,7 @@ REAL_TIME_UPDATES_ENABLED=true
 ```
 
 #### Nova-Alert Integration
+
 ```json
 {
   "service_name": "goalert",
@@ -430,6 +454,7 @@ If issues arise during deployment:
 ### Common Issues
 
 #### Database Connection Issues
+
 ```bash
 # Check database connectivity
 psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "SELECT 1;"
@@ -439,6 +464,7 @@ psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\du"
 ```
 
 #### API Endpoint Issues
+
 ```bash
 # Test API endpoints
 curl -H "Authorization: Bearer $TOKEN" \
@@ -449,6 +475,7 @@ tail -f logs/api.log
 ```
 
 #### Real-Time Update Issues
+
 ```bash
 # Check WebSocket connections
 netstat -an | grep :3000 | grep ESTABLISHED

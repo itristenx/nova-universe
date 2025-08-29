@@ -388,7 +388,10 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       const categories = await assetService.getCategories();
       set({ categories });
     } catch (_error) {
-      console.error('Failed to load asset categories:', _error instanceof Error ? _error.message : String(_error));
+      console.error(
+        'Failed to load asset categories:',
+        _error instanceof Error ? _error.message : String(_error),
+      );
     }
   },
 
@@ -397,7 +400,10 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       const types = await assetService.getTypes();
       set({ types });
     } catch (_error) {
-      console.error('Failed to load asset types:', _error instanceof Error ? _error.message : String(_error));
+      console.error(
+        'Failed to load asset types:',
+        _error instanceof Error ? _error.message : String(_error),
+      );
     }
   },
 
@@ -406,7 +412,10 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       const locations = await assetService.getLocations();
       set({ locations });
     } catch (_error) {
-      console.error('Failed to load asset locations:', _error instanceof Error ? _error.message : String(_error));
+      console.error(
+        'Failed to load asset locations:',
+        _error instanceof Error ? _error.message : String(_error),
+      );
     }
   },
 
@@ -416,7 +425,10 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       const records = await assetService.getMaintenanceRecords(assetId);
       set({ maintenanceRecords: records });
     } catch (_error) {
-      console.error('Failed to load maintenance records:', _error instanceof Error ? _error.message : String(_error));
+      console.error(
+        'Failed to load maintenance records:',
+        _error instanceof Error ? _error.message : String(_error),
+      );
     }
   },
 
@@ -426,7 +438,10 @@ export const useAssetStore = create<AssetState>((set, get) => ({
       const stats = await assetService.getAssetStats();
       set({ stats });
     } catch (_error) {
-      console.error('Failed to load asset stats:', _error instanceof Error ? _error.message : String(_error));
+      console.error(
+        'Failed to load asset stats:',
+        _error instanceof Error ? _error.message : String(_error),
+      );
     }
   },
 

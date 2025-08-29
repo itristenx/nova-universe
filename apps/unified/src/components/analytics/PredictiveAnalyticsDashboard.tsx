@@ -460,7 +460,7 @@ export function PredictiveAnalyticsDashboard({
           {predictions.map((prediction, index) => (
             <div
               key={prediction.id}
-              className={`dark:hover:bg-gray-750 cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50 dark:border-gray-700 opacity-0 animate-fade-in-delay-${index}`}
+              className={`dark:hover:bg-gray-750 cursor-pointer rounded-lg border border-gray-200 p-4 opacity-0 transition-colors hover:bg-gray-50 dark:border-gray-700 animate-fade-in-delay-${index}`}
               onClick={() => onPredictionClick?.(prediction)}
             >
               <div className="flex items-start gap-4">

@@ -123,58 +123,58 @@ export function SpaceSettings({
       try {
         // In real implementation, this would fetch data for the specific buildingId
         console.log(`Loading settings for building: ${buildingId}`);
-        
+
         const mockSpaces: SpaceConfiguration[] = [
-      {
-        id: 'meeting-001',
-        name: 'Conference Room A',
-        type: 'conference_room',
-        capacity: 8,
-        bookingEnabled: true,
-        autoApproval: true,
-        maxBookingDuration: 240,
-        advanceBookingDays: 30,
-        accessControl: 'public',
-        amenities: ['projector', 'whiteboard', 'video_conferencing'],
-        equipmentIds: ['proj-001', 'board-001', 'vc-001'],
-        sensors: {
-          occupancy: true,
-          temperature: true,
-          lighting: true,
-          airQuality: false,
-        },
-        notifications: {
-          bookingConfirmation: true,
-          capacityAlert: true,
-          maintenanceReminder: true,
-        },
-      },
-      {
-        id: 'desk-001',
-        name: 'Hot Desk Area',
-        type: 'hot_desk',
-        capacity: 20,
-        bookingEnabled: true,
-        autoApproval: false,
-        maxBookingDuration: 480,
-        advanceBookingDays: 7,
-        accessControl: 'restricted',
-        amenities: ['monitors', 'desk_phone', 'storage'],
-        equipmentIds: ['mon-001', 'phone-001'],
-        sensors: {
-          occupancy: true,
-          temperature: false,
-          lighting: false,
-          airQuality: true,
-        },
-        notifications: {
-          bookingConfirmation: true,
-          capacityAlert: false,
-          maintenanceReminder: false,
-        },
-      },
-    ];
-        
+          {
+            id: 'meeting-001',
+            name: 'Conference Room A',
+            type: 'conference_room',
+            capacity: 8,
+            bookingEnabled: true,
+            autoApproval: true,
+            maxBookingDuration: 240,
+            advanceBookingDays: 30,
+            accessControl: 'public',
+            amenities: ['projector', 'whiteboard', 'video_conferencing'],
+            equipmentIds: ['proj-001', 'board-001', 'vc-001'],
+            sensors: {
+              occupancy: true,
+              temperature: true,
+              lighting: true,
+              airQuality: false,
+            },
+            notifications: {
+              bookingConfirmation: true,
+              capacityAlert: true,
+              maintenanceReminder: true,
+            },
+          },
+          {
+            id: 'desk-001',
+            name: 'Hot Desk Area',
+            type: 'hot_desk',
+            capacity: 20,
+            bookingEnabled: true,
+            autoApproval: false,
+            maxBookingDuration: 480,
+            advanceBookingDays: 7,
+            accessControl: 'restricted',
+            amenities: ['monitors', 'desk_phone', 'storage'],
+            equipmentIds: ['mon-001', 'phone-001'],
+            sensors: {
+              occupancy: true,
+              temperature: false,
+              lighting: false,
+              airQuality: true,
+            },
+            notifications: {
+              bookingConfirmation: true,
+              capacityAlert: false,
+              maintenanceReminder: false,
+            },
+          },
+        ];
+
         setSpaceConfigs(mockSpaces);
       } catch (error) {
         console.error('Failed to load building settings:', error);
@@ -182,7 +182,7 @@ export function SpaceSettings({
         setIsLoading(false);
       }
     };
-    
+
     loadBuildingSettings();
   }, [buildingId]);
 
@@ -209,7 +209,10 @@ export function SpaceSettings({
       setHasChanges(false);
       onSettingsChange?.({ building: buildingSettings, spaces: spaceConfigs });
     } catch (_error) {
-      console.error('Failed to save settings:', _error instanceof Error ? _error.message : String(_error));
+      console.error(
+        'Failed to save settings:',
+        _error instanceof Error ? _error.message : String(_error),
+      );
     }
     setIsLoading(false);
   };

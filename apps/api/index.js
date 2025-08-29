@@ -269,13 +269,18 @@ import {
 if (process.env.UPTIME_KUMA_URL || process.env.ENABLE_UPTIME_KUMA === 'true') {
   logger.info('Uptime Kuma integration enabled, initializing WebSocket handler...');
   initializeUptimeKumaWebSocket().catch((error) => {
-    logger.warn('Uptime Kuma WebSocket handler not available (this is normal if Uptime Kuma is not running)', { 
-      error: error.message,
-      note: 'Set UPTIME_KUMA_URL or ENABLE_UPTIME_KUMA=true to enable this integration'
-    });
+    logger.warn(
+      'Uptime Kuma WebSocket handler not available (this is normal if Uptime Kuma is not running)',
+      {
+        error: error.message,
+        note: 'Set UPTIME_KUMA_URL or ENABLE_UPTIME_KUMA=true to enable this integration',
+      },
+    );
   });
 } else {
-  logger.info('Uptime Kuma integration disabled (set UPTIME_KUMA_URL or ENABLE_UPTIME_KUMA=true to enable)');
+  logger.info(
+    'Uptime Kuma integration disabled (set UPTIME_KUMA_URL or ENABLE_UPTIME_KUMA=true to enable)',
+  );
 }
 
 // Graceful shutdown handler

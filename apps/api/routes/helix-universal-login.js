@@ -149,10 +149,13 @@ router.post(
       // Fall back to default tenant if no specific tenant found
       if (!tenant) {
         // Development fallback: Only allow default tenant for known test emails or explicit requests
-        if (process.env.NODE_ENV === 'development' && 
-            (email === 'admin@novauniverse.com' || email === 'admin@example.com' || 
-             email === 'test@novauniverse.com' || email === 'admin@localhost')) {
-          
+        if (
+          process.env.NODE_ENV === 'development' &&
+          (email === 'admin@novauniverse.com' ||
+            email === 'admin@example.com' ||
+            email === 'test@novauniverse.com' ||
+            email === 'admin@localhost')
+        ) {
           const defaultResult = await db.query(
             'SELECT * FROM tenants WHERE domain = $1 AND active = true',
             ['localhost'],
@@ -172,7 +175,7 @@ router.post(
           return res.status(404).json({
             success: false,
             error: 'No tenant found for this email or domain',
-            code: 'TENANT_NOT_FOUND'
+            code: 'TENANT_NOT_FOUND',
           });
         }
       }

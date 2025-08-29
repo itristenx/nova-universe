@@ -332,7 +332,8 @@ export class AdvancedFeaturesService {
         });
       });
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown certificate check error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown certificate check error';
       throw new Error(`Certificate check failed: ${errorMessage}`);
     }
   }
@@ -435,11 +436,11 @@ export class AdvancedFeaturesService {
           tenantId,
         ])
       : await db.query('SELECT id, name, color FROM tags ORDER BY name');
-    return (res.rows || []).map((r: { id: string; name: string; color: string }) => ({ 
-      id: r.id, 
-      name: r.name, 
-      color: r.color, 
-      tenantId 
+    return (res.rows || []).map((r: { id: string; name: string; color: string }) => ({
+      id: r.id,
+      name: r.name,
+      color: r.color,
+      tenantId,
     }));
   }
 

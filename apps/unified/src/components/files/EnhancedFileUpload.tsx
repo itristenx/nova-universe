@@ -83,7 +83,7 @@ export function EnhancedFileUpload({
             context,
             timestamp: new Date().toISOString(),
           });
-          
+
           setErrors((prev) => [
             ...prev,
             `Failed to upload "${file.name}": ${_error instanceof Error ? _error.message : 'Unknown error'}`,
@@ -115,7 +115,7 @@ export function EnhancedFileUpload({
         error: _error instanceof Error ? _error.message : _error,
         timestamp: new Date().toISOString(),
       });
-      
+
       setErrors((prev) => [...prev, 'Failed to delete file']);
     }
   };

@@ -301,7 +301,7 @@ const AppCard: React.FC<AppCardProps> = ({
             )}
             {app.rating > 0 && (
               <span className="flex items-center gap-1">
-                <StarIcon className="h-3 w-3 text-yellow-400 fill-current" />
+                <StarIcon className="h-3 w-3 fill-current text-yellow-400" />
                 {app.rating.toFixed(1)}
               </span>
             )}
@@ -363,7 +363,7 @@ const AdvancedAppSwitcher: React.FC = () => {
             : 'grid',
         );
       }
-      
+
       // Use configRes for additional config if needed
       if (configRes.success && configRes.data) {
         // Additional config processing could go here
@@ -503,13 +503,15 @@ const AdvancedAppSwitcher: React.FC = () => {
             <div className="flex items-center gap-3">
               {/* Add App Button */}
               <button
-                onClick={() => {/* Add new app functionality */}}
+                onClick={() => {
+                  /* Add new app functionality */
+                }}
                 className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100"
                 title="Add new app"
               >
                 <PlusIcon className="h-5 w-5" />
               </button>
-              
+
               {/* Layout Toggle */}
               <div className="flex rounded-lg bg-gray-100 p-1">
                 <button
@@ -747,7 +749,7 @@ const AdvancedAppSwitcher: React.FC = () => {
             </div>
           )}
         </div>
-        
+
         {/* Config Footer (Development) */}
         {config.allow_custom_categories && (
           <div className="mt-8 text-center">

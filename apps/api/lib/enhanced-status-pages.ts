@@ -693,7 +693,8 @@ export class StatusPageService {
       const value = parseFloat(res?.rows?.[0]?.uptime ?? '0');
       return isFinite(value) ? value : 0;
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown uptime calculation error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown uptime calculation error';
       logger.warn('Uptime calculation fallback (db unavailable)', { error: errorMessage });
       return 0;
     }

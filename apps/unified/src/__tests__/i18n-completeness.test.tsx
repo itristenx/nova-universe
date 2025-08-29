@@ -13,28 +13,28 @@ describe('I18n Locale Completeness', () => {
     en: enLocale,
     es: esLocale,
     fr: frLocale,
-    ar: arLocale
+    ar: arLocale,
   };
 
   function getAllKeys(obj: any, prefix = ''): string[] {
     const keys: string[] = [];
-    
+
     for (const key in obj) {
       const currentKey = prefix ? `${prefix}.${key}` : key;
-      
+
       if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
         keys.push(...getAllKeys(obj[key], currentKey));
       } else {
         keys.push(currentKey);
       }
     }
-    
+
     return keys;
   }
 
   function findMissingKeys(sourceKeys: string[], targetObj: any): string[] {
     const targetKeys = getAllKeys(targetObj);
-    return sourceKeys.filter(key => !targetKeys.includes(key));
+    return sourceKeys.filter((key) => !targetKeys.includes(key));
   }
 
   function getValueByPath(obj: any, path: string): any {
@@ -59,7 +59,7 @@ describe('I18n Locale Completeness', () => {
         console.log('Missing keys by locale:');
         Object.entries(results).forEach(([locale, keys]) => {
           console.log(`${locale}: ${keys.length} missing keys`);
-          keys.slice(0, 10).forEach(key => console.log(`  - ${key}`));
+          keys.slice(0, 10).forEach((key) => console.log(`  - ${key}`));
           if (keys.length > 10) {
             console.log(`  ... and ${keys.length - 10} more`);
           }
@@ -77,7 +77,7 @@ describe('I18n Locale Completeness', () => {
       Object.entries(locales).forEach(([locale, data]) => {
         if (locale !== 'en') {
           const currentKeys = getAllKeys(data);
-          const extraKeys = currentKeys.filter(key => !englishKeys.includes(key));
+          const extraKeys = currentKeys.filter((key) => !englishKeys.includes(key));
           if (extraKeys.length > 0) {
             results[locale] = extraKeys;
           }
@@ -88,7 +88,7 @@ describe('I18n Locale Completeness', () => {
         console.log('Extra keys by locale:');
         Object.entries(results).forEach(([locale, keys]) => {
           console.log(`${locale}: ${keys.length} extra keys`);
-          keys.forEach(key => console.log(`  + ${key}`));
+          keys.forEach((key) => console.log(`  + ${key}`));
         });
       }
 
@@ -102,7 +102,7 @@ describe('I18n Locale Completeness', () => {
 
       Object.entries(locales).forEach(([locale, data]) => {
         const keys = getAllKeys(data);
-        const emptyKeys = keys.filter(key => {
+        const emptyKeys = keys.filter((key) => {
           const value = getValueByPath(data, key);
           return value === '' || (typeof value === 'string' && value.trim() === '');
         });
@@ -116,7 +116,7 @@ describe('I18n Locale Completeness', () => {
         console.log('Empty translations by locale:');
         Object.entries(emptyTranslations).forEach(([locale, keys]) => {
           console.log(`${locale}: ${keys.length} empty translations`);
-          keys.forEach(key => console.log(`  - ${key}`));
+          keys.forEach((key) => console.log(`  - ${key}`));
         });
       }
 
@@ -127,18 +127,18 @@ describe('I18n Locale Completeness', () => {
       const inconsistentPlaceholders: Record<string, any[]> = {};
       const englishKeys = getAllKeys(enLocale);
 
-      englishKeys.forEach(key => {
+      englishKeys.forEach((key) => {
         const enValue = getValueByPath(enLocale, key);
         if (typeof enValue === 'string') {
           const enPlaceholders = (enValue.match(/\{\{[^}]+\}\}/g) || []).sort();
-          
+
           if (enPlaceholders.length > 0) {
             Object.entries(locales).forEach(([locale, data]) => {
               if (locale !== 'en') {
                 const localeValue = getValueByPath(data, key);
                 if (typeof localeValue === 'string') {
                   const localePlaceholders = (localeValue.match(/\{\{[^}]+\}\}/g) || []).sort();
-                  
+
                   if (JSON.stringify(enPlaceholders) !== JSON.stringify(localePlaceholders)) {
                     if (!inconsistentPlaceholders[locale]) {
                       inconsistentPlaceholders[locale] = [];
@@ -148,7 +148,7 @@ describe('I18n Locale Completeness', () => {
                       en: enPlaceholders,
                       locale: localePlaceholders,
                       enValue,
-                      localeValue
+                      localeValue,
                     });
                   }
                 }
@@ -162,9 +162,11 @@ describe('I18n Locale Completeness', () => {
         console.log('Inconsistent placeholders by locale:');
         Object.entries(inconsistentPlaceholders).forEach(([locale, issues]) => {
           console.log(`${locale}: ${issues.length} inconsistent placeholders`);
-          issues.slice(0, 5).forEach(issue => {
+          issues.slice(0, 5).forEach((issue) => {
             console.log(`  - ${issue.key}:`);
-            console.log(`    EN: ${JSON.stringify(issue.en)} | ${locale}: ${JSON.stringify(issue.locale)}`);
+            console.log(
+              `    EN: ${JSON.stringify(issue.en)} | ${locale}: ${JSON.stringify(issue.locale)}`,
+            );
           });
         });
       }
@@ -180,7 +182,10 @@ describe('I18n Locale Completeness', () => {
 
       Object.entries(locales).forEach(([locale, data]) => {
         if (locale !== 'en' && data.auth) {
-          const missingKeys = findMissingKeys(authKeys.map(k => `auth.${k}`), { auth: data.auth });
+          const missingKeys = findMissingKeys(
+            authKeys.map((k) => `auth.${k}`),
+            { auth: data.auth },
+          );
           if (missingKeys.length > 0) {
             missingAuth[locale] = missingKeys;
           }
@@ -196,7 +201,10 @@ describe('I18n Locale Completeness', () => {
 
       Object.entries(locales).forEach(([locale, data]) => {
         if (locale !== 'en' && data.app) {
-          const missingKeys = findMissingKeys(appKeys.map(k => `app.${k}`), { app: data.app });
+          const missingKeys = findMissingKeys(
+            appKeys.map((k) => `app.${k}`),
+            { app: data.app },
+          );
           if (missingKeys.length > 0) {
             missingApp[locale] = missingKeys;
           }
@@ -213,7 +221,10 @@ describe('I18n Locale Completeness', () => {
 
         Object.entries(locales).forEach(([locale, data]) => {
           if (locale !== 'en' && data.navigation) {
-            const missingKeys = findMissingKeys(navKeys.map(k => `navigation.${k}`), { navigation: data.navigation });
+            const missingKeys = findMissingKeys(
+              navKeys.map((k) => `navigation.${k}`),
+              { navigation: data.navigation },
+            );
             if (missingKeys.length > 0) {
               missingNav[locale] = missingKeys;
             }

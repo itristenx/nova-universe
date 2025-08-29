@@ -43,7 +43,9 @@ const EnhancedDeepWorkMode = lazy(() => import('@pages/deepwork/EnhancedDeepWork
 const EnhancedQueueManagement = lazy(() => import('@pages/queue/EnhancedQueueManagement'));
 
 // Unified Monitoring pages
-const UnifiedMonitoringDashboard = lazy(() => import('@pages/monitoring/UnifiedMonitoringDashboard'));
+const UnifiedMonitoringDashboard = lazy(
+  () => import('@pages/monitoring/UnifiedMonitoringDashboard'),
+);
 
 // Communication pages
 const EnhancedCommunicationHub = lazy(

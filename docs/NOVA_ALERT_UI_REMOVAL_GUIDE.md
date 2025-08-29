@@ -1,11 +1,13 @@
 # Nova-Alert (GoAlert) UI Removal Guide
 
 ## 🎯 **Objective**
+
 This guide provides step-by-step instructions for safely removing the Nova-Alert native UI after confirming 100% feature parity has been achieved in the unified Nova platform.
 
 ## ⚠️ **Prerequisites**
 
 ### 1. **Feature Parity Verification**
+
 - ✅ All GoAlert features are working in the unified system
 - ✅ Service management is fully functional
 - ✅ Integration keys are working correctly
@@ -16,12 +18,14 @@ This guide provides step-by-step instructions for safely removing the Nova-Alert
 - ✅ Alert metrics are accessible
 
 ### 2. **System Requirements**
+
 - Unified monitoring API is running and accessible
 - Unified monitoring UI is accessible at `/monitoring`
 - All GoAlert API endpoints are responding correctly
 - Database migration has been completed successfully
 
 ### 3. **Backup Requirements**
+
 - Full backup of Nova-Alert directory
 - Database backup completed
 - Configuration files backed up
@@ -38,6 +42,7 @@ Run the automated verification script to ensure everything is working:
 ```
 
 The script will:
+
 - Check prerequisites
 - Verify all API endpoints
 - Confirm unified system accessibility
@@ -72,6 +77,7 @@ Run the removal script:
 ```
 
 **What the script removes:**
+
 - Web UI source files (`web/`)
 - UI build files (`dist/`, `build/`)
 - UI configuration files
@@ -81,6 +87,7 @@ Run the removal script:
 - UI documentation
 
 **What the script preserves:**
+
 - Core GoAlert functionality
 - Database schemas and data
 - API endpoints and logic
@@ -93,11 +100,13 @@ Run the removal script:
 After removal, verify that:
 
 1. **Unified API is working:**
+
    ```bash
    curl -f "http://localhost:3000/api/v2/monitoring/services"
    ```
 
 2. **Unified UI is accessible:**
+
    ```bash
    curl -f "http://localhost:3000/monitoring"
    ```
@@ -113,17 +122,20 @@ After removal, verify that:
 ## 📁 **What Gets Removed**
 
 ### **UI Source Files**
+
 - `apps/nova-alert/web/` - Complete React/GraphQL frontend
 - `apps/nova-alert/dist/` - Built UI files
 - `apps/nova-alert/build/` - Build artifacts
 
 ### **UI Configuration**
+
 - `esbuild.config.js` - Build configuration
 - `cypress.config.js` - Testing configuration
 - `playwright.config.ts` - E2E testing
 - `.storybook/` - Component documentation
 
 ### **UI Dependencies**
+
 - React ecosystem (react, react-dom, react-redux)
 - GraphQL clients (@apollo/client, urql)
 - Material-UI components
@@ -131,6 +143,7 @@ After removal, verify that:
 - Testing frameworks (cypress, playwright)
 
 ### **UI Scripts**
+
 - `dev` - Development server
 - `build` - Production build
 - `cypress` - Testing
@@ -139,6 +152,7 @@ After removal, verify that:
 ## 🔒 **What Gets Preserved**
 
 ### **Core Functionality**
+
 - Service management and configuration
 - Integration key generation and management
 - Heartbeat monitor functionality
@@ -149,6 +163,7 @@ After removal, verify that:
 - Alert metrics and analytics
 
 ### **Data and Configuration**
+
 - Database schemas and existing data
 - API endpoints and business logic
 - Configuration files and settings
@@ -156,6 +171,7 @@ After removal, verify that:
 - User permissions and roles
 
 ### **Backend Services**
+
 - Go-based alerting engine
 - Notification delivery system
 - Database connections and queries
@@ -165,13 +181,16 @@ After removal, verify that:
 ## 🔄 **Backup and Rollback**
 
 ### **Automatic Backup**
+
 The removal script creates:
+
 - Full directory backup in `backups/nova-alert-ui-YYYYMMDD-HHMMSS/`
 - Original `package.json` backup
 - Detailed removal summary
 - Log file with all actions
 
 ### **Manual Rollback**
+
 If rollback is needed:
 
 ```bash
@@ -188,6 +207,7 @@ npm run dev
 ```
 
 ### **Database Rollback**
+
 If database changes need reversal:
 
 ```bash
@@ -198,6 +218,7 @@ pg_restore -d nova_universe backups/nova-alert-db-YYYYMMDD-HHMMSS.sql
 ## 🧪 **Testing Checklist**
 
 ### **Service Management**
+
 - [ ] Create new service
 - [ ] Edit existing service
 - [ ] Delete service
@@ -206,6 +227,7 @@ pg_restore -d nova_universe backups/nova-alert-db-YYYYMMDD-HHMMSS.sql
 - [ ] Update service status
 
 ### **Integration Keys**
+
 - [ ] Generate new integration key
 - [ ] Configure key settings
 - [ ] Test key functionality
@@ -213,6 +235,7 @@ pg_restore -d nova_universe backups/nova-alert-db-YYYYMMDD-HHMMSS.sql
 - [ ] Delete integration key
 
 ### **Heartbeat Monitors**
+
 - [ ] Create heartbeat monitor
 - [ ] Configure health checks
 - [ ] Test monitor functionality
@@ -220,6 +243,7 @@ pg_restore -d nova_universe backups/nova-alert-db-YYYYMMDD-HHMMSS.sql
 - [ ] Delete monitor
 
 ### **Escalation Policies**
+
 - [ ] Create escalation policy
 - [ ] Add escalation steps
 - [ ] Configure timeouts
@@ -227,6 +251,7 @@ pg_restore -d nova_universe backups/nova-alert-db-YYYYMMDD-HHMMSS.sql
 - [ ] Update policy settings
 
 ### **Schedule Management**
+
 - [ ] Create schedule
 - [ ] Add schedule overrides
 - [ ] Configure rotations
@@ -234,6 +259,7 @@ pg_restore -d nova_universe backups/nova-alert-db-YYYYMMDD-HHMMSS.sql
 - [ ] Update schedule settings
 
 ### **Service Operations**
+
 - [ ] Create service notice
 - [ ] Update service labels
 - [ ] Manage service dependencies
@@ -243,23 +269,27 @@ pg_restore -d nova_universe backups/nova-alert-db-YYYYMMDD-HHMMSS.sql
 ## 📊 **Success Indicators**
 
 ### **API Endpoints**
+
 - All `/api/v2/monitoring/*` endpoints respond correctly
 - No 404 or 500 errors on GoAlert-specific routes
 - Response times are acceptable (< 200ms)
 
 ### **UI Functionality**
+
 - Unified dashboard loads without errors
 - All GoAlert features are accessible
 - No broken links or missing functionality
 - Real-time updates work correctly
 
 ### **Data Integrity**
+
 - All existing services are accessible
 - Integration keys work correctly
 - Escalation policies function properly
 - Schedule overrides are applied correctly
 
 ### **Performance**
+
 - No significant performance degradation
 - Database queries are optimized
 - Real-time updates are responsive
@@ -270,6 +300,7 @@ pg_restore -d nova_universe backups/nova-alert-db-YYYYMMDD-HHMMSS.sql
 ### **Common Issues**
 
 #### **API Endpoints Not Working**
+
 ```bash
 # Check if unified monitoring router is loaded
 grep -r "unifiedMonitoringRouter" apps/api/
@@ -279,6 +310,7 @@ cat apps/api/index.js | grep -A 5 -B 5 "monitoring"
 ```
 
 #### **UI Not Accessible**
+
 ```bash
 # Check if route is configured in App.tsx
 grep -r "UnifiedMonitoringDashboard" apps/unified/src/
@@ -288,6 +320,7 @@ cat apps/unified/src/App.tsx | grep -A 3 -B 3 "monitoring"
 ```
 
 #### **Missing Dependencies**
+
 ```bash
 # Reinstall dependencies
 cd apps/nova-alert
@@ -309,21 +342,25 @@ npm list --depth=0
 ## 📈 **Post-Removal Benefits**
 
 ### **Unified Experience**
+
 - Single interface for all monitoring and alerting
 - Consistent user experience across features
 - Integrated workflows and processes
 
 ### **Maintenance Efficiency**
+
 - Single codebase to maintain
 - Unified testing and deployment
 - Consistent error handling and logging
 
 ### **Performance Improvements**
+
 - Reduced resource usage
 - Optimized database queries
 - Faster response times
 
 ### **Security Enhancements**
+
 - Unified authentication system
 - Consistent permission model
 - Centralized audit logging
@@ -331,6 +368,7 @@ npm list --depth=0
 ## 🔮 **Future Enhancements**
 
 ### **Planned Improvements**
+
 - Enhanced real-time notifications
 - Advanced analytics and reporting
 - Mobile-responsive design
@@ -338,6 +376,7 @@ npm list --depth=0
 - Customizable dashboards
 
 ### **Integration Opportunities**
+
 - Additional monitoring tools
 - Third-party service integrations
 - Advanced automation workflows
@@ -346,15 +385,18 @@ npm list --depth=0
 ## 📞 **Support and Resources**
 
 ### **Documentation**
+
 - [Unified Monitoring Integration Guide](UNIFIED_MONITORING_INTEGRATION.md)
 - [Nova-Alert Feature Parity Checklist](NOVA_ALERT_FEATURE_PARITY_CHECKLIST.md)
 - [Quick Start Guide](UNIFIED_MONITORING_QUICK_START.md)
 
 ### **Scripts and Tools**
+
 - `scripts/remove-nova-alert-ui.sh` - Automated removal script
 - `scripts/unified-monitoring-integration.sh` - Integration setup script
 
 ### **Verification Tools**
+
 - API endpoint testing scripts
 - Feature parity checklists
 - Performance monitoring tools
@@ -377,6 +419,7 @@ npm list --depth=0
 You have successfully removed the Nova-Alert native UI and achieved a fully unified Nova platform. All GoAlert functionality is now available through the unified interface, providing a seamless experience for users and developers alike.
 
 The unified platform now offers:
+
 - **Single interface** for all monitoring and alerting needs
 - **Consistent API** for all operations
 - **Unified authentication** and permissions

@@ -784,7 +784,7 @@ export class AIControlTowerService extends EventEmitter {
   async createClassificationModel(config) {
     // Note: TensorFlow.js functionality temporarily disabled
     logger.warn('TensorFlow.js models temporarily disabled');
-    
+
     // Use config parameters to create comprehensive model configuration
     const modelConfig = {
       type: 'classification',
@@ -799,27 +799,27 @@ export class AIControlTowerService extends EventEmitter {
       validationSplit: config?.validationSplit || 0.2,
       earlyStopping: config?.earlyStopping || true,
       regularization: config?.regularization || 'l2',
-      dropoutRate: config?.dropoutRate || 0.3
+      dropoutRate: config?.dropoutRate || 0.3,
     };
-    
+
     logger.info('Classification model config created:', modelConfig);
-    
+
     // Store model configuration for future use
     await this.storeModelConfiguration('classification', modelConfig);
-    
-    return { 
-      modelType: 'classification', 
+
+    return {
+      modelType: 'classification',
       config: modelConfig,
       status: 'configured',
       createdAt: new Date().toISOString(),
-      id: `class_${Date.now()}`
+      id: `class_${Date.now()}`,
     };
   }
 
   async createRegressionModel(config) {
     // Note: TensorFlow.js functionality temporarily disabled
     logger.warn('TensorFlow.js models temporarily disabled');
-    
+
     // Use config parameters to create comprehensive regression model configuration
     const modelConfig = {
       type: 'regression',
@@ -834,27 +834,27 @@ export class AIControlTowerService extends EventEmitter {
       epochs: config?.epochs || 100,
       validationSplit: config?.validationSplit || 0.2,
       earlyStopping: config?.earlyStopping || true,
-      regularization: config?.regularization || 'l2'
+      regularization: config?.regularization || 'l2',
     };
-    
+
     logger.info('Regression model config created:', modelConfig);
-    
+
     // Store model configuration for future use
     await this.storeModelConfiguration('regression', modelConfig);
-    
-    return { 
-      modelType: 'regression', 
+
+    return {
+      modelType: 'regression',
       config: modelConfig,
       status: 'configured',
       createdAt: new Date().toISOString(),
-      id: `reg_${Date.now()}`
+      id: `reg_${Date.now()}`,
     };
   }
 
   async createNLPModel(config) {
     // Note: TensorFlow.js functionality temporarily disabled
     logger.warn('TensorFlow.js models temporarily disabled');
-    
+
     // Use config parameters to create comprehensive NLP model configuration
     const modelConfig = {
       type: 'nlp',
@@ -869,20 +869,20 @@ export class AIControlTowerService extends EventEmitter {
       epochs: config?.epochs || 50,
       validationSplit: config?.validationSplit || 0.2,
       earlyStopping: config?.earlyStopping || true,
-      recurrentDropout: config?.recurrentDropout || 0.2
+      recurrentDropout: config?.recurrentDropout || 0.2,
     };
-    
+
     logger.info('NLP model config created:', modelConfig);
-    
+
     // Store model configuration for future use
     await this.storeModelConfiguration('nlp', modelConfig);
-    
-    return { 
-      modelType: 'nlp', 
+
+    return {
+      modelType: 'nlp',
       config: modelConfig,
       status: 'configured',
       createdAt: new Date().toISOString(),
-      id: `nlp_${Date.now()}`
+      id: `nlp_${Date.now()}`,
     };
   }
 
@@ -891,11 +891,11 @@ export class AIControlTowerService extends EventEmitter {
     try {
       // In a real implementation, this would store to database
       logger.info(`Storing ${type} model configuration`);
-      
+
       // For now, just log the configuration
       this.modelConfigurations = this.modelConfigurations || {};
       this.modelConfigurations[type] = config;
-      
+
       logger.info('Model configuration stored successfully');
     } catch (error) {
       logger.error('Failed to store model configuration:', error);
@@ -956,12 +956,14 @@ export class AIControlTowerService extends EventEmitter {
     // Note: TensorFlow.js functionality temporarily disabled, using placeholder arrays
     const xs = Array(numSamples)
       .fill(null)
-      .map(() => 
-        Array(inputDim).fill(0).map(() => Math.random() * 2 - 1)
+      .map(() =>
+        Array(inputDim)
+          .fill(0)
+          .map(() => Math.random() * 2 - 1),
       );
-    const ys = Array(numSamples).fill(0).map(() => 
-      Math.floor(Math.random() * (config.numClasses || 2))
-    );
+    const ys = Array(numSamples)
+      .fill(0)
+      .map(() => Math.floor(Math.random() * (config.numClasses || 2)));
 
     return { xs, ys };
   }

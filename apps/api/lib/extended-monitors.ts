@@ -308,7 +308,8 @@ export class ExtendedMonitorService {
         },
       };
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown Docker container error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown Docker container error';
       return {
         success: false,
         responseTime: Date.now() - startTime,

@@ -257,7 +257,7 @@ export const useDashboardStore = create<DashboardState>()(
             error: _error instanceof Error ? _error.message : _error,
             timestamp: new Date().toISOString(),
           });
-          
+
           // Revert on error
           set({ widgets });
           toast.error('Failed to save widget position');
@@ -283,7 +283,7 @@ export const useDashboardStore = create<DashboardState>()(
             error: _error instanceof Error ? _error.message : _error,
             timestamp: new Date().toISOString(),
           });
-          
+
           set({ error: 'Failed to save dashboard layout' });
           toast.error('Failed to save dashboard layout');
         }
@@ -308,7 +308,7 @@ export const useDashboardStore = create<DashboardState>()(
             error: _error instanceof Error ? _error.message : _error,
             timestamp: new Date().toISOString(),
           });
-          
+
           set({ error: 'Failed to update dashboard layout' });
           toast.error('Failed to update dashboard layout');
         }
@@ -335,7 +335,7 @@ export const useDashboardStore = create<DashboardState>()(
             error: _error instanceof Error ? _error.message : _error,
             timestamp: new Date().toISOString(),
           });
-          
+
           set({ error: 'Failed to delete dashboard layout' });
           toast.error('Failed to delete dashboard layout');
         }
@@ -356,7 +356,7 @@ export const useDashboardStore = create<DashboardState>()(
             error: _error instanceof Error ? _error.message : _error,
             timestamp: new Date().toISOString(),
           });
-          
+
           set({ error: 'Failed to duplicate dashboard layout' });
           toast.error('Failed to duplicate dashboard layout');
         }
@@ -381,7 +381,7 @@ export const useDashboardStore = create<DashboardState>()(
             error: _error instanceof Error ? _error.message : _error,
             timestamp: new Date().toISOString(),
           });
-          
+
           set({ error: 'Failed to create dashboard from template' });
           toast.error('Failed to create dashboard from template');
         }
@@ -425,7 +425,7 @@ export const useDashboardStore = create<DashboardState>()(
             error: error instanceof Error ? error.message : error,
             timestamp: new Date().toISOString(),
           });
-          
+
           toast.error('Failed to start collaboration');
         }
       },
@@ -447,7 +447,7 @@ export const useDashboardStore = create<DashboardState>()(
             error: error instanceof Error ? error.message : error,
             timestamp: new Date().toISOString(),
           });
-          
+
           toast.error('Failed to stop collaboration');
         }
       },

@@ -66,15 +66,15 @@ class DatabaseFactory {
         if (postgresManager) {
           await this.initializePostgreSQL();
         }
-        
+
         if (PostgreSQLManager && this.authDb) {
           await this.initializeAuthPostgreSQL();
         }
-        
+
         if (mongoManager && process.env.MONGO_ENABLED === 'true') {
           await this.initializeMongoDB();
         }
-        
+
         if (this.availableDatabases.size === 0) {
           const allowDegraded =
             process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development';

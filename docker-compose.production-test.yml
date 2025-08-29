@@ -28,7 +28,8 @@ services:
     networks:
       - nova-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-nova_admin} -d ${POSTGRES_DB:-nova_universe}']
+      test:
+        ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-nova_admin} -d ${POSTGRES_DB:-nova_universe}']
       interval: 10s
       timeout: 5s
       retries: 5

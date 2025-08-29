@@ -8,15 +8,15 @@ test.describe('Database Connectivity and Integration Tests', () => {
 
   test.beforeAll(async () => {
     dbHelper = new DatabaseTestHelper();
-    
+
     // Test database connection
     await dbHelper.testConnection();
-    
+
     // Get authentication token for API tests
     try {
       authToken = await testHelper.authenticateUser(
         process.env.TEST_USER_EMAIL || 'admin@nova.com',
-        process.env.TEST_USER_PASSWORD || 'admin123'
+        process.env.TEST_USER_PASSWORD || 'admin123',
       );
     } catch (error) {
       console.log('Could not authenticate user for API tests:', error);
@@ -35,13 +35,19 @@ test.describe('Database Connectivity and Integration Tests', () => {
 
     test('should validate database schema exists', async () => {
       const tables = await dbHelper.getTableList();
-      
+
       // Verify core tables exist
       const expectedTables = [
-        'users', 'tickets', 'assets', 'organizations', 
-        'categories', 'comments', 'attachments', 'audit_logs'
+        'users',
+        'tickets',
+        'assets',
+        'organizations',
+        'categories',
+        'comments',
+        'attachments',
+        'audit_logs',
       ];
-      
+
       for (const table of expectedTables) {
         expect(tables).toContain(table);
       }
@@ -49,27 +55,29 @@ test.describe('Database Connectivity and Integration Tests', () => {
 
     test('should have proper database indexes', async () => {
       const indexes = await dbHelper.getIndexes();
-      
+
       // Verify critical indexes exist for performance
-      expect(indexes.some(idx => idx.table === 'tickets' && idx.column === 'status')).toBe(true);
-      expect(indexes.some(idx => idx.table === 'tickets' && idx.column === 'priority')).toBe(true);
-      expect(indexes.some(idx => idx.table === 'users' && idx.column === 'email')).toBe(true);
-      expect(indexes.some(idx => idx.table === 'assets' && idx.column === 'status')).toBe(true);
+      expect(indexes.some((idx) => idx.table === 'tickets' && idx.column === 'status')).toBe(true);
+      expect(indexes.some((idx) => idx.table === 'tickets' && idx.column === 'priority')).toBe(
+        true,
+      );
+      expect(indexes.some((idx) => idx.table === 'users' && idx.column === 'email')).toBe(true);
+      expect(indexes.some((idx) => idx.table === 'assets' && idx.column === 'status')).toBe(true);
     });
 
     test('should validate foreign key constraints', async () => {
       const constraints = await dbHelper.getForeignKeyConstraints();
-      
+
       // Verify critical relationships
-      expect(constraints.some(fk => 
-        fk.table === 'tickets' && fk.referencedTable === 'users'
-      )).toBe(true);
-      expect(constraints.some(fk => 
-        fk.table === 'tickets' && fk.referencedTable === 'categories'
-      )).toBe(true);
-      expect(constraints.some(fk => 
-        fk.table === 'assets' && fk.referencedTable === 'organizations'
-      )).toBe(true);
+      expect(
+        constraints.some((fk) => fk.table === 'tickets' && fk.referencedTable === 'users'),
+      ).toBe(true);
+      expect(
+        constraints.some((fk) => fk.table === 'tickets' && fk.referencedTable === 'categories'),
+      ).toBe(true);
+      expect(
+        constraints.some((fk) => fk.table === 'assets' && fk.referencedTable === 'organizations'),
+      ).toBe(true);
     });
   });
 
@@ -80,7 +88,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
         firstName: 'Test',
         lastName: 'User',
         role: 'USER',
-        status: 'ACTIVE'
+        status: 'ACTIVE',
       };
 
       // Create user via database
@@ -100,13 +108,13 @@ test.describe('Database Connectivity and Integration Tests', () => {
       // Create test organization and category first
       const orgId = await dbHelper.createOrganization({
         name: `Test Org ${Date.now()}`,
-        description: 'Test organization'
+        description: 'Test organization',
       });
 
       const categoryId = await dbHelper.createCategory({
         name: `Test Category ${Date.now()}`,
         description: 'Test category',
-        organizationId: orgId
+        organizationId: orgId,
       });
 
       const testTicket = {
@@ -115,7 +123,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
         priority: 'MEDIUM',
         status: 'OPEN',
         categoryId,
-        organizationId: orgId
+        organizationId: orgId,
       };
 
       // Create ticket
@@ -130,7 +138,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
       // Add comment
       const commentId = await dbHelper.addTicketComment(ticketId, {
         content: 'Test comment',
-        userId: updatedTicket.assigneeId || updatedTicket.reporterId
+        userId: updatedTicket.assigneeId || updatedTicket.reporterId,
       });
       expect(commentId).toBeTruthy();
 
@@ -143,7 +151,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
     test('should handle asset management', async () => {
       const orgId = await dbHelper.createOrganization({
         name: `Asset Test Org ${Date.now()}`,
-        description: 'Test organization for assets'
+        description: 'Test organization for assets',
       });
 
       const testAsset = {
@@ -151,7 +159,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
         type: 'HARDWARE',
         status: 'ACTIVE',
         serialNumber: `SN-${Date.now()}`,
-        organizationId: orgId
+        organizationId: orgId,
       };
 
       // Create asset
@@ -172,23 +180,23 @@ test.describe('Database Connectivity and Integration Tests', () => {
   test.describe('Database Performance Tests', () => {
     test('should handle large dataset queries efficiently', async () => {
       const startTime = Date.now();
-      
+
       // Query large dataset (assuming test data exists)
       const tickets = await dbHelper.getTicketsPaginated(1, 100);
-      
+
       const queryTime = Date.now() - startTime;
-      
+
       // Query should complete within reasonable time
       expect(queryTime).toBeLessThan(2000); // 2 seconds
       expect(tickets).toBeDefined();
-      
+
       console.log(`Large dataset query completed in ${queryTime}ms`);
     });
 
     test('should handle concurrent operations', async () => {
       const orgId = await dbHelper.createOrganization({
         name: `Concurrent Test Org ${Date.now()}`,
-        description: 'Test organization for concurrent operations'
+        description: 'Test organization for concurrent operations',
       });
 
       // Create multiple tickets concurrently
@@ -198,8 +206,8 @@ test.describe('Database Connectivity and Integration Tests', () => {
           description: `Test ticket ${i}`,
           priority: 'MEDIUM',
           status: 'OPEN',
-          organizationId: orgId
-        })
+          organizationId: orgId,
+        }),
       );
 
       const startTime = Date.now();
@@ -207,13 +215,13 @@ test.describe('Database Connectivity and Integration Tests', () => {
       const concurrentTime = Date.now() - startTime;
 
       expect(ticketIds.length).toBe(10);
-      expect(ticketIds.every(id => id)).toBe(true);
+      expect(ticketIds.every((id) => id)).toBe(true);
       expect(concurrentTime).toBeLessThan(5000); // 5 seconds
 
       console.log(`Concurrent operations completed in ${concurrentTime}ms`);
 
       // Cleanup
-      await Promise.all(ticketIds.map(id => dbHelper.deleteTicket(id)));
+      await Promise.all(ticketIds.map((id) => dbHelper.deleteTicket(id)));
       await dbHelper.deleteOrganization(orgId);
     });
   });
@@ -229,7 +237,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
       // Create test data
       const orgId = await dbHelper.createOrganization({
         name: `Consistency Test Org ${Date.now()}`,
-        description: 'Test organization for consistency checks'
+        description: 'Test organization for consistency checks',
       });
 
       const ticketId = await dbHelper.createTicket({
@@ -237,7 +245,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
         description: 'Test ticket for consistency',
         priority: 'HIGH',
         status: 'OPEN',
-        organizationId: orgId
+        organizationId: orgId,
       });
 
       // Verify data consistency
@@ -304,7 +312,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
       // Create ticket directly in database
       const orgId = await dbHelper.createOrganization({
         name: `UI Sync Test Org ${Date.now()}`,
-        description: 'Test organization for UI sync'
+        description: 'Test organization for UI sync',
       });
 
       const ticketTitle = `DB Created Ticket ${Date.now()}`;
@@ -313,7 +321,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
         description: 'Created directly in database',
         priority: 'HIGH',
         status: 'OPEN',
-        organizationId: orgId
+        organizationId: orgId,
       });
 
       // Navigate to UI and verify ticket appears
@@ -349,7 +357,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
         firstName: 'Admin',
         lastName: 'User',
         role: 'ADMIN',
-        status: 'ACTIVE'
+        status: 'ACTIVE',
       });
 
       const regularUser = await dbHelper.createUser({
@@ -357,7 +365,7 @@ test.describe('Database Connectivity and Integration Tests', () => {
         firstName: 'Regular',
         lastName: 'User',
         role: 'USER',
-        status: 'ACTIVE'
+        status: 'ACTIVE',
       });
 
       // Verify role-based access
@@ -379,14 +387,14 @@ test.describe('Database Connectivity and Integration Tests', () => {
         firstName: 'Security',
         lastName: 'Test',
         role: 'USER',
-        status: 'ACTIVE'
+        status: 'ACTIVE',
       });
 
       const userData = await dbHelper.getUserById(user);
-      
+
       // Verify email is stored correctly (not encrypted in this case)
       expect(userData.email).toContain('@nova.com');
-      
+
       // If passwords are stored, they should be hashed
       if (userData.password) {
         expect(userData.password).not.toContain('password');

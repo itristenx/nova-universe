@@ -33,10 +33,13 @@ class UptimeKumaWebSocketHandler {
       logger.info('Uptime Kuma WebSocket handler initialized', { kumaUrl });
     } catch (error) {
       // Log initialization failures at debug level to reduce noise when service is not available
-      logger.debug('Failed to initialize Uptime Kuma WebSocket handler (service may not be running)', { 
-        error: error.message,
-        note: 'This is normal if Uptime Kuma is not running'
-      });
+      logger.debug(
+        'Failed to initialize Uptime Kuma WebSocket handler (service may not be running)',
+        {
+          error: error.message,
+          note: 'This is normal if Uptime Kuma is not running',
+        },
+      );
       this.scheduleReconnect();
     }
   }
@@ -70,7 +73,10 @@ class UptimeKumaWebSocketHandler {
               this.reconnectAttempts = 0;
               resolve(response);
             } else {
-              logger.debug('Failed to authenticate with Uptime Kuma (service may not be available)', { error: response.msg });
+              logger.debug(
+                'Failed to authenticate with Uptime Kuma (service may not be available)',
+                { error: response.msg },
+              );
               reject(new Error(response.msg || 'Authentication failed'));
             }
           },
@@ -88,7 +94,9 @@ class UptimeKumaWebSocketHandler {
       // Handle connection errors
       this.kumaSocket.on('connect_error', (error) => {
         // Log connection errors at debug level to reduce noise when service is not available
-        logger.debug('Uptime Kuma connection error (service may not be running)', { error: error.message });
+        logger.debug('Uptime Kuma connection error (service may not be running)', {
+          error: error.message,
+        });
         reject(error);
       });
     });
@@ -281,7 +289,9 @@ class UptimeKumaWebSocketHandler {
   // Schedule reconnection attempt
   scheduleReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      logger.warn('Max reconnection attempts reached for Uptime Kuma WebSocket - integration disabled');
+      logger.warn(
+        'Max reconnection attempts reached for Uptime Kuma WebSocket - integration disabled',
+      );
       return;
     }
 

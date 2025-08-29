@@ -556,7 +556,7 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                         <div className="flex items-center space-x-2">
                           <button
                             type="button"
-                            className="inline-flex items-center rounded-md bg-white px-2 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            className="inline-flex items-center rounded-md bg-white px-2 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                             onClick={() => console.log('View alert details:', alert.id)}
                           >
                             <EyeIcon className="mr-1 h-3 w-3" />
