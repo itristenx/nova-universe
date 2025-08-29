@@ -515,34 +515,58 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
 
       const headers = { Authorization: `Bearer ${authToken}` };
       
-      // Test with malicious input
-      const maliciousData = {
-        title: '<script>alert("xss")</script>',
-        description: 'SELECT * FROM users; --',
-        priority: 'HIGH'
-      };
+      // Comprehensive set of malicious payloads
+      const maliciousPayloads = [
+        // Basic XSS
+        { title: '<script>alert("xss")</script>', description: 'Normal description', priority: 'HIGH' },
+        // Advanced XSS
+        { title: '"><img src=x onerror=alert(1)>', description: 'Normal description', priority: 'HIGH' },
+        { title: '<svg/onload=alert("xss")>', description: 'Normal description', priority: 'HIGH' },
+        { title: '<body onload=alert("xss")>', description: 'Normal description', priority: 'HIGH' },
+        // SQL Injection variants
+        { title: 'Normal title', description: "' OR '1'='1'; --", priority: 'HIGH' },
+        { title: 'Normal title', description: 'DROP TABLE users; --', priority: 'HIGH' },
+        { title: 'Normal title', description: 'admin\' --', priority: 'HIGH' },
+        // LDAP Injection
+        { title: 'Normal title', description: '*)(uid=*))(|(uid=*))', priority: 'HIGH' },
+        { title: 'Normal title', description: ')(|(userPassword=*))', priority: 'HIGH' },
+        // Path traversal
+        { title: '../etc/passwd', description: 'Normal description', priority: 'HIGH' },
+        // Command injection
+        { title: 'Normal title', description: '$(reboot)', priority: 'HIGH' },
+      ];
 
-      try {
-        const response = await axios.post(`${apiBaseUrl}/api/tickets`, maliciousData, { headers });
-        
-        if (response.status === 201) {
-          // Check if malicious content was sanitized
-          const ticketId = response.data.id;
-          const getResponse = await axios.get(`${apiBaseUrl}/api/tickets/${ticketId}`, { headers });
+      for (const maliciousData of maliciousPayloads) {
+        try {
+          const response = await axios.post(`${apiBaseUrl}/api/tickets`, maliciousData, { headers });
           
-          expect(getResponse.data.title).not.toContain('<script>');
-          expect(getResponse.data.description).not.toContain('SELECT * FROM');
-          
-          // Cleanup
-          await axios.delete(`${apiBaseUrl}/api/tickets/${ticketId}`, { headers });
-          
-          console.log('✅ Input sanitization working properly');
-        }
-      } catch (error) {
-        if (error.response?.status === 400) {
-          console.log('✅ Malicious input properly rejected');
-        } else {
-          console.log('❌ Unexpected error with malicious input:', error.response?.status);
+          if (response.status === 201) {
+            // Check if malicious content was sanitized
+            const ticketId = response.data.id;
+            const getResponse = await axios.get(`${apiBaseUrl}/api/tickets/${ticketId}`, { headers });
+
+            // Check for XSS vectors
+            expect(getResponse.data.title).not.toMatch(/<script>|<img|<svg|onload=|onerror=|<body/);
+            // Check for SQL injection
+            expect(getResponse.data.description).not.toMatch(/SELECT \* FROM|DROP TABLE|OR '1'='1|--|admin' --/);
+            // Check for LDAP injection
+            expect(getResponse.data.description).not.toMatch(/\*\)\(uid=\*\)\|\(uid=\*\)|\)\(\|\(userPassword=\*\)/);
+            // Check for path traversal
+            expect(getResponse.data.title).not.toContain('../etc/passwd');
+            // Check for command injection
+            expect(getResponse.data.description).not.toContain('$(reboot)');
+
+            // Cleanup
+            await axios.delete(`${apiBaseUrl}/api/tickets/${ticketId}`, { headers });
+
+            console.log(`✅ Input sanitization working properly for payload: ${JSON.stringify(maliciousData)}`);
+          }
+        } catch (error) {
+          if (error.response?.status === 400) {
+            console.log(`✅ Malicious input properly rejected for payload: ${JSON.stringify(maliciousData)}`);
+          } else {
+            console.log(`❌ Unexpected error with malicious input:`, error.response?.status, maliciousData);
+          }
         }
       }
     });
