@@ -135,7 +135,7 @@ validate_configuration() {
     check "API env example exists" "[ -f apps/api/.env.example ]" false
     
     # Core configuration
-    check "Core package.json exists" "[ -f apps/core/nova-core/package.json ]" true
+    check "Unified package.json exists" "[ -f apps/unified/package.json ]" true
     
     echo ""
 }
@@ -147,7 +147,7 @@ validate_dependencies() {
     
     check "Root node_modules exists" "[ -d node_modules ]" false
     check "API dependencies installed" "[ -d apps/api/node_modules ] || [ -f pnpm-lock.yaml ]" false
-    check "Core dependencies installed" "[ -d apps/core/nova-core/node_modules ] || [ -f pnpm-lock.yaml ]" false
+    check "Unified dependencies installed" "[ -d apps/unified/node_modules ] || [ -f pnpm-lock.yaml ]" false
     
     # Check for key packages
     if [ -f apps/api/package.json ]; then
@@ -224,18 +224,18 @@ validate_frontend() {
     echo "======================"
     
     # Setup wizard
-    check "Setup wizard exists" "[ -d apps/core/nova-core/src/components/setup-wizard ]" true
-    check "ServicesStep exists" "[ -f apps/core/nova-core/src/components/setup-wizard/steps/ServicesStep.tsx ]" true
-    check "SetupContext exists" "[ -f apps/core/nova-core/src/components/setup-wizard/SetupContext.tsx ]" true
+    check "Setup wizard exists" "[ -d apps/unified/src/components/setup-wizard ]" true
+    check "ServicesStep exists" "[ -f apps/unified/src/components/setup-wizard/steps/ServicesStep.tsx ]" true
+    check "SetupContext exists" "[ -f apps/unified/src/components/setup-wizard/SetupContext.tsx ]" true
     
     # Admin panels
-    check "Sentinel admin panel exists" "[ -f apps/core/nova-core/src/components/monitoring/SentinelAdminPanel.tsx ]" true
-    check "GoAlert admin panel exists" "[ -f apps/core/nova-core/src/components/goalert/GoAlertAdminPanel.tsx ]" true
+    check "Sentinel admin panel exists" "[ -f apps/unified/src/components/monitoring/SentinelAdminPanel.tsx ]" true
+    check "GoAlert admin panel exists" "[ -f apps/unified/src/components/goalert/GoAlertAdminPanel.tsx ]" true
     
     # Check for enhanced setup wizard
-    if [ -f apps/core/nova-core/src/components/setup-wizard/steps/ServicesStep.tsx ]; then
-        check "Sentinel config in ServicesStep" "grep -q 'sentinelEnabled' apps/core/nova-core/src/components/setup-wizard/steps/ServicesStep.tsx" true
-        check "GoAlert config in ServicesStep" "grep -q 'goalertEnabled' apps/core/nova-core/src/components/setup-wizard/steps/ServicesStep.tsx" true
+    if [ -f apps/unified/src/components/setup-wizard/steps/ServicesStep.tsx ]; then
+        check "Sentinel config in ServicesStep" "grep -q 'sentinelEnabled' apps/unified/src/components/setup-wizard/steps/ServicesStep.tsx" true
+        check "GoAlert config in ServicesStep" "grep -q 'goalertEnabled' apps/unified/src/components/setup-wizard/steps/ServicesStep.tsx" true
     fi
     
     echo ""
@@ -313,8 +313,8 @@ validate_production() {
     echo "======================="
     
     # Docker images
-    check "Production Dockerfiles exist" "[ -f apps/api/Dockerfile.prod ] && [ -f apps/core/nova-core/Dockerfile.prod ]" false
-    check "Development Dockerfiles exist" "[ -f apps/api/Dockerfile.dev ] && [ -f apps/core/nova-core/Dockerfile.dev ]" true
+    check "Production Dockerfiles exist" "[ -f apps/api/Dockerfile.prod ] && [ -f apps/unified/Dockerfile.prod ]" false
+    check "Development Dockerfiles exist" "[ -f apps/api/Dockerfile.dev ] && [ -f apps/unified/Dockerfile.dev ]" true
     
     # Security
     check "No hardcoded secrets in git" "! git log --oneline -n 50 | xargs git show | grep -E '(password|secret|key).*=.*[a-zA-Z0-9]{10}'" false
@@ -339,7 +339,7 @@ validate_test_environments() {
     
     # Check for development Dockerfiles needed for test environments
     check "API dev Dockerfile exists" "[ -f apps/api/Dockerfile.dev ]" true
-    check "Core dev Dockerfile exists" "[ -f apps/core/nova-core/Dockerfile.dev ]" true
+    check "Unified dev Dockerfile exists" "[ -f apps/unified/Dockerfile.dev ]" true
     check "Beacon dev Dockerfile exists" "[ -f apps/beacon/nova-beacon/Dockerfile.dev ]" true
     check "Comms dev Dockerfile exists" "[ -f apps/comms/nova-comms/Dockerfile.dev ]" true
     
