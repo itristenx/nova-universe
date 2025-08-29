@@ -48,7 +48,12 @@ export function EnhancedAppSwitcher({
       const userApps = await enhancedAppSwitcherService.getUserApps(user.id);
       setApps(userApps);
     } catch (_error) {
-      console.error('Failed to load user apps:', error);
+      // Enhanced error handling for loading user apps
+      console.error('Failed to load user apps:', {
+        error: _error instanceof Error ? _error.message : _error,
+        userId: user?.id,
+        timestamp: new Date().toISOString(),
+      });
     } finally {
       setLoading(false);
     }
@@ -93,7 +98,15 @@ export function EnhancedAppSwitcher({
         window.location.href = app.url;
       }
     } catch (_error) {
-      console.error('Failed to launch app:', error);
+      // Enhanced error handling for app launch
+      console.error('Failed to launch app:', {
+        error: _error instanceof Error ? _error.message : _error,
+        appId: app.id,
+        appName: app.name,
+        appType: app.type,
+        userId: user?.id,
+        timestamp: new Date().toISOString(),
+      });
     }
   };
 
@@ -177,6 +190,36 @@ export function EnhancedAppSwitcher({
               </div>
             ) : (
               <>
+                {/* Recent Apps Section */}
+                <div className="mb-4">
+                  <div className="mb-2 flex items-center space-x-2">
+                    <ClockIcon className="h-4 w-4 text-gray-500" />
+                    <span className="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                      Recently Used
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {apps.slice(0, 4).map((app) => (
+                      <button
+                        key={`recent-${app.id}`}
+                        onClick={() => handleAppLaunch(app)}
+                        className="group flex items-center space-x-2 rounded-lg p-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
+                        <div
+                          className={`h-6 w-6 rounded-md ${app.color} flex flex-shrink-0 items-center justify-center`}
+                        >
+                          {getAppIcon(app)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-xs font-medium text-gray-900 dark:text-white">
+                            {app.name}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Favorites Section */}
                 {favoriteApps.length > 0 && (
                   <div className="mb-4">
@@ -287,16 +330,35 @@ export function EnhancedAppSwitcher({
 
             {/* Footer */}
             <div className="mt-3 border-t border-gray-200 pt-3 dark:border-gray-700">
-              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                <span>{apps.length} applications available</span>
-                {showAdminOptions && (
-                  <Link
-                    to="/admin/apps"
-                    className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
-                  >
-                    Manage Apps
-                  </Link>
-                )}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {apps.length} applications available
+                  </span>
+                  <div className="flex items-center space-x-1">
+                    <BuildingOfficeIcon className="h-3 w-3 text-gray-400" />
+                    <span className="text-xs text-gray-400">Enterprise</span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {showAdminOptions && (
+                    <button
+                      className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                      title="Add new application"
+                    >
+                      <PlusIcon className="h-3 w-3" />
+                      <span>Add App</span>
+                    </button>
+                  )}
+                  {showAdminOptions && (
+                    <Link
+                      to="/admin/apps"
+                      className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                    >
+                      Manage Apps
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           </div>

@@ -11,7 +11,6 @@ import {
   UserIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  EllipsisHorizontalIcon,
 } from '@heroicons/react/24/outline';
 import { cn } from '@utils/index';
 
@@ -90,8 +89,14 @@ export function MobileGestureNavigation({
 
   // Swipe gesture handling
   const bind = useDrag(
-    ({ direction: [dx], distance: [distanceX], velocity: [velocityX], last, cancel }) => {
+    ({ direction: [dx], distance: [distanceX], velocity: [velocityX, velocityY], last, cancel }) => {
       if (!enableGestures) return;
+
+      // Cancel gesture if dragging vertically too much (likely a scroll)
+      if (Math.abs(distanceX) < Math.abs(velocityY) * 2) {
+        cancel();
+        return;
+      }
 
       // Only process horizontal swipes with sufficient distance
       if (Math.abs(distanceX) < 50) return;
@@ -133,6 +138,30 @@ export function MobileGestureNavigation({
       rubberband: true,
     },
   );
+
+  // Pan gesture handler for motion components using PanInfo
+  const handlePanGesture = useCallback((event: MouseEvent | TouchEvent, info: PanInfo) => {
+    if (!enableGestures) return;
+    
+    // Use PanInfo to determine gesture intent
+    const { offset, velocity } = info;
+    const isHorizontalGesture = Math.abs(offset.x) > Math.abs(offset.y);
+    
+    if (isHorizontalGesture && Math.abs(velocity.x) > 100) {
+      // Quick horizontal gesture detected
+      const direction = velocity.x > 0 ? 'right' : 'left';
+      
+      if (direction === 'right' && currentIndex > 0) {
+        const newIndex = currentIndex - 1;
+        setCurrentIndex(newIndex);
+        onNavigate?.(navigationItems[newIndex].path);
+      } else if (direction === 'left' && currentIndex < navigationItems.length - 1) {
+        const newIndex = currentIndex + 1;
+        setCurrentIndex(newIndex);
+        onNavigate?.(navigationItems[newIndex].path);
+      }
+    }
+  }, [enableGestures, currentIndex, onNavigate, navigationItems]);
 
   const handleNavigation = useCallback(
     (path: string, index: number) => {
@@ -247,7 +276,7 @@ export function MobileGestureNavigation({
               className="ml-2 rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
               aria-label="Open navigation menu"
             >
-              <EllipsisHorizontalIcon className="h-5 w-5" />
+              <Bars3Icon className="h-5 w-5" />
             </button>
           </div>
 

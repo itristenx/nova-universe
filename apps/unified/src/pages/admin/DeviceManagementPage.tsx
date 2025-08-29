@@ -261,6 +261,12 @@ const DeviceManagementPage: React.FC = () => {
                         <span>{(device as NovaTV).department}</span>
                       </>
                     )}
+                    {device.type === 'kiosk' && (device as KioskDevice).todayTickets !== undefined && (
+                      <>
+                        <span>•</span>
+                        <span>Today: {(device as KioskDevice).todayTickets} tickets</span>
+                      </>
+                    )}
                   </div>
                   <div className="mt-1 flex items-center gap-2">
                     <span

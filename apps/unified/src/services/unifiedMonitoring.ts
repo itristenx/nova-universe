@@ -142,6 +142,60 @@ export interface NovaAlertMetrics {
 }
 
 class UnifiedMonitoringService {
+  private socket: Socket | null = null;
+  
+  // ========================================================================
+  // REAL-TIME MONITORING - WebSocket functionality
+  // ========================================================================
+  
+  /**
+   * Start real-time monitoring with WebSocket connection
+   */
+  startRealTimeMonitoring(callbacks?: {
+    onStatusChange?: (monitor: NovaMonitor) => void;
+    onAlert?: (alert: any) => void;
+    onSystemUpdate?: (system: any) => void;
+  }): Socket {
+    if (!this.socket) {
+      this.socket = io('/monitoring', {
+        transports: ['websocket', 'polling'],
+        autoConnect: true
+      });
+
+      if (callbacks?.onStatusChange) {
+        this.socket.on('monitor:status', callbacks.onStatusChange);
+      }
+      
+      if (callbacks?.onAlert) {
+        this.socket.on('alert:new', callbacks.onAlert);
+      }
+      
+      if (callbacks?.onSystemUpdate) {
+        this.socket.on('system:update', callbacks.onSystemUpdate);
+      }
+      
+      this.socket.on('connect', () => {
+        console.log('Real-time monitoring connected');
+      });
+      
+      this.socket.on('disconnect', () => {
+        console.log('Real-time monitoring disconnected');
+      });
+    }
+    
+    return this.socket;
+  }
+  
+  /**
+   * Stop real-time monitoring
+   */
+  stopRealTimeMonitoring(): void {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+  }
+
   // ========================================================================
   // BASIC MONITORING METHODS - Core functionality
   // ========================================================================

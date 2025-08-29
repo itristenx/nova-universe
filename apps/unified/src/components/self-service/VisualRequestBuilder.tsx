@@ -455,33 +455,48 @@ export function VisualRequestBuilder({ className, onSave, onPreview }: VisualReq
             <div>
               <h4 className="mb-3 font-medium text-gray-900 dark:text-white">Service Templates</h4>
 
-              {categories.map((category) => (
-                <div key={category} className="mb-4">
-                  <h5 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {category}
-                  </h5>
-                  <div className="space-y-2">
-                    {serviceTemplates
-                      .filter((template) => template.category === category)
-                      .map((template) => (
-                        <button
-                          key={template.id}
-                          onClick={() => addNode(template)}
-                          className="hover:border-nova-300 dark:hover:border-nova-600 hover:bg-nova-50 dark:hover:bg-nova-900/10 flex w-full items-center gap-3 rounded-lg border border-gray-200 p-3 text-left transition-colors dark:border-gray-700"
-                        >
-                          <div className="text-nova-600 dark:text-nova-400">{template.icon}</div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              {template.label}
-                            </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              {template.description}
-                            </p>
-                          </div>
-                        </button>
-                      ))}
+              {categories.map((category, categoryIndex) => (
+                <motion.div 
+                  key={category}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: categoryIndex * 0.1 }}
+                >
+                  <div className="mb-4">
+                    <h5 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {category}
+                    </h5>
+                    <div className="space-y-2">
+                      {serviceTemplates
+                        .filter((template) => template.category === category)
+                        .map((template, templateIndex) => (
+                          <motion.div
+                            key={template.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.2, delay: (categoryIndex * 0.1) + (templateIndex * 0.05) }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <button
+                              onClick={() => addNode(template)}
+                              className="hover:border-nova-300 dark:hover:border-nova-600 hover:bg-nova-50 dark:hover:bg-nova-900/10 flex w-full items-center gap-3 rounded-lg border border-gray-200 p-3 text-left transition-colors dark:border-gray-700"
+                            >
+                              <div className="text-nova-600 dark:text-nova-400">{template.icon}</div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {template.label}
+                                </p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
+                                  {template.description}
+                                </p>
+                              </div>
+                            </button>
+                          </motion.div>
+                        ))}
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

@@ -125,6 +125,21 @@ export function GuidedFlowWidget({ className, onClose }: GuidedFlowWidgetProps) 
             />
           </div>
 
+          {/* User Progress Section */}
+          <div className="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-4 dark:from-blue-900/20 dark:to-indigo-900/20">
+            <div className="flex items-center gap-3">
+              <UserIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <div>
+                <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  Personal Recommendations
+                </h4>
+                <p className="text-xs text-blue-700 dark:text-blue-200">
+                  Based on your recent activity and role
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-2">
             {categories.map((category) => (
               <button
@@ -325,9 +340,10 @@ function GuidedFlowSession({
           <div className="flex items-center gap-2">
             <button
               onClick={onReset}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+              className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              Reset
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Start
             </button>
             {onClose && (
               <button

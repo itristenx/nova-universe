@@ -84,6 +84,11 @@ export class JamfConnector extends IConnector {
         });
         inventoryLatency = Date.now() - inventoryStartTime;
       } catch (error) {
+        console.warn('Jamf inventory check failed:', {
+          error: error.message,
+          endpoint: '/JSSResource/computers/subset/basic',
+          timestamp: new Date().toISOString()
+        });
         inventoryStatus = 'degraded';
       }
 
@@ -196,8 +201,15 @@ export class JamfConnector extends IConnector {
 
       await this.ensureValidToken();
 
-      // Get recently updated computers
-      const computersResponse = await this.client.get('/JSSResource/computers/subset/basic', {
+      // Get recently updated computers with date filtering
+      let endpoint = '/JSSResource/computers/subset/basic';
+      if (since) {
+        // Add date parameter for filtering recent updates
+        const sinceParam = since.toISOString().split('T')[0]; // YYYY-MM-DD format
+        endpoint += `?date=${encodeURIComponent(sinceParam)}`;
+      }
+      
+      const computersResponse = await this.client.get(endpoint, {
         headers: { Authorization: `Bearer ${this.authToken}` },
       });
 
@@ -399,14 +411,28 @@ export class JamfConnector extends IConnector {
     }
   }
 
-  async syncComputers(options) {
+  async syncComputers(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
 
+    // Apply sync options with defaults
+    const config = {
+      includeApps: options.includeApps !== false, // default true
+      includeHardware: options.includeHardware !== false, // default true
+      includeSecurity: options.includeSecurity || false,
+      maxRetries: options.maxRetries || 3,
+      batchSize: options.batchSize || 50,
+      ...options
+    };
+
     try {
-      // Get basic computer list
-      const response = await this.client.get('/JSSResource/computers/subset/basic', {
+      // Get basic computer list with optional filtering
+      const endpoint = config.includeSecurity ? 
+        '/JSSResource/computers/subset/general&hardware&security' : 
+        '/JSSResource/computers/subset/basic';
+        
+      const response = await this.client.get(endpoint, {
         headers: { Authorization: `Bearer ${this.authToken}` },
       });
 
@@ -442,14 +468,29 @@ export class JamfConnector extends IConnector {
     }
   }
 
-  async syncMobileDevices(options) {
+  async syncMobileDevices(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
 
+    // Apply sync options with defaults
+    const config = {
+      includeApps: options.includeApps !== false, // default true
+      includeProfiles: options.includeProfiles !== false, // default true
+      includeCompliance: options.includeCompliance || false,
+      osVersionFilter: options.osVersionFilter || null, // filter by iOS version
+      maxRetries: options.maxRetries || 3,
+      batchSize: options.batchSize || 50,
+      ...options
+    };
+
     try {
-      // Get basic mobile device list
-      const response = await this.client.get('/JSSResource/mobiledevices/subset/basic', {
+      // Get mobile device list with optional filtering
+      const endpoint = config.includeCompliance ? 
+        '/JSSResource/mobiledevices/subset/general&hardware&security' : 
+        '/JSSResource/mobiledevices/subset/basic';
+        
+      const response = await this.client.get(endpoint, {
         headers: { Authorization: `Bearer ${this.authToken}` },
       });
 

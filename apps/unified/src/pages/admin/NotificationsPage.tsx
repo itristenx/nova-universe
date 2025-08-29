@@ -141,32 +141,12 @@ const XIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-interface Notification {
-  id: number;
-  message: string;
-  type: 'system' | 'maintenance' | 'security' | 'announcement';
-  level: 'info' | 'warning' | 'error' | 'success';
-  read: boolean;
-  createdAt: string;
-  updatedAt: string;
-  expiresAt?: string;
-  targetRoles?: string[];
-}
-
-interface NotificationForm {
-  message: string;
-  type: 'system' | 'maintenance' | 'security' | 'announcement';
-  level: 'info' | 'warning' | 'error' | 'success';
-  expiresAt: string;
-  targetRoles: string[];
-}
-
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [formData, setFormData] = useState<NotificationForm>({
+  const [formData, setFormData] = useState<AdminNotificationForm>({
     message: '',
     type: 'system',
     level: 'info',
@@ -184,7 +164,7 @@ export default function NotificationsPage() {
       const notifications = await AdminNotificationsService.getAll();
       setNotifications(notifications);
     } catch (_error) {
-      console.error('Failed to load notifications:', error);
+      console.error('Failed to load notifications:', _error);
       toast.error('Failed to load notifications');
     } finally {
       setIsLoading(false);
@@ -205,7 +185,7 @@ export default function NotificationsPage() {
       resetForm();
       toast.success('Notification created successfully');
     } catch (_error) {
-      console.error('Failed to create notification:', error);
+      console.error('Failed to create notification:', _error);
       toast.error('Failed to create notification');
     } finally {
       setIsCreating(false);
@@ -220,7 +200,7 @@ export default function NotificationsPage() {
       setNotifications(notifications.filter((n) => n.id !== id));
       toast.success('Notification deleted successfully');
     } catch (_error) {
-      console.error('Failed to delete notification:', error);
+      console.error('Failed to delete notification:', _error);
       toast.error('Failed to delete notification');
     }
   };

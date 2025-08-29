@@ -305,10 +305,66 @@ export default function AdminInterface({ className = '' }: AdminInterfaceProps) 
 
         {/* Users Table */}
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+          {/* Bulk Actions Bar */}
+          {selectedItems.length > 0 && (
+            <div className="bg-blue-50 px-6 py-3 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-blue-700">
+                  {selectedItems.length} user{selectedItems.length > 1 ? 's' : ''} selected
+                </span>
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => {
+                      if (confirm(`Deactivate ${selectedItems.length} selected users?`)) {
+                        console.log('Bulk deactivate:', selectedItems);
+                        setSelectedItems([]);
+                      }
+                    }}
+                    className="px-3 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-md hover:bg-yellow-200"
+                  >
+                    Deactivate
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (confirm(`Delete ${selectedItems.length} selected users?`)) {
+                        console.log('Bulk delete:', selectedItems);
+                        setSelectedItems([]);
+                      }
+                    }}
+                    className="px-3 py-1 text-xs bg-red-100 text-red-800 rounded-md hover:bg-red-200"
+                  >
+                    Delete
+                  </button>
+                  <button 
+                    onClick={() => setSelectedItems([])}
+                    className="px-3 py-1 text-xs bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-6 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300"
+                      checked={filteredUsers.length > 0 && selectedItems.length === filteredUsers.length}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedItems(filteredUsers.map(u => u.id));
+                        } else {
+                          setSelectedItems([]);
+                        }
+                      }}
+                      aria-label="Select all users"
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                     User
                   </th>
@@ -329,6 +385,21 @@ export default function AdminInterface({ className = '' }: AdminInterfaceProps) 
               <tbody className="divide-y divide-gray-200 bg-white">
                 {filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300"
+                        checked={selectedItems.includes(user.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedItems([...selectedItems, user.id]);
+                          } else {
+                            setSelectedItems(selectedItems.filter(id => id !== user.id));
+                          }
+                        }}
+                        aria-label={`Select ${user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.username}`}
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0">
@@ -839,6 +910,68 @@ export default function AdminInterface({ className = '' }: AdminInterfaceProps) 
     );
   };
 
+  const renderSystemConfigTab = () => {
+    // Use getAdminModules to get configuration modules
+    const adminModules = getAdminModules();
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium text-gray-900">System Configuration</h3>
+          {checkPermission('config:update') && (
+            <button className="inline-flex items-center rounded-lg border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+              <PencilIcon className="mr-2 h-4 w-4" />
+              Edit Configuration
+            </button>
+          )}
+        </div>
+
+        {/* System Configuration Overview */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <h4 className="text-lg font-medium text-gray-900 mb-4">Current Configuration</h4>
+            <div className="space-y-3">
+              {systemConfig ? (
+                Object.entries(systemConfig).map(([key, value]) => (
+                  <div key={key} className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-600 capitalize">
+                      {key.replace(/_/g, ' ')}:
+                    </span>
+                    <span className="text-sm text-gray-900">
+                      {typeof value === 'boolean' ? (value ? 'Enabled' : 'Disabled') : String(value)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No configuration data available</p>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <h4 className="text-lg font-medium text-gray-900 mb-4">Admin Modules</h4>
+            <div className="space-y-2">
+              {adminModules.length > 0 ? (
+                adminModules.map((module, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 rounded bg-gray-50">
+                    <span className="text-sm font-medium text-gray-700">{module.name || `Module ${index + 1}`}</span>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      module.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {module.enabled ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No admin modules configured</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
@@ -860,9 +993,7 @@ export default function AdminInterface({ className = '' }: AdminInterfaceProps) 
       case 'features':
         return renderFeatureFlagsTab();
       case 'config':
-        return (
-          <div className="p-8 text-center text-gray-500">System configuration coming soon...</div>
-        );
+        return renderSystemConfigTab();
       case 'audit':
         return renderAuditTab();
       default:

@@ -85,6 +85,10 @@ export class ZoomConnector extends IConnector {
         });
         meetingsLatency = Date.now() - meetingsStartTime;
       } catch (error) {
+        console.warn('Zoom meetings check failed:', {
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
         meetingsStatus = 'degraded';
       }
 
@@ -99,6 +103,10 @@ export class ZoomConnector extends IConnector {
         });
         accountLatency = Date.now() - accountStartTime;
       } catch (error) {
+        console.warn('Zoom account check failed:', {
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
         accountStatus = 'degraded';
       }
 
@@ -479,21 +487,33 @@ export class ZoomConnector extends IConnector {
     }
   }
 
-  async syncUsers(options) {
+  async syncUsers(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      pageSize: options.pageSize || 300,
+      status: options.status || 'active', // active, inactive, pending
+      roleType: options.roleType || '', // basic, licensed, onprem
+      maxRetries: options.maxRetries || 3,
+      ...options
+    };
+
     try {
       let nextPageToken = '';
-      const pageSize = 300;
 
       do {
         const params = new URLSearchParams({
-          page_size: pageSize.toString(),
-          status: 'active',
+          page_size: config.pageSize.toString(),
+          status: config.status
         });
+
+        if (config.roleType) {
+          params.append('role_type', config.roleType);
+        }
 
         if (nextPageToken) {
           params.append('next_page_token', nextPageToken);
@@ -542,21 +562,32 @@ export class ZoomConnector extends IConnector {
     }
   }
 
-  async syncMeetings(options) {
+  async syncMeetings(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      pageSize: options.pageSize || 300,
+      type: options.type || 'scheduled', // scheduled, live, upcoming
+      from: options.from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days ago
+      to: options.to || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days future
+      maxRetries: options.maxRetries || 3,
+      ...options
+    };
+
     try {
       // Get meetings for the authenticated user
       let nextPageToken = '';
-      const pageSize = 300;
 
       do {
         const params = new URLSearchParams({
-          type: 'scheduled',
-          page_size: pageSize.toString(),
+          type: config.type,
+          page_size: config.pageSize.toString(),
+          from: config.from,
+          to: config.to
         });
 
         if (nextPageToken) {
@@ -606,19 +637,29 @@ export class ZoomConnector extends IConnector {
     }
   }
 
-  async syncWebinars(options) {
+  async syncWebinars(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      pageSize: options.pageSize || 300,
+      from: options.from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days ago
+      to: options.to || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days future
+      maxRetries: options.maxRetries || 3,
+      ...options
+    };
+
     try {
       let nextPageToken = '';
-      const pageSize = 300;
 
       do {
         const params = new URLSearchParams({
-          page_size: pageSize.toString(),
+          page_size: config.pageSize.toString(),
+          from: config.from,
+          to: config.to
         });
 
         if (nextPageToken) {
@@ -835,10 +876,21 @@ export class ZoomConnector extends IConnector {
         headers: { Authorization: `Bearer ${this.accessToken}` },
       });
 
+      this.logger.info('Zoom meeting updated successfully', {
+        meetingId,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        parameters: Object.keys(parameters || {})
+      });
+
       return {
         success: true,
         message: 'Meeting updated successfully',
-        data: { meetingId },
+        data: { 
+          meetingId,
+          status: response.status,
+          updatedAt: new Date().toISOString()
+        },
       };
     } catch (error) {
       throw new Error(`Failed to update meeting: ${error.message}`);
@@ -904,10 +956,21 @@ export class ZoomConnector extends IConnector {
         headers: { Authorization: `Bearer ${this.accessToken}` },
       });
 
+      this.logger.info('Zoom user settings updated successfully', {
+        userId,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        parameters: Object.keys(parameters || {})
+      });
+
       return {
         success: true,
         message: 'User settings updated successfully',
-        data: { userId },
+        data: { 
+          userId,
+          status: response.status,
+          updatedAt: new Date().toISOString()
+        },
       };
     } catch (error) {
       throw new Error(`Failed to update user settings: ${error.message}`);

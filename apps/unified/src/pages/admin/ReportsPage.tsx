@@ -116,7 +116,7 @@ const ReportsPage: React.FC = () => {
     try {
       await exportReport(format);
     } catch (_error) {
-      console.error('Export failed:', error);
+      console.error('Export failed:', _error);
     }
   };
 

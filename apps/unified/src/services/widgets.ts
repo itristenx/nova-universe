@@ -133,7 +133,7 @@ class WidgetService {
         const data: RealTimeEvent = JSON.parse(event.data);
         this.notifyEventHandlers(data);
       } catch (_error) {
-        console.error('Error parsing real-time event:', error);
+        console.error('Error parsing real-time event:', _error.message || _error);
       }
     };
 

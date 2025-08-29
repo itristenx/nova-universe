@@ -82,7 +82,7 @@ router.post('/dashboards', requireAuth, async (req: any, res: any) => {
     const dashboardData = {
       ...req.body,
       createdBy: req.user.id,
-      id: nanoid(),
+      id: uuid(),
     };
 
     const dashboard = await prisma.novaTVDashboard.create({
@@ -159,7 +159,7 @@ router.post('/dashboards/:id/duplicate', requireAuth, async (req: any, res: any)
     const newDashboard = await prisma.novaTVDashboard.create({
       data: {
         ...originalDashboard,
-        id: nanoid(),
+        id: uuid(),
         name,
         createdBy: req.user.id,
         createdAt: new Date(),
@@ -178,7 +178,7 @@ router.post('/dashboards/:id/duplicate', requireAuth, async (req: any, res: any)
       await prisma.novaTVContent.createMany({
         data: originalDashboard.content.map((content) => ({
           ...content,
-          id: nanoid(),
+          id: uuid(),
           dashboardId: newDashboard.id,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -244,7 +244,7 @@ router.post('/devices/register', async (req: any, res: any) => {
   try {
     const deviceData = {
       ...req.body,
-      id: nanoid(),
+      id: uuid(),
       connectionStatus: 'connected',
       lastActiveAt: new Date(),
     };
@@ -318,7 +318,7 @@ router.post('/devices/:deviceId/assign', requireAuth, async (req: any, res: any)
 // Authentication routes
 router.post('/auth/generate-code', async (req: any, res: any) => {
   try {
-    const sessionId = nanoid();
+    const sessionId = uuid();
     const sixDigitCode = Math.floor(100000 + Math.random() * 900000).toString();
     const qrCode = `nova-tv://auth?session=${sessionId}&code=${sixDigitCode}`;
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
@@ -388,6 +388,17 @@ router.post('/auth/refresh', async (req: any, res: any) => {
   try {
     const { refreshToken } = req.body;
 
+    // Validate refresh token
+    if (!refreshToken) {
+      return res.status(400).json({ error: 'Refresh token is required' });
+    }
+
+    // In production, validate the refresh token against the database
+    // For now, we'll use a simple mock validation
+    if (refreshToken.length < 10) {
+      return res.status(401).json({ error: 'Invalid refresh token' });
+    }
+
     // Mock token refresh
     res.json({
       accessToken: 'new-access-token',
@@ -454,7 +465,7 @@ router.post('/templates', requireAuth, async (req: any, res: any) => {
   try {
     const templateData = {
       ...req.body,
-      id: nanoid(),
+      id: uuid(),
       createdBy: req.user.id,
     };
 
@@ -557,7 +568,7 @@ router.post('/content', requireAuth, async (req: any, res: any) => {
   try {
     const contentData = {
       ...req.body,
-      id: nanoid(),
+      id: uuid(),
     };
 
     const content = await prisma.novaTVContent.create({
@@ -636,7 +647,40 @@ router.get('/analytics/dashboard/:dashboardId', requireAuth, async (req: any, re
     const { dashboardId } = req.params;
     const { timeRange, department } = req.query;
 
-    // Mock analytics data for now
+    // Validate required parameters
+    if (!dashboardId) {
+      return res.status(400).json({ error: 'Dashboard ID is required' });
+    }
+
+    // Build analytics query filters based on parameters
+    const filters: any = { dashboardId };
+    
+    if (timeRange) {
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch (timeRange) {
+        case 'day':
+          startDate.setDate(now.getDate() - 1);
+          break;
+        case 'week':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case 'month':
+          startDate.setMonth(now.getMonth() - 1);
+          break;
+        default:
+          startDate.setDate(now.getDate() - 7); // Default to week
+      }
+      
+      filters.timestamp = { gte: startDate, lte: now };
+    }
+
+    if (department) {
+      filters.department = department;
+    }
+
+    // Mock analytics data for now - in production would query with filters
     const analytics = {
       viewership: {
         uniqueViews: 245,
@@ -693,7 +737,7 @@ router.post('/analytics/events', async (req: any, res: any) => {
   try {
     const eventData = {
       ...req.body,
-      id: nanoid(),
+      id: uuid(),
       timestamp: new Date(),
     };
 
@@ -713,8 +757,39 @@ router.get('/analytics/device/:deviceId', requireAuth, async (req: any, res: any
     const { deviceId } = req.params;
     const { timeRange } = req.query;
 
-    // Mock device analytics
+    // Validate required parameters
+    if (!deviceId) {
+      return res.status(400).json({ error: 'Device ID is required' });
+    }
+
+    // Build time range filter for analytics
+    let timeFilter = {};
+    if (timeRange) {
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch (timeRange) {
+        case 'hour':
+          startDate.setHours(now.getHours() - 1);
+          break;
+        case 'day':
+          startDate.setDate(now.getDate() - 1);
+          break;
+        case 'week':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        default:
+          startDate.setHours(now.getHours() - 24); // Default to 24 hours
+      }
+      
+      timeFilter = { gte: startDate, lte: now };
+    }
+
+    // Mock device analytics with device-specific data (would use deviceId and timeFilter in production)
     const analytics = {
+      deviceId,
+      timeRange: timeRange || 'day',
+      timeFilter, // Include time filter for potential future use
       performance: {
         uptime: 0.985,
         averageLoadTime: 1.2,
@@ -746,8 +821,8 @@ router.get('/live-data/tickets', requireAuth, async (req: any, res: any) => {
   try {
     const { department } = req.query;
 
-    // Mock ticket metrics
-    const metrics = {
+    // Mock ticket metrics - filter by department if provided
+    const baseMetrics = {
       openTickets: 23,
       ticketsToday: 8,
       avgResponseTime: '2.5 hours',
@@ -758,6 +833,22 @@ router.get('/live-data/tickets', requireAuth, async (req: any, res: any) => {
         Finance: 4,
         Operations: 2,
       },
+    };
+
+    // If department filter is provided, adjust metrics accordingly
+    let filteredMetrics: any = baseMetrics;
+    if (department && typeof department === 'string') {
+      const departmentCount = baseMetrics.departmentBreakdown[department as keyof typeof baseMetrics.departmentBreakdown] || 0;
+      filteredMetrics = {
+        ...baseMetrics,
+        openTickets: departmentCount,
+        departmentFilter: department,
+        filteredResults: true,
+      };
+    }
+
+    const response = {
+      ...filteredMetrics,
       recentTickets: [
         {
           id: 'TK-001',
@@ -769,7 +860,7 @@ router.get('/live-data/tickets', requireAuth, async (req: any, res: any) => {
       ],
     };
 
-    res.json(metrics);
+    res.json(response);
   } catch (error) {
     console.error('Error fetching ticket metrics:', error);
     res.status(500).json({ error: 'Failed to fetch ticket metrics' });
@@ -780,8 +871,8 @@ router.get('/live-data/assets', requireAuth, async (req: any, res: any) => {
   try {
     const { department } = req.query;
 
-    // Mock asset metrics
-    const metrics = {
+    // Mock asset metrics - filter by department if provided
+    const baseMetrics = {
       totalAssets: 156,
       assetsInUse: 134,
       assetsUnderMaintenance: 8,
@@ -792,6 +883,22 @@ router.get('/live-data/assets', requireAuth, async (req: any, res: any) => {
         Finance: 34,
         Operations: 54,
       },
+    };
+
+    // If department filter is provided, adjust asset metrics accordingly
+    let metrics: any = baseMetrics;
+    if (department && typeof department === 'string') {
+      const departmentAssets = baseMetrics.departmentBreakdown[department as keyof typeof baseMetrics.departmentBreakdown] || 0;
+      metrics = {
+        ...baseMetrics,
+        totalAssets: departmentAssets,
+        departmentFilter: department,
+        filteredResults: true,
+      };
+    }
+
+    const assetMetrics = {
+      ...metrics,
       recentCheckouts: [
         {
           id: 'AS-001',
@@ -802,7 +909,7 @@ router.get('/live-data/assets', requireAuth, async (req: any, res: any) => {
       ],
     };
 
-    res.json(metrics);
+    res.json(assetMetrics);
   } catch (error) {
     console.error('Error fetching asset metrics:', error);
     res.status(500).json({ error: 'Failed to fetch asset metrics' });

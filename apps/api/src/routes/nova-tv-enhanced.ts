@@ -549,8 +549,8 @@ router.post('/activations/generate', requireAuth, async (req: any, res: any) => 
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const activationUrl = `${baseUrl}/admin/tv-activate?device=${deviceFingerprint}&code=${activationCode}`;
 
-    // Generate QR code
-    const qrCodeDataURL = await QRCode.toDataURL(activationUrl, {
+    // Generate QR code for easy device activation
+    const qrCodeDataURL = await QRCodeLib.toDataURL(activationUrl, {
       width: 300,
       margin: 2,
       color: {

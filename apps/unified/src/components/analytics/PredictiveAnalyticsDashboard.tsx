@@ -225,10 +225,41 @@ export function PredictiveAnalyticsDashboard({
 
   const refreshData = async () => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setLastUpdated(new Date());
-    setIsLoading(false);
+    try {
+      // Simulate API call to refresh data
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Update metrics with fresh data (simulating real-time updates)
+      const updatedMetrics = mockMetrics.map(metric => {
+        const numericValue = typeof metric.value === 'number' ? metric.value : parseFloat(metric.value.toString());
+        const variation = (Math.random() - 0.5) * numericValue * 0.1; // Random variation
+        const newValue = Math.max(0, numericValue + variation);
+        
+        return {
+          ...metric,
+          previousValue: metric.value,
+          value: typeof metric.value === 'number' ? Math.round(newValue) : newValue.toFixed(1),
+          change: Math.abs(variation / numericValue * 100),
+          changeType: variation > 0 ? 'increase' : 'decrease' as 'increase' | 'decrease',
+          trend: Math.random() > 0.5 ? 'up' : 'down' as 'up' | 'down',
+        };
+      });
+      setMetrics(updatedMetrics);
+
+      // Update predictions with fresh data
+      const updatedPredictions = mockPredictions.map(prediction => ({
+        ...prediction,
+        confidence: Math.max(0.5, Math.min(0.99, prediction.confidence + (Math.random() - 0.5) * 0.1)), // Slight confidence variation
+        lastUpdated: new Date(),
+      }));
+      setPredictions(updatedPredictions);
+      
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('Error refreshing analytics data:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getMetricIcon = (category: string) => {

@@ -669,7 +669,10 @@ export const withMockFallback = async <T>(
   try {
     return await apiCall();
   } catch (_error) {
-    console.warn('API call failed, falling back to mock data:', error);
+    console.warn('API call failed, falling back to mock data:', {
+      error: _error instanceof Error ? _error.message : String(_error),
+      timestamp: new Date().toISOString()
+    });
     return mockData;
   }
 };

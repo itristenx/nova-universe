@@ -147,6 +147,7 @@ class ConnectionService {
         this.handleConnectionFailure();
       }
     } catch (_error) {
+      console.warn('Connection check failed:', _error.message || _error);
       this.handleConnectionFailure();
     } finally {
       this.status.lastCheck = new Date();

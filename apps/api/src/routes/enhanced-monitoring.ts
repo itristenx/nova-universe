@@ -525,6 +525,20 @@ router.put(
   },
 );
 
+// GET /api/enhanced-monitoring/status-pages/admin/:slug (Admin access with full details)
+router.get('/status-pages/admin/:slug', authenticateToken, async (req, res) => {
+  try {
+    const statusPage = await getStatusPageBySlug(req.params.slug, req.user.id);
+    if (!statusPage) {
+      return res.status(404).json({ error: 'Status page not found' });
+    }
+    res.json({ status_page: statusPage });
+  } catch (error) {
+    console.error('Failed to fetch status page by slug:', error);
+    res.status(500).json({ error: 'Failed to fetch status page' });
+  }
+});
+
 // ===== MAINTENANCE WINDOWS =====
 
 // GET /api/enhanced-monitoring/maintenance-windows

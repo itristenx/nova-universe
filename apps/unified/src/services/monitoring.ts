@@ -345,9 +345,9 @@ export const monitoringService = {
       type: 'monitor_up' | 'monitor_down' | 'alert_created' | 'alert_resolved';
       data: Monitor | Alert;
     }) => void,
-  ): Promise<() => void> {
+  ): Promise<{ socket: Socket; disconnect: () => void }> {
     // Socket.IO connection for real-time monitoring events
-    const socket = io('http://localhost:3001', {
+    const socket: Socket = io('http://localhost:3001', {
       transports: ['websocket', 'polling'],
       timeout: 5000,
     });
@@ -364,9 +364,12 @@ export const monitoringService = {
       console.error('Monitoring WebSocket error:', error);
     });
 
-    // Return cleanup function
-    return () => {
-      socket.disconnect();
+    // Return socket instance and cleanup function
+    return {
+      socket,
+      disconnect: () => {
+        socket.disconnect();
+      }
     };
   },
 };

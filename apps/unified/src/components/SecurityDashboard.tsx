@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import {
   ShieldCheckIcon,
   KeyIcon,
@@ -392,9 +391,19 @@ export const SecurityDashboard: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Security Dashboard</h2>
           <p className="text-gray-600">Monitor security events and manage policies</p>
+          {currentUser && (
+            <div className="mt-2 flex items-center space-x-2 text-sm text-gray-500">
+              <UserIcon className="h-4 w-4" />
+              <span>Viewing as: <span className="font-medium text-gray-700">{currentUser.username}</span></span>
+              <span className="text-gray-300">•</span>
+              <span>Last login: {currentUser.last_login?.toLocaleDateString() || 'Unknown'}</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center space-x-2">
+          <label htmlFor="timeRange" className="text-sm text-gray-700">Time Range:</label>
           <select
+            id="timeRange"
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value as any)}
             className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -418,10 +427,8 @@ export const SecurityDashboard: React.FC = () => {
           </div>
           <div className="space-y-4 p-6">
             {securityAlerts.map((alert) => (
-              <motion.div
+              <div
                 key={alert.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
                 className={`rounded-r-lg border-l-4 p-4 ${
                   alert.severity === 'critical'
                     ? 'border-red-500 bg-red-50'
@@ -462,7 +469,7 @@ export const SecurityDashboard: React.FC = () => {
                     <button className="text-sm text-gray-600 hover:text-gray-800">Dismiss</button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>

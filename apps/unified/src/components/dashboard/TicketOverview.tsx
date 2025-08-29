@@ -45,9 +45,14 @@ export function TicketOverview() {
       try {
         return await ticketService.getTicketStats('30d');
       } catch (_error) {
-        console.error('Failed to load ticket statistics:', error);
+        console.error('Failed to load ticket statistics:', {
+          error: _error instanceof Error ? _error.message : String(_error),
+          timeRange: '30d',
+          userRole,
+          timestamp: new Date().toISOString()
+        });
         toast.error('Failed to load ticket statistics');
-        throw error;
+        throw _error;
       }
     },
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -78,9 +83,15 @@ export function TicketOverview() {
           { field: 'updatedAt', direction: 'desc' },
         ]);
       } catch (_error) {
-        console.error('Failed to load recent tickets:', error);
+        console.error('Failed to load recent tickets:', {
+          error: _error instanceof Error ? _error.message : String(_error),
+          filters,
+          userRole,
+          userId: user?.id,
+          timestamp: new Date().toISOString()
+        });
         toast.error('Failed to load recent tickets');
-        throw error;
+        throw _error;
       }
     },
     refetchInterval: 30000,
@@ -195,7 +206,10 @@ export function TicketOverview() {
       toast.success('Ticket data refreshed');
     } catch (_error) {
       // Individual errors are already handled in the query functions
-      console.error('Failed to refresh ticket data:', error);
+      console.error('Failed to refresh ticket data:', {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString()
+      });
     }
   };
 

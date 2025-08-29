@@ -269,7 +269,7 @@ export default function SAMLConfigurationPage() {
       setTestResult({
         success: false,
         message: 'SAML configuration test failed',
-        details: error,
+        details: _error,
       });
       toast.error('SAML test failed');
     } finally {

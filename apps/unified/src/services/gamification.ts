@@ -163,7 +163,10 @@ class GamificationService {
         weeklyProgress,
       };
     } catch (_error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error fetching user profile:', {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString()
+      });
       throw new Error('Failed to fetch user profile data');
     }
   }

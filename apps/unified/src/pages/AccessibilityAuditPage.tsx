@@ -169,7 +169,7 @@ export default function AccessibilityAuditPage() {
 
       setContrastResults(mockContrastResults);
     } catch (_error) {
-      console.error('Accessibility audit failed:', error);
+      console.error('Accessibility audit failed:', _error);
     } finally {
       setIsAuditing(false);
     }

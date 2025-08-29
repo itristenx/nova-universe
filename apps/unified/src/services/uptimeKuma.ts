@@ -415,9 +415,9 @@ export const uptimeKumaService = {
       type: 'monitor_up' | 'monitor_down' | 'heartbeat' | 'monitor_created' | 'monitor_updated';
       data: any;
     }) => void,
-  ): Promise<() => void> {
+  ): Promise<{ socket: Socket; disconnect: () => void }> {
     // Socket.IO connection for real-time Uptime Kuma events
-    const socket = io('http://localhost:3001', {
+    const socket: Socket = io('http://localhost:3001', {
       transports: ['websocket', 'polling'],
       timeout: 5000,
     });
@@ -457,9 +457,12 @@ export const uptimeKumaService = {
       console.error('Uptime Kuma WebSocket error:', error);
     });
 
-    // Return cleanup function
-    return () => {
-      socket.disconnect();
+    // Return socket instance and cleanup function
+    return {
+      socket,
+      disconnect: () => {
+        socket.disconnect();
+      }
     };
   },
 };

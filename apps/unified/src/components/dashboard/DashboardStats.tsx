@@ -51,9 +51,14 @@ export function DashboardStats() {
       try {
         return await analyticsService.getDashboardAnalytics('7d');
       } catch (_error) {
-        console.error('Failed to load dashboard analytics:', error);
+        console.error('Failed to load dashboard analytics:', {
+          error: _error instanceof Error ? _error.message : String(_error),
+          timeRange: '7d',
+          userRole,
+          timestamp: new Date().toISOString()
+        });
         toast.error('Failed to load dashboard statistics');
-        throw error;
+        throw _error;
       }
     },
     enabled: userRole === 'admin',
@@ -73,9 +78,14 @@ export function DashboardStats() {
       try {
         return await ticketService.getTicketStats();
       } catch (_error) {
-        console.error('Failed to load ticket statistics:', error);
+        console.error('Failed to load ticket statistics:', {
+          error: _error instanceof Error ? _error.message : String(_error),
+          userId: user?.id,
+          userRole,
+          timestamp: new Date().toISOString()
+        });
         toast.error('Failed to load ticket data');
-        throw error;
+        throw _error;
       }
     },
     enabled: userRole !== 'admin',
@@ -95,9 +105,14 @@ export function DashboardStats() {
       try {
         return await assetService.getAssetStats();
       } catch (_error) {
-        console.error('Failed to load asset statistics:', error);
+        console.error('Failed to load asset statistics:', {
+          error: _error instanceof Error ? _error.message : String(_error),
+          userId: user?.id,
+          userRole,
+          timestamp: new Date().toISOString()
+        });
         toast.error('Failed to load asset data');
-        throw error;
+        throw _error;
       }
     },
     enabled: userRole !== 'admin',

@@ -84,6 +84,12 @@ export class CrowdStrikeConnector extends IConnector {
         });
         detectionsLatency = Date.now() - detectionsStartTime;
       } catch (error) {
+        this.logger.error('CrowdStrike detections health check failed', {
+          error: error.message,
+          endpoint: '/detects/queries/detects/v1',
+          timestamp: new Date().toISOString(),
+          context: 'health_check_detections'
+        });
         detectionsStatus = 'degraded';
       }
 
@@ -422,21 +428,38 @@ export class CrowdStrikeConnector extends IConnector {
     }
   }
 
-  async syncHosts(options) {
+  async syncHosts(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      limit: options.limit || 100,
+      maxRetries: options.maxRetries || 3,
+      includeInactive: options.includeInactive || false,
+      filterExpression: options.filterExpression || null, // FQL filter
+      onlineOnly: options.onlineOnly || false,
+      ...options
+    };
+
     try {
       let offset = 0;
-      const limit = 100;
+      const limit = config.limit;
       let hasMore = true;
 
       while (hasMore) {
-        // Get host IDs
-        const hostsResponse = await this.client.get(
-          `/devices/queries/devices/v1?limit=${limit}&offset=${offset}`,
+        // Get host IDs with optional filtering
+        let endpoint = `/devices/queries/devices/v1?limit=${limit}&offset=${offset}`;
+        if (config.filterExpression) {
+          endpoint += `&filter=${encodeURIComponent(config.filterExpression)}`;
+        }
+        if (config.onlineOnly) {
+          endpoint += `&filter=status:'normal'`;
+        }
+        
+        const hostsResponse = await this.client.get(endpoint,
           {
             headers: { Authorization: `Bearer ${this.accessToken}` },
           },

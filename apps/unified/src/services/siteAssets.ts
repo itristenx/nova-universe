@@ -49,7 +49,7 @@ class SiteAssetsService {
       });
       return (response.data as any)?.data || [];
     } catch (_error) {
-      console.error('Failed to fetch site assets:', error);
+      console.error('Failed to fetch site assets:', _error.message || _error);
       throw new Error('Failed to load site assets');
     }
   }
@@ -62,7 +62,7 @@ class SiteAssetsService {
       const response = await apiClient.get(`/site-assets/${id}`);
       return (response.data as any)?.data || null;
     } catch (_error) {
-      console.error('Failed to fetch asset:', error);
+      console.error('Failed to fetch asset:', _error.message || _error);
       return null;
     }
   }
@@ -89,7 +89,7 @@ class SiteAssetsService {
       });
       return (response.data as any)?.data || null;
     } catch (_error) {
-      console.error('Failed to upload asset:', error);
+      console.error('Failed to upload asset:', _error.message || _error);
       throw new Error('Failed to upload asset');
     }
   }
@@ -102,7 +102,7 @@ class SiteAssetsService {
       const response = await apiClient.patch(`/site-assets/${id}`, updates);
       return (response.data as any)?.data || null;
     } catch (_error) {
-      console.error('Failed to update asset:', error);
+      console.error('Failed to update asset:', _error.message || _error);
       throw new Error('Failed to update asset');
     }
   }
@@ -115,7 +115,7 @@ class SiteAssetsService {
       await apiClient.delete(`/site-assets/${id}`);
       return true;
     } catch (_error) {
-      console.error('Failed to delete asset:', error);
+      console.error('Failed to delete asset:', _error.message || _error);
       throw new Error('Failed to delete asset');
     }
   }
@@ -128,7 +128,7 @@ class SiteAssetsService {
       await apiClient.patch(`/site-assets/${id}/status`, { isActive });
       return true;
     } catch (_error) {
-      console.error('Failed to update asset status:', error);
+      console.error('Failed to update asset status:', _error.message || _error);
       throw new Error('Failed to update asset status');
     }
   }
@@ -153,7 +153,7 @@ class SiteAssetsService {
         }
       );
     } catch (_error) {
-      console.error('Failed to fetch asset stats:', error);
+      console.error('Failed to fetch asset stats:', _error.message || _error);
       return {
         totalAssets: 0,
         totalSize: 0,
@@ -171,7 +171,7 @@ class SiteAssetsService {
       await apiClient.post('/site-assets/bulk-delete', { assetIds });
       return true;
     } catch (_error) {
-      console.error('Failed to bulk delete assets:', error);
+      console.error('Failed to bulk delete assets:', _error.message || _error);
       throw new Error('Failed to delete selected assets');
     }
   }
@@ -186,7 +186,7 @@ class SiteAssetsService {
       });
       return response.data as Blob;
     } catch (_error) {
-      console.error('Failed to download asset:', error);
+      console.error('Failed to download asset:', _error.message || _error);
       throw new Error('Failed to download asset');
     }
   }
@@ -199,7 +199,7 @@ class SiteAssetsService {
       const response = await apiClient.get('/site-assets/categories');
       return (response.data as any)?.data || [];
     } catch (_error) {
-      console.error('Failed to fetch categories:', error);
+      console.error('Failed to fetch categories:', _error.message || _error);
       return ['General', 'Branding', 'UI', 'Marketing', 'Documentation'];
     }
   }

@@ -124,7 +124,7 @@ export default function EmailAccountsPage() {
       const accounts = await EmailAccountsService.getAll();
       setAccounts(accounts);
     } catch (_error) {
-      console.error('Failed to load email accounts:', error);
+      console.error('Failed to load email accounts:', _error);
       toast.error('Failed to load email accounts');
     } finally {
       setIsLoading(false);
@@ -144,7 +144,7 @@ export default function EmailAccountsPage() {
       await loadAccounts();
       toast.success('Email account saved successfully');
     } catch (_error) {
-      console.error('Failed to save email account:', error);
+      console.error('Failed to save email account:', _error);
       toast.error('Failed to save email account');
     }
   };
@@ -157,7 +157,7 @@ export default function EmailAccountsPage() {
       await loadAccounts();
       toast.success('Email account deleted successfully');
     } catch (_error) {
-      console.error('Failed to delete email account:', error);
+      console.error('Failed to delete email account:', _error);
       toast.error('Failed to delete email account');
     }
   };

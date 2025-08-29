@@ -89,7 +89,7 @@ class AuthService {
       await apiClient.post('/v1/auth/logout');
     } catch (_error) {
       // Continue with logout even if API call fails
-      console.warn('Logout API call failed:', error);
+      console.warn('Logout API call failed:', _error.message || _error);
     } finally {
       TokenManager.clearTokens();
     }

@@ -11,6 +11,7 @@ import {
   PlusIcon,
   PencilIcon,
   EyeIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useRBACStore } from '../stores/rbacStore';
 import { ApprovalInstance, ApprovalStepInstance } from '../types/rbac';
@@ -206,7 +207,7 @@ export default function ApprovalWorkflowEngine({
               {currentUser &&
                 (currentStep.approver_id === currentUser.id ||
                   checkPermission('approvals:admin')) && (
-                  <div className="flex space-x-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => {
                         setSelectedInstance(instance);
@@ -227,6 +228,45 @@ export default function ApprovalWorkflowEngine({
                       <XCircleIcon className="mr-1 h-4 w-4" />
                       Reject
                     </button>
+                    <button
+                      onClick={() => {
+                        const delegateToUserId = prompt('Enter user ID to delegate to:');
+                        const reason = prompt('Enter delegation reason:');
+                        if (delegateToUserId && reason) {
+                          delegateApproval(instance.id, currentStep.id, delegateToUserId, reason);
+                        }
+                      }}
+                      className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      <ArrowRightIcon className="mr-1 h-4 w-4" />
+                      Delegate
+                    </button>
+                    <button
+                      onClick={() => {
+                        const escalationReason = prompt('Enter escalation reason:');
+                        if (escalationReason) {
+                          escalateApproval(instance.id, currentStep.id, escalationReason);
+                        }
+                      }}
+                      className="inline-flex items-center rounded-md border border-gray-300 bg-yellow-50 px-3 py-2 text-sm leading-4 font-medium text-yellow-700 hover:bg-yellow-100"
+                    >
+                      <ExclamationTriangleIcon className="mr-1 h-4 w-4" />
+                      Escalate
+                    </button>
+                    {checkPermission('approvals:admin') && (
+                      <button
+                        onClick={() => {
+                          const cancelReason = prompt('Enter cancellation reason:');
+                          if (cancelReason && confirm('Are you sure you want to cancel this approval?')) {
+                            cancelApproval(instance.id, cancelReason);
+                          }
+                        }}
+                        className="inline-flex items-center rounded-md border border-gray-300 bg-red-50 px-3 py-2 text-sm leading-4 font-medium text-red-700 hover:bg-red-100"
+                      >
+                        <XMarkIcon className="mr-1 h-4 w-4" />
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 )}
             </div>

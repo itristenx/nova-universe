@@ -122,6 +122,7 @@ class FeatureService {
       return enabled;
     } catch (_error) {
       // Default to false if feature doesn't exist or API fails
+      console.warn(`Feature check failed for ${featureKey}:`, _error.message || _error);
       return false;
     }
   }

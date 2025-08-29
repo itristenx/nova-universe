@@ -183,6 +183,39 @@ export function useKiosk() {
     setIsKioskMode(kioskParam === 'true' || kioskConfig === 'true');
   }, []);
 
+  // Session timeout management
+  useEffect(() => {
+    if (!isKioskMode) return;
+
+    // Set initial session time (30 minutes in seconds)
+    const initialSessionTime = 30 * 60;
+    setSessionTimeLeft(initialSessionTime);
+
+    // Session countdown timer
+    const interval = setInterval(() => {
+      setSessionTimeLeft((prev) => {
+        if (prev <= 1) {
+          // Session expired - auto logout
+          disableKioskMode();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Listen for session extension events
+    const handleSessionExtend = () => {
+      setSessionTimeLeft(initialSessionTime);
+    };
+
+    document.addEventListener('kioskSessionExtend', handleSessionExtend);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('kioskSessionExtend', handleSessionExtend);
+    };
+  }, [isKioskMode]);
+
   const enableKioskMode = () => {
     localStorage.setItem('kiosk-mode', 'true');
     setIsKioskMode(true);

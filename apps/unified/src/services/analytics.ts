@@ -162,7 +162,11 @@ class AnalyticsService {
 
       return allActivities;
     } catch (_error) {
-      console.error('Error fetching recent activity:', error);
+      console.error('Error fetching recent activity:', {
+        error: _error instanceof Error ? _error.message : String(_error),
+        limit,
+        timestamp: new Date().toISOString()
+      });
       // Return empty array as fallback
       return [];
     }

@@ -116,6 +116,27 @@ router.post(
 
       const result = await startConversation(enhancedContext, initialMessage);
 
+      // Store conversation metadata in database for tracking and analytics
+      try {
+        await db.query(
+          `INSERT INTO conversation_sessions 
+           (conversation_id, user_id, tenant_id, module, context, created_at) 
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [
+            result.conversationId,
+            req.user.id,
+            enhancedContext.tenantId,
+            enhancedContext.module,
+            JSON.stringify(enhancedContext),
+            new Date()
+          ]
+        );
+        logger.debug(`Stored conversation session ${result.conversationId} in database`);
+      } catch (dbError) {
+        logger.warn('Failed to store conversation metadata:', dbError);
+        // Don't fail the request if database logging fails
+      }
+
       res.json({
         success: true,
         conversationId: result.conversationId,
@@ -373,14 +394,23 @@ router.post(
       const { input, context = {} } = req.body;
 
       const mcpServer = await initializeMCPServer();
-      const result = await mcpServer.callTool('nova.ai.classify_intent', {
-        input,
-        context: {
-          ...context,
-          userId: req.user.id,
-          userRole: req.user.role,
+      
+      // Use enhanced MCP request handling for better error management and logging
+      const mcpRequest = {
+        tool: 'nova.ai.classify_intent',
+        params: {
+          input,
+          context: {
+            ...context,
+            userId: req.user.id,
+            userRole: req.user.role,
+          },
         },
-      });
+        userId: req.user.id,
+        source: 'synth-v2-classify'
+      };
+      
+      const result = await handleMCPRequest(mcpServer, mcpRequest);
 
       const classification = JSON.parse(result.content[0].text);
 
@@ -1053,7 +1083,10 @@ Please provide your reasoning, confidence level (0-1), and specific action data 
       try {
         analysis = JSON.parse(analysisResult.content[0].text);
       } catch (parseError) {
-        // If parsing fails, create a structured response from the text
+        // If parsing fails, create a structured response from the text and log the issue
+        logger.warn('Failed to parse MCP analysis result as JSON:', parseError.message);
+        logger.debug('Raw analysis content:', analysisResult.content[0].text);
+        
         const responseText = analysisResult.content[0].text;
         analysis = {
           action: 'suggest_resolution',
@@ -1065,6 +1098,46 @@ Please provide your reasoning, confidence level (0-1), and specific action data 
 
       // Enhance analysis with Nova-specific logic
       const enhancedAnalysis = await enhanceAnalysisWithRules(analysis, context, req.user);
+
+      // Use AI Fabric for additional analysis enrichment
+      try {
+        const fabricAnalysis = await aiFabric.analyzeContext({
+          situation: context,
+          analysis: enhancedAnalysis,
+          userProfile: req.user
+        });
+        
+        if (fabricAnalysis && fabricAnalysis.insights) {
+          enhancedAnalysis.aiInsights = fabricAnalysis.insights;
+          enhancedAnalysis.confidence = Math.min(1.0, enhancedAnalysis.confidence + fabricAnalysis.confidenceBoost || 0);
+        }
+      } catch (fabricError) {
+        logger.warn('AI Fabric analysis failed:', fabricError);
+        // Continue without AI Fabric insights
+      }
+
+      // Handle escalation if analysis recommends it
+      if (enhancedAnalysis.action === 'escalate_alert') {
+        try {
+          const escalationResult = await createEscalation({
+            alertId: context.alertId,
+            ticketId: context.ticketId,
+            priority: enhancedAnalysis.priority || 'high',
+            reason: enhancedAnalysis.reasoning,
+            userId: req.user.id,
+            analysis: enhancedAnalysis,
+            context: context
+          });
+          
+          enhancedAnalysis.escalationId = escalationResult.escalationId;
+          enhancedAnalysis.escalationStatus = 'created';
+          logger.info(`Created escalation ${escalationResult.escalationId} for analysis`);
+        } catch (escalationError) {
+          logger.error('Failed to create escalation:', escalationError);
+          enhancedAnalysis.escalationStatus = 'failed';
+          enhancedAnalysis.escalationError = escalationError.message;
+        }
+      }
 
       res.json({
         success: true,
@@ -1087,12 +1160,41 @@ Please provide your reasoning, confidence level (0-1), and specific action data 
  * Enhance Cosmo analysis with Nova business rules
  */
 async function enhanceAnalysisWithRules(analysis, context, user) {
+  // Apply user-specific business rules based on their role and permissions
+  logger.debug(`Enhancing analysis with rules for user ${user.id} (role: ${user.role})`);
+  
   // Apply VIP customer rules
   if (context.customerTier === 'vip' && context.priority === 'high') {
     analysis.confidence = Math.min(1.0, analysis.confidence + 0.2);
     if (analysis.action === 'suggest_resolution') {
       analysis.action = 'escalate_alert';
       analysis.reasoning += ' Enhanced priority due to VIP customer status.';
+    }
+  }
+
+  // Apply user role-based rule enhancements
+  if (user.role === 'admin' || user.role === 'technician') {
+    // Advanced users get more detailed analysis
+    if (analysis.confidence < 0.7) {
+      analysis.additionalContext = {
+        suggestedActions: ['Review system logs', 'Check related incidents', 'Validate alert conditions'],
+        troubleshootingSteps: analysis.troubleshootingSteps || [],
+        userRole: user.role
+      };
+    }
+  } else if (user.role === 'user') {
+    // Regular users get simplified recommendations
+    if (analysis.action === 'escalate_alert') {
+      analysis.userFriendlyMessage = 'This issue requires technical attention. Your request has been escalated.';
+    }
+  }
+
+  // Apply user permission-based filters
+  if (user.permissions && !user.permissions.includes('view_sensitive_alerts')) {
+    // Filter out sensitive information for users without proper permissions
+    if (analysis.sensitiveData) {
+      analysis.sensitiveData = '[REDACTED - Insufficient permissions]';
+      logger.debug(`Filtered sensitive data for user ${user.id}`);
     }
   }
 
@@ -1446,10 +1548,18 @@ router.delete(
         userId: req.user.id,
       });
 
+      // Log the session cleanup result for monitoring and debugging
+      if (result && result.success) {
+        logger.info(`MCP session ${sessionId} ended successfully for user ${req.user.id}`);
+      } else {
+        logger.warn(`MCP session ${sessionId} end result:`, result);
+      }
+
       res.json({
         success: true,
         message: 'MCP session ended successfully',
         sessionId,
+        mcpResult: result || { success: true },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {

@@ -86,6 +86,10 @@ export class SlackConnector extends IConnector {
         });
         usersLatency = Date.now() - usersStartTime;
       } catch (error) {
+        console.warn('Slack users.list check failed:', {
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
         usersStatus = 'degraded';
       }
 
@@ -100,6 +104,10 @@ export class SlackConnector extends IConnector {
         });
         channelsLatency = Date.now() - channelsStartTime;
       } catch (error) {
+        console.warn('Slack conversations.list check failed:', {
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
         channelsStatus = 'degraded';
       }
 
@@ -438,19 +446,27 @@ export class SlackConnector extends IConnector {
     }
   }
 
-  async syncUsers(options) {
+  async syncUsers(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      limit: options.limit || 200,
+      includeDeactivated: options.includeDeactivated || false,
+      maxRetries: options.maxRetries || 3,
+      ...options
+    };
+
     try {
       let cursor = '';
-      const limit = 200;
 
       do {
         const params = new URLSearchParams({
-          limit: limit.toString(),
+          limit: config.limit.toString(),
+          include_deleted: config.includeDeactivated.toString()
         });
 
         if (cursor) {
@@ -504,20 +520,35 @@ export class SlackConnector extends IConnector {
     }
   }
 
-  async syncChannels(options) {
+  async syncChannels(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      limit: options.limit || 200,
+      includePrivate: options.includePrivate !== false, // default true
+      includeArchived: options.includeArchived || false,
+      maxRetries: options.maxRetries || 3,
+      ...options
+    };
+
     try {
       let cursor = '';
-      const limit = 200;
 
       do {
+        const channelTypes = [];
+        if (config.includePrivate) {
+          channelTypes.push('private_channel');
+        }
+        channelTypes.push('public_channel');
+
         const params = new URLSearchParams({
-          limit: limit.toString(),
-          types: 'public_channel,private_channel',
+          limit: config.limit.toString(),
+          types: channelTypes.join(','),
+          exclude_archived: (!config.includeArchived).toString()
         });
 
         if (cursor) {

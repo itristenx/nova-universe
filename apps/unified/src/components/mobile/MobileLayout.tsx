@@ -71,6 +71,16 @@ export default function MobileLayout({
         {children}
       </main>
 
+      {/* Mobile search bar */}
+      {searchConfig && (
+        <div className="absolute top-safe left-0 right-0 z-10 p-4">
+          <MobileSearch 
+            onSearch={searchConfig.onSearch} 
+            placeholder={searchConfig.placeholder} 
+          />
+        </div>
+      )}
+
       {/* Quick action button */}
       {quickAction && (
         <QuickActionButton

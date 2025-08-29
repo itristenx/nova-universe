@@ -47,7 +47,7 @@ export function User360ABTests({ userId, className = '' }: User360ABTestsProps) 
       const data = await helixABTestingService.getUserTestAssignments(userId);
       setAssignments(data);
     } catch (_error) {
-      console.error('Failed to load user A/B test assignments:', error);
+      console.error('Failed to load user A/B test assignments:', _error);
     } finally {
       setLoading(false);
     }
@@ -143,8 +143,11 @@ export function User360ABTests({ userId, className = '' }: User360ABTestsProps) 
             const StatusIcon = getStatusIcon(assignment.test.status);
 
             return (
-              <div
+              <motion.div
                 key={assignment.test.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
                 className="cursor-pointer rounded-lg border border-gray-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
                 onClick={() => setSelectedAssignment(assignment)}
               >
@@ -235,7 +238,7 @@ export function User360ABTests({ userId, className = '' }: User360ABTestsProps) 
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -363,6 +366,51 @@ export function User360ABTests({ userId, className = '' }: User360ABTestsProps) 
                       </div>
                       <div className="text-xs text-purple-600 dark:text-purple-400">
                         Conversion Rate
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Test Metadata */}
+                <div>
+                  <h4 className="mb-3 text-sm font-medium text-gray-900 dark:text-white">
+                    Test Metadata
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+                      <UserGroupIcon className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Target Audience</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          All Users
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+                      <BuildingOfficeIcon className="h-5 w-5 text-green-600" />
+                      <div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Test Environment</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          Production
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+                      <TagIcon className="h-5 w-5 text-purple-600" />
+                      <div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Test Category</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          User Experience
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+                      <CalendarIcon className="h-5 w-5 text-orange-600" />
+                      <div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Duration</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          30 days
+                        </div>
                       </div>
                     </div>
                   </div>

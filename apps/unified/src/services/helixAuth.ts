@@ -239,7 +239,11 @@ class HelixAuthService {
       await api.post(`${this.baseUrl}/logout`);
     } catch (_error) {
       // Continue with logout even if API call fails
-      console.warn('Logout API call failed:', error);
+      console.warn('Logout API call failed:', {
+        error: _error instanceof Error ? _error.message : String(_error),
+        baseUrl: this.baseUrl,
+        timestamp: new Date().toISOString()
+      });
     } finally {
       // Clear stored tokens
       localStorage.removeItem('nova_access_token');

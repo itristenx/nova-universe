@@ -143,7 +143,7 @@ export function TicketCollaboration({ className }: TicketCollaborationProps) {
       // Reload ticket to get updated comments
       await loadTicket(selectedTicketData.id);
     } catch (_error) {
-      console.error('Failed to add comment:', error);
+      console.error('Failed to add comment:', _error);
     }
   };
 

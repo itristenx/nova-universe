@@ -687,6 +687,129 @@ export const MLDashboard: React.FC = () => {
             </div>
           </motion.div>
         )}
+
+        {selectedTab === 'recommendations' && (
+          <motion.div
+            key="recommendations"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <div className="grid gap-6">
+              {recommendations.map((rec) => (
+                <div key={rec.id} className="rounded-lg border bg-white p-6 shadow">
+                  <div className="mb-4 flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">{rec.item_name}</h3>
+                      <p className="text-sm text-gray-500">
+                        {rec.recommendation_type.replace('_', ' ')} • Score: {Math.round(rec.score * 100)}%
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+                      {rec.item_type.replace('_', ' ')}
+                    </span>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h4 className="mb-2 text-sm font-medium text-gray-700">Reasoning:</h4>
+                    <ul className="space-y-1 text-sm text-gray-600">
+                      {rec.reasoning.map((reason, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2 text-blue-500">•</span>
+                          {reason}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <button className="rounded-md bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700">
+                      Apply Recommendation
+                    </button>
+                    <button className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-gray-50">
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {recommendations.length === 0 && (
+                <div className="rounded-lg border border-dashed border-gray-300 p-12 text-center">
+                  <LightBulbIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No Recommendations</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Recommendations will appear here based on your usage patterns.
+                  </p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {selectedTab === 'anomalies' && (
+          <motion.div
+            key="anomalies"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <div className="grid gap-6">
+              {anomalies.map((anomaly) => (
+                <div key={anomaly.id} className="rounded-lg border bg-white p-6 shadow">
+                  <div className="mb-4 flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">{anomaly.title}</h3>
+                      <p className="text-sm text-gray-500">
+                        {anomaly.type.replace('_', ' ')} • Severity: {anomaly.severity}
+                      </p>
+                    </div>
+                    <span className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      anomaly.severity === 'high' 
+                        ? 'bg-red-100 text-red-800'
+                        : anomaly.severity === 'medium'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {Math.round(anomaly.confidence * 100)}% confidence
+                    </span>
+                  </div>
+                  
+                  <p className="mb-4 text-sm text-gray-600">{anomaly.description}</p>
+                  
+                  <div className="mb-4">
+                    <h4 className="mb-2 text-sm font-medium text-gray-700">Affected Entities:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {anomaly.affected_entities.map((entity, index) => (
+                        <span key={index} className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-700">
+                          {entity.name} ({entity.type})
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <button className="rounded-md bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700">
+                      Investigate
+                    </button>
+                    <button className="rounded-md border border-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-gray-50">
+                      Mark as False Positive
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {anomalies.length === 0 && (
+                <div className="rounded-lg border border-dashed border-gray-300 p-12 text-center">
+                  <ExclamationCircleIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No Anomalies Detected</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    The system is operating normally. Anomalies will be reported here when detected.
+                  </p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );

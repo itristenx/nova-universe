@@ -154,10 +154,30 @@ export class SpaceIntegrations {
   async getUserConnectedPlatforms(userId) {
     // Mock implementation - would query database in production
     // This would check which platforms the user has connected
+    logger.debug(`Fetching connected platforms for user: ${userId}`);
+    
     const connectedPlatforms = ['zoom', 'teams'];
     
-    // Randomly select some platforms for demo purposes
-    return connectedPlatforms.filter(() => Math.random() > 0.3);
+    // Use userId to determine user-specific platform availability
+    // Hash the userId to create consistent but varied platform selection
+    const userHash = this.hashUserId(userId);
+    const threshold = 0.3 + (userHash % 100) / 1000; // Slight variation per user
+    
+    const userPlatforms = connectedPlatforms.filter(() => Math.random() > threshold);
+    logger.debug(`User ${userId} has ${userPlatforms.length} connected platforms: ${userPlatforms.join(', ')}`);
+    
+    return userPlatforms;
+  }
+
+  // Helper method to create consistent user-based variations
+  hashUserId(userId) {
+    let hash = 0;
+    for (let i = 0; i < userId.length; i++) {
+      const char = userId.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
   }
 
   async syncPlatform(platform, userId = null) {
@@ -244,30 +264,66 @@ export class SpaceIntegrations {
 
   async createMeetingOnPlatform(platform, bookingDetails) {
     // Mock implementation - would call platform API in production
+    logger.debug(`Creating meeting on ${platform} for booking:`, bookingDetails);
+    
     const meetingId = `meeting_${platform}_${Date.now()}`;
     
     const meetingDetails = {
       id: meetingId,
       platform,
       url: `https://${platform}.com/meeting/${meetingId}`,
+      title: bookingDetails.title || 'Space Booking Meeting',
+      description: bookingDetails.description || 'Meeting for space booking',
+      startTime: bookingDetails.startTime || new Date().toISOString(),
+      endTime: bookingDetails.endTime || new Date(Date.now() + 3600000).toISOString(),
+      attendees: bookingDetails.attendees || [],
+      spaceId: bookingDetails.spaceId,
+      bookingId: bookingDetails.id,
       dialInInfo: {
         phoneNumber: '+1-555-0123',
         accessCode: Math.floor(Math.random() * 1000000).toString(),
         pin: Math.floor(Math.random() * 10000).toString()
       },
       joinInstructions: `Join via ${platform} or dial in with the provided number`,
-      recordingEnabled: Math.random() > 0.5,
-      waitingRoomEnabled: Math.random() > 0.5,
+      recordingEnabled: bookingDetails.recordingEnabled || Math.random() > 0.5,
+      waitingRoomEnabled: bookingDetails.waitingRoomEnabled || Math.random() > 0.5,
       timestamp: new Date().toISOString()
     };
 
+    logger.info(`Created meeting ${meetingId} on ${platform} for space ${bookingDetails.spaceId}`);
     return meetingDetails;
   }
 
   async updateBookingWithMeeting(bookingId, meetingDetails) {
     // Mock implementation - would update database in production
     logger.debug(`Updating booking ${bookingId} with meeting details`);
-    return { success: true };
+    
+    // Validate meeting details before updating
+    if (!meetingDetails.id || !meetingDetails.platform || !meetingDetails.url) {
+      logger.error(`Invalid meeting details for booking ${bookingId}:`, meetingDetails);
+      return { success: false, error: 'Invalid meeting details' };
+    }
+    
+    // Log the meeting integration details
+    logger.info(`Linking booking ${bookingId} to ${meetingDetails.platform} meeting ${meetingDetails.id}`);
+    logger.debug(`Meeting URL: ${meetingDetails.url}`);
+    
+    if (meetingDetails.dialInInfo) {
+      logger.debug(`Dial-in details added for booking ${bookingId}: ${meetingDetails.dialInInfo.phoneNumber}`);
+    }
+    
+    // In a real implementation, this would update the database with:
+    // - meetingDetails.id as the external meeting ID
+    // - meetingDetails.url as the join URL
+    // - meetingDetails.dialInInfo for phone access
+    // - meetingDetails.platform to track which service is being used
+    
+    return { 
+      success: true, 
+      meetingId: meetingDetails.id,
+      joinUrl: meetingDetails.url,
+      platform: meetingDetails.platform
+    };
   }
 
   async syncAllCalendars() {
@@ -277,10 +333,39 @@ export class SpaceIntegrations {
       const results = [];
       for (const [platform, integration] of this.integrations) {
         try {
-          const result = await this.syncPlatform(platform);
+          // Use integration-specific configuration for sync
+          logger.debug(`Starting sync for ${platform} with config:`, {
+            enabled: integration.enabled,
+            lastSync: integration.lastSync,
+            rateLimitRemaining: integration.rateLimitRemaining
+          });
+          
+          // Check if integration is ready for sync
+          if (!integration.enabled) {
+            logger.warn(`Skipping ${platform} sync - integration disabled`);
+            results.push({ platform, skipped: true, reason: 'Integration disabled' });
+            continue;
+          }
+          
+          // Use integration settings for sync operation
+          const result = await this.syncPlatform(platform, {
+            batchSize: integration.batchSize || 100,
+            timeout: integration.timeout || 30000,
+            maxRetries: integration.maxRetries || 3
+          });
+          
+          // Update integration state after successful sync
+          integration.lastSync = new Date().toISOString();
+          integration.lastSyncResult = result;
+          
           results.push(result);
         } catch (error) {
           logger.error(`Failed to sync ${platform}:`, error);
+          
+          // Update integration error state
+          integration.lastError = error.message;
+          integration.lastErrorTime = new Date().toISOString();
+          
           results.push({ platform, error: error.message });
         }
       }

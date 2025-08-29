@@ -173,9 +173,10 @@ export default function FeatureFlagManager({ className = '' }: FeatureFlagManage
       name: flag.name,
       type: flag.type,
       enabled: flag.enabled,
-      value: flag.value,
+      value: getFeatureFlagValue(flag.key, flag.type, String(flag.value)) || flag.value, // Use current runtime value
       description: flag.description,
       rollout_percentage: flag.rollout_percentage,
+      runtime_status: isFeatureEnabled(flag.key) ? 'Active' : 'Inactive', // Add runtime status
     }));
 
     const csvContent = [
@@ -197,9 +198,25 @@ export default function FeatureFlagManager({ className = '' }: FeatureFlagManage
   };
 
   // Handle feature flag overrides
-  const handleOverride = (flagKey: string, override: FeatureFlagOverride) => {
-    // Implementation for managing feature flag overrides
-    console.log('Override applied:', flagKey, override);
+  const handleOverride = (flagKey: string, override: FeatureFlagOverride | null) => {
+    if (override) {
+      // Create or update override
+      createFeatureFlagOverride({
+        flag_id: flagKey,
+        environment: override.environment || 'development',
+        value: override.value,
+        user_id: override.user_id,
+        group_id: override.group_id,
+        enabled: override.enabled,
+        expires_at: override.expires_at,
+        created_by: 'current_user' // This would come from auth context
+      });
+      console.log('Override created:', flagKey, override);
+    } else {
+      // Remove override
+      removeFeatureFlagOverride(flagKey);
+      console.log('Override removed:', flagKey);
+    }
   };
 
   const getTypeIcon = (type: string) => {
@@ -275,7 +292,9 @@ export default function FeatureFlagManager({ className = '' }: FeatureFlagManage
           </button>
           <button
             onClick={exportFeatureFlags}
-            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            disabled={!isFeatureEnabled('feature_flag_export')}
+            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={!isFeatureEnabled('feature_flag_export') ? 'Export feature is disabled' : 'Export feature flags to CSV'}
           >
             <ArrowDownTrayIcon className="mr-2 h-4 w-4" />
             Export
@@ -429,6 +448,21 @@ export default function FeatureFlagManager({ className = '' }: FeatureFlagManage
                           title="Edit flag"
                         >
                           <PencilIcon className="h-4 w-4" />
+                        </button>
+                      )}
+                      {checkPermission('features:override') && (
+                        <button
+                          onClick={() => handleOverride(flag.key, {
+                            flag_id: flag.key,
+                            enabled: !flag.enabled,
+                            value: !flag.enabled,
+                            created_by: 'current_user',
+                            created_at: new Date()
+                          })}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Create override"
+                        >
+                          <GlobeAltIcon className="h-4 w-4" />
                         </button>
                       )}
                       {checkPermission('features:delete') && (

@@ -9,7 +9,7 @@ import arLocale from '../i18n/locales/ar.json';
 type LocaleData = Record<string, any>;
 
 describe('I18n Locale Completeness', () => {
-  const locales = {
+  const locales: Record<string, LocaleData> = {
     en: enLocale,
     es: esLocale,
     fr: frLocale,
@@ -222,6 +222,33 @@ describe('I18n Locale Completeness', () => {
 
         expect(Object.keys(missingNav)).toEqual([]);
       }
+    });
+  });
+
+  describe('I18n Runtime Behavior', () => {
+    test('i18n instance should support all available locales', () => {
+      const supportedLocales = Object.keys(locales);
+      
+      supportedLocales.forEach(locale => {
+        // Change language and verify it works
+        i18n.changeLanguage(locale);
+        expect(i18n.language).toBe(locale);
+        
+        // Test a common key that should exist in all locales
+        const greeting = i18n.t('common.welcome', { defaultValue: 'Welcome' });
+        expect(typeof greeting).toBe('string');
+        expect(greeting.length).toBeGreaterThan(0);
+      });
+    });
+
+    test('i18n fallback behavior works correctly', () => {
+      // Test with a non-existent key
+      const fallback = i18n.t('non.existent.key', { defaultValue: 'Fallback Text' });
+      expect(fallback).toBe('Fallback Text');
+      
+      // Test without fallback
+      const missing = i18n.t('another.missing.key');
+      expect(typeof missing).toBe('string');
     });
   });
 });

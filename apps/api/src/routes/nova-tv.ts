@@ -233,6 +233,9 @@ router.get('/devices', requireAuth, async (req: any, res: any) => {
       const result = await db.query(query, params);
       return res.json(result.rows || []);
     } catch (dbError) {
+      // Log database error for monitoring
+      console.error('Database query failed for devices:', dbError);
+      
       // Fallback to mock data
       let devices = Array.from(mockData.devices.values());
 
@@ -282,6 +285,9 @@ router.get('/devices/:id', requireAuth, async (req: any, res: any) => {
 
       return res.json(device);
     } catch (dbError) {
+      // Log database error for monitoring
+      console.error('Database query failed for device by ID:', dbError);
+      
       // Fallback to mock data
       const device = mockData.devices.get(id);
 
@@ -476,6 +482,9 @@ router.put('/devices/:id', requireAuth, async (req: any, res: any) => {
 
       return res.json(result.rows[0]);
     } catch (dbError) {
+      // Log database error for monitoring
+      console.error('Database update failed for device:', dbError);
+      
       // Fallback to mock data
       const existingDevice = mockData.devices.get(id);
       if (!existingDevice) {
@@ -556,6 +565,9 @@ router.post('/devices/:deviceId/assign', requireAuth, async (req: any, res: any)
       logger.info('Assigned dashboard to Nova TV device:', { deviceId, dashboardId });
       return res.json(result.rows[0]);
     } catch (dbError) {
+      // Log database error for monitoring
+      console.error('Database assignment failed for device dashboard:', dbError);
+      
       // Fallback to mock data
       const device = mockData.devices.get(deviceId);
       if (!device) {
@@ -621,6 +633,9 @@ router.post('/devices/:deviceId/heartbeat', async (req: any, res: any) => {
 
       return res.json({ success: true, device: result.rows?.[0] });
     } catch (dbError) {
+      // Log database error for monitoring
+      console.error('Database heartbeat update failed for device:', dbError);
+      
       // Fallback to mock data
       const device = mockData.devices.get(deviceId);
       if (device) {

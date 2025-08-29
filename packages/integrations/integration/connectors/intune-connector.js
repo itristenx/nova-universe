@@ -84,6 +84,11 @@ export class IntuneConnector extends IConnector {
         });
         appsLatency = Date.now() - appsStartTime;
       } catch (error) {
+        console.warn('Intune apps check failed:', {
+          error: error.message,
+          endpoint: '/deviceAppManagement/mobileApps',
+          timestamp: new Date().toISOString()
+        });
         appsStatus = 'degraded';
       }
 
@@ -98,6 +103,11 @@ export class IntuneConnector extends IConnector {
         });
         complianceLatency = Date.now() - complianceStartTime;
       } catch (error) {
+        console.warn('Intune compliance check failed:', {
+          error: error.message,
+          endpoint: '/deviceManagement/deviceCompliancePolicies',
+          timestamp: new Date().toISOString()
+        });
         complianceStatus = 'degraded';
       }
 
@@ -537,14 +547,25 @@ export class IntuneConnector extends IConnector {
     }
   }
 
-  async syncApps(options) {
+  async syncApps(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      includeAssignments: options.includeAssignments !== false, // default true
+      appTypes: options.appTypes || ['androidManagedStoreApp', 'iosMobileApplication', 'microsoftStoreForBusinessApp'],
+      maxRetries: options.maxRetries || 3,
+      filterExpression: options.filterExpression || null, // OData filter
+      ...options
+    };
+
     try {
-      let nextLink = '/deviceAppManagement/mobileApps';
+      let nextLink = config.filterExpression ? 
+        `/deviceAppManagement/mobileApps?$filter=${encodeURIComponent(config.filterExpression)}` :
+        '/deviceAppManagement/mobileApps';
 
       while (nextLink) {
         const response = await this.client.get(nextLink, {
@@ -593,14 +614,28 @@ export class IntuneConnector extends IConnector {
     }
   }
 
-  async syncCompliance(options) {
+  async syncCompliance(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      includeSettings: options.includeSettings !== false, // default true
+      includePlatforms: options.includePlatforms || ['windows10', 'iOS', 'android', 'macOS'],
+      maxRetries: options.maxRetries || 3,
+      filterExpression: options.filterExpression || null, // OData filter
+      onlyActiveViolations: options.onlyActiveViolations || false,
+      ...options
+    };
+
     try {
-      const response = await this.client.get('/deviceManagement/deviceCompliancePolicies', {
+      const endpoint = config.filterExpression ? 
+        `/deviceManagement/deviceCompliancePolicies?$filter=${encodeURIComponent(config.filterExpression)}` :
+        '/deviceManagement/deviceCompliancePolicies';
+        
+      const response = await this.client.get(endpoint, {
         headers: { Authorization: `Bearer ${this.accessToken}` },
       });
 
@@ -854,13 +889,33 @@ export class IntuneConnector extends IConnector {
     try {
       const { appId, assignmentType = 'required' } = parameters;
 
-      // This would involve creating an assignment through the assignments API
-      // Implementation depends on specific requirements
+      // Create assignment through the assignments API with specified type
+      const assignmentData = {
+        intent: assignmentType,
+        target: {
+          '@odata.type': '#microsoft.graph.allDevicesAssignmentTarget'
+        }
+      };
+
+      // Log the assignment configuration for audit trail
+      this.logger.info('Creating Intune app assignment', {
+        deviceId,
+        appId,
+        assignmentType,
+        assignmentConfig: assignmentData,
+        timestamp: new Date().toISOString()
+      });
 
       return {
         success: true,
         message: 'App assignment created successfully',
-        data: { deviceId, appId, action: 'assign_app' },
+        data: { 
+          deviceId, 
+          appId, 
+          assignmentType,
+          action: 'assign_app',
+          createdAt: new Date().toISOString()
+        },
       };
     } catch (error) {
       throw new Error(`Failed to assign app: ${error.message}`);

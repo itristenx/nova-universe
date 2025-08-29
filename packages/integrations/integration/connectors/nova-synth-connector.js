@@ -110,6 +110,12 @@ export class NovaSynthConnector extends IConnector {
         });
         transformationLatency = Date.now() - transformationStartTime;
       } catch (error) {
+        this.logger.error('Nova Synth transformation health check failed', {
+          error: error.message,
+          endpoint: '/transform/test',
+          timestamp: new Date().toISOString(),
+          context: 'health_check_transformation'
+        });
         transformationStatus = 'degraded';
       }
 
@@ -124,6 +130,12 @@ export class NovaSynthConnector extends IConnector {
         });
         correlationLatency = Date.now() - correlationStartTime;
       } catch (error) {
+        this.logger.error('Nova Synth correlation health check failed', {
+          error: error.message,
+          endpoint: '/correlate/test',
+          timestamp: new Date().toISOString(),
+          context: 'health_check_correlation'
+        });
         correlationStatus = 'degraded';
       }
 
@@ -884,14 +896,28 @@ export class NovaSynthConnector extends IConnector {
     }
   }
 
-  async syncTransformationRules(options) {
+  async syncTransformationRules(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      includeInactive: options.includeInactive || false,
+      ruleTypes: options.ruleTypes || ['field-mapping', 'validation', 'enrichment'],
+      maxRetries: options.maxRetries || 3,
+      filterExpression: options.filterExpression || null,
+      ...options
+    };
+
     try {
-      const response = await this.client.get('/transformation/rules');
+      let endpoint = '/transformation/rules';
+      if (config.filterExpression) {
+        endpoint += `?filter=${encodeURIComponent(config.filterExpression)}`;
+      }
+      
+      const response = await this.client.get(endpoint);
       const rules = response.data.rules || [];
       totalRecords = rules.length;
 
@@ -924,14 +950,29 @@ export class NovaSynthConnector extends IConnector {
     }
   }
 
-  async syncMatchingAlgorithms(options) {
+  async syncMatchingAlgorithms(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      includeInactive: options.includeInactive || false,
+      algorithmTypes: options.algorithmTypes || ['fuzzy', 'exact', 'phonetic', 'semantic'],
+      accuracyThreshold: options.accuracyThreshold || 0.8,
+      maxRetries: options.maxRetries || 3,
+      filterExpression: options.filterExpression || null,
+      ...options
+    };
+
     try {
-      const response = await this.client.get('/matching/algorithms');
+      let endpoint = '/matching/algorithms';
+      if (config.filterExpression) {
+        endpoint += `?filter=${encodeURIComponent(config.filterExpression)}`;
+      }
+      
+      const response = await this.client.get(endpoint);
       const algorithms = response.data.algorithms || [];
       totalRecords = algorithms.length;
 
@@ -964,14 +1005,29 @@ export class NovaSynthConnector extends IConnector {
     }
   }
 
-  async syncCorrelationModels(options) {
+  async syncCorrelationModels(options = {}) {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     let totalRecords = 0;
 
+    // Apply sync options with defaults
+    const config = {
+      includeInactive: options.includeInactive || false,
+      modelTypes: options.modelTypes || ['statistical', 'ml', 'rule-based'],
+      confidenceThreshold: options.confidenceThreshold || 0.75,
+      maxRetries: options.maxRetries || 3,
+      filterExpression: options.filterExpression || null,
+      ...options
+    };
+
     try {
-      const response = await this.client.get('/correlation/models');
+      let endpoint = '/correlation/models';
+      if (config.filterExpression) {
+        endpoint += `?filter=${encodeURIComponent(config.filterExpression)}`;
+      }
+      
+      const response = await this.client.get(endpoint);
       const models = response.data.models || [];
       totalRecords = models.length;
 

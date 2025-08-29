@@ -171,6 +171,22 @@ const AIControlCenter: React.FC = () => {
           })}
         </div>
 
+        {/* AI Insights Section */}
+        <div className="mt-16 rounded-xl bg-gradient-to-r from-yellow-50 to-orange-50 p-8 shadow-lg dark:from-yellow-900/20 dark:to-orange-900/20">
+          <div className="flex items-center justify-center mb-6">
+            <div className="rounded-lg bg-yellow-100 p-3 dark:bg-yellow-900/50">
+              <LightBulbIcon className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+            </div>
+          </div>
+          <h2 className="mb-4 text-center text-2xl font-bold text-gray-900 dark:text-white">
+            AI Insights & Tips
+          </h2>
+          <p className="text-center text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
+            Maximize your AI capabilities with intelligent automation, predictive analytics, and smart decision-making tools. 
+            Each feature is designed to enhance productivity and provide valuable insights for your organization.
+          </p>
+        </div>
+
         {/* Stats Section */}
         <div className="mt-16 rounded-xl bg-white p-8 shadow-lg dark:bg-gray-800">
           <h2 className="mb-8 text-center text-2xl font-bold text-gray-900 dark:text-white">

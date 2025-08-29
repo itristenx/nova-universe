@@ -148,31 +148,77 @@ export const notificationService = {
     return response.data!.count;
   },
 
-  // Real-time notifications
+  // Real-time notifications with enhanced connection management
   async subscribeToNotifications(
     callback: (notification: Notification) => void,
   ): Promise<() => void> {
-    // Socket.IO connection for real-time notifications
-    const socket = io('http://localhost:3001', {
+    // Socket.IO connection for real-time notifications with proper typing
+    const socket: Socket = io('http://localhost:3001', {
       transports: ['websocket', 'polling'],
       timeout: 5000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
     socket.on('connect', () => {
-      console.log('Notifications WebSocket connected');
+      console.log('Notifications WebSocket connected:', {
+        socketId: socket.id,
+        transport: socket.io.engine.transport.name,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Subscribe to user-specific notifications
+      socket.emit('subscribe_notifications');
     });
 
     socket.on('notification', (notification: Notification) => {
+      console.log('Real-time notification received:', {
+        id: notification.id,
+        type: notification.type,
+        priority: notification.priority,
+        timestamp: new Date().toISOString()
+      });
       callback(notification);
     });
 
-    socket.on('connect_error', (error) => {
-      console.error('Notifications WebSocket error:', error);
+    socket.on('notification_update', (data: { id: string; status: NotificationStatus }) => {
+      console.log('Notification status updated:', data);
+      // Emit custom event for UI updates
+      window.dispatchEvent(new CustomEvent('notification_updated', { detail: data }));
+    });
+
+    socket.on('bulk_notification_update', (data: { ids: string[]; action: string }) => {
+      console.log('Bulk notification update:', data);
+      window.dispatchEvent(new CustomEvent('bulk_notifications_updated', { detail: data }));
+    });
+
+    socket.on('connect_error', (error: Error) => {
+      console.error('Notifications WebSocket connection error:', {
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    socket.on('disconnect', (reason: string) => {
+      console.log('Notifications WebSocket disconnected:', {
+        reason,
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    socket.on('reconnect', (attemptNumber: number) => {
+      console.log('Notifications WebSocket reconnected:', {
+        attempt: attemptNumber,
+        timestamp: new Date().toISOString()
+      });
     });
 
     // Return cleanup function
     return () => {
+      socket.emit('unsubscribe_notifications');
       socket.disconnect();
+      console.log('Notifications WebSocket disconnected and cleaned up');
     };
   },
 

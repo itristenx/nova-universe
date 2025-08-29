@@ -437,8 +437,14 @@ export function ProgressiveOnboarding({
   );
 
   const ModalContent = () => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-xl bg-white shadow-xl dark:bg-gray-800">
+    <div className={cn("fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4", className)}>
+      <motion.div 
+        className="w-full max-w-lg rounded-xl bg-white shadow-xl dark:bg-gray-800"
+        initial={{ scale: 0.8, y: 20, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.8, y: 20, opacity: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+      >
         <div className="p-6">
           <div className="mb-4 flex items-start gap-4">
             {currentStep.icon && (
@@ -509,7 +515,7 @@ export function ProgressiveOnboarding({
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 
@@ -536,15 +542,20 @@ export function ProgressiveOnboarding({
   };
 
   return createPortal(
-    <AnimatePresence>
-      <div
-        key={`${activeTour.id}-${currentStepIndex}`}
-        style={tooltipStyle}
-        className="pointer-events-auto"
-      >
-        <TooltipContent />
-      </div>
-    </AnimatePresence>,
+    <div className={className}>
+      <AnimatePresence>
+        <motion.div
+          key={`${activeTour.id}-${currentStepIndex}`}
+          style={{ ...tooltipStyle, pointerEvents: 'auto' }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+        >
+          <TooltipContent />
+        </motion.div>
+      </AnimatePresence>
+    </div>,
     document.body,
   );
 }
@@ -562,6 +573,10 @@ export function useOnboardingTours() {
     setCompletedTours([]);
   }, []);
 
+  const updateAvailableTours = useCallback((newTours: OnboardingTour[]) => {
+    setAvailableTours(newTours);
+  }, []);
+
   const getRecommendedTour = useCallback(() => {
     return availableTours
       .filter((tour) => !completedTours.includes(tour.id))
@@ -573,6 +588,7 @@ export function useOnboardingTours() {
     availableTours,
     markTourCompleted,
     resetTours,
+    updateAvailableTours,
     getRecommendedTour,
   };
 }

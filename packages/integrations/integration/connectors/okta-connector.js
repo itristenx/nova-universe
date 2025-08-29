@@ -88,6 +88,11 @@ export class OktaConnector extends IConnector {
           scimLatency = Date.now() - scimStartTime;
           scimStatus = 'healthy';
         } catch (error) {
+          console.warn('Okta SCIM health check failed:', {
+            error: error.message,
+            scimEndpoint: this.scimEnabled ? 'enabled' : 'disabled',
+            timestamp: new Date().toISOString()
+          });
           scimStatus = 'unhealthy';
         }
       }

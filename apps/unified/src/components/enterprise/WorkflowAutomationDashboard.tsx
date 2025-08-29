@@ -1051,6 +1051,37 @@ const WorkflowAutomationDashboard: React.FC<WorkflowAutomationProps> = ({
                 ))}
               </div>
             </div>
+
+            {/* Action buttons */}
+            <div style={styles.actionButtons}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onExecuteWorkflow?.(workflow.id);
+                }}
+                style={styles.buttonPrimary}
+                disabled={workflow.status !== 'ACTIVE'}
+                title={workflow.status !== 'ACTIVE' ? 'Workflow must be active to execute' : 'Execute workflow'}
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m6-7a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Execute
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditWorkflow?.(workflow.id);
+                }}
+                style={styles.buttonSecondary}
+                title="Edit workflow"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit
+              </button>
+            </div>
           </div>
         ))}
       </div>

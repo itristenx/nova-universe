@@ -155,7 +155,7 @@ class ApiClient {
       const response = await this.instance.get<ApiResponse<T>>(url, config);
       return response.data;
     } catch (_error) {
-      throw this.handleError(error);
+      throw this.handleError(_error);
     }
   }
 
@@ -168,7 +168,7 @@ class ApiClient {
       const response = await this.instance.post<ApiResponse<T>>(url, data, config);
       return response.data;
     } catch (_error) {
-      throw this.handleError(error);
+      throw this.handleError(_error);
     }
   }
 
@@ -181,7 +181,7 @@ class ApiClient {
       const response = await this.instance.put<ApiResponse<T>>(url, data, config);
       return response.data;
     } catch (_error) {
-      throw this.handleError(error);
+      throw this.handleError(_error);
     }
   }
 
@@ -194,7 +194,7 @@ class ApiClient {
       const response = await this.instance.patch<ApiResponse<T>>(url, data, config);
       return response.data;
     } catch (_error) {
-      throw this.handleError(error);
+      throw this.handleError(_error);
     }
   }
 
@@ -203,7 +203,7 @@ class ApiClient {
       const response = await this.instance.delete<ApiResponse<T>>(url, config);
       return response.data;
     } catch (_error) {
-      throw this.handleError(error);
+      throw this.handleError(_error);
     }
   }
 
@@ -215,7 +215,7 @@ class ApiClient {
       const response = await this.instance.get<PaginatedResponse<T>>(url, { params });
       return response.data;
     } catch (_error) {
-      throw this.handleError(error);
+      throw this.handleError(_error);
     }
   }
 
@@ -242,7 +242,7 @@ class ApiClient {
 
       return response.data;
     } catch (_error) {
-      throw this.handleError(error);
+      throw this.handleError(_error);
     }
   }
 
@@ -262,7 +262,7 @@ class ApiClient {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
     } catch (_error) {
-      throw this.handleError(error);
+      throw this.handleError(_error);
     }
   }
 

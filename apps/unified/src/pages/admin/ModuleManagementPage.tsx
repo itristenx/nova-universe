@@ -169,8 +169,8 @@ export default function ModuleManagementPage() {
       const modules = await ModuleService.getAll();
       setModules(modules);
     } catch (_error) {
-      console.error('Error loading modules:', error);
-      const message = error instanceof Error ? error.message : 'Failed to load modules';
+      console.error('Error loading modules:', _error);
+      const message = _error instanceof Error ? _error.message : 'Failed to load modules';
       toast.error(message);
       // Set empty array on error to show empty state instead of crash
       setModules([]);
@@ -188,8 +188,8 @@ export default function ModuleManagementPage() {
 
       toast.success(`Module ${enabled ? 'enabled' : 'disabled'} successfully`);
     } catch (_error) {
-      console.error('Error updating module:', error);
-      const message = error instanceof Error ? error.message : 'Failed to update module';
+      console.error('Error updating module:', _error);
+      const message = _error instanceof Error ? _error.message : 'Failed to update module';
       toast.error(message);
     } finally {
       setIsUpdating(null);
@@ -219,8 +219,8 @@ export default function ModuleManagementPage() {
 
       toast.success('Configuration updated successfully');
     } catch (_error) {
-      console.error('Error updating configuration:', error);
-      const message = error instanceof Error ? error.message : 'Failed to update configuration';
+      console.error('Error updating configuration:', _error);
+      const message = _error instanceof Error ? _error.message : 'Failed to update configuration';
       toast.error(message);
     }
   };

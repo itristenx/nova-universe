@@ -60,7 +60,13 @@ export default function PullToRefresh({
       try {
         await onRefresh();
       } catch (_error) {
-        console.error('Pull to refresh failed:', error);
+        // Enhanced error handling for pull-to-refresh failure
+        console.error('Pull to refresh failed:', {
+          error: _error instanceof Error ? _error.message : _error,
+          timestamp: new Date().toISOString(),
+          pullDistance,
+          threshold,
+        });
       } finally {
         setIsRefreshing(false);
       }
@@ -176,8 +182,12 @@ export function usePullToRefresh(
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // Apply options with defaults
+  const threshold = options?.threshold ?? 80;
+  const disabled = options?.disabled ?? false;
+
   const handleRefresh = useCallback(async () => {
-    if (isRefreshing) return;
+    if (isRefreshing || disabled) return;
 
     setIsRefreshing(true);
     try {

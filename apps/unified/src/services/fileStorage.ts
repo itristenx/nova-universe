@@ -136,11 +136,11 @@ export class FileStorageService {
               fileId: `${index}`,
               progress: 0,
               status: 'error',
-              error: error instanceof Error ? error.message : 'Upload failed',
+              error: _error instanceof Error ? _error.message : 'Upload failed',
             },
           ]);
         }
-        throw error;
+        throw _error;
       }
     });
 

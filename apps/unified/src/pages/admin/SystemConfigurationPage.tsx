@@ -119,9 +119,9 @@ export default function SystemConfigurationPage() {
       const config = await SystemConfigService.getConfiguration();
       setConfig(config);
     } catch (_error) {
-      console.error('Error loading system configuration:', error);
+      console.error('Error loading system configuration:', _error);
       const message =
-        error instanceof Error ? error.message : 'Failed to load system configuration';
+        _error instanceof Error ? _error.message : 'Failed to load system configuration';
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -138,8 +138,8 @@ export default function SystemConfigurationPage() {
       setHasChanges(false);
       toast.success('Configuration saved successfully');
     } catch (_error) {
-      console.error('Error saving configuration:', error);
-      const message = error instanceof Error ? error.message : 'Failed to save configuration';
+      console.error('Error saving configuration:', _error);
+      const message = _error instanceof Error ? _error.message : 'Failed to save configuration';
       toast.error(message);
     } finally {
       setIsSaving(false);
