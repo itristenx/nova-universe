@@ -41,6 +41,7 @@ import aiControlTowerRouter from './routes/ai-control-tower.js'; // AI Control T
 import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
+import mlPipelineRouter from './routes/ml-pipeline.js'; // ML Pipeline Management
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
 import novaTVRouter from './routes/nova-tv.js'; // Nova TV - Channel Management
@@ -2333,6 +2334,7 @@ v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
 v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - Enterprise AI/ML/RAG Management
 v1Router.use('/tickets', ticketsRouter);
 v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
+v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI
 v1Router.use('/spaces', spacesRouter);
 v1Router.use('/ai-fabric', aiFabricRouter);
 v1Router.use('/setup', setupRouter);

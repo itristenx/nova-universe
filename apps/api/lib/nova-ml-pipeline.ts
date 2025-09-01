@@ -4,6 +4,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { createHash } from 'crypto';
 import { aiMonitoringSystem } from './ai-monitoring.js';
+import { itsmTrainingData, ITSMTrainingData, CosmoPersonalityTraits } from './itsm-training-data.js';
 
 /**
  * Nova ML Pipeline - Industry Standard AI/ML Model Management System
@@ -22,12 +23,30 @@ export interface ModelConfig {
   id: string;
   name: string;
   version: string;
-  type: 'classification' | 'regression' | 'nlp' | 'recommendation' | 'clustering' | 'time_series';
+  type: 'classification' | 'regression' | 'nlp' | 'recommendation' | 'clustering' | 'time_series' | 'itsm_classifier' | 'cosmo_personality';
   algorithm: string;
   hyperparameters: Record<string, any>;
   preprocessing: PreprocessingConfig;
   evaluation: EvaluationConfig;
   deployment: DeploymentConfig;
+  cosmoPersonality?: CosmoPersonalityConfig;
+  itsmDomain?: ITSMDomainConfig;
+}
+
+export interface CosmoPersonalityConfig {
+  personalityProfile: string;
+  traits: CosmoPersonalityTraits;
+  adaptationEnabled: boolean;
+  learningRate: number;
+  contextMemory: number;
+}
+
+export interface ITSMDomainConfig {
+  categories: string[];
+  priorityLevels: string[];
+  businessServices: string[];
+  slaTargets: Record<string, number>;
+  escalationRules: Record<string, any>;
 }
 
 export interface PreprocessingConfig {
@@ -81,12 +100,28 @@ export interface TrainingExperiment {
     training: DatasetInfo;
     validation: DatasetInfo;
     test: DatasetInfo;
+    itsm?: ITSMDatasetInfo;
   };
   status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
   metrics: ExperimentMetrics;
   artifacts: ExperimentArtifacts;
+  cosmoPersonality?: {
+    profileUsed: string;
+    adaptationMetrics: Record<string, number>;
+    personalityConsistency: number;
+  };
   created_at: Date;
   updated_at: Date;
+}
+
+export interface ITSMDatasetInfo {
+  id: string;
+  path: string;
+  ticketCount: number;
+  categoryDistribution: Record<string, number>;
+  priorityDistribution: Record<string, number>;
+  cosmoPersonalityProfiles: string[];
+  businessServices: string[];
 }
 
 export interface DatasetInfo {
@@ -743,6 +778,616 @@ export class NovaMLPipeline extends EventEmitter {
       }
     };
   }
+
+  /**
+   * Create ITSM-specific model experiment with Cosmo personality
+   */
+  async createITSMExperiment(
+    modelName: string,
+    cosmoPersonalityProfile: string = 'default',
+    itsmCategories: string[] = ['Hardware', 'Software', 'Network', 'Access Management', 'Infrastructure']
+  ): Promise<string> {
+    const experimentId = `itsm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Get Cosmo personality traits
+    const personalityTraits = itsmTrainingData.getCosmoPersonality(cosmoPersonalityProfile);
+    if (!personalityTraits) {
+      throw new Error(`Cosmo personality profile '${cosmoPersonalityProfile}' not found`);
+    }
+
+    // Generate ITSM training data
+    const trainingData = await itsmTrainingData.generateITSMTrainingData();
+    
+    // Save training data
+    await itsmTrainingData.saveTrainingData(trainingData, `itsm_training_${experimentId}`);
+
+    const config: ModelConfig = {
+      id: `${modelName}_${experimentId}`,
+      name: modelName,
+      version: '1.0.0',
+      type: 'itsm_classifier',
+      algorithm: 'neural_network',
+      hyperparameters: {
+        epochs: 100,
+        batch_size: 32,
+        learning_rate: 0.001,
+        hidden_layers: [128, 64, 32],
+        dropout_rate: 0.3
+      },
+      preprocessing: {
+        steps: [
+          { name: 'text_vectorization', type: 'transform', parameters: { max_features: 10000, sequence_length: 256 } },
+          { name: 'feature_scaling', type: 'normalize', parameters: { method: 'standard' } }
+        ],
+        validation: {
+          required_features: ['title', 'description', 'category', 'priority'],
+          data_types: { title: 'string', description: 'string', category: 'string', priority: 'string' },
+          constraints: { title: { min_length: 5 }, description: { min_length: 10 } }
+        }
+      },
+      evaluation: {
+        metrics: ['accuracy', 'precision', 'recall', 'f1_score', 'cosmo_personality_consistency'],
+        validation_split: 0.2,
+        cross_validation: { enabled: true, folds: 5, stratified: true },
+        test_suite: {
+          unit_tests: ['feature_extraction', 'classification_accuracy', 'personality_consistency'],
+          integration_tests: ['end_to_end_classification', 'cosmo_response_quality'],
+          performance_tests: ['latency_benchmark', 'throughput_test', 'memory_usage']
+        }
+      },
+      deployment: {
+        strategy: 'canary',
+        rollout_percentage: 10,
+        success_criteria: {
+          accuracy_threshold: 0.85,
+          latency_threshold: 200,
+          error_rate_threshold: 0.05
+        },
+        rollback_conditions: {
+          performance_degradation: 0.1,
+          error_spike: 0.15,
+          user_feedback_threshold: 3.0
+        }
+      },
+      cosmoPersonality: {
+        personalityProfile: cosmoPersonalityProfile,
+        traits: personalityTraits,
+        adaptationEnabled: true,
+        learningRate: 0.01,
+        contextMemory: 100
+      },
+      itsmDomain: {
+        categories: itsmCategories,
+        priorityLevels: ['low', 'medium', 'high', 'critical'],
+        businessServices: ['Email', 'Network', 'Database', 'Web Applications', 'File Systems'],
+        slaTargets: {
+          'critical': 1, // 1 hour
+          'high': 4,     // 4 hours
+          'medium': 24,  // 24 hours
+          'low': 72      // 72 hours
+        },
+        escalationRules: {
+          'critical': { escalateAfterHours: 0.5, escalateTo: 'manager' },
+          'high': { escalateAfterHours: 2, escalateTo: 'senior_tech' },
+          'medium': { escalateAfterHours: 8, escalateTo: 'team_lead' },
+          'low': { escalateAfterHours: 48, escalateTo: 'team_lead' }
+        }
+      }
+    };
+
+    // Create dataset info
+    const datasetInfo: ITSMDatasetInfo = {
+      id: `itsm_dataset_${experimentId}`,
+      path: `./data/itsm/itsm_training_${experimentId}.json`,
+      ticketCount: trainingData.length,
+      categoryDistribution: this.calculateCategoryDistribution(trainingData),
+      priorityDistribution: this.calculatePriorityDistribution(trainingData),
+      cosmoPersonalityProfiles: [cosmoPersonalityProfile],
+      businessServices: config.itsmDomain!.businessServices
+    };
+
+    const experiment: TrainingExperiment = {
+      id: experimentId,
+      model_id: config.id,
+      config,
+      dataset: {
+        training: {
+          id: `training_${experimentId}`,
+          path: datasetInfo.path,
+          size: trainingData.length * 0.8,
+          features: trainingData[0]?.features.length || 0,
+          samples: Math.floor(trainingData.length * 0.8),
+          hash: createHash('md5').update(JSON.stringify(trainingData)).digest('hex'),
+          metadata: { source: 'itsm-training-generator', cosmoPersonality: cosmoPersonalityProfile }
+        },
+        validation: {
+          id: `validation_${experimentId}`,
+          path: datasetInfo.path,
+          size: trainingData.length * 0.2,
+          features: trainingData[0]?.features.length || 0,
+          samples: Math.floor(trainingData.length * 0.2),
+          hash: createHash('md5').update(JSON.stringify(trainingData)).digest('hex'),
+          metadata: { source: 'itsm-training-generator', cosmoPersonality: cosmoPersonalityProfile }
+        },
+        test: {
+          id: `test_${experimentId}`,
+          path: datasetInfo.path,
+          size: trainingData.length * 0.1,
+          features: trainingData[0]?.features.length || 0,
+          samples: Math.floor(trainingData.length * 0.1),
+          hash: createHash('md5').update(JSON.stringify(trainingData)).digest('hex'),
+          metadata: { source: 'itsm-training-generator', cosmoPersonality: cosmoPersonalityProfile }
+        },
+        itsm: datasetInfo
+      },
+      status: 'pending',
+      metrics: {
+        training: {},
+        validation: {},
+        test: {}
+      },
+      artifacts: {
+        model_path: '',
+        checkpoint_path: '',
+        tensorboard_logs: '',
+        evaluation_report: '',
+        deployment_config: ''
+      },
+      cosmoPersonality: {
+        profileUsed: cosmoPersonalityProfile,
+        adaptationMetrics: {},
+        personalityConsistency: 0
+      },
+      created_at: new Date(),
+      updated_at: new Date()
+    };
+
+    this.registry.experiments.set(experimentId, experiment);
+    
+    console.log(`✅ Created ITSM experiment ${experimentId} with Cosmo personality '${cosmoPersonalityProfile}'`);
+    return experimentId;
+  }
+
+  /**
+   * Update Cosmo personality configuration for a model
+   */
+  async updateCosmoPersonality(
+    experimentId: string,
+    personalityProfile: string,
+    customTraits?: Partial<CosmoPersonalityTraits>
+  ): Promise<void> {
+    const experiment = this.registry.experiments.get(experimentId);
+    if (!experiment) {
+      throw new Error(`Experiment ${experimentId} not found`);
+    }
+
+    let personalityTraits = itsmTrainingData.getCosmoPersonality(personalityProfile);
+    if (!personalityTraits) {
+      throw new Error(`Cosmo personality profile '${personalityProfile}' not found`);
+    }
+
+    // Apply custom traits if provided
+    if (customTraits) {
+      personalityTraits = { ...personalityTraits, ...customTraits };
+    }
+
+    // Update experiment configuration
+    experiment.config.cosmoPersonality = {
+      ...experiment.config.cosmoPersonality!,
+      personalityProfile,
+      traits: personalityTraits
+    };
+
+    // Update personality in the training data service
+    if (customTraits) {
+      itsmTrainingData.updateCosmoPersonality(`${personalityProfile}_custom_${experimentId}`, personalityTraits);
+    }
+
+    experiment.updated_at = new Date();
+    this.registry.experiments.set(experimentId, experiment);
+
+    console.log(`✅ Updated Cosmo personality for experiment ${experimentId} to '${personalityProfile}'`);
+  }
+
+  /**
+   * Get available Cosmo personality profiles
+   */
+  getCosmoPersonalityProfiles(): Map<string, CosmoPersonalityTraits> {
+    return itsmTrainingData.getAllPersonalityProfiles();
+  }
+
+  /**
+   * Train ITSM model with Cosmo personality integration
+   */
+  async trainITSMModel(experimentId: string): Promise<void> {
+    const experiment = this.registry.experiments.get(experimentId);
+    if (!experiment) {
+      throw new Error(`Experiment ${experimentId} not found`);
+    }
+
+    if (experiment.config.type !== 'itsm_classifier') {
+      throw new Error(`Experiment ${experimentId} is not an ITSM classifier`);
+    }
+
+    experiment.status = 'running';
+    experiment.updated_at = new Date();
+
+    try {
+      console.log(`🚀 Starting ITSM model training for experiment ${experimentId}...`);
+
+      // Load ITSM training data
+      const trainingData = await itsmTrainingData.loadTrainingData(`itsm_training_${experimentId}`);
+      
+      // Prepare training datasets
+      const features = trainingData.map(item => item.features);
+      const labels = trainingData.map(item => item.labels);
+
+      // Create TensorFlow model with personality-aware architecture
+      const model = this.createITSMModel(experiment.config);
+
+      // Train the model
+      const history = await this.trainModel(model, features, labels, experiment.config);
+
+      // Evaluate personality consistency
+      const personalityConsistency = await this.evaluatePersonalityConsistency(model, trainingData, experiment.config.cosmoPersonality!);
+
+      // Save model artifacts
+      const modelPath = path.join(this.modelsPath, `${experimentId}_model`);
+      await model.save(`file://${modelPath}`);
+
+      // Update experiment with results
+      experiment.status = 'completed';
+      experiment.metrics.training = history;
+      experiment.artifacts.model_path = modelPath;
+      experiment.cosmoPersonality!.personalityConsistency = personalityConsistency;
+      experiment.updated_at = new Date();
+
+      this.registry.experiments.set(experimentId, experiment);
+
+      console.log(`✅ ITSM model training completed for experiment ${experimentId}`);
+      console.log(`   Personality consistency: ${(personalityConsistency * 100).toFixed(1)}%`);
+
+    } catch (error) {
+      experiment.status = 'failed';
+      experiment.updated_at = new Date();
+      this.registry.experiments.set(experimentId, experiment);
+      
+      console.error(`❌ ITSM model training failed for experiment ${experimentId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create ITSM-specific neural network model
+   */
+  private createITSMModel(config: ModelConfig): tf.LayersModel {
+    const model = tf.sequential();
+
+    // Input layer for text features
+    model.add(tf.layers.dense({
+      units: config.hyperparameters.hidden_layers[0],
+      activation: 'relu',
+      inputShape: [config.hyperparameters.input_features || 50]
+    }));
+
+    // Hidden layers with dropout for regularization
+    for (let i = 1; i < config.hyperparameters.hidden_layers.length; i++) {
+      model.add(tf.layers.dropout({ rate: config.hyperparameters.dropout_rate }));
+      model.add(tf.layers.dense({
+        units: config.hyperparameters.hidden_layers[i],
+        activation: 'relu'
+      }));
+    }
+
+    // Personality-aware layer (additional features for Cosmo traits)
+    model.add(tf.layers.dense({
+      units: 16,
+      activation: 'relu',
+      name: 'personality_layer'
+    }));
+
+    // Output layer for ITSM classification
+    const numCategories = config.itsmDomain?.categories.length || 5;
+    const numPriorities = config.itsmDomain?.priorityLevels.length || 4;
+    const totalOutputs = numCategories + numPriorities * 2; // categories + priority + urgency + impact
+
+    model.add(tf.layers.dense({
+      units: totalOutputs,
+      activation: 'softmax',
+      name: 'itsm_output'
+    }));
+
+    // Compile model
+    model.compile({
+      optimizer: tf.train.adam(config.hyperparameters.learning_rate),
+      loss: 'categoricalCrossentropy',
+      metrics: ['accuracy']
+    });
+
+    return model;
+  }
+
+  /**
+   * Train model with ITSM data
+   */
+  private async trainModel(
+    model: tf.LayersModel,
+    features: number[][],
+    labels: number[][],
+    config: ModelConfig
+  ): Promise<any> {
+    const xs = tf.tensor2d(features);
+    const ys = tf.tensor2d(labels);
+
+    const history = await model.fit(xs, ys, {
+      epochs: config.hyperparameters.epochs,
+      batchSize: config.hyperparameters.batch_size,
+      validationSplit: config.evaluation.validation_split,
+      verbose: 1,
+      callbacks: {
+        onEpochEnd: (epoch, logs) => {
+          console.log(`Epoch ${epoch + 1}: loss=${logs?.loss.toFixed(4)}, accuracy=${logs?.acc?.toFixed(4)}`);
+        }
+      }
+    });
+
+    // Clean up tensors
+    xs.dispose();
+    ys.dispose();
+
+    return history.history;
+  }
+
+  /**
+   * Evaluate personality consistency
+   */
+  private async evaluatePersonalityConsistency(
+    model: tf.LayersModel,
+    trainingData: ITSMTrainingData[],
+    personalityConfig: CosmoPersonalityConfig
+  ): Promise<number> {
+    // Simplified personality consistency evaluation
+    // In a real implementation, this would evaluate how well the model maintains
+    // the Cosmo personality traits across different types of responses
+    
+    let consistencyScore = 0;
+    const sampleSize = Math.min(trainingData.length, 100);
+    
+    for (let i = 0; i < sampleSize; i++) {
+      const data = trainingData[i];
+      
+      // Check if the training data personality matches the configured personality
+      const personalityMatch = this.comparePersonalityTraits(
+        data.cosmoPersonality,
+        personalityConfig.traits
+      );
+      
+      consistencyScore += personalityMatch;
+    }
+
+    return consistencyScore / sampleSize;
+  }
+
+  /**
+   * Compare personality traits for consistency scoring
+   */
+  private comparePersonalityTraits(trait1: CosmoPersonalityTraits, trait2: CosmoPersonalityTraits): number {
+    let score = 0;
+    let totalChecks = 0;
+
+    // Compare tone
+    score += trait1.tone === trait2.tone ? 1 : 0;
+    totalChecks++;
+
+    // Compare response style
+    score += trait1.responseStyle === trait2.responseStyle ? 1 : 0;
+    totalChecks++;
+
+    // Compare communication preferences
+    const comm1 = trait1.communicationPreferences;
+    const comm2 = trait2.communicationPreferences;
+    
+    score += comm1.usesEmojis === comm2.usesEmojis ? 1 : 0;
+    score += comm1.providesContext === comm2.providesContext ? 1 : 0;
+    score += comm1.offersAlternatives === comm2.offersAlternatives ? 1 : 0;
+    score += comm1.followsUpProactively === comm2.followsUpProactively ? 1 : 0;
+    totalChecks += 4;
+
+    return score / totalChecks;
+  }
+
+  /**
+   * Calculate category distribution from training data
+   */
+  private calculateCategoryDistribution(trainingData: ITSMTrainingData[]): Record<string, number> {
+    const distribution: Record<string, number> = {};
+    
+    trainingData.forEach(item => {
+      const category = item.category.primary;
+      distribution[category] = (distribution[category] || 0) + 1;
+    });
+
+    return distribution;
+  }
+
+  /**
+   * Calculate priority distribution from training data
+   */
+  private calculatePriorityDistribution(trainingData: ITSMTrainingData[]): Record<string, number> {
+    const distribution: Record<string, number> = {};
+    
+    trainingData.forEach(item => {
+      const priority = item.priority;
+      distribution[priority] = (distribution[priority] || 0) + 1;
+    });
+
+    return distribution;
+  }
+
+  /**
+   * Get ITSM model predictions with Cosmo personality
+   */
+  async predictWithCosmoPersonality(
+    experimentId: string,
+    inputText: string,
+    context?: Record<string, any>
+  ): Promise<{
+    category: string;
+    priority: string;
+    urgency: string;
+    impact: string;
+    confidence: number;
+    cosmoResponse: {
+      tone: string;
+      responseStyle: string;
+      suggestedResponse: string;
+      personalityTraits: CosmoPersonalityTraits;
+    };
+  }> {
+    const experiment = this.registry.experiments.get(experimentId);
+    if (!experiment || experiment.status !== 'completed') {
+      throw new Error(`Experiment ${experimentId} not found or not completed`);
+    }
+
+    // Load trained model
+    const model = await tf.loadLayersModel(`file://${experiment.artifacts.model_path}`);
+    
+    // Extract features from input text
+    const features = this.extractFeaturesFromText(inputText);
+    const inputTensor = tf.tensor2d([features]);
+
+    // Get model prediction
+    const prediction = model.predict(inputTensor) as tf.Tensor;
+    const predictionData = await prediction.data();
+
+    // Parse prediction results
+    const categoryIndex = this.argMax(Array.from(predictionData).slice(0, 5));
+    const priorityIndex = this.argMax(Array.from(predictionData).slice(5, 9));
+    
+    const categories = experiment.config.itsmDomain?.categories || ['Hardware', 'Software', 'Network', 'Access', 'Infrastructure'];
+    const priorities = experiment.config.itsmDomain?.priorityLevels || ['low', 'medium', 'high', 'critical'];
+
+    // Generate Cosmo personality response
+    const personalityTraits = experiment.config.cosmoPersonality!.traits;
+    const cosmoResponse = this.generateCosmoResponse(inputText, personalityTraits, {
+      category: categories[categoryIndex],
+      priority: priorities[priorityIndex]
+    });
+
+    // Clean up tensors
+    inputTensor.dispose();
+    prediction.dispose();
+
+    return {
+      category: categories[categoryIndex],
+      priority: priorities[priorityIndex],
+      urgency: priorities[priorityIndex], // Simplified for demo
+      impact: priorities[priorityIndex],  // Simplified for demo
+      confidence: Math.max(...Array.from(predictionData)),
+      cosmoResponse
+    };
+  }
+
+  /**
+   * Generate Cosmo personality-aware response
+   */
+  private generateCosmoResponse(
+    inputText: string,
+    personalityTraits: CosmoPersonalityTraits,
+    classification: { category: string; priority: string }
+  ): {
+    tone: string;
+    responseStyle: string;
+    suggestedResponse: string;
+    personalityTraits: CosmoPersonalityTraits;
+  } {
+    let response = '';
+    
+    // Generate response based on personality traits
+    switch (personalityTraits.tone) {
+      case 'friendly':
+        response = `Hi! I understand you're experiencing ${classification.category.toLowerCase()} issues. `;
+        break;
+      case 'professional':
+        response = `I have reviewed your ${classification.category.toLowerCase()} request. `;
+        break;
+      case 'empathetic':
+        response = `I can see this ${classification.category.toLowerCase()} issue is causing disruption. `;
+        break;
+      case 'solution-focused':
+        response = `Let's resolve this ${classification.category.toLowerCase()} issue quickly. `;
+        break;
+    }
+
+    // Add priority-specific messaging
+    if (classification.priority === 'critical' || classification.priority === 'high') {
+      response += `Given the ${classification.priority} priority, I'm escalating this immediately. `;
+    }
+
+    // Add response style elements
+    if (personalityTraits.communicationPreferences.providesContext) {
+      response += `This appears to be a ${classification.category} issue which typically requires ${this.getEstimatedResolutionTime(classification)}. `;
+    }
+
+    if (personalityTraits.communicationPreferences.offersAlternatives) {
+      response += `While I work on the primary solution, here are some immediate steps you can try... `;
+    }
+
+    return {
+      tone: personalityTraits.tone,
+      responseStyle: personalityTraits.responseStyle,
+      suggestedResponse: response.trim(),
+      personalityTraits
+    };
+  }
+
+  /**
+   * Extract features from text for prediction
+   */
+  private extractFeaturesFromText(text: string): number[] {
+    const words = text.toLowerCase().split(/\s+/);
+    const features: number[] = [];
+
+    // Basic text features (simplified)
+    features.push(words.length); // Word count
+    features.push(text.length);  // Character count
+
+    // Technical indicators
+    const techTerms = ['server', 'database', 'network', 'application', 'system', 'hardware', 'software'];
+    features.push(techTerms.filter(term => text.toLowerCase().includes(term)).length);
+
+    // Urgency indicators
+    const urgentTerms = ['urgent', 'critical', 'down', 'not working', 'emergency'];
+    features.push(urgentTerms.filter(term => text.toLowerCase().includes(term)).length);
+
+    // Pad to expected feature length
+    while (features.length < 50) {
+      features.push(0);
+    }
+
+    return features.slice(0, 50);
+  }
+
+  /**
+   * Find index of maximum value in array
+   */
+  private argMax(array: number[]): number {
+    return array.indexOf(Math.max(...array));
+  }
+
+  /**
+   * Get estimated resolution time based on classification
+   */
+  private getEstimatedResolutionTime(classification: { category: string; priority: string }): string {
+    const times: Record<string, Record<string, string>> = {
+      'Hardware': { 'critical': '1-2 hours', 'high': '4-6 hours', 'medium': '1-2 days', 'low': '3-5 days' },
+      'Software': { 'critical': '30 minutes', 'high': '2-4 hours', 'medium': '8-24 hours', 'low': '2-3 days' },
+      'Network': { 'critical': '15-30 minutes', 'high': '1-2 hours', 'medium': '4-8 hours', 'low': '1-2 days' }
+    };
+
+    return times[classification.category]?.[classification.priority] || '1-3 business days';
+  }
+}
 }
 
 // Export singleton instance
