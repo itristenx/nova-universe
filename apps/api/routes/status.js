@@ -7,6 +7,12 @@ async function loadStatusPageServiceSafe() {
     const mod = await import('../lib/enhanced-status-pages.ts');
     return mod.statusPageService;
   } catch (e) {
+    // Log the import failure for debugging, but don't break the app
+    console.warn('Status page service unavailable:', e.message);
+    // If it's a module not found error, it's expected in environments without enhanced status pages
+    if (e.code !== 'MODULE_NOT_FOUND') {
+      console.error('Unexpected error loading status page service:', e);
+    }
     return null;
   }
 }
@@ -74,7 +80,21 @@ router.get('/status-pages/:slug', async (req, res) => {
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
   } catch (error) {
-    res.status(500).send('Failed to render status page');
+    console.error('Failed to render status page HTML:', error);
+    console.error('Status page slug:', req.params.slug);
+    
+    // Send a more informative error page instead of generic message
+    const errorHtml = `<!doctype html>
+      <html>
+        <head><title>Status Page Error</title></head>
+        <body>
+          <h1>Status Page Temporarily Unavailable</h1>
+          <p>We're experiencing technical difficulties rendering this status page.</p>
+          <p>Please try again in a few moments or contact support if the issue persists.</p>
+        </body>
+      </html>`;
+    
+    res.status(500).setHeader('Content-Type', 'text/html').send(errorHtml);
   }
 });
 
@@ -113,7 +133,20 @@ router.get('/pages/:slug', async (req, res) => {
     } catch {}
     res.json({ page, monitors, incidents, timestamp: new Date().toISOString() });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to load status page' });
+    console.error('Failed to load status page data:', error);
+    console.error('Requested status page slug:', req.params.slug);
+    
+    // Provide detailed error information for debugging
+    const errorDetails = {
+      error: 'Failed to load status page',
+      slug: req.params.slug,
+      timestamp: new Date().toISOString(),
+      message: error.message,
+      // Don't expose stack trace in production
+      ...(process.env.NODE_ENV !== 'production' && { stack: error.stack })
+    };
+    
+    res.status(500).json(errorDetails);
   }
 });
 

@@ -82,28 +82,31 @@ class UITestRunner {
       },
       {
         name: 'accessibility',
-        pattern: 'tests/**/accessibility-*.spec.ts',
-        description: 'Accessibility compliance tests',
+        pattern: 'tests/accessibility/**/*.spec.ts',
+        description: 'Accessibility compliance tests (WCAG 2.1)',
         tags: ['accessibility', 'a11y'],
+        timeout: 90000,
       },
       {
         name: 'performance',
-        pattern: 'tests/**/performance-*.spec.ts',
+        pattern: 'tests/performance/**/*.spec.ts',
         description: 'Performance and load tests',
         tags: ['performance', 'load'],
         timeout: 180000,
       },
       {
         name: 'mobile',
-        pattern: 'tests/**/mobile-*.spec.ts',
+        pattern: 'tests/mobile/**/*.spec.ts',
         description: 'Mobile and responsive design tests',
         tags: ['mobile', 'responsive'],
+        timeout: 120000,
       },
       {
         name: 'security',
-        pattern: 'tests/**/security-*.spec.ts',
-        description: 'Security testing',
+        pattern: 'tests/security/**/*.spec.ts',
+        description: 'Security testing and vulnerability assessment',
         tags: ['security'],
+        timeout: 120000,
       },
     ];
   }

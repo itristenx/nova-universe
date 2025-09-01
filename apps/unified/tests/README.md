@@ -1,507 +1,580 @@
 # Nova Universe - Comprehensive UI Testing Suite
 
-This document provides a complete guide to the Nova Universe UI testing suite, which ensures the UI is built and working correctly by connecting to the database and API.
+This document provides a complete guide to the Nova Universe comprehensive UI testing suite, which ensures the UI is built and working correctly by connecting to the database and API.
 
-## 📋 Overview
+## 🎯 Overview
 
-The UI testing suite is a comprehensive end-to-end testing framework that validates:
+The Nova Universe UI testing suite is a comprehensive end-to-end testing framework that validates:
 
-- ✅ **Authentication and Authorization** - Login/logout flows, user permissions
+- ✅ **Authentication and Authorization** - Login/logout flows, user permissions, security
 - ✅ **Database Connectivity** - Data persistence, CRUD operations, data integrity
 - ✅ **API Integration** - Endpoint health, error handling, performance
 - ✅ **User Workflows** - Complete business processes from start to finish
 - ✅ **UI Components** - Navigation, forms, responsiveness, accessibility
 - ✅ **Performance** - Load times, concurrent users, large datasets
 - ✅ **Security** - Input validation, authentication checks, XSS prevention
+- ✅ **Accessibility** - WCAG 2.1 compliance, screen reader support
+- ✅ **Mobile Support** - Responsive design, touch interactions, mobile browsers
 - ✅ **Cross-browser** - Chrome, Firefox, Safari compatibility
-- ✅ **Mobile Support** - Responsive design, touch interactions
 
 ## 🏗️ Architecture
 
 ```
 tests/
-├── global-setup.ts          # Test environment initialization
-├── global-teardown.ts       # Test cleanup and data removal
-├── utils/
-│   └── test-helpers.ts      # Common testing utilities
-├── auth/
-│   └── authentication.spec.ts # Authentication system tests
-├── dashboard/
-│   └── dashboard.spec.ts    # Dashboard and navigation tests
-├── tickets/
-│   └── ticket-management.spec.ts # Ticket management tests
-├── api/
-│   └── api-integration.spec.ts # API integration tests
-├── database/
-│   └── database-integration.spec.ts # Database integration tests
-├── e2e/                     # End-to-end workflow tests
-└── env.test                 # Test environment configuration
+├── auth/                    # Authentication tests
+│   └── authentication.spec.ts
+├── database/               # Database connectivity tests  
+│   ├── database-connectivity.spec.ts
+│   └── database-integration.spec.ts
+├── api/                    # API integration tests
+│   ├── api-integration.spec.ts
+│   └── comprehensive-api-health.spec.ts
+├── dashboard/              # Dashboard and navigation tests
+│   └── dashboard.spec.ts
+├── tickets/                # Ticket management tests
+│   └── ticket-management.spec.ts
+├── workflows/              # End-to-end workflow tests
+│   └── end-to-end-workflows.spec.ts
+├── accessibility/          # Accessibility compliance tests
+│   └── accessibility-compliance.spec.ts
+├── performance/            # Performance and load tests
+│   └── performance-testing.spec.ts
+├── security/               # Security testing
+│   └── security-testing.spec.ts
+├── mobile/                 # Mobile and responsive tests
+│   └── mobile-testing.spec.ts
+└── utils/                  # Test utilities and helpers
+    ├── test-helpers.ts
+    └── database-test-helper.ts
+
+ui-test-runner.cjs          # Comprehensive test runner
+run-tests.sh                # Bash script for test execution
+playwright.config.ts        # Playwright configuration
 ```
 
-## 🛠️ Prerequisites
+## 🚀 Quick Start
 
-Before running the tests, ensure you have:
+### Prerequisites
 
-- **Node.js** 18+ installed
-- **pnpm** or **npm** package manager
-- **Docker** and **Docker Compose** (for database services)
-- **Playwright** browsers installed
+1. **Node.js 18+** installed
+2. **Database** running (PostgreSQL or MongoDB)
+3. **API server** running on port 3000
+4. **UI server** running on port 5173
 
-## 📦 Installation
-
-1. **Install dependencies:**
-
-   ```bash
-   cd apps/unified
-   pnpm install
-   ```
-
-2. **Install Playwright browsers:**
-
-   ```bash
-   npx playwright install
-   ```
-
-3. **Setup test environment:**
-
-   ```bash
-   # Copy environment configuration
-   cp tests/env.test .env.test
-
-   # Edit environment variables as needed
-   nano .env.test
-   ```
-
-## 🗄️ Database Setup
-
-The testing suite requires a test database. You can use the existing Docker setup:
-
-1. **Start test database services:**
-
-   ```bash
-   # From project root
-   docker-compose up -d postgres mongodb
-   ```
-
-2. **Create test database:**
-
-   ```bash
-   # Connect to PostgreSQL
-   docker exec -it nova-postgres psql -U nova_admin -d nova_universe
-
-   # Create test database
-   CREATE DATABASE nova_universe_test;
-   ```
-
-3. **Run database migrations:**
-   ```bash
-   # From project root
-   pnpm prisma:generate:core
-   pnpm prisma db push --schema prisma/core/schema.prisma
-   ```
-
-## 🚀 Running Tests
-
-### Quick Start
-
-Run all tests:
+### Installation
 
 ```bash
+# Navigate to the unified app directory
 cd apps/unified
-./scripts/run-tests.sh
+
+# Install dependencies
+npm install
+
+# Install Playwright browsers
+npm run test:ui:install-deps
 ```
 
-### Test Runner Options
+### Running Tests
 
-The test runner script provides comprehensive options:
+#### Using the Bash Script (Recommended)
 
 ```bash
-./scripts/run-tests.sh [OPTIONS]
+# Make the script executable (if not already)
+chmod +x run-tests.sh
 
-Options:
-  -t, --test-type TYPE     Test type: all, auth, dashboard, tickets, api, database, e2e
-  -b, --browser BROWSER    Browser: chromium, firefox, webkit
-  -h, --headless BOOL      Run in headless mode: true, false
-  -w, --workers NUM        Number of parallel workers
-  -r, --reporter TYPE      Reporter: html, json, junit, list
-  -e, --environment ENV    Environment: test, staging, production
-  -v, --verbose            Enable verbose output
-  -c, --coverage           Enable coverage reporting
-  -s, --sequential         Run tests sequentially
-  --help                   Show help message
+# Run all tests
+./run-tests.sh all
+
+# Run smoke tests (quick validation)
+./run-tests.sh smoke
+
+# Run specific test suites
+./run-tests.sh auth
+./run-tests.sh database
+./run-tests.sh accessibility
+./run-tests.sh performance
+./run-tests.sh security
+./run-tests.sh mobile
+
+# Run with options
+./run-tests.sh all --headed --workers 2
+./run-tests.sh performance --timeout 300000
 ```
 
-### Examples
-
-**Run authentication tests in Firefox:**
-
-```bash
-./scripts/run-tests.sh -t auth -b firefox
-```
-
-**Run ticket tests with 2 workers, verbose output:**
-
-```bash
-./scripts/run-tests.sh -t tickets -w 2 -v
-```
-
-**Run API tests sequentially:**
-
-```bash
-./scripts/run-tests.sh -t api --sequential
-```
-
-**Run E2E tests in headed mode:**
-
-```bash
-./scripts/run-tests.sh -t e2e -h false
-```
-
-### Direct Playwright Commands
-
-You can also run tests directly with Playwright:
+#### Using npm Scripts
 
 ```bash
 # Run all tests
-npx playwright test
+npm run test:ui:all
 
-# Run specific test file
-npx playwright test tests/auth/authentication.spec.ts
+# Run specific test suites
+npm run test:ui:auth          # Authentication tests
+npm run test:ui:database      # Database tests
+npm run test:ui:accessibility # Accessibility tests
+npm run test:ui:performance   # Performance tests
+npm run test:ui:security     # Security tests
+npm run test:ui:mobile        # Mobile tests
 
-# Run tests in specific browser
-npx playwright test --project=firefox
+# Run smoke tests
+npm run test:ui:smoke
 
-# Run tests with UI
-npx playwright test --ui
-
-# Run tests in headed mode
-npx playwright test --headed
-
-# Run tests with specific reporter
-npx playwright test --reporter=html
+# Run regression tests
+npm run test:ui:regression
 ```
 
-## 🧪 Test Types
+#### Using the Test Runner Directly
 
-### 1. Authentication Tests (`tests/auth/`)
+```bash
+# Run all tests
+node ui-test-runner.cjs
 
-Tests user authentication, registration, and authorization:
+# Run specific suites
+node ui-test-runner.cjs --suites auth,database,accessibility
 
-- Login/logout flows
-- User registration
-- Password reset
-- Role-based access control
-- Session management
-- Error handling
+# Run tests by tags
+node ui-test-runner.cjs --tags e2e,integration,security
 
-### 2. Dashboard Tests (`tests/dashboard/`)
+# Run with custom options
+node ui-test-runner.cjs --workers 4 --retries 1 --timeout 180000
+```
 
-Tests the main application interface:
+## 📊 Test Suites
 
-- Dashboard layout and widgets
-- Navigation sidebar
-- Header and user menu
-- Quick actions
-- Responsive design
+### 1. Authentication Tests (`auth/`)
+
+Comprehensive authentication and authorization testing:
+
+- **Login Flow**: Form validation, credential verification, session management
+- **Registration**: User creation, validation, email verification
+- **Password Reset**: Reset flow, token validation, security
+- **Session Management**: Token refresh, expiration handling
+- **Role-based Access**: Permission checks, route protection
+
+**Key Features:**
+- Validates API authentication endpoints
+- Tests UI form interactions
+- Checks session persistence across page reloads
+- Verifies error handling for invalid credentials
+
+### 2. Database Connectivity Tests (`database/`)
+
+Complete database integration testing:
+
+- **Connection Validation**: Test database connectivity
+- **Schema Verification**: Validate table structure, indexes, constraints
+- **CRUD Operations**: Create, read, update, delete data
+- **Data Integrity**: Foreign key constraints, referential integrity
+- **Performance Testing**: Query performance, connection pooling
+- **Backup and Recovery**: Backup procedures, data consistency
+
+**Key Features:**
+- Supports both PostgreSQL and MongoDB
+- Tests data persistence from UI to database
+- Validates database performance under load
+- Checks data consistency across operations
+
+### 3. API Integration Tests (`api/`)
+
+Complete API health and integration validation:
+
+- **Health Checks**: API availability, response times
+- **Endpoint Testing**: All CRUD endpoints, error handling
+- **Authentication**: Protected routes, token validation
+- **Performance**: Response times, concurrent requests
+- **Error Handling**: 404, 500, rate limiting
+- **Security**: Input validation, SQL injection prevention
+
+**Key Features:**
+- Tests all API endpoints automatically
+- Validates error responses and status codes
+- Checks API performance under load
+- Verifies security measures
+
+### 4. Dashboard and Navigation Tests (`dashboard/`)
+
+UI component and navigation testing:
+
+- **Layout Components**: Sidebar, header, main content
+- **Navigation**: Menu items, routing, active states
+- **Widgets**: Charts, metrics, recent activity
+- **Search**: Global search, filtering, sorting
+- **Responsive Design**: Mobile, tablet, desktop layouts
+
+**Key Features:**
+- Tests all UI components
+- Validates responsive behavior
+- Checks accessibility compliance
+- Verifies navigation flows
+
+### 5. Ticket Management Tests (`tickets/`)
+
+Core business functionality testing:
+
+- **Ticket CRUD**: Create, read, update, delete tickets
+- **Status Management**: Status transitions, workflow validation
+- **Assignment**: User assignment, notification triggers
+- **Comments**: Add comments, file attachments
+- **Filtering**: Status, priority, date range filters
+
+**Key Features:**
+- Tests complete ticket lifecycle
+- Validates business rules and workflows
+- Checks data persistence and API integration
+- Verifies UI interactions and feedback
+
+### 6. End-to-End Workflow Tests (`workflows/`)
+
+Complete user journey testing:
+
+- **Ticket Lifecycle**: Creation → Assignment → Resolution
+- **Asset Management**: Registration → Maintenance → Retirement
+- **User Management**: Creation → Permission updates → Deactivation
+- **Reporting**: Generate reports, export functionality
+- **Integration**: External system connections
+
+**Key Features:**
+- Tests complete business processes
+- Validates cross-module interactions
+- Checks real-world user scenarios
+- Verifies data flow across systems
+
+### 7. Accessibility Tests (`accessibility/`)
+
+WCAG 2.1 compliance testing:
+
+- **WCAG 2.1 Level A**: Basic accessibility requirements
+- **WCAG 2.1 Level AA**: Enhanced accessibility features
+- **WCAG 2.1 Level AAA**: Advanced accessibility compliance
+- **Keyboard Navigation**: Full keyboard accessibility
+- **Screen Reader Support**: ARIA labels, live regions
+- **Mobile Accessibility**: Touch targets, mobile screen readers
+
+**Key Features:**
+- Comprehensive WCAG 2.1 compliance testing
+- Keyboard navigation validation
+- Screen reader compatibility checks
+- Mobile accessibility verification
+- Dynamic content accessibility testing
+
+### 8. Performance Tests (`performance/`)
+
+Comprehensive performance validation:
+
+- **Page Load Performance**: First Contentful Paint, Largest Contentful Paint
+- **API Performance**: Response times, concurrent requests
+- **Rendering Performance**: Component render times
+- **Memory Usage**: Memory leaks, garbage collection
+- **Network Performance**: Bundle optimization, caching
+- **Concurrent User Performance**: Load testing, scalability
+
+**Key Features:**
+- Core Web Vitals measurement
+- API performance benchmarking
+- Memory leak detection
+- Network optimization validation
+- Scalability testing
+
+### 9. Security Tests (`security/`)
+
+Comprehensive security validation:
+
+- **Authentication Security**: Brute force prevention, password strength
+- **Authorization Security**: Role-based access, privilege escalation
+- **Input Validation**: SQL injection, XSS prevention
+- **Data Protection**: Encryption, data leakage prevention
+- **Network Security**: HTTPS, security headers
+- **API Security**: Rate limiting, authentication validation
+
+**Key Features:**
+- Comprehensive security vulnerability testing
+- Authentication and authorization validation
+- Input sanitization verification
+- Data protection compliance
+- Network security validation
+
+### 10. Mobile Tests (`mobile/`)
+
+Mobile and responsive design testing:
+
+- **Responsive Design**: Multiple screen sizes, orientations
+- **Mobile Navigation**: Touch-friendly navigation, mobile menus
+- **Touch Interactions**: Touch targets, gestures, mobile keyboards
+- **Mobile Performance**: Mobile network optimization
+- **Mobile Accessibility**: Mobile screen readers, touch accessibility
+- **Browser Compatibility**: Mobile browser quirks, offline support
+
+**Key Features:**
+- Comprehensive mobile device testing
+- Touch interaction validation
+- Mobile performance optimization
+- Mobile accessibility compliance
+- Cross-mobile-browser compatibility
+
+## 🛠️ Test Utilities
+
+### TestHelper Class
+
+Central utility class providing common testing functions:
+
+```typescript
+// Authentication
+await testHelper.authenticateUser(email, password);
+
+// Form interactions
+await testHelper.fillFormFields(page, fields);
+
+// API testing
+await testHelper.waitForApiResponse(page, '/api/tickets', 200);
+
+// Validation
+await testHelper.verifyToast(page, 'Success message', 'success');
+await testHelper.verifyTableData(page, '[data-testid="table"]', data);
+
+// Responsive testing
+await testHelper.verifyResponsiveDesign(page);
+
+// Accessibility
+await testHelper.verifyAccessibility(page);
+```
+
+### DatabaseTestHelper Class
+
+Database-specific testing utilities:
+
+```typescript
+// Connection testing
+await dbHelper.testConnection();
+
+// Data operations
+const userId = await dbHelper.createUser(userData);
+const user = await dbHelper.getUserById(userId);
+await dbHelper.deleteUser(userId);
+
+// Performance testing
+const tickets = await dbHelper.getTicketsPaginated(1, 100);
+
+// Schema validation
+const tables = await dbHelper.getTableList();
+const indexes = await dbHelper.getIndexes();
+```
+
+## 📈 Test Reports
+
+The test suite generates comprehensive reports:
+
+### HTML Report (`test-results/comprehensive-report.html`)
+- Visual dashboard with pass/fail metrics
+- Detailed suite breakdowns
+- Error summaries and stack traces
+- Configuration details
+
+### JSON Report (`test-results/comprehensive-report.json`)
+- Machine-readable test results
+- Detailed test execution data
 - Performance metrics
+- Environment information
 
-### 3. Ticket Management Tests (`tests/tickets/`)
+### Markdown Summary (`test-results/test-summary.md`)
+- Quick overview of test results
+- Pass/fail statistics by suite
+- Error summaries
+- Configuration snapshot
 
-Tests ticket lifecycle and workflows:
+### Playwright Reports
+- Built-in Playwright HTML reports
+- Test traces and screenshots
+- Video recordings of failures
+- Step-by-step execution details
 
-- Ticket creation and editing
-- Status changes and assignments
-- Comments and attachments
-- Search and filtering
-- Bulk operations
-- Workflow automation
-
-### 4. API Integration Tests (`tests/api/`)
-
-Tests backend API connectivity:
-
-- Authentication endpoints
-- CRUD operations
-- Error handling
-- Rate limiting
-- Real-time updates
-- Performance testing
-
-### 5. Database Integration Tests (`tests/database/`)
-
-Tests data persistence and consistency:
-
-- Data creation and retrieval
-- Relationship management
-- Validation constraints
-- Performance with large datasets
-- Data consistency checks
-
-## 🔧 Configuration
+## ⚙️ Configuration
 
 ### Environment Variables
 
-Key configuration options in `tests/env.test`:
-
 ```bash
-# API Configuration
-TEST_API_URL=http://localhost:3000
-TEST_API_TIMEOUT=10000
+# Server URLs
+TEST_BASE_URL=http://localhost:5173      # UI server
+TEST_API_URL=http://localhost:3000       # API server
+TEST_DATABASE_URL=postgresql://...       # Database connection
 
-# Database Configuration
-TEST_DATABASE_URL=postgresql://nova_admin:nova_password@localhost:5432/nova_universe_test
-
-# Test User Credentials
+# Test credentials
 TEST_USER_EMAIL=testuser@nova.com
 TEST_USER_PASSWORD=TestUser123!
+TEST_ADMIN_EMAIL=admin@nova.com
+TEST_ADMIN_PASSWORD=admin123
 
-# Performance Thresholds
+# Test execution
+TEST_TIMEOUT=30000                       # Default timeout (ms)
+TEST_RETRIES=2                          # Retry failed tests
+TEST_WORKERS=1                          # Parallel workers
+
+# Performance thresholds
 TEST_PERFORMANCE_THRESHOLD_LOAD_TIME=3000
+TEST_PERFORMANCE_THRESHOLD_RENDER_TIME=1000
 TEST_PERFORMANCE_THRESHOLD_API_RESPONSE=2000
 ```
 
-### Playwright Configuration
-
-The `playwright.config.ts` file configures:
-
-- Browser projects (Chrome, Firefox, Safari, Mobile)
-- Test timeouts and retries
-- Screenshot and video capture
-- Global setup/teardown
-- Web server configuration
-
-## 📊 Test Reports
-
-After running tests, reports are generated in `test-results/`:
-
-- **HTML Report**: Interactive test results
-- **Screenshots**: Failed test screenshots
-- **Videos**: Test execution recordings
-- **Traces**: Detailed execution traces
-
-View the HTML report:
+### Test Execution Options
 
 ```bash
-npx playwright show-report test-results/html
+# Basic execution
+./run-tests.sh all
+
+# With custom options
+./run-tests.sh all --workers 4 --retries 1 --timeout 180000
+
+# Headed mode (visible browser)
+./run-tests.sh auth --headed
+
+# Debug mode
+./run-tests.sh performance --debug
+
+# Skip report generation
+./run-tests.sh all --no-report
+
+# Install dependencies first
+./run-tests.sh --install all
+
+# Check services before running
+./run-tests.sh --check
 ```
 
-## 🐛 Debugging Tests
+## 🔧 Advanced Usage
 
-### Debug Mode
-
-Run tests in debug mode:
+### Running Specific Test Types
 
 ```bash
-npx playwright test --debug
+# Smoke tests (quick validation)
+./run-tests.sh smoke
+
+# Regression tests (core features)
+./run-tests.sh regression
+
+# Individual test suites
+./run-tests.sh auth
+./run-tests.sh database
+./run-tests.sh api
+./run-tests.sh dashboard
+./run-tests.sh tickets
+./run-tests.sh workflows
+./run-tests.sh accessibility
+./run-tests.sh performance
+./run-tests.sh security
+./run-tests.sh mobile
 ```
 
-### UI Mode
-
-Run tests with Playwright UI:
+### Parallel Execution
 
 ```bash
-npx playwright test --ui
+# Run with multiple workers
+./run-tests.sh all --workers 4
+
+# Run specific suites in parallel
+node ui-test-runner.cjs --suites auth,database,api --workers 3
 ```
 
-### Verbose Output
-
-Enable detailed logging:
+### Debugging Tests
 
 ```bash
-./scripts/run-tests.sh -v
+# Run in debug mode
+./run-tests.sh auth --debug
+
+# Run in headed mode
+./run-tests.sh auth --headed
+
+# Run with longer timeout
+./run-tests.sh performance --timeout 300000
 ```
 
-### Specific Test
-
-Run a specific test:
+### Continuous Integration
 
 ```bash
-npx playwright test -g "should login successfully"
-```
+# For CI environments
+./run-tests.sh all --workers 2 --retries 1 --no-report
 
-## 🔄 Continuous Integration
-
-### GitHub Actions
-
-The testing suite is configured for CI/CD:
-
-```yaml
-# .github/workflows/ui-tests.yml
-name: UI Tests
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: pnpm install
-      - run: npx playwright install --with-deps
-      - run: npx playwright test
-      - uses: actions/upload-artifact@v3
-        with:
-          name: playwright-report
-          path: test-results/
-```
-
-### Local CI Simulation
-
-Test CI locally:
-
-```bash
-# Install dependencies
-pnpm install
-
-# Install Playwright with system dependencies
-npx playwright install --with-deps
-
-# Run tests
-npx playwright test
-```
-
-## 📱 Cross-Browser Testing
-
-The suite tests across multiple browsers:
-
-- **Chromium**: Primary browser for development
-- **Firefox**: Cross-browser compatibility
-- **WebKit**: Safari compatibility
-- **Mobile**: Responsive design testing
-
-Run cross-browser tests:
-
-```bash
-npx playwright test --project=firefox
-npx playwright test --project=webkit
-npx playwright test --project="Mobile Chrome"
+# For staging environments
+./run-tests.sh regression --workers 4 --timeout 120000
 ```
 
 ## 🚨 Troubleshooting
 
 ### Common Issues
 
-1. **Database Connection Failed**
-
-   ```bash
-   # Check Docker services
-   docker-compose ps
-
-   # Restart database
-   docker-compose restart postgres
-   ```
-
-2. **API Connection Failed**
-
-   ```bash
-   # Check API service
-   curl http://localhost:3000/health
-
-   # Start API service
-   cd apps/api && npm start
-   ```
-
-3. **Playwright Browsers Not Found**
-
-   ```bash
-   # Reinstall browsers
-   npx playwright install
-   ```
-
-4. **Test Environment Variables**
-
-   ```bash
-   # Check environment file
-   cat tests/env.test
-
-   # Verify variables are loaded
-   echo $TEST_API_URL
-   ```
-
-### Debug Commands
-
+#### 1. API Server Not Running
 ```bash
-# Check test environment
-./scripts/run-tests.sh --help
-
-# Verify prerequisites
-node --version
-pnpm --version
-npx playwright --version
-
-# Check database connectivity
-docker exec -it nova-postgres pg_isready -U nova_admin
-
-# Check API health
-curl -f http://localhost:3000/health
+# Error: API server not responding
+# Solution: Start the API server
+cd apps/api
+npm run dev
 ```
 
-## 📈 Performance Testing
-
-The suite includes performance benchmarks:
-
-- Page load time thresholds
-- API response time limits
-- Large dataset handling
-- Concurrent operation testing
-
-Run performance tests:
-
+#### 2. Database Connection Failed
 ```bash
-./scripts/run-tests.sh -t performance -v
+# Error: Database connection failed
+# Solution: Check database configuration
+export TEST_DATABASE_URL="postgresql://user:pass@localhost:5432/dbname"
 ```
 
-## 🔒 Security Testing
+#### 3. UI Server Not Available
+```bash
+# Error: UI server not responding
+# Solution: Start the UI development server
+cd apps/unified
+npm run dev
+```
 
-Security-focused test scenarios:
+#### 4. Playwright Browsers Missing
+```bash
+# Error: Browser not found
+# Solution: Install Playwright browsers
+npm run test:ui:install-deps
+```
 
-- Authentication bypass attempts
-- SQL injection prevention
-- XSS protection
-- CSRF token validation
-- Rate limiting enforcement
+#### 5. Test Timeouts
+```bash
+# Error: Test timeout exceeded
+# Solution: Increase timeout for slow tests
+./run-tests.sh all --timeout 300000
+```
 
-## 📱 Mobile Testing
+#### 6. Memory Issues
+```bash
+# Error: Out of memory
+# Solution: Reduce workers and increase memory
+./run-tests.sh all --workers 2
+```
 
-Responsive design verification:
+### Debug Mode
 
-- Mobile viewport testing
-- Touch interaction testing
-- PWA functionality
-- Offline capabilities
+For detailed debugging:
 
-## 🎯 Best Practices
+```bash
+# Run with debug and headed mode
+./run-tests.sh auth --debug --headed
 
-### Writing Tests
+# Or with the test runner
+node ui-test-runner.cjs --debug --headed --suites auth
+```
 
-1. **Use descriptive test names**
-2. **Follow AAA pattern** (Arrange, Act, Assert)
-3. **Test one thing at a time**
-4. **Use data-testid attributes**
-5. **Handle async operations properly**
+This will:
+- Open browser in visible mode
+- Pause at breakpoints
+- Show detailed step execution
+- Allow manual intervention
 
-### Test Data Management
+### Performance Issues
 
-1. **Use unique test data**
-2. **Clean up after tests**
-3. **Isolate test environments**
-4. **Use factories for test data**
+```bash
+# Check performance thresholds
+./run-tests.sh performance --timeout 300000
 
-### Error Handling
+# Run with reduced workers
+./run-tests.sh all --workers 2
 
-1. **Test error scenarios**
-2. **Verify error messages**
-3. **Test edge cases**
-4. **Handle network failures**
+# Check memory usage
+./run-tests.sh all --workers 1
+```
 
-## 🤝 Contributing
-
-### Adding New Tests
-
-1. **Create test file** in appropriate directory
-2. **Follow naming convention**: `feature-name.spec.ts`
-3. **Use existing test helpers** from `utils/test-helpers.ts`
-4. **Add test data** to global setup if needed
-5. **Update documentation** and examples
+## 📝 Writing New Tests
 
 ### Test Structure
 
@@ -512,34 +585,93 @@ import { testHelper } from '../utils/test-helpers';
 test.describe('Feature Name', () => {
   test.beforeEach(async ({ page }) => {
     // Setup for each test
+    await page.goto('/');
+    await testHelper.waitForPageLoad(page);
   });
 
-  test('should perform expected behavior', async ({ page }) => {
+  test('should perform specific action', async ({ page }) => {
     // Test implementation
+    await page.click('[data-testid="button"]');
+    await expect(page.locator('[data-testid="result"]')).toBeVisible();
   });
 });
 ```
 
-## 📚 Additional Resources
+### Best Practices
 
-- [Playwright Documentation](https://playwright.dev/)
-- [Testing Best Practices](https://playwright.dev/docs/best-practices)
-- [API Testing Guide](https://playwright.dev/docs/api-testing)
-- [Mobile Testing](https://playwright.dev/docs/mobile)
-- [Performance Testing](https://playwright.dev/docs/performance)
+1. **Use Data Test IDs**: `[data-testid="element"]` for reliable selectors
+2. **Page Object Pattern**: Create reusable page objects for complex UIs
+3. **Test Isolation**: Each test should be independent and clean up after itself
+4. **Assertions**: Use specific assertions with clear error messages
+5. **Wait Strategies**: Use appropriate wait strategies for dynamic content
+6. **Error Handling**: Test both success and error scenarios
+7. **Documentation**: Document complex test scenarios and edge cases
+
+### Adding New Test Suites
+
+1. Create test files in appropriate directory
+2. Add test suite configuration to `ui-test-runner.cjs`
+3. Update package.json with new test scripts
+4. Update this README with documentation
 
 ## 📞 Support
 
-For issues or questions:
+For questions or issues with the testing suite:
 
-1. **Check troubleshooting section** above
-2. **Review test logs** in `test-results/`
-3. **Check environment configuration**
-4. **Verify service dependencies**
-5. **Create issue** with detailed error information
+1. **Documentation**: Check this README first
+2. **GitHub Issues**: Create an issue for bugs or feature requests
+3. **Team Chat**: Reach out in the development channel
+4. **Code Review**: Include test updates in pull requests
+
+## 🔄 Continuous Integration
+
+### GitHub Actions Example
+
+```yaml
+name: UI Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: cd apps/unified && npm install
+      - run: cd apps/unified && npm run test:ui:install-deps
+      - run: cd apps/unified && ./run-tests.sh smoke
+      - run: cd apps/unified && ./run-tests.sh regression
+```
+
+### Jenkins Pipeline Example
+
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Setup') {
+            steps {
+                sh 'cd apps/unified && npm install'
+                sh 'cd apps/unified && npm run test:ui:install-deps'
+            }
+        }
+        stage('Smoke Tests') {
+            steps {
+                sh 'cd apps/unified && ./run-tests.sh smoke'
+            }
+        }
+        stage('Full Tests') {
+            steps {
+                sh 'cd apps/unified && ./run-tests.sh all'
+            }
+        }
+    }
+}
+```
 
 ---
 
-**Happy Testing! 🎉**
-
-The Nova Universe UI Testing Suite ensures your ITSM application is robust, reliable, and ready for production use.
+**Last Updated**: 2024-12-19  
+**Version**: 2.0.0  
+**Maintainer**: Nova Universe Development Team

@@ -6,12 +6,14 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } from '@jest/globals';
-import supertest from 'supertest';
+// Note: supertest would be needed for actual HTTP testing
+// import supertest from 'supertest';
 import { CosmoSDK, CosmoConfig, CosmoContext } from '@nova-universe/cosmo-sdk';
 
 describe('Cosmo Escalation End-to-End Tests', () => {
-  let server: any;
-  let request: supertest.SuperTest<supertest.Test>;
+  // Note: server and request would be needed for actual HTTP testing
+  // let server: any;
+  // let request: supertest.SuperTest<supertest.Test>;
   let testUser: any;
   let testTicket: any;
   let authToken: string;
@@ -73,6 +75,7 @@ describe('Cosmo Escalation End-to-End Tests', () => {
           role: testUser.role,
         },
       },
+      },
       activeTicket: {
         id: testTicket.id,
         title: testTicket.title,
@@ -82,7 +85,20 @@ describe('Cosmo Escalation End-to-End Tests', () => {
       },
     };
 
+    // Initialize Cosmo SDK with context for testing
     cosmoSDK = new CosmoSDK(config);
+    
+    // Verify context is properly configured
+    expect(context.userId).toBe(testUser.id);
+    expect(context.tenantId).toBe('test-tenant');
+    expect(context.session.token).toBe(authToken);
+    
+    console.log('Test context configured:', {
+      userId: context.userId,
+      tenantId: context.tenantId,
+      module: context.module
+    });
+    
     // Note: In actual implementation, this would connect to real API
     // For testing, we'll simulate the initialization
     console.log('Initializing CosmoSDK for test...');
@@ -173,6 +189,18 @@ describe('Cosmo Escalation End-to-End Tests', () => {
         status: 'active',
         messages: [],
       };
+
+      // Verify conversation is properly initialized
+      expect(conversation.id).toBe(conversationId);
+      expect(conversation.userId).toBe(testUser.id);
+      expect(conversation.status).toBe('active');
+      expect(conversation.messages).toHaveLength(0);
+
+      console.log('Conversation initialized:', {
+        id: conversation.id,
+        userId: conversation.userId,
+        status: conversation.status
+      });
 
       // Simulate escalation triggers
       const escalationKeywords = [

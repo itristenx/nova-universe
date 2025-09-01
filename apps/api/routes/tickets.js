@@ -224,6 +224,7 @@ router.get(
 router.post(
   '/',
   authenticateJWT,
+  requirePermission('tickets:create'), // Add permission check for ticket creation
   upload.array('attachments', 10),
   createRateLimit(60 * 1000, 30),
   [
@@ -281,6 +282,42 @@ router.post(
       };
 
       const ticket = await TicketService.createTicket(ticketData, req.files || [], req.user);
+
+      // Send notifications for new ticket creation
+      try {
+        // Notify the assignee if ticket is assigned
+        if (ticket.assignedToUserId) {
+          await NotificationService.sendNotification({
+            userId: ticket.assignedToUserId,
+            type: 'TICKET_ASSIGNED',
+            title: 'New Ticket Assigned',
+            message: `You have been assigned ticket #${ticket.number}: ${ticket.title}`,
+            data: { ticketId: ticket.id, ticketNumber: ticket.number }
+          });
+        }
+
+        // Notify requester of successful creation
+        await NotificationService.sendNotification({
+          userId: req.user.id,
+          type: 'TICKET_CREATED',
+          title: 'Ticket Created Successfully',
+          message: `Your ticket #${ticket.number} has been created and is being processed.`,
+          data: { ticketId: ticket.id, ticketNumber: ticket.number }
+        });
+
+        // If high priority, notify managers
+        if (ticket.priority === 'HIGH' || ticket.priority === 'CRITICAL') {
+          await NotificationService.notifyManagers({
+            type: 'HIGH_PRIORITY_TICKET',
+            title: `${ticket.priority} Priority Ticket Created`,
+            message: `Ticket #${ticket.number} requires immediate attention: ${ticket.title}`,
+            data: { ticketId: ticket.id, ticketNumber: ticket.number, priority: ticket.priority }
+          });
+        }
+      } catch (notificationError) {
+        // Log notification failures but don't fail the ticket creation
+        logger.warn('Failed to send ticket creation notifications:', notificationError);
+      }
 
       res.status(201).json({
         success: true,

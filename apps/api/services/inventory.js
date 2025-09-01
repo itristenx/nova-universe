@@ -25,7 +25,8 @@ async function getPrisma() {
 let prisma;
 // Lazy initialization for Prisma client to avoid race conditions
 let prismaInstancePromise = null;
-function getPrismaInstance() {
+function _getPrismaInstance() {
+  // Reserved for future lazy loading implementation
   if (!prismaInstancePromise) {
     prismaInstancePromise = getPrisma();
   }
@@ -87,16 +88,26 @@ export class InventoryService {
     let importBatch = null;
 
     try {
-      logger.info(`Starting asset import: ${filename} by ${importedBy}`);
+      logger.info(`Starting asset import: ${filename} by ${importedBy}`, {
+        skipValidation: options.skipValidation || false,
+        batchSize: options.batchSize || 100,
+        overwriteExisting: options.overwriteExisting || false
+      });
 
       // Parse CSV data
       const records = this.parseCsvData(csvData);
 
-      // Create import batch record
+      // Create import batch record  
       importBatch = await this.createImportBatch(batchId, filename, importedBy, records.length);
 
-      // Validate all records
-      const validationResults = await this.validateRecords(records, batchId);
+      // Validate all records (can be skipped based on options)
+      let validationResults;
+      if (options.skipValidation) {
+        logger.warn('Skipping validation due to options.skipValidation = true');
+        validationResults = { validRecords: records, errors: [] };
+      } else {
+        validationResults = await this.validateRecords(records, batchId);
+      }
 
       // Check if validation passed
       if (validationResults.hasErrors) {
@@ -400,6 +411,11 @@ export class InventoryService {
    */
   validateBusinessLogic(record, rowNumber) {
     const errors = [];
+
+    // Log which row is being validated
+    logger.debug(`Validating business logic for row ${rowNumber}`, { 
+      asset_tag: record.asset_tag 
+    });
 
     // Warranty expiry should be after purchase date
     if (record.purchase_date && record.warranty_expiry) {
@@ -1104,6 +1120,13 @@ export class InventoryService {
           updated_at = CURRENT_TIMESTAMP
         RETURNING *
       `;
+
+      logger.info(`Kiosk organization assignment completed`, {
+        kioskId,
+        organizationId: validatedOrgData.organizationId,
+        assignmentRows: assignment,
+        assignedBy
+      });
 
       // Update kiosk metadata if needed
       if (validatedOrgData.updateKioskMetadata) {

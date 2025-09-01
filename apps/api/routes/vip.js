@@ -13,9 +13,17 @@ router.get('/proxies', authenticateJWT, createRateLimit(15 * 60 * 1000, 50), asy
     );
     res.json({ success: true, proxies: rows });
   } catch (err) {
+    console.error('Failed to load VIP proxies:', err);
+    console.error('User requesting proxies:', req.user?.id);
+    
     res
       .status(500)
-      .json({ success: false, error: 'Failed to load proxies', errorCode: 'PROXY_ERROR' });
+      .json({ 
+        success: false, 
+        error: 'Failed to load proxies', 
+        errorCode: 'PROXY_ERROR',
+        ...(process.env.NODE_ENV !== 'production' && { details: err.message })
+      });
   }
 });
 
@@ -42,9 +50,18 @@ router.post(
       );
       res.json({ success: true });
     } catch (err) {
+      console.error('Failed to add VIP proxy:', err);
+      console.error('Request body:', req.body);
+      console.error('User performing action:', req.user?.id);
+      
       res
         .status(500)
-        .json({ success: false, error: 'Failed to add proxy', errorCode: 'PROXY_ERROR' });
+        .json({ 
+          success: false, 
+          error: 'Failed to add proxy', 
+          errorCode: 'PROXY_ERROR',
+          ...(process.env.NODE_ENV !== 'production' && { details: err.message })
+        });
     }
   },
 );
@@ -58,9 +75,18 @@ router.delete(
       await db.none('DELETE FROM vip_proxies WHERE id = $1', [req.params.id]);
       res.json({ success: true });
     } catch (err) {
+      console.error('Failed to remove VIP proxy:', err);
+      console.error('Proxy ID to delete:', req.params.id);
+      console.error('User performing action:', req.user?.id);
+      
       res
         .status(500)
-        .json({ success: false, error: 'Failed to remove proxy', errorCode: 'PROXY_ERROR' });
+        .json({ 
+          success: false, 
+          error: 'Failed to remove proxy', 
+          errorCode: 'PROXY_ERROR',
+          ...(process.env.NODE_ENV !== 'production' && { details: err.message })
+        });
     }
   },
 );
@@ -79,9 +105,17 @@ router.get('/metrics', authenticateJWT, createRateLimit(15 * 60 * 1000, 50), asy
       },
     });
   } catch (err) {
+    console.error('Failed to load VIP metrics:', err);
+    console.error('User requesting metrics:', req.user?.id);
+    
     res
       .status(500)
-      .json({ success: false, error: 'Failed to load metrics', errorCode: 'METRICS_ERROR' });
+      .json({ 
+        success: false, 
+        error: 'Failed to load metrics', 
+        errorCode: 'METRICS_ERROR',
+        ...(process.env.NODE_ENV !== 'production' && { details: err.message })
+      });
   }
 });
 

@@ -5,7 +5,7 @@
  * classification, customer matching, duplicate detection, and trend analysis.
  */
 
-import { describe, test, before, after, beforeEach } from 'node:test';
+import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert';
 
 // Mock the CosmoTicketProcessor since we're testing the interface
@@ -319,6 +319,16 @@ class MockCosmoTicketProcessor {
         category: topCategory[0],
         probability: Math.min(topCategory[1] / this.ticketCounter, 1),
         confidence: topCategory[1] > 2 ? 'high' : topCategory[1] > 1 ? 'medium' : 'low',
+      });
+    }
+
+    // Include priority predictions if priority data is available
+    if (priorities.size > 0) {
+      const topPriority = [...priorities.entries()].sort((a, b) => b[1] - a[1])[0];
+      predictions.push({
+        priority: topPriority[0],
+        probability: Math.min(topPriority[1] / this.ticketCounter, 1),
+        confidence: topPriority[1] > 2 ? 'high' : topPriority[1] > 1 ? 'medium' : 'low',
       });
     }
 

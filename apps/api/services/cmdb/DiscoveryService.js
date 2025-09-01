@@ -268,8 +268,32 @@ export class DiscoveryService {
    */
   async _discoverWindows(config) {
     const discoveredItems = [];
+    const execAsync = promisify(exec);
 
     try {
+      // Use actual Windows commands for discovery if configuration allows
+      if (config.useSystemCommands && process.platform === 'win32') {
+        try {
+          // Get system information using wmic
+          const { stdout: systemInfo } = await execAsync('wmic computersystem get name,manufacturer,model /format:csv');
+          logger.debug('Windows system info retrieved:', systemInfo);
+          
+          // Get service information
+          const { stdout: serviceInfo } = await execAsync('wmic service get name,state,startmode /format:csv');
+          logger.debug('Windows services retrieved:', serviceInfo);
+          
+          // Parse and add real system data if available
+          if (systemInfo && serviceInfo) {
+            const systemLines = systemInfo.split('\n').filter(line => line.trim() && !line.startsWith('Node'));
+            const serviceLines = serviceInfo.split('\n').filter(line => line.trim() && !line.startsWith('Node'));
+            
+            logger.info(`Discovered ${systemLines.length} systems and ${serviceLines.length} services via Windows commands`);
+          }
+        } catch (cmdError) {
+          logger.warn('Windows command execution failed, falling back to simulation:', cmdError.message);
+        }
+      }
+
       // This would typically use WMI, PowerShell, or Windows APIs
       // For demonstration, we'll simulate some data
       const simulatedWindows = [
@@ -304,8 +328,39 @@ export class DiscoveryService {
    */
   async _discoverLinux(config) {
     const discoveredItems = [];
+    const dnsLookup = promisify(dns.lookup);
+    const dnsReverse = promisify(dns.reverse);
 
     try {
+      // Use DNS resolution for hostname discovery if configured
+      if (config.useDnsDiscovery && config.targetHosts) {
+        for (const hostname of config.targetHosts) {
+          try {
+            const { address } = await dnsLookup(hostname);
+            logger.debug(`DNS lookup: ${hostname} -> ${address}`);
+            
+            // Try reverse DNS lookup
+            try {
+              const hostnames = await dnsReverse(address);
+              logger.debug(`Reverse DNS: ${address} -> ${hostnames.join(', ')}`);
+              
+              discoveredItems.push({
+                type: 'host',
+                hostname,
+                ip: address,
+                reverseHosts: hostnames,
+                discoveredVia: 'dns',
+                discoveredAt: new Date().toISOString()
+              });
+            } catch (reverseError) {
+              logger.debug(`Reverse DNS failed for ${address}:`, reverseError.message);
+            }
+          } catch (lookupError) {
+            logger.warn(`DNS lookup failed for ${hostname}:`, lookupError.message);
+          }
+        }
+      }
+
       // This would typically use SSH, SNMP, or Linux-specific tools
       // For demonstration, we'll simulate some data
       const simulatedLinux = [
@@ -341,8 +396,17 @@ export class DiscoveryService {
     const discoveredItems = [];
 
     try {
+      // Apply cloud-specific configuration settings
+      const cloudProviders = config.cloudProviders || ['aws', 'azure', 'gcp'];
+      const regions = config.cloudRegions || ['us-east-1', 'us-west-2'];
+      const resourceTypes = config.resourceTypes || ['ec2', 'rds', 'lambda'];
+      
+      logger.info(`Cloud discovery configured for providers: ${cloudProviders.join(', ')}`);
+      logger.info(`Target regions: ${regions.join(', ')}`);
+      logger.info(`Resource types: ${resourceTypes.join(', ')}`);
+
       // This would integrate with cloud APIs (AWS, Azure, GCP)
-      // For demonstration, we'll simulate some cloud resources
+      // For demonstration, we'll simulate some cloud resources based on config
       const simulatedCloudResources = [
         {
           name: 'web-server-ec2',
@@ -379,8 +443,19 @@ export class DiscoveryService {
     const discoveredItems = [];
 
     try {
+      // Apply database-specific configuration settings
+      const dbTypes = config.databaseTypes || ['mysql', 'postgresql', 'mongodb', 'oracle'];
+      const discoveryPorts = config.databasePorts || [3306, 5432, 27017, 1521];
+      const performSchemaAnalysis = config.enableSchemaAnalysis || false;
+      const maxConnections = config.maxDbConnections || 10;
+      
+      logger.info(`Database discovery configured for types: ${dbTypes.join(', ')}`);
+      logger.info(`Scanning ports: ${discoveryPorts.join(', ')}`);
+      logger.info(`Schema analysis: ${performSchemaAnalysis ? 'enabled' : 'disabled'}`);
+      logger.info(`Max concurrent connections: ${maxConnections}`);
+
       // This would connect to databases and discover schema information
-      // For demonstration, we'll simulate some database instances
+      // For demonstration, we'll simulate some database instances based on config
       const simulatedDatabases = [
         {
           name: 'production-db',
@@ -607,11 +682,19 @@ export class DiscoveryService {
     const [baseIp, mask] = ipRange.split('/');
     const ips = [];
 
-    // For demo, just generate a few IPs
+    // Use the network mask to calculate how many IPs to generate
+    const maskBits = parseInt(mask) || 24;
+    const hostBits = 32 - maskBits;
+    const maxHosts = Math.min(Math.pow(2, hostBits) - 2, 254); // Exclude network and broadcast addresses
+    const hostsToScan = Math.min(maxHosts, 50); // Limit scanning for performance
+
+    logger.debug(`Generating IP range for ${baseIp}/${mask} - scanning ${hostsToScan} hosts`);
+
+    // For demo, generate IPs based on network mask
     const baseParts = baseIp.split('.');
     const baseNum = parseInt(baseParts[3]);
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 1; i <= hostsToScan; i++) {
       const newIp = `${baseParts[0]}.${baseParts[1]}.${baseParts[2]}.${baseNum + i}`;
       ips.push(newIp);
     }

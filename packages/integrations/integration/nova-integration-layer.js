@@ -77,6 +77,15 @@ export class IConnector {
 
   // Data Operations
   async sync(options = {}) {
+    // Validate sync options using our schema
+    const validation = SchemaValidator.validateSyncOptions(options);
+    if (!validation.valid) {
+      throw new Error(`Invalid sync options: ${validation.errors.join(', ')}`);
+    }
+
+    console.log(`Sync operation starting with options:`, JSON.stringify(options, null, 2));
+    console.log(`Validated options schema successfully`);
+    
     throw new Error('sync() must be implemented by subclass');
   }
 
@@ -123,6 +132,38 @@ export class IConnector {
       input: {},
       output: {},
     };
+  }
+
+  /**
+   * HTTP utility method for connector implementations
+   * Uses axios for making API requests with proper error handling
+   */
+  async makeHttpRequest(options) {
+    if (!axios) {
+      throw new Error('Axios not available for HTTP requests');
+    }
+
+    try {
+      const response = await axios({
+        timeout: options.timeout || 10000,
+        validateStatus: (status) => status < 500, // Don't throw on 4xx errors
+        ...options
+      });
+
+      return {
+        success: response.status < 400,
+        status: response.status,
+        data: response.data,
+        headers: response.headers
+      };
+    } catch (error) {
+      return {
+        success: false,
+        status: error.response?.status || 0,
+        error: error.message,
+        data: null
+      };
+    }
   }
 }
 
@@ -213,6 +254,82 @@ class SecurityUtils {
 
   static generateSignature(data, secret) {
     return crypto.createHmac('sha256', secret).update(data).digest('hex');
+  }
+}
+
+// ============================================================================
+// SCHEMA VALIDATION UTILITIES
+// ============================================================================
+
+/**
+ * Schema validation utilities for integration layer data structures
+ */
+class SchemaValidator {
+  static validateConnectorConfig(config) {
+    return this._validateObject(config, ConnectorConfigSchema, 'ConnectorConfig');
+  }
+
+  static validateHealthStatus(status) {
+    return this._validateObject(status, HealthStatusSchema, 'HealthStatus');
+  }
+
+  static validateSyncOptions(options) {
+    return this._validateObject(options, SyncOptionsSchema, 'SyncOptions');
+  }
+
+  static validateSyncResult(result) {
+    return this._validateObject(result, SyncResultSchema, 'SyncResult');
+  }
+
+  static validateNILConfig(config) {
+    return this._validateObject(config, NILConfigSchema, 'NILConfig');
+  }
+
+  static validateUser360Profile(profile) {
+    return this._validateObject(profile, User360ProfileSchema, 'User360Profile');
+  }
+
+  static validateActionRequest(request) {
+    return this._validateObject(request, ActionRequestSchema, 'ActionRequest');
+  }
+
+  static validateActionResult(result) {
+    return this._validateObject(result, ActionResultSchema, 'ActionResult');
+  }
+
+  static validateValidationResult(result) {
+    return this._validateObject(result, ValidationResultSchema, 'ValidationResult');
+  }
+
+  static validateSyncMetrics(metrics) {
+    return this._validateObject(metrics, SyncMetricsSchema, 'SyncMetrics');
+  }
+
+  static validateSecurityInfo(info) {
+    return this._validateObject(info, SecurityInfoSchema, 'SecurityInfo');
+  }
+
+  static _validateObject(obj, schema, typeName) {
+    const errors = [];
+    
+    if (!obj || typeof obj !== 'object') {
+      return { valid: false, errors: [`${typeName} must be an object`] };
+    }
+
+    for (const [key, expectedType] of Object.entries(schema)) {
+      const value = obj[key];
+      const actualType = Array.isArray(value) ? 'array' : typeof value;
+      
+      if (value !== undefined && actualType !== expectedType) {
+        errors.push(`${typeName}.${key} should be ${expectedType}, got ${actualType}`);
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      validatedObject: obj
+    };
   }
 }
 

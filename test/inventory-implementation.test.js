@@ -3,8 +3,8 @@
  * Validates that all inventory-related services and routes are properly implemented
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, jest } from '@jest/globals';
-import { PrismaClient } from '../prisma/generated/core/index.js';
+import { describe, it, expect, beforeAll, beforeEach, jest } from '@jest/globals';
+// Note: PrismaClient is available for future database testing if needed
 import { InventoryService } from '../apps/api/services/inventory.js';
 import { HelixKioskIntegrationService } from '../apps/api/services/helixKioskIntegration.js';
 import fs from 'fs';
@@ -130,9 +130,17 @@ describe('Inventory Enhancement Implementation', () => {
       // Mock existing asset tags
       mockPrismaClient.$queryRaw.mockResolvedValue([]);
 
+      // Test that validRecord has all required fields
+      expect(validRecord.asset_tag).toBe('TEST001');
+      expect(validRecord.serial_number).toBe('12345678');
+      expect(validRecord.model).toBe('Dell OptiPlex 3080');
+      expect(validRecord.department).toBe('IT');
+      expect(validRecord.status).toBe('active');
+
+      // Validate individual fields using the validRecord data
       const result = inventoryService.validateField(
         'asset_tag',
-        'TEST001',
+        validRecord.asset_tag,
         {
           required: true,
           minLength: 1,
