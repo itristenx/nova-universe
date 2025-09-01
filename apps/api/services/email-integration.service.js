@@ -4,6 +4,7 @@ import { NotificationService } from './notification.service.js';
 import { TicketService as EnhancedTicketService } from './enhanced-ticket.service.js';
 import _EmailTemplateService from './email-template.service.js';
 import { EmailCommunicationService } from './email-communication.service.js';
+import { userInteractionService } from './user-interaction.service.js';
 import { Client } from '@microsoft/microsoft-graph-client';
 import * as msal from '@azure/msal-node';
 import { novaSynthEmailProcessor } from '../lib/nova-synth-email-processor.js';
@@ -31,6 +32,14 @@ class EmailIntegrationService extends EventEmitter {
   async initialize() {
     try {
       await this.loadEmailAccounts();
+      
+      // Initialize User Interaction Service
+      try {
+        await userInteractionService.initialize();
+        logger.info('User Interaction Service initialized successfully');
+      } catch (error) {
+        logger.warn('User Interaction Service initialization failed:', error.message);
+      }
       
       // Initialize Nova Synth Email Processor
       try {
@@ -326,7 +335,10 @@ class EmailIntegrationService extends EventEmitter {
       // Create ticket
       const ticket = await EnhancedTicketService.createTicket(ticketData);
 
-      // Record the email communication with full tracking
+      // Create conversation session and record email interaction
+      await this.recordEmailInteraction(email, account, ticket, user, aiAnalysis);
+
+      // Record the email communication with full tracking (legacy support)
       await this.recordEmailCommunication(email, account, ticket.id, user.id);
 
       // Process attachments
@@ -411,6 +423,141 @@ class EmailIntegrationService extends EventEmitter {
     } catch (error) {
       logger.error('Error recording email communication:', error);
       // Don't throw error as this shouldn't break ticket creation
+    }
+  }
+
+  /**
+   * Record email interaction in User360 system for comprehensive timeline
+   */
+  async recordEmailInteraction(email, account, ticket, user, aiAnalysis = null) {
+    try {
+      if (!userInteractionService.isInitialized) {
+        logger.warn('User Interaction Service not initialized, skipping interaction recording');
+        return;
+      }
+
+      const messageId = email.internetMessageId || email.messageId || email.id;
+      const subject = email.subject || 'No Subject';
+      const content = this.extractTextBody(email) || this.extractHtmlBody(email);
+      
+      // Create or get conversation session for email thread
+      const session = await userInteractionService.createOrGetSession({
+        userId: user.helixUid || user.id,
+        sessionType: 'EMAIL_THREAD',
+        channel: 'EMAIL',
+        externalId: this.generateConversationId(subject, this.extractSenderEmail(email)),
+        subject: subject,
+        context: {
+          accountId: account.id,
+          accountAddress: account.address,
+          ticketId: ticket.id,
+          ticketNumber: ticket.ticketNumber,
+          originalRecipient: account.address
+        },
+        category: ticket.category || 'SUPPORT',
+        priority: this.mapTicketPriorityToSessionPriority(ticket.priority)
+      });
+
+      // Extract attachment information
+      const attachments = email.attachments || [];
+      const attachmentTypes = attachments.map(att => 
+        att.contentType || this.getFileExtension(att.name || att.filename || '')
+      ).filter(Boolean);
+
+      // Record the email as an interaction
+      const interaction = await userInteractionService.recordInteraction({
+        userId: user.helixUid || user.id,
+        sessionId: session.id,
+        interactionType: 'EMAIL_RECEIVED',
+        channel: 'EMAIL',
+        direction: 'INBOUND',
+        content: content,
+        subject: subject,
+        fromUserId: null, // External user
+        toUserIds: [account.address], // Support email address
+        externalId: messageId,
+        isAIGenerated: false,
+        
+        // AI Analysis data if available
+        ...(aiAnalysis && {
+          aiPersonality: 'cosmo',
+          aiConfidence: aiAnalysis.metadata?.aiConfidence,
+          aiIntent: aiAnalysis.analysis?.intent?.primary,
+          aiSentiment: aiAnalysis.analysis?.sentiment?.overall
+        }),
+        
+        // Classification from AI or basic parsing
+        category: aiAnalysis?.analysis?.incident?.category || ticket.category || 'SUPPORT',
+        priority: this.mapTicketPriorityToInteractionPriority(ticket.priority),
+        urgency: this.mapTicketPriorityToUrgency(ticket.priority),
+        businessImpact: aiAnalysis?.analysis?.priority?.businessImpact || 'LOW',
+        
+        // Attachment information
+        hasAttachments: attachments.length > 0,
+        attachmentCount: attachments.length,
+        attachmentTypes: attachmentTypes,
+        
+        // Response requirements
+        requiresResponse: true,
+        responseDeadline: this.calculateResponseDeadline(ticket.priority),
+        
+        // Metadata
+        metadata: {
+          emailAccount: account.address,
+          ticketId: ticket.id,
+          ticketNumber: ticket.ticketNumber,
+          messageId: messageId,
+          headers: email.headers || {},
+          aiAnalysisId: aiAnalysis?.id,
+          emailProvider: account.provider,
+          isAutoProcessed: !!aiAnalysis
+        },
+        
+        // Tags from AI analysis or email parsing
+        tags: [
+          'email',
+          'inbound', 
+          'ticket-creation',
+          ...(aiAnalysis ? ['ai-processed', 'nova-synth'] : ['basic-processed']),
+          ...(aiAnalysis?.analysis?.keywords || []),
+          ...(attachments.length > 0 ? ['has-attachments'] : [])
+        ]
+      });
+
+      // If this created a new ticket, record that as well
+      if (ticket) {
+        await userInteractionService.recordInteraction({
+          userId: user.helixUid || user.id,
+          sessionId: session.id,
+          interactionType: 'SYSTEM_GENERATED',
+          channel: 'EMAIL',
+          direction: 'SYSTEM_GENERATED',
+          content: `Ticket ${ticket.ticketNumber} created automatically from email`,
+          subject: `Ticket Created: ${ticket.title}`,
+          isAIGenerated: !!aiAnalysis,
+          aiPersonality: aiAnalysis ? 'cosmo' : null,
+          category: 'TICKET_MANAGEMENT',
+          priority: 'NORMAL',
+          urgency: 'LOW',
+          businessImpact: 'LOW',
+          metadata: {
+            ticketId: ticket.id,
+            ticketNumber: ticket.ticketNumber,
+            ticketStatus: ticket.status,
+            automationType: 'email-to-ticket',
+            isAIProcessed: !!aiAnalysis
+          },
+          tags: ['ticket-created', 'automation', 'system-generated']
+        });
+      }
+
+      logger.info(`Email interaction recorded in User360: ${interaction.id} for user: ${user.helixUid || user.id}`);
+      
+      return { session, interaction };
+    } catch (error) {
+      logger.error('Error recording email interaction in User360:', error);
+      // Don't throw error as this shouldn't break ticket creation
+      return null;
     }
   }
 
@@ -1982,6 +2129,81 @@ class EmailIntegrationService extends EventEmitter {
         totalTicketsCreated: 0,
       };
     }
+  }
+
+  // ============================================================================
+  // USER360 INTERACTION HELPER METHODS
+  // ============================================================================
+
+  /**
+   * Map ticket priority to session priority
+   */
+  mapTicketPriorityToSessionPriority(priority) {
+    const mapping = {
+      'CRITICAL': 'CRITICAL',
+      'HIGH': 'HIGH', 
+      'URGENT': 'URGENT',
+      'MEDIUM': 'NORMAL',
+      'NORMAL': 'NORMAL',
+      'LOW': 'LOW'
+    };
+    return mapping[priority] || 'NORMAL';
+  }
+
+  /**
+   * Map ticket priority to interaction priority
+   */
+  mapTicketPriorityToInteractionPriority(priority) {
+    const mapping = {
+      'CRITICAL': 'CRITICAL',
+      'HIGH': 'HIGH',
+      'URGENT': 'URGENT', 
+      'MEDIUM': 'NORMAL',
+      'NORMAL': 'NORMAL',
+      'LOW': 'LOW'
+    };
+    return mapping[priority] || 'NORMAL';
+  }
+
+  /**
+   * Map ticket priority to urgency level
+   */
+  mapTicketPriorityToUrgency(priority) {
+    const mapping = {
+      'CRITICAL': 'CRITICAL',
+      'HIGH': 'HIGH',
+      'URGENT': 'HIGH',
+      'MEDIUM': 'MEDIUM', 
+      'NORMAL': 'LOW',
+      'LOW': 'LOW'
+    };
+    return mapping[priority] || 'LOW';
+  }
+
+  /**
+   * Calculate response deadline based on priority
+   */
+  calculateResponseDeadline(priority) {
+    const now = new Date();
+    const hours = {
+      'CRITICAL': 1,
+      'HIGH': 4,
+      'URGENT': 4,
+      'MEDIUM': 24,
+      'NORMAL': 48,
+      'LOW': 72
+    };
+    
+    const deadlineHours = hours[priority] || 24;
+    return new Date(now.getTime() + deadlineHours * 60 * 60 * 1000);
+  }
+
+  /**
+   * Get file extension from filename
+   */
+  getFileExtension(filename) {
+    const parts = filename.split('.');
+    return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
   }
 }
 

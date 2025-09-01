@@ -22,6 +22,13 @@ import {
   DocumentIcon,
   AcademicCapIcon,
   ChartBarIcon,
+  ChatBubbleLeftRightIcon,
+  FunnelIcon,
+  MagnifyingGlassIcon,
+  CalendarIcon,
+  ClockIcon as TimeIcon,
+  SparklesIcon,
+  CheckIcon,
 } from '@heroicons/react/24/outline';
 import { User360ABTests } from './User360ABTests';
 import {
@@ -32,6 +39,9 @@ import {
   type TicketSummary,
   type ActivityLogEntry,
   type TrainingRecord,
+  type UserInteraction,
+  type ConversationSession,
+  type InteractionStats,
 } from '@services/user360Service';
 
 interface User360Props {
@@ -49,8 +59,18 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLogEntry[]>([]);
   const [trainingRecords, setTrainingRecords] = useState<TrainingRecord[]>([]);
+  const [interactions, setInteractions] = useState<UserInteraction[]>([]);
+  const [interactionStats, setInteractionStats] = useState<InteractionStats | null>(null);
+  const [conversationSessions, setConversationSessions] = useState<ConversationSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [interactionFilters, setInteractionFilters] = useState({
+    channel: '',
+    interactionType: '',
+    includeAI: true,
+    includeSystem: false,
+    timeRange: '7d'
+  });
 
   useEffect(() => {
     if (userId) {
@@ -69,10 +89,19 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
         const profileData = await user360Service.getUserProfile(userId);
         const assetsData = await user360Service.getUserAssets(userId);
         const alertsData = await user360Service.getSecurityAlerts(userId);
+        
+        // Load interaction data
+        const interactionTimelineData = await user360Service.getUserInteractionTimeline(userId, {
+          limit: 50,
+          ...interactionFilters
+        });
+        const interactionStatsData = await user360Service.getInteractionStats(userId, interactionFilters.timeRange);
 
         setProfile(profileData);
         setAssets(assetsData);
         setSecurityAlerts(alertsData);
+        setInteractions(interactionTimelineData.interactions);
+        setInteractionStats(interactionStatsData);
       } catch (apiError) {
         console.warn('API unavailable, using mock data:', apiError);
 
@@ -150,9 +179,115 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
           },
         ];
 
+        // Mock interaction data
+        const mockInteractions: UserInteraction[] = [
+          {
+            id: '1',
+            userId,
+            sessionId: 'session1',
+            interactionType: 'EMAIL_RECEIVED',
+            channel: 'EMAIL',
+            direction: 'INBOUND',
+            subject: 'Unable to access VPN',
+            content: 'Hi, I\'m having trouble connecting to the VPN from home. Can you help?',
+            summary: 'User reporting VPN connectivity issues',
+            contentType: 'text/plain',
+            fromUserId: null,
+            toUserIds: ['support@company.com'],
+            ccUserIds: [],
+            bccUserIds: [],
+            isAIGenerated: false,
+            aiSentiment: 'Neutral',
+            processingStatus: 'PROCESSED',
+            requiresResponse: true,
+            responseDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            category: 'NETWORK',
+            priority: 'NORMAL',
+            urgency: 'MEDIUM',
+            businessImpact: 'MEDIUM',
+            hasAttachments: false,
+            attachmentCount: 0,
+            attachmentTypes: [],
+            isFollowUp: false,
+            relatedInteractionIds: [],
+            isEscalated: false,
+            isResolved: false,
+            containsPII: false,
+            isConfidential: false,
+            metadata: { ticketId: 'T-001' },
+            tags: ['email', 'vpn', 'network'],
+            keywords: ['vpn', 'access', 'trouble'],
+            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+            createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+            updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+          },
+          {
+            id: '2',
+            userId,
+            sessionId: 'session2',
+            interactionType: 'AI_RESPONSE',
+            channel: 'WEB_CHAT',
+            direction: 'OUTBOUND',
+            subject: 'Password Reset Assistance',
+            content: 'Hello! I\'m Cosmo, your AI assistant. I can help you reset your password. Let me guide you through the process.',
+            summary: 'AI assistant helping with password reset',
+            contentType: 'text/plain',
+            fromUserId: null,
+            toUserIds: [userId],
+            ccUserIds: [],
+            bccUserIds: [],
+            isAIGenerated: true,
+            aiPersonality: 'cosmo',
+            aiConfidence: 0.95,
+            aiIntent: 'password_reset_help',
+            aiSentiment: 'Positive',
+            processingStatus: 'PROCESSED',
+            requiresResponse: false,
+            category: 'PASSWORD_MANAGEMENT',
+            priority: 'NORMAL',
+            urgency: 'LOW',
+            businessImpact: 'LOW',
+            hasAttachments: false,
+            attachmentCount: 0,
+            attachmentTypes: [],
+            isFollowUp: false,
+            relatedInteractionIds: [],
+            isEscalated: false,
+            isResolved: true,
+            resolvedAt: new Date(Date.now() - 30 * 60 * 1000),
+            containsPII: false,
+            isConfidential: false,
+            metadata: { conversationId: 'conv-001' },
+            tags: ['ai-chat', 'password', 'cosmo'],
+            keywords: ['password', 'reset', 'help'],
+            timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
+            createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+            updatedAt: new Date(Date.now() - 30 * 60 * 1000),
+          },
+        ];
+
+        const mockInteractionStats: InteractionStats = {
+          totalInteractions: 25,
+          byChannel: {
+            email: 15,
+            chat: 8,
+            ai: 12,
+          },
+          pendingResponses: 3,
+          escalatedSessions: 1,
+          avgResponseTime: 45,
+          satisfaction: {
+            avgScore: 4.2,
+            totalRatings: 15,
+          },
+          timeframe: '7d',
+        };
+
         setProfile(mockProfile);
         setAssets(mockAssets);
         setSecurityAlerts(mockSecurityAlerts);
+        setInteractions(mockInteractions);
+        setInteractionStats(mockInteractionStats);
       }
     } catch (_error) {
       console.error('Failed to load user profile:', _error.message || _error);
@@ -201,6 +336,7 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: UserIcon },
+    { id: 'interactions', label: 'Interactions', icon: ChatBubbleLeftRightIcon },
     { id: 'assets', label: 'Assets', icon: DevicePhoneMobileIcon },
     { id: 'security', label: 'Security', icon: ShieldCheckIcon },
     { id: 'tickets', label: 'Tickets', icon: TicketIcon },
@@ -506,6 +642,298 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'interactions' && (
+            <div className="space-y-6">
+              {/* Interaction Stats Overview */}
+              {interactionStats && (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5">
+                  <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                    <div className="flex items-center">
+                      <ChatBubbleLeftRightIcon className="h-8 w-8 text-blue-500" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          Total Interactions
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {interactionStats.totalInteractions}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                    <div className="flex items-center">
+                      <EnvelopeIcon className="h-8 w-8 text-green-500" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          Email Interactions
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {interactionStats.byChannel.email}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                    <div className="flex items-center">
+                      <SparklesIcon className="h-8 w-8 text-purple-500" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          AI Interactions
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {interactionStats.byChannel.ai}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                    <div className="flex items-center">
+                      <TimeIcon className="h-8 w-8 text-orange-500" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          Avg Response Time
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {interactionStats.avgResponseTime}m
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                    <div className="flex items-center">
+                      <CheckIcon className="h-8 w-8 text-green-500" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          Satisfaction Score
+                        </p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {interactionStats.satisfaction.avgScore.toFixed(1)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Interaction Filters */}
+              <div className="flex flex-wrap items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                <div className="flex items-center space-x-2">
+                  <FunnelIcon className="h-5 w-5 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filters:</span>
+                </div>
+                
+                <select
+                  value={interactionFilters.channel}
+                  onChange={(e) => setInteractionFilters({ ...interactionFilters, channel: e.target.value })}
+                  className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">All Channels</option>
+                  <option value="EMAIL">Email</option>
+                  <option value="WEB_CHAT">Web Chat</option>
+                  <option value="MOBILE_CHAT">Mobile Chat</option>
+                  <option value="PHONE">Phone</option>
+                  <option value="API">API</option>
+                </select>
+                
+                <select
+                  value={interactionFilters.interactionType}
+                  onChange={(e) => setInteractionFilters({ ...interactionFilters, interactionType: e.target.value })}
+                  className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">All Types</option>
+                  <option value="EMAIL_RECEIVED">Email Received</option>
+                  <option value="EMAIL_SENT">Email Sent</option>
+                  <option value="CHAT_MESSAGE">Chat Message</option>
+                  <option value="AI_RESPONSE">AI Response</option>
+                  <option value="VOICE_CALL">Voice Call</option>
+                </select>
+                
+                <select
+                  value={interactionFilters.timeRange}
+                  onChange={(e) => setInteractionFilters({ ...interactionFilters, timeRange: e.target.value })}
+                  className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="1d">Last 24 Hours</option>
+                  <option value="7d">Last 7 Days</option>
+                  <option value="30d">Last 30 Days</option>
+                  <option value="90d">Last 90 Days</option>
+                </select>
+                
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={interactionFilters.includeAI}
+                    onChange={(e) => setInteractionFilters({ ...interactionFilters, includeAI: e.target.checked })}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Include AI</span>
+                </label>
+                
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={interactionFilters.includeSystem}
+                    onChange={(e) => setInteractionFilters({ ...interactionFilters, includeSystem: e.target.checked })}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Include System</span>
+                </label>
+              </div>
+
+              {/* Interaction Timeline */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Interaction Timeline
+                </h3>
+                
+                {interactions.length > 0 ? (
+                  <div className="space-y-4">
+                    {interactions.map((interaction) => (
+                      <div
+                        key={interaction.id}
+                        className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-3">
+                            {/* Interaction Icon */}
+                            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                              interaction.isAIGenerated 
+                                ? 'bg-purple-100 text-purple-600' 
+                                : interaction.channel === 'EMAIL'
+                                  ? 'bg-blue-100 text-blue-600'
+                                  : 'bg-green-100 text-green-600'
+                            }`}>
+                              {interaction.isAIGenerated ? (
+                                <SparklesIcon className="h-5 w-5" />
+                              ) : interaction.channel === 'EMAIL' ? (
+                                <EnvelopeIcon className="h-5 w-5" />
+                              ) : (
+                                <ChatBubbleLeftRightIcon className="h-5 w-5" />
+                              )}
+                            </div>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2">
+                                <h4 className="font-medium text-gray-900 dark:text-white">
+                                  {interaction.subject || `${interaction.interactionType.replace('_', ' ')}`}
+                                </h4>
+                                
+                                {/* Direction Badge */}
+                                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                                  interaction.direction === 'INBOUND' 
+                                    ? 'bg-green-100 text-green-800'
+                                    : interaction.direction === 'OUTBOUND'
+                                      ? 'bg-blue-100 text-blue-800'
+                                      : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {interaction.direction}
+                                </span>
+                                
+                                {/* AI Badge */}
+                                {interaction.isAIGenerated && (
+                                  <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-1 text-xs font-medium text-purple-800">
+                                    AI Generated
+                                  </span>
+                                )}
+                                
+                                {/* Priority Badge */}
+                                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                                  interaction.priority === 'CRITICAL' ? 'bg-red-100 text-red-800' :
+                                  interaction.priority === 'HIGH' ? 'bg-orange-100 text-orange-800' :
+                                  interaction.priority === 'URGENT' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {interaction.priority}
+                                </span>
+                              </div>
+                              
+                              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                {interaction.summary || interaction.content?.substring(0, 150) + (interaction.content && interaction.content.length > 150 ? '...' : '')}
+                              </p>
+                              
+                              {/* Metadata */}
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {interaction.channel}
+                                </span>
+                                {interaction.category && (
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    • {interaction.category}
+                                  </span>
+                                )}
+                                {interaction.aiSentiment && (
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    • Sentiment: {interaction.aiSentiment}
+                                  </span>
+                                )}
+                                {interaction.responseTime && (
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    • Response: {interaction.responseTime}m
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {/* Tags */}
+                              {interaction.tags.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1">
+                                  {interaction.tags.slice(0, 5).map((tag) => (
+                                    <span
+                                      key={tag}
+                                      className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
+                                  {interaction.tags.length > 5 && (
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      +{interaction.tags.length - 5} more
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {new Intl.DateTimeFormat('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              }).format(interaction.timestamp)}
+                            </p>
+                            
+                            {interaction.requiresResponse && !interaction.respondedAt && (
+                              <p className="mt-1 text-xs text-orange-600">
+                                Response Required
+                              </p>
+                            )}
+                            
+                            {interaction.isResolved && (
+                              <p className="mt-1 text-xs text-green-600">
+                                Resolved
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center">
+                    <ChatBubbleLeftRightIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                    <p className="text-gray-500 dark:text-gray-400">No interactions found</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

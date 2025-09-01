@@ -20,6 +20,7 @@ import { logger } from '../logger.js';
 import { ragEngine, RAGQuery } from './rag-engine.js';
 import { ragRBAC } from './nova-rag-rbac.js';
 import { novaSynthRAG } from './nova-synth-rag-integration.js';
+import { userInteractionService } from '../services/user-interaction.service.js';
 import crypto from 'crypto';
 
 // Core AI Agent Types
@@ -395,6 +396,9 @@ export class NovaAIAgentFramework extends EventEmitter {
       // Get or create conversation
       const conversation = await this.getOrCreateConversation(context);
       
+      // Record user message interaction in User360
+      await this.recordUserInteraction(message, conversation, context, 'user');
+      
       // Classify intent
       const intent = await this.intentClassifier.classifyIntent(message, conversation);
       
@@ -411,12 +415,23 @@ export class NovaAIAgentFramework extends EventEmitter {
       conversation.messages.push(userMessage);
       conversation.lastActivity = new Date();
       
-      // Generate response using dialog manager
+      // Load AI conversation memory for context
+      const aiMemory = await this.loadAIConversationMemory(context.userId, conversation.id);
+      
+      // Generate response using dialog manager with memory context
       const response = await this.dialogManager.generateResponse(
         userMessage,
         conversation,
-        intent
+        intent,
+        aiMemory
       );
+      
+      // Record AI response interaction in User360
+      await this.recordUserInteraction(response.content, conversation, context, 'agent', {
+        intent,
+        confidence: intent?.confidence,
+        aiPersonality: 'cosmo'
+      });
       
       // Execute workflow if needed
       if (intent && intent.category !== 'general') {
@@ -438,7 +453,8 @@ export class NovaAIAgentFramework extends EventEmitter {
         metadata: {
           intentConfidence: intent?.confidence || 0,
           escalationLevel: conversation.escalationLevel,
-          automationLevel: this.calculateAutomationLevel(intent, conversation)
+          automationLevel: this.calculateAutomationLevel(intent, conversation),
+          aiMemoryLoaded: !!aiMemory
         }
       };
       
@@ -596,6 +612,227 @@ export class NovaAIAgentFramework extends EventEmitter {
     });
     
     return updatedCapability;
+  }
+
+  // ============================================================================
+  // USER360 INTEGRATION METHODS
+  // ============================================================================
+
+  /**
+   * Record user interaction in User360 system
+   */
+  private async recordUserInteraction(
+    content: string,
+    conversation: ConversationContext,
+    context: { userId: string; tenantId: string; channel: string },
+    messageType: 'user' | 'agent',
+    aiData?: {
+      intent?: AIAgentIntent;
+      confidence?: number;
+      aiPersonality?: string;
+    }
+  ): Promise<void> {
+    try {
+      if (!userInteractionService.isInitialized) {
+        logger.warn('User Interaction Service not initialized, skipping interaction recording');
+        return;
+      }
+
+      // Map channel to our communication channel enum
+      const communicationChannel = this.mapChannelToCommunicationChannel(context.channel);
+      
+      // Create or get conversation session
+      const session = await userInteractionService.createOrGetSession({
+        userId: context.userId,
+        sessionType: 'AI_CHAT',
+        channel: communicationChannel,
+        externalId: conversation.id,
+        subject: this.extractConversationSubject(conversation),
+        context: {
+          tenantId: context.tenantId,
+          conversationId: conversation.id,
+          sessionId: conversation.sessionId,
+          agentFramework: 'nova-ai-agent',
+          currentIntent: conversation.currentIntent?.name,
+          escalationLevel: conversation.escalationLevel
+        },
+        category: this.mapIntentToCategory(conversation.currentIntent),
+        priority: this.mapEscalationToPriority(conversation.escalationLevel)
+      });
+
+      // Determine interaction type and direction
+      const interactionType = messageType === 'user' ? 'CHAT_MESSAGE' : 'AI_RESPONSE';
+      const direction = messageType === 'user' ? 'INBOUND' : 'OUTBOUND';
+
+      // Record the interaction
+      await userInteractionService.recordInteraction({
+        userId: context.userId,
+        sessionId: session.id,
+        interactionType,
+        channel: communicationChannel,
+        direction,
+        content,
+        isAIGenerated: messageType === 'agent',
+        aiPersonality: aiData?.aiPersonality || (messageType === 'agent' ? 'cosmo' : null),
+        aiConfidence: aiData?.confidence,
+        aiIntent: aiData?.intent?.name,
+        aiSentiment: await this.detectSentiment(content),
+        category: this.mapIntentToCategory(aiData?.intent || conversation.currentIntent),
+        priority: this.mapEscalationToPriority(conversation.escalationLevel),
+        urgency: this.mapEscalationToUrgency(conversation.escalationLevel),
+        businessImpact: this.mapIntentToBusinessImpact(aiData?.intent || conversation.currentIntent),
+        requiresResponse: messageType === 'user',
+        metadata: {
+          conversationId: conversation.id,
+          sessionId: conversation.sessionId,
+          tenantId: context.tenantId,
+          messageId: crypto.randomUUID(),
+          agentFramework: 'nova-ai-agent',
+          escalationLevel: conversation.escalationLevel,
+          messageType,
+          intentConfidence: aiData?.confidence || 0
+        },
+        tags: [
+          'ai-chat',
+          messageType,
+          ...(aiData?.intent ? [aiData.intent.category, aiData.intent.name] : []),
+          ...(conversation.escalationLevel > 0 ? ['escalated'] : []),
+          communicationChannel.toLowerCase()
+        ]
+      });
+
+      logger.debug(`AI chat interaction recorded in User360: ${messageType} message for user ${context.userId}`);
+    } catch (error) {
+      logger.error('Error recording AI chat interaction in User360:', error);
+      // Don't throw error as this shouldn't break chat functionality
+    }
+  }
+
+  /**
+   * Load AI conversation memory for context
+   */
+  private async loadAIConversationMemory(userId: string, conversationId: string): Promise<any> {
+    try {
+      if (!userInteractionService.isInitialized) {
+        return null;
+      }
+
+      const memory = await userInteractionService.getAIMemory(userId, 'cosmo', conversationId);
+      return memory;
+    } catch (error) {
+      logger.error('Error loading AI conversation memory:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Map channel to communication channel enum
+   */
+  private mapChannelToCommunicationChannel(channel: string): string {
+    const mapping: Record<string, string> = {
+      'web': 'WEB_CHAT',
+      'mobile': 'MOBILE_CHAT',
+      'api': 'API',
+      'slack': 'SLACK',
+      'teams': 'TEAMS',
+      'whatsapp': 'WHATSAPP',
+      'sms': 'SMS'
+    };
+    return mapping[channel.toLowerCase()] || 'WEB_CHAT';
+  }
+
+  /**
+   * Extract conversation subject from context
+   */
+  private extractConversationSubject(conversation: ConversationContext): string {
+    if (conversation.currentIntent) {
+      return `${conversation.currentIntent.category}: ${conversation.currentIntent.name}`;
+    }
+    
+    const firstMessage = conversation.messages.find(m => m.type === 'user');
+    if (firstMessage) {
+      return firstMessage.content.substring(0, 50) + (firstMessage.content.length > 50 ? '...' : '');
+    }
+    
+    return 'AI Chat Session';
+  }
+
+  /**
+   * Map intent to category
+   */
+  private mapIntentToCategory(intent?: AIAgentIntent): string {
+    if (!intent) return 'GENERAL';
+    
+    const mapping: Record<string, string> = {
+      'incident': 'INCIDENT_MANAGEMENT',
+      'service_request': 'SERVICE_REQUEST',
+      'problem': 'PROBLEM_MANAGEMENT',
+      'change': 'CHANGE_MANAGEMENT',
+      'knowledge': 'KNOWLEDGE_MANAGEMENT',
+      'general': 'GENERAL'
+    };
+    
+    return mapping[intent.category] || 'GENERAL';
+  }
+
+  /**
+   * Map escalation level to priority
+   */
+  private mapEscalationToPriority(escalationLevel: number): string {
+    if (escalationLevel >= 3) return 'CRITICAL';
+    if (escalationLevel >= 2) return 'HIGH';
+    if (escalationLevel >= 1) return 'NORMAL';
+    return 'LOW';
+  }
+
+  /**
+   * Map escalation level to urgency
+   */
+  private mapEscalationToUrgency(escalationLevel: number): string {
+    if (escalationLevel >= 3) return 'CRITICAL';
+    if (escalationLevel >= 2) return 'HIGH';
+    if (escalationLevel >= 1) return 'MEDIUM';
+    return 'LOW';
+  }
+
+  /**
+   * Map intent to business impact
+   */
+  private mapIntentToBusinessImpact(intent?: AIAgentIntent): string {
+    if (!intent) return 'LOW';
+    
+    const mapping: Record<string, string> = {
+      'incident': 'HIGH',
+      'problem': 'HIGH',
+      'change': 'MEDIUM',
+      'service_request': 'MEDIUM',
+      'knowledge': 'LOW',
+      'general': 'LOW'
+    };
+    
+    return mapping[intent.category] || 'LOW';
+  }
+
+  /**
+   * Detect sentiment in message content
+   */
+  private async detectSentiment(content: string): Promise<string> {
+    try {
+      // Simple sentiment detection
+      const positiveWords = ['good', 'great', 'excellent', 'happy', 'thanks', 'perfect', 'amazing', 'love'];
+      const negativeWords = ['bad', 'terrible', 'awful', 'hate', 'angry', 'frustrated', 'problem', 'issue', 'broken', 'help'];
+      
+      const lowerContent = content.toLowerCase();
+      const positiveCount = positiveWords.filter(word => lowerContent.includes(word)).length;
+      const negativeCount = negativeWords.filter(word => lowerContent.includes(word)).length;
+      
+      if (positiveCount > negativeCount) return 'Positive';
+      if (negativeCount > positiveCount) return 'Negative';
+      return 'Neutral';
+    } catch (error) {
+      logger.error('Error detecting sentiment:', error);
+      return 'Neutral';
+    }
   }
 }
 

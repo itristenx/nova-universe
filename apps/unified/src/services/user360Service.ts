@@ -112,6 +112,141 @@ export interface TrainingRecord {
   score?: number;
 }
 
+// ============================================================================
+// USER INTERACTION INTERFACES
+// ============================================================================
+
+export interface ConversationSession {
+  id: string;
+  userId: string;
+  sessionType: 'EMAIL_THREAD' | 'AI_CHAT' | 'VOICE_CALL' | 'VIDEO_CALL' | 'TICKET_CONVERSATION' | 'SUPPORT_SESSION' | 'SALES_INQUIRY' | 'GENERAL_INQUIRY';
+  channel: string;
+  externalId?: string;
+  subject?: string;
+  status: 'ACTIVE' | 'WAITING_RESPONSE' | 'ESCALATED' | 'RESOLVED' | 'CLOSED' | 'ABANDONED' | 'TRANSFERRED';
+  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' | 'CRITICAL';
+  participantIds: string[];
+  assignedAgentId?: string;
+  escalationLevel: number;
+  context?: Record<string, any>;
+  tags: string[];
+  category?: string;
+  subcategory?: string;
+  totalInteractions: number;
+  avgResponseTime?: number;
+  firstResponseTime?: number;
+  resolutionTime?: number;
+  startedAt: Date;
+  lastActivityAt: Date;
+  endedAt?: Date;
+  satisfactionScore?: number;
+  qualityScore?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: {
+    id: string;
+    helixUid: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    displayName: string;
+  };
+  interactions?: UserInteraction[];
+}
+
+export interface UserInteraction {
+  id: string;
+  userId: string;
+  sessionId?: string;
+  interactionType: 'EMAIL_SENT' | 'EMAIL_RECEIVED' | 'CHAT_MESSAGE' | 'VOICE_CALL' | 'VIDEO_CALL' | 'FILE_ATTACHMENT' | 'FORM_SUBMISSION' | 'AI_RESPONSE' | 'AUTO_REPLY' | 'ESCALATION' | 'RESOLUTION' | 'NOTE' | 'STATUS_UPDATE';
+  channel: string;
+  direction: 'INBOUND' | 'OUTBOUND' | 'INTERNAL' | 'SYSTEM_GENERATED';
+  externalId?: string;
+  subject?: string;
+  content?: string;
+  summary?: string;
+  contentType: string;
+  fromUserId?: string;
+  toUserIds: string[];
+  ccUserIds: string[];
+  bccUserIds: string[];
+  isAIGenerated: boolean;
+  aiPersonality?: string;
+  aiConfidence?: number;
+  aiIntent?: string;
+  aiSentiment?: string;
+  processedAt?: Date;
+  processingStatus: 'PENDING' | 'PROCESSING' | 'PROCESSED' | 'FAILED' | 'REQUIRES_ATTENTION';
+  errorMessage?: string;
+  requiresResponse: boolean;
+  responseDeadline?: Date;
+  respondedAt?: Date;
+  responseTime?: number;
+  category?: string;
+  subcategory?: string;
+  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' | 'CRITICAL';
+  urgency: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  businessImpact: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  hasAttachments: boolean;
+  attachmentCount: number;
+  attachmentSizes?: number[];
+  attachmentTypes: string[];
+  qualityScore?: number;
+  readabilityScore?: number;
+  toneScore?: Record<string, any>;
+  isFollowUp: boolean;
+  parentInteractionId?: string;
+  relatedInteractionIds: string[];
+  isEscalated: boolean;
+  escalatedAt?: Date;
+  escalatedTo?: string;
+  escalationReason?: string;
+  isResolved: boolean;
+  resolvedAt?: Date;
+  resolution?: string;
+  satisfactionScore?: number;
+  customerEffort?: number;
+  npsScore?: number;
+  ipAddress?: string;
+  userAgent?: string;
+  deviceInfo?: Record<string, any>;
+  location?: Record<string, any>;
+  containsPII: boolean;
+  isConfidential: boolean;
+  dataClassification?: string;
+  retentionDate?: Date;
+  metadata?: Record<string, any>;
+  tags: string[];
+  keywords: string[];
+  timestamp: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  session?: {
+    id: string;
+    sessionType: string;
+    subject?: string;
+    status: string;
+    category?: string;
+  };
+}
+
+export interface InteractionStats {
+  totalInteractions: number;
+  byChannel: {
+    email: number;
+    chat: number;
+    ai: number;
+  };
+  pendingResponses: number;
+  escalatedSessions: number;
+  avgResponseTime: number;
+  satisfaction: {
+    avgScore: number;
+    totalRatings: number;
+  };
+  timeframe: string;
+}
+
 class User360Service {
   private baseUrl = '/api/v2/user360';
 
@@ -329,6 +464,149 @@ class User360Service {
       throw new Error('Failed to perform action');
     }
     return response.data;
+  }
+
+  /**
+   * Get user interaction timeline
+   */
+  async getUserInteractionTimeline(
+    helixUid: string,
+    options: {
+      limit?: number;
+      offset?: number;
+      channel?: string;
+      interactionType?: string;
+      startDate?: Date;
+      endDate?: Date;
+      includeAI?: boolean;
+      includeSystem?: boolean;
+    } = {}
+  ): Promise<{
+    interactions: UserInteraction[];
+    total: number;
+    hasMore: boolean;
+  }> {
+    const params = new URLSearchParams();
+    Object.entries(options).forEach(([key, value]) => {
+      if (value !== undefined) {
+        if (value instanceof Date) {
+          params.append(key, value.toISOString());
+        } else {
+          params.append(key, String(value));
+        }
+      }
+    });
+
+    const response = await apiClient.get<{
+      interactions: UserInteraction[];
+      total: number;
+      hasMore: boolean;
+    }>(`${this.baseUrl}/interactions/${helixUid}?${params}`);
+
+    if (!response.success || !response.data) {
+      throw new Error('Failed to fetch user interaction timeline');
+    }
+    return response.data;
+  }
+
+  /**
+   * Get conversation session details
+   */
+  async getConversationSession(
+    sessionId: string,
+    includeFullHistory: boolean = false
+  ): Promise<ConversationSession> {
+    const response = await apiClient.get<{ session: ConversationSession }>(
+      `${this.baseUrl}/conversations/${sessionId}?fullHistory=${includeFullHistory}`
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error('Failed to fetch conversation session');
+    }
+    return response.data.session;
+  }
+
+  /**
+   * Search user interactions
+   */
+  async searchInteractions(
+    query: string,
+    options: {
+      userId?: string;
+      channel?: string;
+      limit?: number;
+      offset?: number;
+      startDate?: Date;
+      endDate?: Date;
+    } = {}
+  ): Promise<{
+    interactions: UserInteraction[];
+    total: number;
+    hasMore: boolean;
+  }> {
+    const params = new URLSearchParams({ q: query });
+    Object.entries(options).forEach(([key, value]) => {
+      if (value !== undefined) {
+        if (value instanceof Date) {
+          params.append(key, value.toISOString());
+        } else {
+          params.append(key, String(value));
+        }
+      }
+    });
+
+    const response = await apiClient.get<{
+      interactions: UserInteraction[];
+      total: number;
+      hasMore: boolean;
+    }>(`${this.baseUrl}/interactions/search?${params}`);
+
+    if (!response.success || !response.data) {
+      throw new Error('Failed to search interactions');
+    }
+    return response.data;
+  }
+
+  /**
+   * Get interaction statistics
+   */
+  async getInteractionStats(
+    helixUid?: string,
+    timeframe: string = '7d'
+  ): Promise<InteractionStats> {
+    const params = new URLSearchParams({ timeframe });
+    if (helixUid) params.append('userId', helixUid);
+
+    const response = await apiClient.get<{ stats: InteractionStats }>(
+      `${this.baseUrl}/interactions/stats?${params}`
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error('Failed to fetch interaction statistics');
+    }
+    return response.data.stats;
+  }
+
+  /**
+   * Close conversation session
+   */
+  async closeConversationSession(
+    sessionId: string,
+    resolution?: string,
+    satisfactionScore?: number
+  ): Promise<ConversationSession> {
+    const response = await apiClient.post<{ session: ConversationSession }>(
+      `${this.baseUrl}/conversations/${sessionId}/close`,
+      {
+        resolution,
+        satisfactionScore
+      }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error('Failed to close conversation session');
+    }
+    return response.data.session;
   }
 }
 

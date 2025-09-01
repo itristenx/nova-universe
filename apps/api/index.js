@@ -36,6 +36,7 @@ import cmdbRouter from './routes/cmdb.js';
 import cmdbExtendedRouter from './routes/cmdbExtended.js';
 import notificationsRouter from './routes/notifications.js'; // Universal Notification Platform
 import user360Router from './routes/user360.js'; // User 360 API
+import user360InteractionsRouter from './routes/user360-interactions.js'; // User 360 Interactions API
 import appSwitcherRouter from './routes/app-switcher.js'; // Enhanced App Switcher API
 import aiControlTowerRouter from './routes/ai-control-tower.js'; // AI Control Tower API
 import authRouter from './routes/auth.js';
@@ -2293,6 +2294,7 @@ app.use('/api/v2', v2Router);
 
 // Core v2 endpoints
 v2Router.use('/user360', user360Router); // User 360 API (v2 only)
+v2Router.use('/user360', user360InteractionsRouter); // User 360 Interactions API (v2 only)
 v2Router.use('/mcp', mcpServerRouter); // MCP Server Control Tower API (v2 only)
 v2Router.use('/synth', synthV2Router); // Nova Synth - AI Engine v2 (Enhanced)
 v2Router.use('/alerts', alertsRouter); // Unified Alerts facade (Nova Alert)
@@ -2515,6 +2517,11 @@ if (
         const { novaSynthEmailProcessor } = await import('./lib/nova-synth-email-processor.js');
         await novaSynthEmailProcessor.initialize();
         logger.info('✅ Nova Synth Email Processor initialized');
+        
+        // Initialize User Interaction Service for User360 tracking
+        const { userInteractionService } = await import('./services/user-interaction.service.js');
+        await userInteractionService.initialize();
+        logger.info('✅ User Interaction Service initialized');
         
         logger.info('🎯 Nova RAG systems fully operational');
       } catch (ragError) {
