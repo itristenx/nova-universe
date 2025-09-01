@@ -1,0 +1,269 @@
+version: '3.8'
+
+services:
+  # Nova Universe API with RAG Engine
+  nova-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - RAG_ENABLED=true
+      - RAG_VECTOR_STORE=chromadb
+      - RAG_EMBEDDING_MODEL=nova-local-embeddings
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+      - SYNTH_API_URL=http://nova-synth:3001
+      - VECTOR_STORE_PATH=/data/vector-store
+    volumes:
+      - vector_data:/data/vector-store
+      - ./logs:/app/logs
+    depends_on:
+      - chromadb
+      - nova-synth
+    networks:
+      - nova-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ChromaDB Vector Database
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - CHROMA_SERVER_AUTHN_CREDENTIALS=${CHROMADB_TOKEN:-default-token}
+      - CHROMA_SERVER_AUTHN_PROVIDER=chromadb.auth.token.TokenAuthenticationServerProvider
+    volumes:
+      - chromadb_data:/chroma/chroma
+    networks:
+      - nova-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nova Synth AI Engine (mock service for development)
+  nova-synth:
+    image: node:18-alpine
+    command: |
+      sh -c "
+        mkdir -p /app && cd /app
+        cat > server.js << 'EOF'
+        const express = require('express');
+        const app = express();
+        app.use(express.json());
+        
+        // Health endpoint
+        app.get('/api/v2/synth/health', (req, res) => {
+          res.json({ status: 'healthy', service: 'nova-synth-mock' });
+        });
+        
+        // Query expansion endpoint
+        app.post('/api/v2/synth/query-expansion', (req, res) => {
+          const { query } = req.body;
+          res.json({
+            expanded_query: query + ' troubleshoot fix resolve',
+            confidence: 0.85,
+            suggested_filters: { types: ['knowledge_article', 'documentation'] }
+          });
+        });
+        
+        // Document analysis endpoint
+        app.post('/api/v2/synth/document-analysis', (req, res) => {
+          const { content } = req.body;
+          const words = content.split(' ').slice(0, 10);
+          res.json({
+            entities: words.slice(0, 3).map(w => ({ type: 'TERM', value: w })),
+            keywords: words.slice(0, 5),
+            intent: 'help_request',
+            quality_score: 0.8,
+            topics: ['general'],
+            sentiment: 0.1,
+            complexity: 'medium'
+          });
+        });
+        
+        // Results enhancement endpoint
+        app.post('/api/v2/synth/results-enhancement', (req, res) => {
+          const { results } = req.body;
+          res.json({
+            enhanced_results: results.map((r, i) => ({
+              enhanced_score: (r.relevanceScore || 0.5) * 1.1,
+              quality_assessment: { score: 0.8 },
+              personalized_score: (r.relevanceScore || 0.5) * 1.05
+            })),
+            confidence_multiplier: 1.1,
+            enhanced_summary: 'Enhanced summary based on AI analysis'
+          });
+        });
+        
+        // Feedback endpoint
+        app.post('/api/v2/synth/feedback', (req, res) => {
+          res.json({ status: 'received', message: 'Feedback processed' });
+        });
+        
+        app.listen(3001, '0.0.0.0', () => {
+          console.log('Nova Synth mock service running on port 3001');
+        });
+        EOF
+        npm init -y
+        npm install express
+        node server.js
+      "
+    ports:
+      - "3001:3001"
+    networks:
+      - nova-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/v2/synth/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for metadata and application data
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=nova_core
+      - POSTGRES_USER=nova_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-secure_password_change_me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./apps/api/migrations/postgresql:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - nova-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nova_user -d nova_core"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - nova-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MongoDB for document storage and analytics
+  mongodb:
+    image: mongo:6
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=nova_admin
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-secure_mongo_password}
+      - MONGO_INITDB_DATABASE=nova_analytics
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - nova-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx reverse proxy and load balancer
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - nova-api
+    networks:
+      - nova-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - nova-network
+    restart: unless-stopped
+
+  # Grafana dashboards
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - nova-network
+    restart: unless-stopped
+
+volumes:
+  vector_data:
+    driver: local
+  chromadb_data:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  nova-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
