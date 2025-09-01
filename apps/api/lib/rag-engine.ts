@@ -167,15 +167,16 @@ export class NovaRAGEngine extends EventEmitter {
 
   // Configuration
   private config = {
-    defaultEmbeddingModel: 'text-embedding-ada-002',
-    defaultVectorStore: 'chromadb',
-    chunkSize: 512,
-    chunkOverlap: 50,
-    maxRetrieval: 10,
-    minSimilarity: 0.7,
-    rerankingEnabled: true,
-    knowledgeGraphEnabled: true,
-    realTimeUpdates: true,
+    defaultEmbeddingModel: process.env.RAG_EMBEDDING_MODEL || 'nova-local-embeddings',
+    defaultVectorStore: process.env.RAG_VECTOR_STORE || 'local-faiss',
+    chunkSize: parseInt(process.env.RAG_CHUNK_SIZE || '512'),
+    chunkOverlap: parseInt(process.env.RAG_CHUNK_OVERLAP || '50'),
+    maxRetrieval: parseInt(process.env.RAG_MAX_RESULTS || '10'),
+    minSimilarity: parseFloat(process.env.RAG_MIN_SIMILARITY || '0.7'),
+    rerankingEnabled: process.env.RAG_RERANKING_ENABLED !== 'false',
+    knowledgeGraphEnabled: process.env.RAG_KNOWLEDGE_GRAPH_ENABLED !== 'false',
+    realTimeUpdates: process.env.RAG_REAL_TIME_UPDATES !== 'false',
+    novaSynthIntegration: process.env.RAG_NOVA_SYNTH_INTEGRATION !== 'false',
   };
 
   constructor() {
@@ -508,13 +509,106 @@ export class NovaRAGEngine extends EventEmitter {
   }
 
   private async initializeChromaDB(store: VectorStore): Promise<void> {
-    // ChromaDB initialization logic
-    logger.info(`Initializing ChromaDB: ${store.config.host}:${store.config.port}`);
+    try {
+      logger.info(`Initializing ChromaDB: ${store.config.host}:${store.config.port}`);
+      
+      // Test ChromaDB connection
+      const healthUrl = `http://${store.config.host}:${store.config.port}/api/v1/heartbeat`;
+      
+      try {
+        const response = await fetch(healthUrl, { 
+          method: 'GET',
+          timeout: 5000 
+        });
+        
+        if (!response.ok) {
+          logger.warn(`ChromaDB health check failed: ${response.status}. Continuing with local fallback.`);
+          return;
+        }
+        
+        logger.info('ChromaDB connection successful');
+        
+        // Initialize collections
+        for (const collectionName of store.collections) {
+          await this.ensureChromaCollection(store, collectionName);
+        }
+        
+      } catch (connectionError) {
+        logger.warn(`ChromaDB not available at ${store.config.host}:${store.config.port}. Using local fallback.`);
+      }
+      
+    } catch (error) {
+      logger.error(`ChromaDB initialization error: ${error}`);
+      throw error;
+    }
+  }
+
+  private async ensureChromaCollection(store: VectorStore, collectionName: string): Promise<void> {
+    try {
+      const collectionsUrl = `http://${store.config.host}:${store.config.port}/api/v1/collections`;
+      
+      // Check if collection exists
+      const listResponse = await fetch(collectionsUrl);
+      const collections = await listResponse.json();
+      
+      const exists = collections.some((col: any) => col.name === collectionName);
+      
+      if (!exists) {
+        // Create collection
+        await fetch(collectionsUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: collectionName,
+            metadata: {
+              description: `Nova RAG collection for ${collectionName}`,
+              created_at: new Date().toISOString(),
+            },
+          }),
+        });
+        
+        logger.info(`Created ChromaDB collection: ${collectionName}`);
+      }
+    } catch (error) {
+      logger.error(`Failed to ensure ChromaDB collection ${collectionName}: ${error}`);
+    }
   }
 
   private async initializePinecone(store: VectorStore): Promise<void> {
-    // Pinecone initialization logic
-    logger.info(`Initializing Pinecone: ${store.config.indexName}`);
+    try {
+      logger.info(`Initializing Pinecone: ${store.config.indexName}`);
+      
+      if (!store.config.apiKey) {
+        logger.warn('Pinecone API key not configured. Skipping Pinecone initialization.');
+        return;
+      }
+      
+      // Test Pinecone connection
+      const response = await fetch(`https://api.pinecone.io/indexes`, {
+        method: 'GET',
+        headers: {
+          'Api-Key': store.config.apiKey,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Pinecone API error: ${response.status} ${response.statusText}`);
+      }
+      
+      const indexes = await response.json();
+      const indexExists = indexes.indexes?.some((idx: any) => idx.name === store.config.indexName);
+      
+      if (!indexExists) {
+        logger.warn(`Pinecone index ${store.config.indexName} does not exist. Please create it manually.`);
+      } else {
+        logger.info(`Pinecone index ${store.config.indexName} verified`);
+      }
+      
+    } catch (error) {
+      logger.error(`Pinecone initialization error: ${error}`);
+      // Don't throw - allow fallback to other stores
+    }
   }
 
   private async initializeLocalStore(store: VectorStore): Promise<void> {
@@ -647,22 +741,138 @@ export class NovaRAGEngine extends EventEmitter {
   }
 
   private async generateOpenAIEmbedding(text: string, model: EmbeddingModel): Promise<number[]> {
-    // OpenAI API call for embeddings
-    // This would make actual API call
-    return new Array(model.dimensions).fill(0).map(() => Math.random() - 0.5);
+    try {
+      if (!model.config.apiKey) {
+        throw new Error('OpenAI API key not configured');
+      }
+
+      const response = await fetch(model.config.endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${model.config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input: text,
+          model: model.model,
+          encoding_format: 'float',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.data || !data.data[0] || !data.data[0].embedding) {
+        throw new Error('Invalid OpenAI API response format');
+      }
+
+      return data.data[0].embedding;
+    } catch (error) {
+      logger.error(`Failed to generate OpenAI embedding: ${error}`);
+      // Fallback to local embedding if available
+      const fallbackModel = Array.from(this.embeddingModels.values()).find(
+        m => m.provider === 'local' && m.isActive
+      );
+      if (fallbackModel) {
+        logger.info('Falling back to local embedding model');
+        return await this.generateLocalEmbedding(text, fallbackModel);
+      }
+      throw error;
+    }
   }
 
   private async generateHuggingFaceEmbedding(
     text: string,
     model: EmbeddingModel,
   ): Promise<number[]> {
-    // HuggingFace API call for embeddings
-    return new Array(model.dimensions).fill(0).map(() => Math.random() - 0.5);
+    try {
+      if (!model.config.apiKey) {
+        throw new Error('HuggingFace API key not configured');
+      }
+
+      const response = await fetch(model.config.endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${model.config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: text,
+          options: {
+            wait_for_model: true,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HuggingFace API error: ${response.status} ${response.statusText}`);
+      }
+
+      const embedding = await response.json();
+      
+      if (!Array.isArray(embedding) || embedding.length === 0) {
+        throw new Error('Invalid HuggingFace API response format');
+      }
+
+      return embedding;
+    } catch (error) {
+      logger.error(`Failed to generate HuggingFace embedding: ${error}`);
+      // Fallback to local embedding if available
+      const fallbackModel = Array.from(this.embeddingModels.values()).find(
+        m => m.provider === 'local' && m.isActive
+      );
+      if (fallbackModel) {
+        logger.info('Falling back to local embedding model');
+        return await this.generateLocalEmbedding(text, fallbackModel);
+      }
+      throw error;
+    }
   }
 
   private async generateLocalEmbedding(text: string, model: EmbeddingModel): Promise<number[]> {
-    // Local embedding model inference
-    return new Array(model.dimensions).fill(0).map(() => Math.random() - 0.5);
+    try {
+      // For local embeddings, we'll implement a simple TF-IDF based approach
+      // In production, this would use actual local embedding models like sentence-transformers
+      
+      logger.debug(`Generating local embedding for text: ${text.substring(0, 100)}...`);
+      
+      // Simple text preprocessing
+      const words = text.toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter(word => word.length > 2);
+      
+      // Create a basic vector representation
+      const embedding = new Array(model.dimensions).fill(0);
+      
+      // Simple hash-based embedding for consistency
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        for (let j = 0; j < word.length; j++) {
+          const charCode = word.charCodeAt(j);
+          const index = (charCode + i + j) % model.dimensions;
+          embedding[index] += 1 / (words.length + 1);
+        }
+      }
+      
+      // Normalize the vector
+      const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+      if (magnitude > 0) {
+        for (let i = 0; i < embedding.length; i++) {
+          embedding[i] /= magnitude;
+        }
+      }
+      
+      return embedding;
+    } catch (error) {
+      logger.error(`Failed to generate local embedding: ${error}`);
+      // Last resort: return a zero vector
+      logger.warn('Returning zero vector as fallback');
+      return new Array(model.dimensions).fill(0);
+    }
   }
 
   private async addToVectorStore(chunk: DocumentChunk): Promise<void> {
@@ -686,43 +896,203 @@ export class NovaRAGEngine extends EventEmitter {
   }
 
   private async addToChromaDB(chunk: DocumentChunk, store: VectorStore): Promise<void> {
-    // ChromaDB insertion logic - simplified implementation
     try {
-      // Log the operation for monitoring
-      logger.debug(
-        `Adding chunk ${chunk.id} to ChromaDB store ${store.name} with config: ${JSON.stringify(store.config)}`,
-      );
-
-      // Placeholder for actual ChromaDB API call
-      // await chromaCollection.add({...});
+      logger.debug(`Adding chunk ${chunk.id} to ChromaDB store ${store.name}`);
+      
+      if (!chunk.embedding) {
+        throw new Error('Chunk embedding is required for ChromaDB storage');
+      }
+      
+      // Determine collection based on chunk metadata
+      const collection = this.selectCollection(chunk, store.collections);
+      const addUrl = `http://${store.config.host}:${store.config.port}/api/v1/collections/${collection}/add`;
+      
+      const payload = {
+        ids: [chunk.id],
+        embeddings: [chunk.embedding],
+        documents: [chunk.content],
+        metadatas: [{
+          documentId: chunk.documentId,
+          source: chunk.metadata.source,
+          type: chunk.metadata.type,
+          category: chunk.metadata.category || '',
+          classification: chunk.metadata.classification || '',
+          tags: chunk.metadata.tags?.join(',') || '',
+          createdAt: chunk.metadata.createdAt.toISOString(),
+          updatedAt: chunk.metadata.updatedAt.toISOString(),
+          startPosition: chunk.position.start.toString(),
+          endPosition: chunk.position.end.toString(),
+          section: chunk.position.section || '',
+        }],
+      };
+      
+      const response = await fetch(addUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`ChromaDB add failed: ${response.status} ${errorText}`);
+      }
+      
+      logger.debug(`Successfully added chunk ${chunk.id} to ChromaDB collection ${collection}`);
+      
     } catch (error) {
       logger.error(`Failed to add chunk ${chunk.id} to ChromaDB: ${error}`);
       throw error;
     }
   }
 
-  private async addToPinecone(chunk: DocumentChunk, store: VectorStore): Promise<void> {
-    // Pinecone insertion logic
-    try {
-      logger.debug(
-        `Adding chunk ${chunk.id} to Pinecone store ${store.name} with config: ${JSON.stringify(store.config)}`,
-      );
+  private selectCollection(chunk: DocumentChunk, availableCollections: string[]): string {
+    // Select appropriate collection based on chunk metadata
+    const type = chunk.metadata.type;
+    
+    if (type === 'knowledge_article' && availableCollections.includes('knowledge')) {
+      return 'knowledge';
+    } else if (type === 'ticket' && availableCollections.includes('tickets')) {
+      return 'tickets';
+    } else if (type === 'documentation' && availableCollections.includes('documentation')) {
+      return 'documentation';
+    }
+    
+    // Default to main collection
+    return availableCollections.includes('main') ? 'main' : availableCollections[0];
+  }
 
-      // Placeholder for actual Pinecone API call
-      // await pineconeIndex.upsert({...});
+  private async addToPinecone(chunk: DocumentChunk, store: VectorStore): Promise<void> {
+    try {
+      logger.debug(`Adding chunk ${chunk.id} to Pinecone store ${store.name}`);
+      
+      if (!chunk.embedding) {
+        throw new Error('Chunk embedding is required for Pinecone storage');
+      }
+      
+      if (!store.config.apiKey) {
+        throw new Error('Pinecone API key not configured');
+      }
+      
+      const upsertUrl = `https://${store.config.indexName}-${store.config.environment}.svc.${store.config.environment}.pinecone.io/vectors/upsert`;
+      
+      const payload = {
+        vectors: [{
+          id: chunk.id,
+          values: chunk.embedding,
+          metadata: {
+            documentId: chunk.documentId,
+            content: chunk.content.substring(0, 1000), // Pinecone metadata size limit
+            source: chunk.metadata.source,
+            type: chunk.metadata.type,
+            category: chunk.metadata.category || '',
+            classification: chunk.metadata.classification || '',
+            tags: chunk.metadata.tags?.join(',') || '',
+            createdAt: chunk.metadata.createdAt.toISOString(),
+            startPosition: chunk.position.start,
+            endPosition: chunk.position.end,
+            section: chunk.position.section || '',
+          },
+        }],
+        namespace: this.selectNamespace(chunk),
+      };
+      
+      const response = await fetch(upsertUrl, {
+        method: 'POST',
+        headers: {
+          'Api-Key': store.config.apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Pinecone upsert failed: ${response.status} ${errorText}`);
+      }
+      
+      logger.debug(`Successfully added chunk ${chunk.id} to Pinecone`);
+      
     } catch (error) {
       logger.error(`Failed to add chunk ${chunk.id} to Pinecone: ${error}`);
       throw error;
     }
   }
 
-  private async addToLocalStore(chunk: DocumentChunk, store: VectorStore): Promise<void> {
-    // Local FAISS store insertion logic
-    try {
-      logger.debug(`Adding chunk ${chunk.id} to local store ${store.name} of type ${store.type}`);
+  private selectNamespace(chunk: DocumentChunk): string {
+    // Use chunk type as namespace for better organization
+    return chunk.metadata.type || 'default';
+  }
 
-      // Placeholder for actual local store operation
-      // this.localVectorIndex.add(chunk.embedding, chunk.id);
+  private async addToLocalStore(chunk: DocumentChunk, store: VectorStore): Promise<void> {
+    try {
+      logger.debug(`Adding chunk ${chunk.id} to local store ${store.name}`);
+      
+      if (!chunk.embedding) {
+        throw new Error('Chunk embedding is required for local storage');
+      }
+      
+      const storagePath = store.config.storagePath;
+      const indexPath = _path.join(storagePath, 'index.json');
+      const vectorsPath = _path.join(storagePath, 'vectors.bin');
+      const metadataPath = _path.join(storagePath, 'metadata.json');
+      
+      // Ensure storage directory exists
+      await fs.mkdir(storagePath, { recursive: true });
+      
+      // Load existing index
+      let index = { chunks: {}, nextId: 0 };
+      try {
+        const indexData = await fs.readFile(indexPath, 'utf-8');
+        index = JSON.parse(indexData);
+      } catch (error) {
+        // Index doesn't exist yet, will create new one
+        logger.debug('Creating new local vector index');
+      }
+      
+      // Load existing metadata
+      let metadata = {};
+      try {
+        const metadataData = await fs.readFile(metadataPath, 'utf-8');
+        metadata = JSON.parse(metadataData);
+      } catch (error) {
+        // Metadata doesn't exist yet
+      }
+      
+      // Add chunk to index
+      index.chunks[chunk.id] = {
+        id: chunk.id,
+        vectorIndex: index.nextId,
+        documentId: chunk.documentId,
+        addedAt: new Date().toISOString(),
+      };
+      
+      // Add metadata
+      metadata[chunk.id] = {
+        documentId: chunk.documentId,
+        content: chunk.content,
+        source: chunk.metadata.source,
+        type: chunk.metadata.type,
+        category: chunk.metadata.category || '',
+        classification: chunk.metadata.classification || '',
+        tags: chunk.metadata.tags || [],
+        createdAt: chunk.metadata.createdAt.toISOString(),
+        updatedAt: chunk.metadata.updatedAt.toISOString(),
+        position: chunk.position,
+      };
+      
+      // Append vector to binary file
+      const vectorBuffer = Buffer.from(new Float32Array(chunk.embedding).buffer);
+      await fs.appendFile(vectorsPath, vectorBuffer);
+      
+      // Update index counter
+      index.nextId++;
+      
+      // Save updated index and metadata
+      await fs.writeFile(indexPath, JSON.stringify(index, null, 2));
+      await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+      
+      logger.debug(`Successfully added chunk ${chunk.id} to local store at index ${index.nextId - 1}`);
+      
     } catch (error) {
       logger.error(`Failed to add chunk ${chunk.id} to local store: ${error}`);
       throw error;
@@ -790,7 +1160,49 @@ export class NovaRAGEngine extends EventEmitter {
     query: RAGQuery,
     queryEmbedding: number[],
   ): Promise<DocumentChunk[]> {
-    // Semantic search using vector similarity
+    try {
+      // Try to search using active vector stores first
+      const primaryStore = this.vectorStores.get(this.config.defaultVectorStore);
+      if (primaryStore && primaryStore.isActive) {
+        const results = await this.searchVectorStore(query, queryEmbedding, primaryStore);
+        if (results.length > 0) {
+          return results;
+        }
+      }
+      
+      // Fallback to in-memory search
+      return await this.searchInMemory(query, queryEmbedding);
+      
+    } catch (error) {
+      logger.error(`Semantic search error: ${error}`);
+      // Fallback to in-memory search
+      return await this.searchInMemory(query, queryEmbedding);
+    }
+  }
+
+  private async searchVectorStore(
+    query: RAGQuery,
+    queryEmbedding: number[],
+    store: VectorStore
+  ): Promise<DocumentChunk[]> {
+    switch (store.type) {
+      case 'chromadb':
+        return await this.searchChromaDB(query, queryEmbedding, store);
+      case 'pinecone':
+        return await this.searchPinecone(query, queryEmbedding, store);
+      case 'local':
+        return await this.searchLocalStore(query, queryEmbedding, store);
+      default:
+        logger.warn(`Unsupported vector store type for search: ${store.type}`);
+        return [];
+    }
+  }
+
+  private async searchInMemory(
+    query: RAGQuery,
+    queryEmbedding: number[],
+  ): Promise<DocumentChunk[]> {
+    // Fallback to in-memory semantic search using cosine similarity
     const chunks = Array.from(this.documentChunks.values());
     const results: Array<{ chunk: DocumentChunk; score: number }> = [];
 
@@ -929,39 +1341,383 @@ export class NovaRAGEngine extends EventEmitter {
     });
   }
 
+  private async searchChromaDB(
+    query: RAGQuery,
+    queryEmbedding: number[],
+    store: VectorStore
+  ): Promise<DocumentChunk[]> {
+    try {
+      const results: DocumentChunk[] = [];
+      const maxResults = query.options.maxResults || this.config.maxRetrieval;
+      
+      // Search across all collections in the store
+      for (const collection of store.collections) {
+        const searchUrl = `http://${store.config.host}:${store.config.port}/api/v1/collections/${collection}/query`;
+        
+        const searchPayload = {
+          query_embeddings: [queryEmbedding],
+          n_results: maxResults,
+          include: ['documents', 'metadatas', 'distances'],
+        };
+        
+        const response = await fetch(searchUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(searchPayload),
+        });
+        
+        if (!response.ok) {
+          logger.warn(`ChromaDB search failed for collection ${collection}: ${response.status}`);
+          continue;
+        }
+        
+        const searchResults = await response.json();
+        
+        if (searchResults.ids && searchResults.ids[0]) {
+          for (let i = 0; i < searchResults.ids[0].length; i++) {
+            const id = searchResults.ids[0][i];
+            const document = searchResults.documents[0][i];
+            const metadata = searchResults.metadatas[0][i];
+            const distance = searchResults.distances[0][i];
+            
+            // Convert distance to similarity score (1 - distance for cosine distance)
+            const similarity = 1 - distance;
+            
+            if (similarity >= (query.options.minScore || this.config.minSimilarity)) {
+              const chunk: DocumentChunk = {
+                id,
+                documentId: metadata.documentId || id,
+                content: document,
+                metadata: {
+                  source: metadata.source || 'chromadb',
+                  type: metadata.type as any || 'documentation',
+                  category: metadata.category,
+                  classification: metadata.classification,
+                  tags: metadata.tags ? metadata.tags.split(',') : [],
+                  createdAt: new Date(metadata.createdAt),
+                  updatedAt: new Date(metadata.updatedAt),
+                  relevanceScore: similarity,
+                },
+                position: {
+                  start: parseInt(metadata.startPosition) || 0,
+                  end: parseInt(metadata.endPosition) || document.length,
+                  section: metadata.section,
+                },
+              };
+              
+              results.push(chunk);
+            }
+          }
+        }
+      }
+      
+      // Sort by relevance score and deduplicate
+      const uniqueResults = new Map<string, DocumentChunk>();
+      results.forEach(chunk => {
+        const existing = uniqueResults.get(chunk.id);
+        if (!existing || (chunk.metadata.relevanceScore || 0) > (existing.metadata.relevanceScore || 0)) {
+          uniqueResults.set(chunk.id, chunk);
+        }
+      });
+      
+      return Array.from(uniqueResults.values())
+        .sort((a, b) => (b.metadata.relevanceScore || 0) - (a.metadata.relevanceScore || 0))
+        .slice(0, maxResults);
+        
+    } catch (error) {
+      logger.error(`ChromaDB search error: ${error}`);
+      return [];
+    }
+  }
+
+  private async searchPinecone(
+    query: RAGQuery,
+    queryEmbedding: number[],
+    store: VectorStore
+  ): Promise<DocumentChunk[]> {
+    try {
+      if (!store.config.apiKey) {
+        throw new Error('Pinecone API key not configured');
+      }
+      
+      const maxResults = query.options.maxResults || this.config.maxRetrieval;
+      const queryUrl = `https://${store.config.indexName}-${store.config.environment}.svc.${store.config.environment}.pinecone.io/query`;
+      
+      const searchPayload = {
+        vector: queryEmbedding,
+        topK: maxResults,
+        includeMetadata: true,
+        includeValues: false,
+      };
+      
+      const response = await fetch(queryUrl, {
+        method: 'POST',
+        headers: {
+          'Api-Key': store.config.apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(searchPayload),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Pinecone search failed: ${response.status}`);
+      }
+      
+      const searchResults = await response.json();
+      const results: DocumentChunk[] = [];
+      
+      if (searchResults.matches) {
+        for (const match of searchResults.matches) {
+          const similarity = match.score;
+          
+          if (similarity >= (query.options.minScore || this.config.minSimilarity)) {
+            const metadata = match.metadata;
+            const chunk: DocumentChunk = {
+              id: match.id,
+              documentId: metadata.documentId || match.id,
+              content: metadata.content || '',
+              metadata: {
+                source: metadata.source || 'pinecone',
+                type: metadata.type as any || 'documentation',
+                category: metadata.category,
+                classification: metadata.classification,
+                tags: metadata.tags ? metadata.tags.split(',') : [],
+                createdAt: new Date(metadata.createdAt),
+                updatedAt: new Date(metadata.updatedAt || metadata.createdAt),
+                relevanceScore: similarity,
+              },
+              position: {
+                start: metadata.startPosition || 0,
+                end: metadata.endPosition || metadata.content?.length || 0,
+                section: metadata.section,
+              },
+            };
+            
+            results.push(chunk);
+          }
+        }
+      }
+      
+      return results.sort((a, b) => (b.metadata.relevanceScore || 0) - (a.metadata.relevanceScore || 0));
+      
+    } catch (error) {
+      logger.error(`Pinecone search error: ${error}`);
+      return [];
+    }
+  }
+
+  private async searchLocalStore(
+    query: RAGQuery,
+    queryEmbedding: number[],
+    store: VectorStore
+  ): Promise<DocumentChunk[]> {
+    try {
+      const storagePath = store.config.storagePath;
+      const indexPath = _path.join(storagePath, 'index.json');
+      const vectorsPath = _path.join(storagePath, 'vectors.bin');
+      const metadataPath = _path.join(storagePath, 'metadata.json');
+      
+      // Load index and metadata
+      const indexData = await fs.readFile(indexPath, 'utf-8');
+      const index = JSON.parse(indexData);
+      
+      const metadataData = await fs.readFile(metadataPath, 'utf-8');
+      const metadata = JSON.parse(metadataData);
+      
+      // Load vectors
+      const vectorBuffer = await fs.readFile(vectorsPath);
+      const vectorDimensions = queryEmbedding.length;
+      const vectorsCount = vectorBuffer.length / (vectorDimensions * 4); // 4 bytes per float32
+      
+      const results: Array<{ chunk: DocumentChunk; score: number }> = [];
+      
+      // Search through all vectors
+      for (const [chunkId, chunkInfo] of Object.entries(index.chunks)) {
+        const chunkMeta = metadata[chunkId];
+        if (!chunkMeta) continue;
+        
+        const vectorIndex = (chunkInfo as any).vectorIndex;
+        const vectorOffset = vectorIndex * vectorDimensions * 4;
+        
+        if (vectorOffset + vectorDimensions * 4 <= vectorBuffer.length) {
+          // Extract vector
+          const chunkVector = [];
+          for (let i = 0; i < vectorDimensions; i++) {
+            const floatValue = vectorBuffer.readFloatLE(vectorOffset + i * 4);
+            chunkVector.push(floatValue);
+          }
+          
+          // Calculate similarity
+          const similarity = this.cosineSimilarity(queryEmbedding, chunkVector);
+          
+          if (similarity >= (query.options.minScore || this.config.minSimilarity)) {
+            const chunk: DocumentChunk = {
+              id: chunkId,
+              documentId: chunkMeta.documentId,
+              content: chunkMeta.content,
+              embedding: chunkVector,
+              metadata: {
+                source: chunkMeta.source,
+                type: chunkMeta.type,
+                category: chunkMeta.category,
+                classification: chunkMeta.classification,
+                tags: chunkMeta.tags || [],
+                createdAt: new Date(chunkMeta.createdAt),
+                updatedAt: new Date(chunkMeta.updatedAt),
+                relevanceScore: similarity,
+              },
+              position: chunkMeta.position,
+            };
+            
+            results.push({ chunk, score: similarity });
+          }
+        }
+      }
+      
+      // Sort by similarity and return top results
+      results.sort((a, b) => b.score - a.score);
+      const maxResults = query.options.maxResults || this.config.maxRetrieval;
+      
+      return results.slice(0, maxResults).map(r => r.chunk);
+      
+    } catch (error) {
+      logger.error(`Local store search error: ${error}`);
+      return [];
+    }
+  }
+
   private async rerankResults(query: string, chunks: DocumentChunk[]): Promise<DocumentChunk[]> {
     // Cross-encoder reranking for better relevance
     // This would use a specialized reranking model
+    
+    try {
+      // Simple reranking based on query term presence and position
+      const queryTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 2);
+      
+      const rerankedChunks = chunks.map(chunk => {
+        let rerankScore = chunk.metadata.relevanceScore || 0;
+        const content = chunk.content.toLowerCase();
+        
+        // Boost score based on exact query term matches
+        for (const term of queryTerms) {
+          const termCount = (content.match(new RegExp(term, 'g')) || []).length;
+          rerankScore += termCount * 0.1;
+          
+          // Extra boost for terms in titles/sections
+          if (chunk.position.section && chunk.position.section.toLowerCase().includes(term)) {
+            rerankScore += 0.2;
+          }
+        }
+        
+        // Boost newer content slightly
+        const daysSinceCreation = (Date.now() - chunk.metadata.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSinceCreation < 30) {
+          rerankScore += 0.05;
+        }
+        
+        chunk.metadata.relevanceScore = rerankScore;
+        return chunk;
+      });
+      
+      // Resort by new rerank score
+      return rerankedChunks.sort((a, b) => (b.metadata.relevanceScore || 0) - (a.metadata.relevanceScore || 0));
+      
+    } catch (error) {
+      logger.error(`Reranking error: ${error}`);
+      return chunks; // Return original chunks on error
+    }
 
-    // For now, return chunks as-is
-    return chunks;
-  }
 
   private calculateConfidence(chunks: DocumentChunk[]): number {
     if (chunks.length === 0) return 0;
 
     const scores = chunks.map((chunk) => chunk.metadata.relevanceScore || 0);
     const avgScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+    const maxScore = Math.max(...scores);
+    const minScore = Math.min(...scores);
 
-    // Adjust confidence based on result count and score distribution
+    // Calculate confidence based on multiple factors
     let confidence = avgScore;
 
+    // Boost confidence for multiple relevant results
     if (chunks.length >= 3) confidence *= 1.1;
     if (chunks.length >= 5) confidence *= 1.1;
 
-    return Math.min(1, confidence);
-  }
+    // Boost confidence for high-scoring top result
+    if (maxScore > 0.8) confidence *= 1.2;
+
+    // Reduce confidence for widely varying scores (indicates uncertainty)
+    const scoreVariance = maxScore - minScore;
+    if (scoreVariance > 0.5) confidence *= 0.9;
+
+    // Consider source diversity as a positive factor
+    const uniqueSources = new Set(chunks.map(chunk => chunk.metadata.source)).size;
+    if (uniqueSources > 1) confidence *= 1.05;
+
+    return Math.min(1, Math.max(0, confidence));
+
 
   private async generateContextSummary(query: string, chunks: DocumentChunk[]): Promise<string> {
-    // Generate a summary of the retrieved context
-    // This would use a summarization model
+    try {
+      // Enhanced summary generation with better context extraction
+      const topChunks = chunks.slice(0, 5); // Use top 5 chunks for summary
+      
+      // Extract key information from chunks
+      const sources = [...new Set(topChunks.map(chunk => chunk.metadata.source))];
+      const types = [...new Set(topChunks.map(chunk => chunk.metadata.type))];
+      const categories = [...new Set(topChunks.map(chunk => chunk.metadata.category).filter(Boolean))];
+      
+      // Combine content from top chunks, prioritizing by relevance score
+      const combinedContent = topChunks
+        .map((chunk, index) => {
+          const weight = chunk.metadata.relevanceScore || (1 - index * 0.1);
+          const excerpt = chunk.content.substring(0, 200);
+          return { excerpt, weight, source: chunk.metadata.source };
+        })
+        .sort((a, b) => b.weight - a.weight)
+        .map(item => item.excerpt)
+        .join('\n\n');
 
-    const combinedContent = chunks
-      .slice(0, 3)
-      .map((chunk) => chunk.content)
-      .join('\n\n');
-    return `Based on ${chunks.length} relevant documents, here's the key information related to "${query}": ${combinedContent.substring(0, 500)}...`;
-  }
+      // Generate structured summary
+      let summary = `Based on ${chunks.length} relevant documents`;
+      
+      if (sources.length > 1) {
+        summary += ` from sources: ${sources.join(', ')}`;
+      }
+      
+      if (categories.length > 0) {
+        summary += ` covering: ${categories.join(', ')}`;
+      }
+      
+      summary += `\n\nKey information related to "${query}":\n\n`;
+      summary += combinedContent.substring(0, 800);
+      
+      if (combinedContent.length > 800) {
+        summary += '...';
+      }
+      
+      // Add confidence indicator
+      const avgScore = chunks.reduce((sum, chunk) => sum + (chunk.metadata.relevanceScore || 0), 0) / chunks.length;
+      if (avgScore > 0.8) {
+        summary += '\n\n[High confidence match]';
+      } else if (avgScore > 0.6) {
+        summary += '\n\n[Medium confidence match]';
+      } else {
+        summary += '\n\n[Lower confidence - consider refining query]';
+      }
+      
+      return summary;
+      
+    } catch (error) {
+      logger.error(`Context summary generation error: ${error}`);
+      // Fallback to simple summary
+      const combinedContent = chunks
+        .slice(0, 3)
+        .map((chunk) => chunk.content)
+        .join('\n\n');
+      return `Based on ${chunks.length} relevant documents, here's the key information related to "${query}": ${combinedContent.substring(0, 500)}...`;
+    }
+
 
   private cosineSimilarity(a: number[], b: number[]): number {
     if (a.length !== b.length) return 0;
@@ -980,22 +1736,86 @@ export class NovaRAGEngine extends EventEmitter {
 
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
-
   private async expandQuery(query: string): Promise<string> {
-    // Query expansion using synonyms, related terms, etc.
-    // This would use NLP techniques or knowledge graph traversal
+    try {
+      // Enhanced query expansion using Nova Synth intelligence
+      let expandedQuery = query;
+      
+      // Try Nova Synth query expansion first
+      if (process.env.SYNTH_API_URL && process.env.SYNTH_API_KEY) {
+        try {
+          expandedQuery = await this.expandQueryWithNovaSynth(query);
+        } catch (error) {
+          logger.warn(`Nova Synth query expansion failed, using fallback: ${error}`);
+        }
+      }
+      
+      // Fallback to rule-based expansion
+      if (expandedQuery === query) {
+        expandedQuery = this.expandQueryRuleBased(query);
+      }
+      
+      logger.debug(`Query expanded from "${query}" to "${expandedQuery}"`);
+      return expandedQuery;
+      
+    } catch (error) {
+      logger.error(`Query expansion error: ${error}`);
+      return query; // Return original query on error
+    }
+  }
 
-    // Simple expansion for now
+  private async expandQueryWithNovaSynth(query: string): Promise<string> {
+    try {
+      const response = await fetch(`${process.env.SYNTH_API_URL}/api/v2/synth/query-expansion`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.SYNTH_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          context: 'help_desk_rag',
+          expansion_type: 'semantic_synonyms',
+          max_terms: 5,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Nova Synth API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.expanded_query || query;
+      
+    } catch (error) {
+      logger.error(`Nova Synth query expansion error: ${error}`);
+      throw error;
+    }
+  }
+
+  private expandQueryRuleBased(query: string): string {
+    // Enhanced rule-based query expansion
     const synonyms = {
-      problem: ['issue', 'error', 'bug'],
-      fix: ['resolve', 'solution', 'repair'],
-      install: ['setup', 'configure', 'deploy'],
+      problem: ['issue', 'error', 'bug', 'trouble', 'difficulty'],
+      fix: ['resolve', 'solution', 'repair', 'correct', 'troubleshoot'],
+      install: ['setup', 'configure', 'deploy', 'implement', 'initialize'],
+      login: ['authentication', 'signin', 'access', 'credentials', 'logon'],
+      network: ['connectivity', 'connection', 'internet', 'wifi', 'ethernet'],
+      email: ['mail', 'outlook', 'gmail', 'messaging', 'correspondence'],
+      password: ['passcode', 'credentials', 'authentication', 'pin', 'security'],
+      printer: ['printing', 'print', 'scanner', 'multifunction', 'copier'],
+      software: ['application', 'program', 'app', 'tool', 'system'],
+      hardware: ['device', 'equipment', 'computer', 'laptop', 'desktop'],
     };
 
     let expandedQuery = query;
+    const queryLower = query.toLowerCase();
+    
     for (const [word, syns] of Object.entries(synonyms)) {
-      if (query.toLowerCase().includes(word)) {
-        expandedQuery += ' ' + syns.join(' ');
+      if (queryLower.includes(word)) {
+        // Add 2-3 most relevant synonyms
+        const relevantSynonyms = syns.slice(0, 3);
+        expandedQuery += ' ' + relevantSynonyms.join(' ');
       }
     }
 
