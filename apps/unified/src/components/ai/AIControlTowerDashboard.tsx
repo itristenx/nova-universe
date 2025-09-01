@@ -66,6 +66,8 @@ import { useTheme } from '@mui/material/styles';
 import { apiService } from '../../services/api.service';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { EmptyState } from '../common/EmptyState';
+import RAGManagementPanel from './RAGManagementPanel';
+import RBACTestingPanel from './RBACTestingPanel';
 
 // Styled components with modern design
 const DashboardContainer = styled(Container)(({ theme }) => ({
@@ -145,6 +147,19 @@ export const AIControlTowerDashboard = () => {
   const [selectedExperiment, setSelectedExperiment] = useState(null);
   const [trainingStatus, setTrainingStatus] = useState({});
 
+  // RAG Management states
+  const [ragStats, setRagStats] = useState(null);
+  const [ragQueryResults, setRagQueryResults] = useState([]);
+  const [dataSourceConnectors, setDataSourceConnectors] = useState([]);
+  const [synthQueryResults, setSynthQueryResults] = useState([]);
+
+  // RBAC Testing states
+  const [rbacTestResults, setRbacTestResults] = useState(null);
+  const [personalityTestResults, setPersonalityTestResults] = useState(null);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [rbacUsers, setRbacUsers] = useState([]);
+  const [rbacPolicies, setRbacPolicies] = useState([]);
+
   // Dialog states
   const [createTowerDialog, setCreateTowerDialog] = useState(false);
   const [createModelDialog, setCreateModelDialog] = useState(false);
@@ -153,6 +168,10 @@ export const AIControlTowerDashboard = () => {
   const [createITSMExperimentDialog, setCreateITSMExperimentDialog] = useState(false);
   const [cosmoPersonalityDialog, setCosmoPersonalityDialog] = useState(false);
   const [modelSettingsDialog, setModelSettingsDialog] = useState(false);
+  const [ragQueryDialog, setRagQueryDialog] = useState(false);
+  const [synthQueryDialog, setSynthQueryDialog] = useState(false);
+  const [rbacUserDialog, setRbacUserDialog] = useState(false);
+  const [rbacPolicyDialog, setRbacPolicyDialog] = useState(false);
 
   // Menu states
   const [anchorEl, setAnchorEl] = useState(null);
@@ -184,6 +203,12 @@ export const AIControlTowerDashboard = () => {
 
       // Load ML Pipeline data
       await loadMLPipelineData();
+
+      // Load RAG Management data
+      await loadRAGData();
+
+      // Load RBAC data
+      await loadRBACData();
 
       setError(null);
     } catch (_err) {
@@ -223,6 +248,34 @@ export const AIControlTowerDashboard = () => {
     } catch (err) {
       console.error('Failed to load ML Pipeline data:', err);
       showSnackbar('Failed to load ML Pipeline data', 'warning');
+    }
+  }, []);
+
+  const loadRAGData = useCallback(async () => {
+    try {
+      // Load RAG system statistics
+      const statsResponse = await apiService.get('/api/nova-rag/stats');
+      setRagStats(statsResponse.data);
+
+      // Load data source connectors
+      const connectorsResponse = await apiService.get('/api/nova-rag/data-sources');
+      setDataSourceConnectors(connectorsResponse.data.connectors || []);
+
+    } catch (err) {
+      console.error('Failed to load RAG data:', err);
+      showSnackbar('Failed to load RAG data', 'warning');
+    }
+  }, []);
+
+  const loadRBACData = useCallback(async () => {
+    try {
+      // Load audit logs
+      const auditResponse = await apiService.get('/api/nova-rag/rbac/audit-logs?limit=50');
+      setAuditLogs(auditResponse.data.logs || []);
+
+    } catch (err) {
+      console.error('Failed to load RBAC data:', err);
+      showSnackbar('Failed to load RBAC data', 'warning');
     }
   }, []);
 
@@ -628,6 +681,8 @@ export const AIControlTowerDashboard = () => {
           <Tab icon={<SecurityIcon />} label="Audit" />
           <Tab icon={<SmartToy />} label="ML Pipeline" />
           <Tab icon={<Settings />} label="Cosmo AI" />
+          <Tab icon={<QueryIcon />} label="RAG Management" />
+          <Tab icon={<SecurityIcon />} label="RBAC Testing" />
         </Tabs>
       </Paper>
 
@@ -686,6 +741,66 @@ export const AIControlTowerDashboard = () => {
             onCreatePersonality={() => setCosmoPersonalityDialog(true)}
           />
         )}
+
+        {activeTab === 7 && (
+          <RAGManagementPanel
+            ragStats={ragStats}
+            dataSourceConnectors={dataSourceConnectors}
+            ragQueryResults={ragQueryResults}
+            synthQueryResults={synthQueryResults}
+            onTestRAGQuery={() => setRagQueryDialog(true)}
+            onTestSynthQuery={() => setSynthQueryDialog(true)}
+            onSyncDataSources={async () => {
+              try {
+                await apiService.post('/api/nova-rag/data-sources/sync');
+                await loadRAGData();
+                showSnackbar('Data sources sync initiated', 'success');
+              } catch (error) {
+                showSnackbar('Failed to sync data sources', 'error');
+              }
+            }}
+            onToggleConnector={async (connectorId, enabled) => {
+              try {
+                await apiService.post(`/api/nova-rag/data-sources/${connectorId}/toggle`, { enabled });
+                await loadRAGData();
+                showSnackbar(`Connector ${enabled ? 'enabled' : 'disabled'}`, 'success');
+              } catch (error) {
+                showSnackbar('Failed to toggle connector', 'error');
+              }
+            }}
+          />
+        )}
+
+        {activeTab === 8 && (
+          <RBACTestingPanel
+            rbacTestResults={rbacTestResults}
+            personalityTestResults={personalityTestResults}
+            auditLogs={auditLogs}
+            rbacUsers={rbacUsers}
+            rbacPolicies={rbacPolicies}
+            onRunRBACTests={async () => {
+              try {
+                const response = await apiService.post('/api/nova-rag/test-rbac');
+                setRbacTestResults(response.data);
+                showSnackbar('RBAC tests completed', 'success');
+              } catch (error) {
+                showSnackbar('Failed to run RBAC tests', 'error');
+              }
+            }}
+            onTestPersonalities={async (query) => {
+              try {
+                const response = await apiService.post('/api/nova-rag/test-personalities', { query });
+                setPersonalityTestResults(response.data);
+                showSnackbar('Personality tests completed', 'success');
+              } catch (error) {
+                showSnackbar('Failed to test personalities', 'error');
+              }
+            }}
+            onCreateRBACUser={() => setRbacUserDialog(true)}
+            onCreateRBACPolicy={() => setRbacPolicyDialog(true)}
+            onRefreshAuditLogs={loadRBACData}
+          />
+        )}
       </Box>
 
       {/* Floating Action Button */}
@@ -708,6 +823,12 @@ export const AIControlTowerDashboard = () => {
               break;
             case 6:
               setCosmoPersonalityDialog(true);
+              break;
+            case 7:
+              setRagQueryDialog(true);
+              break;
+            case 8:
+              setRbacUserDialog(true);
               break;
             default:
               setCreateTowerDialog(true);

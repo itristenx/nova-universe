@@ -42,6 +42,7 @@ import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
 import mlPipelineRouter from './routes/ml-pipeline.js'; // ML Pipeline Management
+import novaRAGRouter from './routes/nova-rag.js'; // Nova RAG with RBAC
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
 import novaTVRouter from './routes/nova-tv.js'; // Nova TV - Channel Management
@@ -2335,6 +2336,7 @@ v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - E
 v1Router.use('/tickets', ticketsRouter);
 v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
 v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI
+v1Router.use('/nova-rag', novaRAGRouter); // Nova RAG with RBAC and Synth Integration
 v1Router.use('/spaces', spacesRouter);
 v1Router.use('/ai-fabric', aiFabricRouter);
 v1Router.use('/setup', setupRouter);
@@ -2483,6 +2485,34 @@ if (
         }
       } catch (slackError) {
         logger.warn('Failed to start Slack app:', slackError.message);
+      }
+
+      // Initialize Nova RAG systems
+      try {
+        const { ragRBAC } = await import('./lib/nova-rag-rbac.js');
+        const { ragEngine } = await import('./lib/rag-engine.js');
+        const { ragDataConnectors } = await import('./lib/nova-rag-data-connectors.js');
+        const { novaSynthRAG } = await import('./lib/nova-synth-rag-integration.js');
+
+        logger.info('🧠 Initializing Nova RAG systems...');
+        
+        // Initialize in order of dependencies
+        await ragRBAC.initialize();
+        logger.info('✅ Nova RAG RBAC system initialized');
+        
+        await ragEngine.initialize();
+        logger.info('✅ Nova RAG engine initialized');
+        
+        await ragDataConnectors.initialize();
+        logger.info('✅ Nova RAG data connectors initialized');
+        
+        await novaSynthRAG.initialize();
+        logger.info('✅ Nova Synth RAG integration initialized');
+        
+        logger.info('🎯 Nova RAG systems fully operational');
+      } catch (ragError) {
+        logger.error('Failed to initialize Nova RAG systems:', ragError);
+        logger.warn('Nova RAG functionality will be limited');
       }
     });
   });
