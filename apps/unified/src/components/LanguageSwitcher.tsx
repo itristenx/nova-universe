@@ -51,16 +51,9 @@ export default function LanguageSwitcher({
       // Apply RTL configuration to document
       applyRTLToDocument(languageCode);
 
-      // Store language preference
+      // Store language preference and language code
       localStorage.setItem('i18nextLng', languageCode);
-      
-      setIsOpen(false);
-    }
-  };
       document.documentElement.lang = languageCode;
-
-      // Store preference in localStorage
-      localStorage.setItem('i18nextLng', languageCode);
 
       // Close dropdown
       setIsOpen(false);
