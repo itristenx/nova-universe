@@ -54,12 +54,26 @@ import {
   Download as DownloadIcon,
   Upload as UploadIcon,
   Visibility as VisibilityIcon,
+  SmartToy,
+  Settings,
+  Psychology as PsychologyIcon,
+  ModelTraining as ModelTrainingIcon,
+  Tune as TuneIcon,
+  AutoFixHigh as AutoFixHighIcon,
+  Email as EmailIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import { apiService } from '../../services/api.service';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { EmptyState } from '../common/EmptyState';
+import RAGManagementPanel from './RAGManagementPanel';
+import RBACTestingPanel from './RBACTestingPanel';
+import AIAgentManagementPanel from './AIAgentManagementPanel';
+import EmailProcessingPanel from './EmailProcessingPanel';
+
+// Constants
+const POLLING_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour
 
 // Styled components with modern design
 const DashboardContainer = styled(Container)(({ theme }) => ({
@@ -132,11 +146,38 @@ export const AIControlTowerDashboard = () => {
   const [error, setError] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
+  // ML Pipeline states
+  const [mlExperiments, setMlExperiments] = useState([]);
+  const [mlPipelineStatus, setMlPipelineStatus] = useState(null);
+  const [cosmoPersonalities, setCosmoPersonalities] = useState(new Map());
+  const [selectedExperiment, setSelectedExperiment] = useState(null);
+  const [trainingStatus, setTrainingStatus] = useState({});
+
+  // RAG Management states
+  const [ragStats, setRagStats] = useState(null);
+  const [ragQueryResults, setRagQueryResults] = useState([]);
+  const [dataSourceConnectors, setDataSourceConnectors] = useState([]);
+  const [synthQueryResults, setSynthQueryResults] = useState([]);
+
+  // RBAC Testing states
+  const [rbacTestResults, setRbacTestResults] = useState(null);
+  const [personalityTestResults, setPersonalityTestResults] = useState(null);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [rbacUsers, setRbacUsers] = useState([]);
+  const [rbacPolicies, setRbacPolicies] = useState([]);
+
   // Dialog states
   const [createTowerDialog, setCreateTowerDialog] = useState(false);
   const [createModelDialog, setCreateModelDialog] = useState(false);
   const [createRAGDialog, setCreateRAGDialog] = useState(false);
   const [trainingDialog, setTrainingDialog] = useState(false);
+  const [createITSMExperimentDialog, setCreateITSMExperimentDialog] = useState(false);
+  const [cosmoPersonalityDialog, setCosmoPersonalityDialog] = useState(false);
+  const [modelSettingsDialog, setModelSettingsDialog] = useState(false);
+  const [ragQueryDialog, setRagQueryDialog] = useState(false);
+  const [synthQueryDialog, setSynthQueryDialog] = useState(false);
+  const [rbacUserDialog, setRbacUserDialog] = useState(false);
+  const [rbacPolicyDialog, setRbacPolicyDialog] = useState(false);
 
   // Menu states
   const [anchorEl, setAnchorEl] = useState(null);
@@ -166,12 +207,81 @@ export const AIControlTowerDashboard = () => {
         setMetrics(metricsResponse.data);
       }
 
+      // Load ML Pipeline data
+      await loadMLPipelineData();
+
+      // Load RAG Management data
+      await loadRAGData();
+
+      // Load RBAC data
+      await loadRBACData();
+
       setError(null);
     } catch (_err) {
       setError(_err.message || 'Failed to load dashboard data');
       showSnackbar('Failed to load dashboard data', 'error');
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const loadMLPipelineData = useCallback(async () => {
+    try {
+      // Load ML experiments
+      const experimentsResponse = await apiService.get('/api/ml-pipeline/experiments');
+      setMlExperiments(experimentsResponse.data || []);
+
+      // Load ML Pipeline status
+      const statusResponse = await apiService.get('/api/ml-pipeline/status');
+      setMlPipelineStatus(statusResponse.data);
+
+      // Load Cosmo personalities
+      const personalitiesResponse = await apiService.get('/api/ml-pipeline/cosmo-personalities');
+      setCosmoPersonalities(new Map(Object.entries(personalitiesResponse.data || {})));
+
+      // Load training status for each experiment
+      const trainingStatusMap = {};
+      for (const experiment of experimentsResponse.data || []) {
+        try {
+          const statusRes = await apiService.get(`/api/ml-pipeline/experiments/${experiment.id}/status`);
+          trainingStatusMap[experiment.id] = statusRes.data;
+        } catch (err) {
+          console.warn(`Failed to load status for experiment ${experiment.id}:`, err);
+        }
+      }
+      setTrainingStatus(trainingStatusMap);
+
+    } catch (err) {
+      console.error('Failed to load ML Pipeline data:', err);
+      showSnackbar('Failed to load ML Pipeline data', 'warning');
+    }
+  }, []);
+
+  const loadRAGData = useCallback(async () => {
+    try {
+      // Load RAG system statistics
+      const statsResponse = await apiService.get('/api/nova-rag/stats');
+      setRagStats(statsResponse.data);
+
+      // Load data source connectors
+      const connectorsResponse = await apiService.get('/api/nova-rag/data-sources');
+      setDataSourceConnectors(connectorsResponse.data.connectors || []);
+
+    } catch (err) {
+      console.error('Failed to load RAG data:', err);
+      showSnackbar('Failed to load RAG data', 'warning');
+    }
+  }, []);
+
+  const loadRBACData = useCallback(async () => {
+    try {
+      // Load audit logs
+      const auditResponse = await apiService.get('/api/nova-rag/rbac/audit-logs?limit=50');
+      setAuditLogs(auditResponse.data.logs || []);
+
+    } catch (err) {
+      console.error('Failed to load RBAC data:', err);
+      showSnackbar('Failed to load RBAC data', 'warning');
     }
   }, []);
 
@@ -236,6 +346,104 @@ export const AIControlTowerDashboard = () => {
     } catch (_err) {
       console.error('Failed to start training:', _err);
       showSnackbar('Failed to start training', 'error');
+    }
+  };
+
+  // ML Pipeline specific handlers
+  const createITSMExperiment = async (experimentData) => {
+    try {
+      const response = await apiService.post('/api/ml-pipeline/experiments/itsm', {
+        modelName: experimentData.modelName,
+        cosmoPersonalityProfile: experimentData.cosmoPersonality || 'default',
+        itsmCategories: experimentData.categories || ['Hardware', 'Software', 'Network', 'Access Management', 'Infrastructure']
+      });
+      
+      await loadMLPipelineData();
+      setCreateITSMExperimentDialog(false);
+      showSnackbar(`ITSM experiment created: ${response.data.experimentId}`, 'success');
+    } catch (err) {
+      console.error('Failed to create ITSM experiment:', err);
+      showSnackbar('Failed to create ITSM experiment', 'error');
+    }
+  };
+
+  const startMLTraining = async (experimentId) => {
+    try {
+      setTrainingStatus(prev => ({ ...prev, [experimentId]: { status: 'starting' } }));
+      
+      await apiService.post(`/api/ml-pipeline/experiments/${experimentId}/train`);
+      
+      showSnackbar('ML training started successfully', 'success');
+      
+      // Poll for training status
+      pollTrainingStatus(experimentId);
+    } catch (err) {
+      console.error('Failed to start ML training:', err);
+      showSnackbar('Failed to start ML training', 'error');
+      setTrainingStatus(prev => ({ ...prev, [experimentId]: { status: 'error', error: err.message } }));
+    }
+  };
+
+  const pollTrainingStatus = async (experimentId) => {
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await apiService.get(`/api/ml-pipeline/experiments/${experimentId}/status`);
+        setTrainingStatus(prev => ({ ...prev, [experimentId]: response.data }));
+        
+        if (response.data.status === 'completed' || response.data.status === 'failed') {
+          clearInterval(pollInterval);
+          if (response.data.status === 'completed') {
+            showSnackbar(`Training completed for experiment ${experimentId}`, 'success');
+          } else {
+            showSnackbar(`Training failed for experiment ${experimentId}`, 'error');
+          }
+          await loadMLPipelineData();
+        }
+      } catch (err) {
+        console.error('Failed to poll training status:', err);
+        clearInterval(pollInterval);
+      }
+    }, 5000); // Poll every 5 seconds
+
+    // Clear interval after 1 hour to prevent infinite polling
+    setTimeout(() => clearInterval(pollInterval), POLLING_TIMEOUT_MS);
+  };
+
+  const updateCosmoPersonality = async (experimentId, personalityData) => {
+    try {
+      await apiService.put(`/api/ml-pipeline/experiments/${experimentId}/cosmo-personality`, personalityData);
+      
+      await loadMLPipelineData();
+      setCosmoPersonalityDialog(false);
+      showSnackbar('Cosmo personality updated successfully', 'success');
+    } catch (err) {
+      console.error('Failed to update Cosmo personality:', err);
+      showSnackbar('Failed to update Cosmo personality', 'error');
+    }
+  };
+
+  const updateModelSettings = async (experimentId, settings) => {
+    try {
+      await apiService.put(`/api/ml-pipeline/experiments/${experimentId}/settings`, settings);
+      
+      await loadMLPipelineData();
+      setModelSettingsDialog(false);
+      showSnackbar('Model settings updated successfully', 'success');
+    } catch (err) {
+      console.error('Failed to update model settings:', err);
+      showSnackbar('Failed to update model settings', 'error');
+    }
+  };
+
+  const deleteExperiment = async (experimentId) => {
+    try {
+      await apiService.delete(`/api/ml-pipeline/experiments/${experimentId}`);
+      
+      await loadMLPipelineData();
+      showSnackbar('Experiment deleted successfully', 'success');
+    } catch (err) {
+      console.error('Failed to delete experiment:', err);
+      showSnackbar('Failed to delete experiment', 'error');
     }
   };
 
@@ -477,6 +685,12 @@ export const AIControlTowerDashboard = () => {
           <Tab icon={<DataIcon />} label="RAG Systems" />
           <Tab icon={<AnalyticsIcon />} label="Analytics" />
           <Tab icon={<SecurityIcon />} label="Audit" />
+          <Tab icon={<SmartToy />} label="ML Pipeline" />
+          <Tab icon={<Settings />} label="Cosmo AI" />
+          <Tab icon={<QueryIcon />} label="RAG Management" />
+          <Tab icon={<SecurityIcon />} label="RBAC Testing" />
+          <Tab icon={<SmartToy />} label="AI Agents" />
+          <Tab icon={<EmailIcon />} label="Email Processing" />
         </Tabs>
       </Paper>
 
@@ -508,6 +722,101 @@ export const AIControlTowerDashboard = () => {
         {activeTab === 3 && <AnalyticsPanel metrics={metrics} _towerId={selectedTower?.id} />}
 
         {activeTab === 4 && <AuditPanel towerId={selectedTower?.id} />}
+
+        {activeTab === 5 && (
+          <MLPipelinePanel
+            experiments={mlExperiments}
+            pipelineStatus={mlPipelineStatus}
+            trainingStatus={trainingStatus}
+            onCreateExperiment={() => setCreateITSMExperimentDialog(true)}
+            onStartTraining={startMLTraining}
+            onUpdateSettings={(experiment) => {
+              setSelectedExperiment(experiment);
+              setModelSettingsDialog(true);
+            }}
+            onDeleteExperiment={deleteExperiment}
+          />
+        )}
+
+        {activeTab === 6 && (
+          <CosmoPersonalityPanel
+            personalities={cosmoPersonalities}
+            experiments={mlExperiments}
+            onUpdatePersonality={(experiment) => {
+              setSelectedExperiment(experiment);
+              setCosmoPersonalityDialog(true);
+            }}
+            onCreatePersonality={() => setCosmoPersonalityDialog(true)}
+          />
+        )}
+
+        {activeTab === 7 && (
+          <RAGManagementPanel
+            ragStats={ragStats}
+            dataSourceConnectors={dataSourceConnectors}
+            ragQueryResults={ragQueryResults}
+            synthQueryResults={synthQueryResults}
+            onTestRAGQuery={() => setRagQueryDialog(true)}
+            onTestSynthQuery={() => setSynthQueryDialog(true)}
+            onSyncDataSources={async () => {
+              try {
+                await apiService.post('/api/nova-rag/data-sources/sync');
+                await loadRAGData();
+                showSnackbar('Data sources sync initiated', 'success');
+              } catch (error) {
+                showSnackbar('Failed to sync data sources', 'error');
+              }
+            }}
+            onToggleConnector={async (connectorId, enabled) => {
+              try {
+                await apiService.post(`/api/nova-rag/data-sources/${connectorId}/toggle`, { enabled });
+                await loadRAGData();
+                showSnackbar(`Connector ${enabled ? 'enabled' : 'disabled'}`, 'success');
+              } catch (error) {
+                showSnackbar('Failed to toggle connector', 'error');
+              }
+            }}
+          />
+        )}
+
+        {activeTab === 8 && (
+          <RBACTestingPanel
+            rbacTestResults={rbacTestResults}
+            personalityTestResults={personalityTestResults}
+            auditLogs={auditLogs}
+            rbacUsers={rbacUsers}
+            rbacPolicies={rbacPolicies}
+            onRunRBACTests={async () => {
+              try {
+                const response = await apiService.post('/api/nova-rag/test-rbac');
+                setRbacTestResults(response.data);
+                showSnackbar('RBAC tests completed', 'success');
+              } catch (error) {
+                showSnackbar('Failed to run RBAC tests', 'error');
+              }
+            }}
+            onTestPersonalities={async (query) => {
+              try {
+                const response = await apiService.post('/api/nova-rag/test-personalities', { query });
+                setPersonalityTestResults(response.data);
+                showSnackbar('Personality tests completed', 'success');
+              } catch (error) {
+                showSnackbar('Failed to test personalities', 'error');
+              }
+            }}
+            onCreateRBACUser={() => setRbacUserDialog(true)}
+            onCreateRBACPolicy={() => setRbacPolicyDialog(true)}
+            onRefreshAuditLogs={loadRBACData}
+          />
+        )}
+
+        {activeTab === 9 && (
+          <AIAgentManagementPanel />
+        )}
+
+        {activeTab === 10 && (
+          <EmailProcessingPanel />
+        )}
       </Box>
 
       {/* Floating Action Button */}
@@ -524,6 +833,18 @@ export const AIControlTowerDashboard = () => {
               break;
             case 2:
               setCreateRAGDialog(true);
+              break;
+            case 5:
+              setCreateITSMExperimentDialog(true);
+              break;
+            case 6:
+              setCosmoPersonalityDialog(true);
+              break;
+            case 7:
+              setRagQueryDialog(true);
+              break;
+            case 8:
+              setRbacUserDialog(true);
               break;
             default:
               setCreateTowerDialog(true);
@@ -582,6 +903,29 @@ export const AIControlTowerDashboard = () => {
         onClose={() => setTrainingDialog(false)}
         onSubmit={startTraining}
         selectedModel={selectedItem}
+      />
+
+      {/* ML Pipeline Dialogs */}
+      <CreateITSMExperimentDialog
+        open={createITSMExperimentDialog}
+        onClose={() => setCreateITSMExperimentDialog(false)}
+        onSubmit={createITSMExperiment}
+        personalities={cosmoPersonalities}
+      />
+
+      <CosmoPersonalityDialog
+        open={cosmoPersonalityDialog}
+        onClose={() => setCosmoPersonalityDialog(false)}
+        onSubmit={updateCosmoPersonality}
+        experiment={selectedExperiment}
+        personalities={cosmoPersonalities}
+      />
+
+      <ModelSettingsDialog
+        open={modelSettingsDialog}
+        onClose={() => setModelSettingsDialog(false)}
+        onSubmit={updateModelSettings}
+        experiment={selectedExperiment}
       />
 
       {/* Snackbar */}
@@ -743,6 +1087,381 @@ const AuditPanel = ({ towerId }) => (
 );
 
 // Dialog components would be implemented separately
+
+// Create ITSM Experiment Dialog
+const CreateITSMExperimentDialog = ({ open, onClose, onSubmit, personalities }) => {
+  const [formData, setFormData] = useState({
+    modelName: '',
+    cosmoPersonality: 'default',
+    categories: ['Hardware', 'Software', 'Network', 'Access Management', 'Infrastructure']
+  });
+
+  const handleSubmit = () => {
+    onSubmit(formData);
+    setFormData({
+      modelName: '',
+      cosmoPersonality: 'default',
+      categories: ['Hardware', 'Software', 'Network', 'Access Management', 'Infrastructure']
+    });
+  };
+
+  const personalityOptions = Array.from(personalities.entries());
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>Create ITSM ML Experiment</DialogTitle>
+      <DialogContent>
+        <Typography variant="body2" color="textSecondary" paragraph>
+          Create a new ITSM classification model with Cosmo personality integration for automated ticket management.
+        </Typography>
+        
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Model Name"
+          fullWidth
+          variant="outlined"
+          value={formData.modelName}
+          onChange={(e) => setFormData((prev) => ({ ...prev, modelName: e.target.value }))}
+          helperText="Enter a descriptive name for your ITSM model"
+        />
+
+        <FormControl fullWidth margin="dense" variant="outlined">
+          <InputLabel>Cosmo Personality Profile</InputLabel>
+          <Select
+            value={formData.cosmoPersonality}
+            onChange={(e) => setFormData((prev) => ({ ...prev, cosmoPersonality: e.target.value }))}
+            label="Cosmo Personality Profile"
+          >
+            {personalityOptions.map(([name, traits]) => (
+              <MenuItem key={name} value={name}>
+                <Box>
+                  <Typography variant="body2">{name}</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    {traits.tone} • {traits.responseStyle}
+                  </Typography>
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Typography variant="body2" sx={{ mt: 2, mb: 1 }}>
+          ITSM Categories (will be automatically included):
+        </Typography>
+        <Box display="flex" flexWrap="wrap" gap={1}>
+          {formData.categories.map((category) => (
+            <Chip key={category} label={category} size="small" variant="outlined" />
+          ))}
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          disabled={!formData.modelName}
+        >
+          Create Experiment
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// Cosmo Personality Dialog
+const CosmoPersonalityDialog = ({ open, onClose, onSubmit, experiment, personalities }) => {
+  const [selectedPersonality, setSelectedPersonality] = useState('');
+  const [customTraits, setCustomTraits] = useState({
+    tone: '',
+    responseStyle: '',
+    usesEmojis: false,
+    providesContext: true,
+    offersAlternatives: true,
+    followsUpProactively: true
+  });
+
+  useEffect(() => {
+    if (experiment?.config?.cosmoPersonality) {
+      setSelectedPersonality(experiment.config.cosmoPersonality.personalityProfile);
+      const traits = experiment.config.cosmoPersonality.traits;
+      setCustomTraits({
+        tone: traits.tone,
+        responseStyle: traits.responseStyle,
+        usesEmojis: traits.communicationPreferences.usesEmojis,
+        providesContext: traits.communicationPreferences.providesContext,
+        offersAlternatives: traits.communicationPreferences.offersAlternatives,
+        followsUpProactively: traits.communicationPreferences.followsUpProactively
+      });
+    }
+  }, [experiment]);
+
+  const handleSubmit = () => {
+    const customPersonalityTraits = {
+      tone: customTraits.tone,
+      responseStyle: customTraits.responseStyle,
+      expertise: ['ITSM', 'customer service', 'technical support'],
+      communicationPreferences: {
+        usesEmojis: customTraits.usesEmojis,
+        providesContext: customTraits.providesContext,
+        offersAlternatives: customTraits.offersAlternatives,
+        followsUpProactively: customTraits.followsUpProactively
+      }
+    };
+
+    onSubmit(experiment?.id, selectedPersonality, customPersonalityTraits);
+  };
+
+  const personalityOptions = Array.from(personalities.entries());
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        Configure Cosmo Personality
+        {experiment && (
+          <Typography variant="body2" color="textSecondary">
+            for {experiment.config?.name}
+          </Typography>
+        )}
+      </DialogTitle>
+      <DialogContent>
+        <FormControl fullWidth margin="dense" variant="outlined">
+          <InputLabel>Base Personality Profile</InputLabel>
+          <Select
+            value={selectedPersonality}
+            onChange={(e) => setSelectedPersonality(e.target.value)}
+            label="Base Personality Profile"
+          >
+            {personalityOptions.map(([name, traits]) => (
+              <MenuItem key={name} value={name}>
+                <Box>
+                  <Typography variant="body2">{name}</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    {traits.tone} • {traits.responseStyle}
+                  </Typography>
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Custom Traits</Typography>
+        
+        <FormControl fullWidth margin="dense" variant="outlined">
+          <InputLabel>Communication Tone</InputLabel>
+          <Select
+            value={customTraits.tone}
+            onChange={(e) => setCustomTraits((prev) => ({ ...prev, tone: e.target.value }))}
+            label="Communication Tone"
+          >
+            <MenuItem value="friendly">Friendly</MenuItem>
+            <MenuItem value="professional">Professional</MenuItem>
+            <MenuItem value="empathetic">Empathetic</MenuItem>
+            <MenuItem value="solution-focused">Solution-Focused</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="dense" variant="outlined">
+          <InputLabel>Response Style</InputLabel>
+          <Select
+            value={customTraits.responseStyle}
+            onChange={(e) => setCustomTraits((prev) => ({ ...prev, responseStyle: e.target.value }))}
+            label="Response Style"
+          >
+            <MenuItem value="detailed">Detailed</MenuItem>
+            <MenuItem value="concise">Concise</MenuItem>
+            <MenuItem value="step-by-step">Step-by-step</MenuItem>
+            <MenuItem value="conversational">Conversational</MenuItem>
+          </Select>
+        </FormControl>
+
+        <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>Communication Preferences</Typography>
+        
+        <Box display="flex" flexDirection="column" gap={1}>
+          <Box display="flex" alignItems="center">
+            <input
+              type="checkbox"
+              checked={customTraits.providesContext}
+              onChange={(e) => setCustomTraits((prev) => ({ ...prev, providesContext: e.target.checked }))}
+            />
+            <Typography variant="body2" sx={{ ml: 1 }}>Provides Context</Typography>
+          </Box>
+          <Box display="flex" alignItems="center">
+            <input
+              type="checkbox"
+              checked={customTraits.offersAlternatives}
+              onChange={(e) => setCustomTraits((prev) => ({ ...prev, offersAlternatives: e.target.checked }))}
+            />
+            <Typography variant="body2" sx={{ ml: 1 }}>Offers Alternative Solutions</Typography>
+          </Box>
+          <Box display="flex" alignItems="center">
+            <input
+              type="checkbox"
+              checked={customTraits.followsUpProactively}
+              onChange={(e) => setCustomTraits((prev) => ({ ...prev, followsUpProactively: e.target.checked }))}
+            />
+            <Typography variant="body2" sx={{ ml: 1 }}>Follows Up Proactively</Typography>
+          </Box>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          disabled={!selectedPersonality || !customTraits.tone || !customTraits.responseStyle}
+        >
+          Update Personality
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// Model Settings Dialog
+const ModelSettingsDialog = ({ open, onClose, onSubmit, experiment }) => {
+  const [settings, setSettings] = useState({
+    hyperparameters: {
+      epochs: 100,
+      batch_size: 32,
+      learning_rate: 0.001,
+      hidden_layers: [128, 64, 32],
+      dropout_rate: 0.3
+    },
+    evaluation: {
+      validation_split: 0.2,
+      cross_validation_folds: 5
+    }
+  });
+
+  useEffect(() => {
+    if (experiment?.config) {
+      setSettings({
+        hyperparameters: experiment.config.hyperparameters || settings.hyperparameters,
+        evaluation: experiment.config.evaluation || settings.evaluation
+      });
+    }
+  }, [experiment]);
+
+  const handleSubmit = () => {
+    onSubmit(experiment?.id, settings);
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        Model Settings
+        {experiment && (
+          <Typography variant="body2" color="textSecondary">
+            for {experiment.config?.name}
+          </Typography>
+        )}
+      </DialogTitle>
+      <DialogContent>
+        <Typography variant="h6" sx={{ mt: 1, mb: 2 }}>Hyperparameters</Typography>
+        
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <TextField
+              label="Epochs"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={settings.hyperparameters.epochs}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                hyperparameters: { ...prev.hyperparameters, epochs: parseInt(e.target.value) }
+              }))}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Batch Size"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={settings.hyperparameters.batch_size}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                hyperparameters: { ...prev.hyperparameters, batch_size: parseInt(e.target.value) }
+              }))}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Learning Rate"
+              type="number"
+              step="0.001"
+              fullWidth
+              variant="outlined"
+              value={settings.hyperparameters.learning_rate}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                hyperparameters: { ...prev.hyperparameters, learning_rate: parseFloat(e.target.value) }
+              }))}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Dropout Rate"
+              type="number"
+              step="0.1"
+              fullWidth
+              variant="outlined"
+              value={settings.hyperparameters.dropout_rate}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                hyperparameters: { ...prev.hyperparameters, dropout_rate: parseFloat(e.target.value) }
+              }))}
+            />
+          </Grid>
+        </Grid>
+
+        <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Evaluation Settings</Typography>
+        
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <TextField
+              label="Validation Split"
+              type="number"
+              step="0.1"
+              fullWidth
+              variant="outlined"
+              value={settings.evaluation.validation_split}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                evaluation: { ...prev.evaluation, validation_split: parseFloat(e.target.value) }
+              }))}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Cross Validation Folds"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={settings.evaluation.cross_validation_folds}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                evaluation: { ...prev.evaluation, cross_validation_folds: parseInt(e.target.value) }
+              }))}
+            />
+          </Grid>
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+        >
+          Update Settings
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 const CreateTowerDialog = ({ open, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -996,6 +1715,466 @@ const TrainingDialog = ({ open, onClose, onSubmit, selectedModel }) => {
         </Button>
       </DialogActions>
     </Dialog>
+  );
+};
+
+// ML Pipeline Panel Component
+const MLPipelinePanel = ({ 
+  experiments, 
+  pipelineStatus, 
+  trainingStatus, 
+  onCreateExperiment, 
+  onStartTraining, 
+  onUpdateSettings, 
+  onDeleteExperiment 
+}) => {
+  const theme = useTheme();
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed': return theme.palette.success.main;
+      case 'running': return theme.palette.warning.main;
+      case 'failed': return theme.palette.error.main;
+      case 'pending': return theme.palette.info.main;
+      default: return theme.palette.grey[400];
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'completed': return <CheckCircleIcon />;
+      case 'running': return <CircularProgress size={20} />;
+      case 'failed': return <ErrorIcon />;
+      case 'pending': return <QueryIcon />;
+      default: return <WarningIcon />;
+    }
+  };
+
+  return (
+    <Box>
+      {/* Pipeline Status Overview */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <MetricCard>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="textSecondary" gutterBottom>
+                    Total Experiments
+                  </Typography>
+                  <Typography variant="h4" component="h2">
+                    {experiments.length}
+                  </Typography>
+                </Box>
+                <ModelTrainingIcon color="primary" sx={{ fontSize: 40 }} />
+              </Box>
+            </CardContent>
+          </MetricCard>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <MetricCard>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="textSecondary" gutterBottom>
+                    Active Training
+                  </Typography>
+                  <Typography variant="h4" component="h2">
+                    {experiments.filter(exp => exp.status === 'running').length}
+                  </Typography>
+                </Box>
+                <TrainIcon color="warning" sx={{ fontSize: 40 }} />
+              </Box>
+            </CardContent>
+          </MetricCard>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <MetricCard>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="textSecondary" gutterBottom>
+                    Completed Models
+                  </Typography>
+                  <Typography variant="h4" component="h2">
+                    {experiments.filter(exp => exp.status === 'completed').length}
+                  </Typography>
+                </Box>
+                <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
+              </Box>
+            </CardContent>
+          </MetricCard>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <MetricCard>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="textSecondary" gutterBottom>
+                    ITSM Models
+                  </Typography>
+                  <Typography variant="h4" component="h2">
+                    {experiments.filter(exp => exp.config?.type === 'itsm_classifier').length}
+                  </Typography>
+                </Box>
+                <SmartToy color="info" sx={{ fontSize: 40 }} />
+              </Box>
+            </CardContent>
+          </MetricCard>
+        </Grid>
+      </Grid>
+
+      {/* ML Experiments List */}
+      <Paper sx={{ p: 3 }}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Typography variant="h6">ML Experiments & Models</Typography>
+          <Button 
+            variant="contained" 
+            startIcon={<AddIcon />} 
+            onClick={onCreateExperiment}
+          >
+            Create ITSM Experiment
+          </Button>
+        </Box>
+
+        {experiments.length === 0 ? (
+          <Box textAlign="center" py={6}>
+            <ModelTrainingIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+            <Typography variant="h6" color="textSecondary" gutterBottom>
+              No ML experiments yet
+            </Typography>
+            <Typography color="textSecondary" paragraph>
+              Create your first ITSM classification experiment to start training AI models with Cosmo personality.
+            </Typography>
+            <Button variant="contained" onClick={onCreateExperiment} startIcon={<AddIcon />}>
+              Create ITSM Experiment
+            </Button>
+          </Box>
+        ) : (
+          <Grid container spacing={2}>
+            {experiments.map((experiment) => (
+              <Grid item xs={12} sm={6} md={4} key={experiment.id}>
+                <Card sx={{ height: '100%' }}>
+                  <CardContent>
+                    <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                      <Chip 
+                        label={experiment.config?.type || 'Unknown'}
+                        size="small"
+                        color={experiment.config?.type === 'itsm_classifier' ? 'primary' : 'default'}
+                      />
+                      <Box display="flex" alignItems="center">
+                        {getStatusIcon(experiment.status)}
+                        <Typography 
+                          variant="caption" 
+                          color={getStatusColor(experiment.status)}
+                          sx={{ ml: 0.5 }}
+                        >
+                          {experiment.status}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    
+                    <Typography variant="h6" gutterBottom>
+                      {experiment.config?.name || experiment.id}
+                    </Typography>
+                    
+                    <Typography variant="body2" color="textSecondary" paragraph>
+                      Version: {experiment.config?.version || '1.0.0'}
+                    </Typography>
+
+                    {experiment.config?.cosmoPersonality && (
+                      <Box display="flex" alignItems="center" mb={1}>
+                        <PsychologyIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                        <Typography variant="caption">
+                          Cosmo: {experiment.config.cosmoPersonality.personalityProfile}
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {trainingStatus[experiment.id] && (
+                      <Box mb={1}>
+                        <Typography variant="caption" color="textSecondary">
+                          Training Progress
+                        </Typography>
+                        <LinearProgress 
+                          variant={trainingStatus[experiment.id].status === 'running' ? 'indeterminate' : 'determinate'}
+                          value={trainingStatus[experiment.id].progress || 0}
+                          sx={{ mt: 0.5 }}
+                        />
+                      </Box>
+                    )}
+
+                    <Typography variant="caption" color="textSecondary">
+                      Created: {new Date(experiment.created_at).toLocaleDateString()}
+                    </Typography>
+                  </CardContent>
+                  
+                  <CardActions>
+                    {experiment.status === 'pending' && (
+                      <Button 
+                        size="small" 
+                        onClick={() => onStartTraining(experiment.id)}
+                        startIcon={<TrainIcon />}
+                      >
+                        Start Training
+                      </Button>
+                    )}
+                    
+                    <Button 
+                      size="small" 
+                      onClick={() => onUpdateSettings(experiment)}
+                      startIcon={<TuneIcon />}
+                    >
+                      Settings
+                    </Button>
+                    
+                    <IconButton 
+                      size="small" 
+                      onClick={() => onDeleteExperiment(experiment.id)}
+                      color="error"
+                    >
+                      <ErrorIcon />
+                    </IconButton>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Paper>
+    </Box>
+  );
+};
+
+// Cosmo Personality Panel Component
+const CosmoPersonalityPanel = ({ personalities, experiments, onUpdatePersonality, onCreatePersonality }) => {
+  const personalityArray = Array.from(personalities.entries());
+
+  const getPersonalityColor = (tone) => {
+    switch (tone) {
+      case 'friendly': return '#4CAF50';
+      case 'professional': return '#2196F3';
+      case 'empathetic': return '#FF9800';
+      case 'solution-focused': return '#9C27B0';
+      default: return '#757575';
+    }
+  };
+
+  return (
+    <Box>
+      {/* Personality Overview */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <MetricCard>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="textSecondary" gutterBottom>
+                    Personality Profiles
+                  </Typography>
+                  <Typography variant="h4" component="h2">
+                    {personalityArray.length}
+                  </Typography>
+                </Box>
+                <PsychologyIcon color="primary" sx={{ fontSize: 40 }} />
+              </Box>
+            </CardContent>
+          </MetricCard>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <MetricCard>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="textSecondary" gutterBottom>
+                    Active Models
+                  </Typography>
+                  <Typography variant="h4" component="h2">
+                    {experiments.filter(exp => exp.config?.cosmoPersonality).length}
+                  </Typography>
+                </Box>
+                <AutoFixHighIcon color="success" sx={{ fontSize: 40 }} />
+              </Box>
+            </CardContent>
+          </MetricCard>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <MetricCard>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="textSecondary" gutterBottom>
+                    Avg Consistency
+                  </Typography>
+                  <Typography variant="h4" component="h2">
+                    {experiments.length > 0 
+                      ? `${(experiments.reduce((acc, exp) => acc + (exp.cosmoPersonality?.personalityConsistency || 0), 0) / experiments.length * 100).toFixed(0)}%`
+                      : '0%'
+                    }
+                  </Typography>
+                </Box>
+                <TuneIcon color="info" sx={{ fontSize: 40 }} />
+              </Box>
+            </CardContent>
+          </MetricCard>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <MetricCard>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography color="textSecondary" gutterBottom>
+                    ITSM Integration
+                  </Typography>
+                  <Typography variant="h4" component="h2">
+                    {experiments.filter(exp => exp.config?.type === 'itsm_classifier' && exp.config?.cosmoPersonality).length}
+                  </Typography>
+                </Box>
+                <SmartToy color="warning" sx={{ fontSize: 40 }} />
+              </Box>
+            </CardContent>
+          </MetricCard>
+        </Grid>
+      </Grid>
+
+      {/* Personality Profiles */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+          <Typography variant="h6">Cosmo Personality Profiles</Typography>
+          <Button 
+            variant="contained" 
+            startIcon={<AddIcon />} 
+            onClick={onCreatePersonality}
+          >
+            Create Personality
+          </Button>
+        </Box>
+
+        <Grid container spacing={2}>
+          {personalityArray.map(([profileName, traits]) => (
+            <Grid item xs={12} sm={6} md={4} key={profileName}>
+              <Card sx={{ height: '100%', border: `2px solid ${getPersonalityColor(traits.tone)}` }}>
+                <CardContent>
+                  <Box display="flex" alignItems="center" justifyContent="between" mb={2}>
+                    <Typography variant="h6" gutterBottom>
+                      {profileName}
+                    </Typography>
+                    <Chip 
+                      label={traits.tone}
+                      size="small"
+                      sx={{ 
+                        backgroundColor: getPersonalityColor(traits.tone),
+                        color: 'white'
+                      }}
+                    />
+                  </Box>
+                  
+                  <Typography variant="body2" color="textSecondary" paragraph>
+                    Response Style: {traits.responseStyle}
+                  </Typography>
+
+                  <Box mb={1}>
+                    <Typography variant="caption" color="textSecondary">
+                      Expertise Areas:
+                    </Typography>
+                    <Box display="flex" flexWrap="wrap" gap={0.5} mt={0.5}>
+                      {traits.expertise.slice(0, 3).map((skill, index) => (
+                        <Chip key={index} label={skill} size="small" variant="outlined" />
+                      ))}
+                      {traits.expertise.length > 3 && (
+                        <Chip label={`+${traits.expertise.length - 3} more`} size="small" variant="outlined" />
+                      )}
+                    </Box>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="caption" color="textSecondary">
+                      Communication Preferences:
+                    </Typography>
+                    <Box mt={0.5}>
+                      <Typography variant="caption" component="div">
+                        ✓ Provides Context: {traits.communicationPreferences.providesContext ? 'Yes' : 'No'}
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        ✓ Offers Alternatives: {traits.communicationPreferences.offersAlternatives ? 'Yes' : 'No'}
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        ✓ Proactive Follow-up: {traits.communicationPreferences.followsUpProactively ? 'Yes' : 'No'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Paper>
+
+      {/* Active Experiments with Cosmo */}
+      <Paper sx={{ p: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Experiments Using Cosmo Personality
+        </Typography>
+
+        {experiments.filter(exp => exp.config?.cosmoPersonality).length === 0 ? (
+          <Box textAlign="center" py={4}>
+            <PsychologyIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+            <Typography color="textSecondary">
+              No experiments are currently using Cosmo personality profiles.
+            </Typography>
+          </Box>
+        ) : (
+          <Grid container spacing={2}>
+            {experiments
+              .filter(exp => exp.config?.cosmoPersonality)
+              .map((experiment) => (
+                <Grid item xs={12} sm={6} key={experiment.id}>
+                  <Card>
+                    <CardContent>
+                      <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                        <Typography variant="h6">
+                          {experiment.config.name}
+                        </Typography>
+                        <Chip 
+                          label={experiment.status}
+                          size="small"
+                          color={experiment.status === 'completed' ? 'success' : 'default'}
+                        />
+                      </Box>
+                      
+                      <Typography variant="body2" color="textSecondary" paragraph>
+                        Personality: {experiment.config.cosmoPersonality.personalityProfile}
+                      </Typography>
+
+                      {experiment.cosmoPersonality?.personalityConsistency && (
+                        <Box mb={1}>
+                          <Typography variant="caption" color="textSecondary">
+                            Personality Consistency: {(experiment.cosmoPersonality.personalityConsistency * 100).toFixed(1)}%
+                          </Typography>
+                          <LinearProgress 
+                            variant="determinate"
+                            value={experiment.cosmoPersonality.personalityConsistency * 100}
+                            sx={{ mt: 0.5 }}
+                          />
+                        </Box>
+                      )}
+
+                      <Button 
+                        size="small" 
+                        onClick={() => onUpdatePersonality(experiment)}
+                        startIcon={<TuneIcon />}
+                      >
+                        Adjust Personality
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))
+            }
+          </Grid>
+        )}
+      </Paper>
+    </Box>
   );
 };
 

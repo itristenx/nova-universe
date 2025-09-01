@@ -433,4 +433,110 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
+/**
+ * Test Nova Synth email processing
+ */
+router.post('/test-nova-synth', authenticateToken, async (req, res) => {
+  try {
+    const { testEmail, testAccount } = req.body;
+
+    if (!testEmail || !testAccount) {
+      return res.status(400).json({
+        success: false,
+        error: 'testEmail and testAccount are required',
+      });
+    }
+
+    const result = await emailService.testNovaSynthProcessing(testEmail, testAccount);
+
+    res.json({
+      success: result.success,
+      data: result.success ? {
+        analysis: result.analysis,
+        recommendations: result.recommendations,
+        confidence: result.confidence,
+        processingTime: result.processingTime,
+      } : null,
+      error: result.error,
+    });
+  } catch (error) {
+    logger.error('Error testing Nova Synth processing:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to test Nova Synth processing',
+    });
+  }
+});
+
+/**
+ * Get Nova Synth processing statistics
+ */
+router.get('/nova-synth/stats', authenticateToken, async (req, res) => {
+  try {
+    const stats = emailService.getNovaSynthStats();
+
+    res.json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    logger.error('Error fetching Nova Synth stats:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch Nova Synth statistics',
+    });
+  }
+});
+
+/**
+ * Process test email with Nova Synth analysis
+ */
+router.post('/analyze-email', authenticateToken, async (req, res) => {
+  try {
+    const { email, context } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email data is required',
+      });
+    }
+
+    // Create test email account if not provided
+    const testAccount = {
+      id: 'test',
+      address: 'test@company.com',
+      tenantId: req.user.tenantId || 'default',
+      sendAutoReply: false,
+      autoCreateTickets: true,
+    };
+
+    const result = await emailService.testNovaSynthProcessing(email, testAccount);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        data: {
+          emailAnalysis: result.analysis.analysis,
+          recommendations: result.recommendations,
+          confidence: result.confidence,
+          processingTime: result.processingTime,
+          ticketPreview: result.recommendations.ticketData,
+        },
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: result.error,
+      });
+    }
+  } catch (error) {
+    logger.error('Error analyzing email:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to analyze email',
+    });
+  }
+});
+
 export default router;

@@ -21,6 +21,7 @@ import { z as _z } from 'zod';
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import _path from 'path';
+import { ragRBAC, RAGUser, RAGAccessContext, AccessDecision } from './nova-rag-rbac.js';
 
 // RAG Types and Interfaces
 export interface EmbeddingModel {
@@ -41,7 +42,7 @@ export interface DocumentChunk {
   embedding?: number[];
   metadata: {
     source: string;
-    type: 'knowledge_article' | 'ticket' | 'documentation' | 'policy' | 'procedure';
+    type: 'knowledge_article' | 'ticket' | 'documentation' | 'policy' | 'procedure' | 'service_item' | 'request';
     category?: string;
     tags?: string[];
     createdAt: Date;
@@ -49,6 +50,18 @@ export interface DocumentChunk {
     author?: string;
     classification?: string;
     relevanceScore?: number;
+    tenantId?: string;
+    accessLevel?: string;
+    department?: string;
+    costCenter?: string;
+    securityClassification?: 'public' | 'internal' | 'confidential' | 'restricted' | 'top_secret';
+    rbacMetadata?: {
+      ownerUserId?: string;
+      ownerDepartment?: string;
+      accessControlList?: string[];
+      requiresApproval?: boolean;
+      dataClassification?: string;
+    };
   };
   position: {
     start: number;
@@ -74,6 +87,8 @@ export interface RAGQuery {
     tenantId?: string;
     module: string;
     sessionId?: string;
+    userRoles?: string[];
+    securityClearance?: string;
   };
   filters?: {
     sources?: string[];
@@ -85,6 +100,8 @@ export interface RAGQuery {
     };
     classification?: string[];
     tags?: string[];
+    tenantId?: string;
+    accessLevel?: string;
   };
   options: {
     maxResults?: number;
@@ -93,6 +110,7 @@ export interface RAGQuery {
     rerank?: boolean;
     expandQuery?: boolean;
     hybridSearch?: boolean;
+    enforceRBAC?: boolean;
   };
   metadata: Record<string, any>;
 }
@@ -217,7 +235,7 @@ export class NovaRAGEngine extends EventEmitter {
   }
 
   /**
-   * Process a RAG query and retrieve relevant context
+   * Process a RAG query and retrieve relevant context with RBAC enforcement
    */
   async query(ragQuery: RAGQuery): Promise<RAGResult> {
     if (!this.isInitialized) {
@@ -231,63 +249,13 @@ export class NovaRAGEngine extends EventEmitter {
       ragQuery.id = crypto.randomUUID();
       this.queryHistory.set(ragQuery.id, ragQuery);
 
-      // Expand query if enabled
-      if (ragQuery.options.expandQuery) {
-        ragQuery.query = await this.expandQuery(ragQuery.query);
+      // Enforce RBAC if enabled and user context is provided
+      if (ragQuery.options.enforceRBAC && ragQuery.context?.userId && ragQuery.context?.tenantId) {
+        return await this.queryWithRBAC(ragQuery, startTime);
       }
 
-      // Generate query embedding
-      const queryEmbedding = await this.generateEmbedding(ragQuery.query);
-
-      // Perform retrieval
-      let chunks: DocumentChunk[];
-      if (ragQuery.options.hybridSearch) {
-        chunks = await this.hybridSearch(ragQuery, queryEmbedding);
-      } else {
-        chunks = await this.semanticSearch(ragQuery, queryEmbedding);
-      }
-
-      // Apply filters
-      chunks = this.applyFilters(chunks, ragQuery.filters);
-
-      // Rerank results if enabled
-      if (ragQuery.options.rerank && this.config.rerankingEnabled) {
-        chunks = await this.rerankResults(ragQuery.query, chunks);
-      }
-
-      // Limit results
-      const maxResults = ragQuery.options.maxResults || this.config.maxRetrieval;
-      chunks = chunks.slice(0, maxResults);
-
-      // Calculate confidence score
-      const confidence = this.calculateConfidence(chunks);
-
-      // Generate summary if requested
-      let summary: string | undefined;
-      if (chunks.length > 0) {
-        summary = await this.generateContextSummary(ragQuery.query, chunks);
-      }
-
-      const result: RAGResult = {
-        id: crypto.randomUUID(),
-        queryId: ragQuery.id,
-        chunks,
-        summary,
-        confidence,
-        retrievalTime: Date.now() - startTime,
-        totalResults: chunks.length,
-        metadata: {
-          searchStrategy: ragQuery.options.hybridSearch ? 'hybrid' : 'semantic',
-          embeddingModel: this.config.defaultEmbeddingModel,
-          vectorStore: this.config.defaultVectorStore,
-          filters: ragQuery.filters || {},
-        },
-      };
-
-      this.resultHistory.set(result.id, result);
-      this.emit('queryProcessed', { query: ragQuery, result });
-
-      return result;
+      // Standard query without RBAC
+      return await this.queryWithoutRBAC(ragQuery, startTime);
     } catch (error) {
       logger.error('RAG query processing error:', error);
       throw error;
@@ -295,7 +263,217 @@ export class NovaRAGEngine extends EventEmitter {
   }
 
   /**
-   * Add documents to the RAG system
+   * Process a RAG query with RBAC enforcement
+   */
+  private async queryWithRBAC(ragQuery: RAGQuery, startTime: number): Promise<RAGResult> {
+    const { userId, tenantId } = ragQuery.context!;
+
+    // Expand query if enabled
+    if (ragQuery.options.expandQuery) {
+      ragQuery.query = await this.expandQuery(ragQuery.query);
+    }
+
+    // Generate query embedding
+    const queryEmbedding = await this.generateEmbedding(ragQuery.query);
+
+    // Perform retrieval
+    let chunks: DocumentChunk[];
+    if (ragQuery.options.hybridSearch) {
+      chunks = await this.hybridSearch(ragQuery, queryEmbedding);
+    } else {
+      chunks = await this.semanticSearch(ragQuery, queryEmbedding);
+    }
+
+    // Apply basic filters first
+    chunks = this.applyFilters(chunks, ragQuery.filters);
+
+    // Apply RBAC filtering
+    chunks = await this.filterChunksWithRBAC(chunks, userId!, tenantId!, 'read');
+
+    // Rerank results if enabled
+    if (ragQuery.options.rerank && this.config.rerankingEnabled) {
+      chunks = await this.rerankResults(ragQuery.query, chunks);
+    }
+
+    // Limit results
+    const maxResults = ragQuery.options.maxResults || this.config.maxRetrieval;
+    chunks = chunks.slice(0, maxResults);
+
+    // Calculate confidence score
+    const confidence = this.calculateConfidence(chunks);
+
+    // Generate summary if requested
+    let summary: string | undefined;
+    if (chunks.length > 0) {
+      summary = await this.generateContextSummary(ragQuery.query, chunks);
+    }
+
+    const result: RAGResult = {
+      id: crypto.randomUUID(),
+      queryId: ragQuery.id,
+      chunks,
+      summary,
+      confidence,
+      retrievalTime: Date.now() - startTime,
+      totalResults: chunks.length,
+      metadata: {
+        searchStrategy: ragQuery.options.hybridSearch ? 'hybrid' : 'semantic',
+        embeddingModel: this.config.defaultEmbeddingModel,
+        vectorStore: this.config.defaultVectorStore,
+        filters: ragQuery.filters || {},
+        rbacEnforced: true,
+        userId,
+        tenantId,
+      },
+    };
+
+    this.resultHistory.set(result.id, result);
+    this.emit('queryProcessed', { query: ragQuery, result });
+
+    return result;
+  }
+
+  /**
+   * Process a RAG query without RBAC enforcement (legacy mode)
+   */
+  private async queryWithoutRBAC(ragQuery: RAGQuery, startTime: number): Promise<RAGResult> {
+    // Expand query if enabled
+    if (ragQuery.options.expandQuery) {
+      ragQuery.query = await this.expandQuery(ragQuery.query);
+    }
+
+    // Generate query embedding
+    const queryEmbedding = await this.generateEmbedding(ragQuery.query);
+
+    // Perform retrieval
+    let chunks: DocumentChunk[];
+    if (ragQuery.options.hybridSearch) {
+      chunks = await this.hybridSearch(ragQuery, queryEmbedding);
+    } else {
+      chunks = await this.semanticSearch(ragQuery, queryEmbedding);
+    }
+
+    // Apply filters
+    chunks = this.applyFilters(chunks, ragQuery.filters);
+
+    // Rerank results if enabled
+    if (ragQuery.options.rerank && this.config.rerankingEnabled) {
+      chunks = await this.rerankResults(ragQuery.query, chunks);
+    }
+
+    // Limit results
+    const maxResults = ragQuery.options.maxResults || this.config.maxRetrieval;
+    chunks = chunks.slice(0, maxResults);
+
+    // Calculate confidence score
+    const confidence = this.calculateConfidence(chunks);
+
+    // Generate summary if requested
+    let summary: string | undefined;
+    if (chunks.length > 0) {
+      summary = await this.generateContextSummary(ragQuery.query, chunks);
+    }
+
+    const result: RAGResult = {
+      id: crypto.randomUUID(),
+      queryId: ragQuery.id,
+      chunks,
+      summary,
+      confidence,
+      retrievalTime: Date.now() - startTime,
+      totalResults: chunks.length,
+      metadata: {
+        searchStrategy: ragQuery.options.hybridSearch ? 'hybrid' : 'semantic',
+        embeddingModel: this.config.defaultEmbeddingModel,
+        vectorStore: this.config.defaultVectorStore,
+        filters: ragQuery.filters || {},
+        rbacEnforced: false,
+      },
+    };
+
+    this.resultHistory.set(result.id, result);
+    this.emit('queryProcessed', { query: ragQuery, result });
+
+    return result;
+  }
+
+  /**
+   * Filter document chunks based on RBAC permissions
+   */
+  private async filterChunksWithRBAC(
+    chunks: DocumentChunk[],
+    userId: string,
+    tenantId: string,
+    action: string = 'read'
+  ): Promise<DocumentChunk[]> {
+    if (!ragRBAC.isInitialized) {
+      logger.warn('RBAC system not initialized, skipping RBAC filtering');
+      return chunks;
+    }
+
+    const filteredChunks: DocumentChunk[] = [];
+
+    for (const chunk of chunks) {
+      try {
+        const context: RAGAccessContext = {
+          userId,
+          tenantId,
+          requestType: 'query',
+          resource: `document:${chunk.documentId}`,
+          action,
+          metadata: {
+            chunkId: chunk.id,
+            documentType: chunk.metadata.type,
+            classification: chunk.metadata.securityClassification || chunk.metadata.classification,
+            source: chunk.metadata.source,
+            category: chunk.metadata.category,
+            tags: chunk.metadata.tags,
+            department: chunk.metadata.department,
+            costCenter: chunk.metadata.costCenter,
+          },
+        };
+
+        const decision = await ragRBAC.checkAccess(context);
+        
+        if (decision.granted) {
+          // Add RBAC metadata to chunk
+          chunk.metadata.rbacMetadata = {
+            ...chunk.metadata.rbacMetadata,
+            accessGranted: true,
+            accessReason: decision.reason,
+            policyId: decision.policyId,
+            accessTimestamp: new Date(),
+          };
+          filteredChunks.push(chunk);
+        } else {
+          logger.debug('RBAC denied access to chunk', {
+            chunkId: chunk.id,
+            documentId: chunk.documentId,
+            userId,
+            reason: decision.reason,
+          });
+        }
+      } catch (error) {
+        logger.warn('Error checking RBAC for chunk', {
+          chunkId: chunk.id,
+          error: error.message,
+        });
+        // In case of RBAC error, exclude the chunk for security
+      }
+    }
+
+    logger.info('RBAC filtering completed', {
+      originalCount: chunks.length,
+      filteredCount: filteredChunks.length,
+      userId,
+      tenantId,
+    });
+
+    return filteredChunks;
+  }
+
+  /**
+   * Add documents to the RAG system with enhanced RBAC metadata
    */
   async addDocuments(
     documents: Array<{
@@ -303,17 +481,129 @@ export class NovaRAGEngine extends EventEmitter {
       content: string;
       metadata: any;
     }>,
+    rbacContext?: {
+      userId: string;
+      tenantId: string;
+      departmentId?: string;
+      securityClassification?: string;
+    }
   ): Promise<void> {
     try {
       for (const doc of documents) {
-        await this.processDocument(doc);
+        await this.processDocumentWithRBAC(doc, rbacContext);
       }
 
-      logger.info(`Added ${documents.length} documents to RAG system`);
-      this.emit('documentsAdded', { count: documents.length });
+      logger.info(`Added ${documents.length} documents to RAG system with RBAC metadata`);
+      this.emit('documentsAdded', { count: documents.length, rbacEnabled: !!rbacContext });
     } catch (error) {
-      logger.error('Error adding documents:', error);
+      logger.error('Error adding documents with RBAC:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Process document with enhanced RBAC metadata extraction
+   */
+  private async processDocumentWithRBAC(
+    doc: { id: string; content: string; metadata: any },
+    rbacContext?: {
+      userId: string;
+      tenantId: string;
+      departmentId?: string;
+      securityClassification?: string;
+    }
+  ): Promise<void> {
+    // Enhance metadata with RBAC information
+    const enhancedMetadata = {
+      ...doc.metadata,
+      tenantId: rbacContext?.tenantId || doc.metadata.tenantId,
+      securityClassification: rbacContext?.securityClassification || doc.metadata.securityClassification || 'internal',
+      department: rbacContext?.departmentId || doc.metadata.department,
+      rbacMetadata: {
+        ownerUserId: rbacContext?.userId || doc.metadata.ownerUserId,
+        ownerDepartment: rbacContext?.departmentId || doc.metadata.department,
+        indexedAt: new Date(),
+        accessLevel: doc.metadata.accessLevel || 'standard',
+        dataClassification: doc.metadata.dataClassification || 'standard',
+        requiresApproval: doc.metadata.requiresApproval || false,
+        ...doc.metadata.rbacMetadata,
+      },
+    };
+
+    // Split document into chunks
+    const chunks = await this.chunkDocument(doc.content, enhancedMetadata);
+
+    // Generate embeddings for each chunk
+    for (const chunk of chunks) {
+      chunk.documentId = doc.id;
+      chunk.id = crypto.randomUUID();
+
+      // Inherit RBAC metadata in chunks
+      chunk.metadata.tenantId = enhancedMetadata.tenantId;
+      chunk.metadata.securityClassification = enhancedMetadata.securityClassification;
+      chunk.metadata.department = enhancedMetadata.department;
+      chunk.metadata.rbacMetadata = enhancedMetadata.rbacMetadata;
+
+      // Generate embedding
+      chunk.embedding = await this.generateEmbedding(chunk.content);
+
+      // Store chunk
+      this.documentChunks.set(chunk.id, chunk);
+
+      // Add to vector store with RBAC metadata
+      await this.addToVectorStore(chunk);
+
+      // Set document permissions in RBAC system if context provided
+      if (rbacContext && ragRBAC.isInitialized) {
+        await this.setDocumentRBACPermissions(doc.id, enhancedMetadata, rbacContext);
+      }
+    }
+
+    // Update knowledge graph if enabled
+    if (this.config.knowledgeGraphEnabled) {
+      await this.updateKnowledgeGraph(doc);
+    }
+  }
+
+  /**
+   * Set RBAC permissions for a document
+   */
+  private async setDocumentRBACPermissions(
+    documentId: string,
+    metadata: any,
+    rbacContext: { userId: string; tenantId: string; departmentId?: string }
+  ): Promise<void> {
+    try {
+      const permission = {
+        documentId,
+        tenantId: rbacContext.tenantId,
+        classification: metadata.securityClassification || 'internal',
+        accessControlList: {
+          users: metadata.rbacMetadata?.accessControlList || [rbacContext.userId],
+          roles: metadata.rbacMetadata?.allowedRoles || [],
+          departments: rbacContext.departmentId ? [rbacContext.departmentId] : [],
+        },
+        metadata: {
+          owner: rbacContext.userId,
+          createdBy: rbacContext.userId,
+          department: rbacContext.departmentId || 'unknown',
+          tags: metadata.tags || [],
+          dataClassification: metadata.rbacMetadata?.dataClassification || 'standard',
+        },
+      };
+
+      await ragRBAC.setDocumentPermission(permission);
+      
+      logger.debug('Document RBAC permissions set', {
+        documentId,
+        tenantId: rbacContext.tenantId,
+        classification: permission.classification,
+      });
+    } catch (error) {
+      logger.warn('Failed to set document RBAC permissions', {
+        documentId,
+        error: error.message,
+      });
     }
   }
 

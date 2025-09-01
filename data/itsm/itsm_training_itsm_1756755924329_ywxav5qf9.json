@@ -1,0 +1,639 @@
+[
+  {
+    "id": "hw_0",
+    "type": "ticket",
+    "category": {
+      "primary": "Hardware",
+      "secondary": "Computer",
+      "subcategory": "Performance"
+    },
+    "priority": "medium",
+    "urgency": "medium",
+    "impact": "medium",
+    "title": "Laptop running very slow and freezing frequently",
+    "description": "My laptop has been running extremely slow for the past week. It freezes when I try to open multiple applications and takes forever to start up. This is affecting my productivity significantly.",
+    "resolution": "Diagnosed memory issue. Upgraded RAM from 8GB to 16GB and performed disk cleanup. System performance restored to normal levels.",
+    "cosmoPersonality": {
+      "tone": "professional",
+      "responseStyle": "detailed",
+      "expertise": [
+        "system administration",
+        "network troubleshooting",
+        "infrastructure",
+        "security"
+      ],
+      "communicationPreferences": {
+        "usesEmojis": false,
+        "providesContext": true,
+        "offersAlternatives": true,
+        "followsUpProactively": false
+      }
+    },
+    "metadata": {
+      "source": "itsm-training-generator",
+      "timestamp": "2025-09-01T19:45:24.329Z",
+      "technicalComplexity": "medium",
+      "customerSatisfaction": 3.7594899039385377,
+      "resolutionTime": 854
+    },
+    "features": [
+      39,
+      0,
+      1,
+      0,
+      1
+    ],
+    "labels": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "hw_1",
+    "type": "ticket",
+    "category": {
+      "primary": "Hardware",
+      "secondary": "Display",
+      "subcategory": "Monitor"
+    },
+    "priority": "high",
+    "urgency": "high",
+    "impact": "medium",
+    "title": "Monitor displaying flickering colors and going black intermittently",
+    "description": "My external monitor keeps flickering between normal display and showing strange colors. Sometimes it goes completely black for a few seconds before coming back on.",
+    "resolution": "Replaced faulty display cable and updated graphics drivers. Monitor now functioning normally without flickering issues.",
+    "cosmoPersonality": {
+      "tone": "friendly",
+      "responseStyle": "conversational",
+      "expertise": [
+        "ITSM",
+        "troubleshooting",
+        "customer service",
+        "technical support"
+      ],
+      "communicationPreferences": {
+        "usesEmojis": false,
+        "providesContext": true,
+        "offersAlternatives": true,
+        "followsUpProactively": true
+      }
+    },
+    "metadata": {
+      "source": "itsm-training-generator",
+      "timestamp": "2025-09-01T19:45:24.329Z",
+      "technicalComplexity": "low",
+      "customerSatisfaction": 4.281950317806952,
+      "resolutionTime": 1431
+    },
+    "features": [
+      33,
+      0,
+      0,
+      0,
+      0
+    ],
+    "labels": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "hw_2",
+    "type": "ticket",
+    "category": {
+      "primary": "Hardware",
+      "secondary": "Printer",
+      "subcategory": "Connectivity"
+    },
+    "priority": "high",
+    "urgency": "high",
+    "impact": "high",
+    "title": "Printer not responding to print commands from any computer",
+    "description": "The office printer has stopped working completely. None of the computers can connect to it, and the printer display shows an error message that I can't understand.",
+    "resolution": "Reset printer network settings and reconfigured IP address. Updated printer drivers on all connected computers. Printer fully operational.",
+    "cosmoPersonality": {
+      "tone": "empathetic",
+      "responseStyle": "step-by-step",
+      "expertise": [
+        "incident management",
+        "crisis communication",
+        "escalation procedures"
+      ],
+      "communicationPreferences": {
+        "usesEmojis": false,
+        "providesContext": true,
+        "offersAlternatives": false,
+        "followsUpProactively": true
+      }
+    },
+    "metadata": {
+      "source": "itsm-training-generator",
+      "timestamp": "2025-09-01T19:45:24.330Z",
+      "technicalComplexity": "low",
+      "customerSatisfaction": 2.3323615390774655,
+      "resolutionTime": 352
+    },
+    "features": [
+      36,
+      0,
+      0,
+      0,
+      1
+    ],
+    "labels": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "id": "sw_0",
+    "type": "ticket",
+    "category": {
+      "primary": "Software",
+      "secondary": "Office Applications",
+      "subcategory": "Excel"
+    },
+    "priority": "high",
+    "urgency": "high",
+    "impact": "medium",
+    "title": "Microsoft Office crashes when opening large Excel files",
+    "description": "Excel crashes immediately when I try to open files larger than 10MB. This happens consistently and I need these files for my monthly reports that are due tomorrow.",
+    "resolution": "Increased Excel memory allocation settings and disabled hardware acceleration. Updated to latest Office version. Files now open successfully.",
+    "cosmoPersonality": {
+      "tone": "friendly",
+      "responseStyle": "conversational",
+      "expertise": [
+        "ITSM",
+        "troubleshooting",
+        "customer service",
+        "technical support"
+      ],
+      "communicationPreferences": {
+        "usesEmojis": false,
+        "providesContext": true,
+        "offersAlternatives": true,
+        "followsUpProactively": true
+      }
+    },
+    "metadata": {
+      "source": "itsm-training-generator",
+      "timestamp": "2025-09-01T19:45:24.330Z",
+      "technicalComplexity": "low",
+      "customerSatisfaction": 0.45502206644337684,
+      "resolutionTime": 1233
+    },
+    "features": [
+      36,
+      2,
+      0,
+      0,
+      0
+    ],
+    "labels": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "sw_1",
+    "type": "ticket",
+    "category": {
+      "primary": "Software",
+      "secondary": "Installation",
+      "subcategory": "Permissions"
+    },
+    "priority": "medium",
+    "urgency": "medium",
+    "impact": "low",
+    "title": "Unable to install required software due to admin permissions",
+    "description": "I need to install a new development tool for my project, but I'm getting permission denied errors. My manager has approved this software installation.",
+    "resolution": "Verified software approval and temporarily elevated user permissions. Installed software successfully and restored standard user access.",
+    "cosmoPersonality": {
+      "tone": "professional",
+      "responseStyle": "detailed",
+      "expertise": [
+        "system administration",
+        "network troubleshooting",
+        "infrastructure",
+        "security"
+      ],
+      "communicationPreferences": {
+        "usesEmojis": false,
+        "providesContext": true,
+        "offersAlternatives": true,
+        "followsUpProactively": false
+      }
+    },
+    "metadata": {
+      "source": "itsm-training-generator",
+      "timestamp": "2025-09-01T19:45:24.330Z",
+      "technicalComplexity": "medium",
+      "customerSatisfaction": 2.764160221474039,
+      "resolutionTime": 1064
+    },
+    "features": [
+      33,
+      0,
+      1,
+      0,
+      1
+    ],
+    "labels": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "net_0",
+    "type": "ticket",
+    "category": {
+      "primary": "Network",
+      "secondary": "Connectivity",
+      "subcategory": "WiFi"
+    },
+    "priority": "high",
+    "urgency": "high",
+    "impact": "high",
+    "title": "Internet connection drops every few hours requiring restart",
+    "description": "My internet connection keeps dropping throughout the day. I have to restart my computer to get it working again. This is happening to multiple people in our department.",
+    "resolution": "Identified failing network switch in department. Replaced hardware and reconfigured network settings. Connection now stable for all users.",
+    "cosmoPersonality": {
+      "tone": "empathetic",
+      "responseStyle": "step-by-step",
+      "expertise": [
+        "incident management",
+        "crisis communication",
+        "escalation procedures"
+      ],
+      "communicationPreferences": {
+        "usesEmojis": false,
+        "providesContext": true,
+        "offersAlternatives": false,
+        "followsUpProactively": true
+      }
+    },
+    "metadata": {
+      "source": "itsm-training-generator",
+      "timestamp": "2025-09-01T19:45:24.330Z",
+      "technicalComplexity": "low",
+      "customerSatisfaction": 0.9461772678476277,
+      "resolutionTime": 270
+    },
+    "features": [
+      36,
+      0,
+      0,
+      0,
+      0
+    ],
+    "labels": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  {
+    "id": "net_1",
+    "type": "ticket",
+    "category": {
+      "primary": "Network",
+      "secondary": "VPN",
+      "subcategory": "Authentication"
+    },
+    "priority": "medium",
+    "urgency": "medium",
+    "impact": "medium",
+    "title": "VPN connection fails with authentication error",
+    "description": "I can't connect to the company VPN from home. It worked fine last week, but now I'm getting authentication failed messages even though my password is correct.",
+    "resolution": "Reset VPN user certificate and updated VPN client software. Provided user with new connection profile. VPN access restored.",
+    "cosmoPersonality": {
+      "tone": "professional",
+      "responseStyle": "detailed",
+      "expertise": [
+        "system administration",
+        "network troubleshooting",
+        "infrastructure",
+        "security"
+      ],
+      "communicationPreferences": {
+        "usesEmojis": false,
+        "providesContext": true,
+        "offersAlternatives": true,
+        "followsUpProactively": false
+      }
+    },
+    "metadata": {
+      "source": "itsm-training-generator",
+      "timestamp": "2025-09-01T19:45:24.330Z",
+      "technicalComplexity": "low",
+      "customerSatisfaction": 0.9277339038238441,
+      "resolutionTime": 1276
+    },
+    "features": [
+      33,
+      1,
+      0,
+      0,
+      2
+    ],
+    "labels": [
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "acc_0",
+    "type": "request",
+    "category": {
+      "primary": "Access Management",
+      "secondary": "File Sharing",
+      "subcategory": "Permissions"
+    },
+    "priority": "medium",
+    "urgency": "medium",
+    "impact": "low",
+    "title": "Need access to shared project folder for new team member",
+    "description": "We have a new team member starting today who needs access to our shared project files. They should have the same permissions as other team members.",
+    "resolution": "Added new user to appropriate security groups and granted access to shared project folder. Verified permissions are working correctly.",
+    "cosmoPersonality": {
+      "tone": "friendly",
+      "responseStyle": "conversational",
+      "expertise": [
+        "ITSM",
+        "troubleshooting",
+        "customer service",
+        "technical support"
+      ],
+      "communicationPreferences": {
+        "usesEmojis": false,
+        "providesContext": true,
+        "offersAlternatives": true,
+        "followsUpProactively": true
+      }
+    },
+    "metadata": {
+      "source": "itsm-training-generator",
+      "timestamp": "2025-09-01T19:45:24.330Z",
+      "technicalComplexity": "low",
+      "customerSatisfaction": 0.9792344290529476,
+      "resolutionTime": 160
+    },
+    "features": [
+      36,
+      0,
+      0,
+      0,
+      0
+    ],
+    "labels": [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "id": "inc_0",
+    "type": "incident",
+    "category": {
+      "primary": "Infrastructure",
+      "secondary": "Email",
+      "subcategory": "Server"
+    },
+    "priority": "critical",
+    "urgency": "critical",
+    "impact": "critical",
+    "title": "Email server down - entire company cannot send or receive emails",
+    "description": "Our email server appears to be completely down. No one in the company can send or receive emails. This is causing major business disruption as we have client meetings today.",
+    "resolution": "Identified failed email server hardware. Activated backup email server and restored service. Replaced failed hardware to prevent future occurrences.",
+    "cosmoPersonality": {
+      "tone": "empathetic",
+      "responseStyle": "step-by-step",
+      "expertise": [
+        "incident management",
+        "crisis communication",
+        "escalation procedures"
+      ],
+      "communicationPreferences": {
+        "usesEmojis": false,
+        "providesContext": true,
+        "offersAlternatives": false,
+        "followsUpProactively": true
+      }
+    },
+    "metadata": {
+      "source": "itsm-training-generator",
+      "timestamp": "2025-09-01T19:45:24.330Z",
+      "technicalComplexity": "high",
+      "customerSatisfaction": 4.124491192115483,
+      "resolutionTime": 546
+    },
+    "features": [
+      41,
+      1,
+      1,
+      3,
+      0
+    ],
+    "labels": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  {
+    "id": "chg_0",
+    "type": "change",
+    "category": {
+      "primary": "Infrastructure",
+      "secondary": "Database",
+      "subcategory": "Upgrade"
+    },
+    "priority": "medium",
+    "urgency": "low",
+    "impact": "medium",
+    "title": "Request to upgrade database server to support new application",
+    "description": "We need to upgrade our database server specifications to support a new business application that will be deployed next month. The current server doesn't meet the minimum requirements.",
+    "resolution": "Change approved by CAB. Scheduled maintenance window and upgraded database server hardware. New application successfully deployed and tested.",
+    "cosmoPersonality": {
+      "tone": "professional",
+      "responseStyle": "detailed",
+      "expertise": [
+        "system administration",
+        "network troubleshooting",
+        "infrastructure",
+        "security"
+      ],
+      "communicationPreferences": {
+        "usesEmojis": false,
+        "providesContext": true,
+        "offersAlternatives": true,
+        "followsUpProactively": false
+      }
+    },
+    "metadata": {
+      "source": "itsm-training-generator",
+      "timestamp": "2025-09-01T19:45:24.330Z",
+      "technicalComplexity": "high",
+      "customerSatisfaction": 0.1548037285409165,
+      "resolutionTime": 552
+    },
+    "features": [
+      37,
+      0,
+      3,
+      1,
+      0
+    ],
+    "labels": [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  }
+]

@@ -36,11 +36,15 @@ import cmdbRouter from './routes/cmdb.js';
 import cmdbExtendedRouter from './routes/cmdbExtended.js';
 import notificationsRouter from './routes/notifications.js'; // Universal Notification Platform
 import user360Router from './routes/user360.js'; // User 360 API
+import user360InteractionsRouter from './routes/user360-interactions.js'; // User 360 Interactions API
 import appSwitcherRouter from './routes/app-switcher.js'; // Enhanced App Switcher API
 import aiControlTowerRouter from './routes/ai-control-tower.js'; // AI Control Tower API
 import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
+import mlPipelineRouter from './routes/ml-pipeline.js'; // ML Pipeline Management
+import novaRAGRouter from './routes/nova-rag.js'; // Nova RAG with RBAC
+import aiAgentRouter from './routes/ai-agent.js'; // Nova AI Agent Framework
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
 import novaTVRouter from './routes/nova-tv.js'; // Nova TV - Channel Management
@@ -2290,6 +2294,7 @@ app.use('/api/v2', v2Router);
 
 // Core v2 endpoints
 v2Router.use('/user360', user360Router); // User 360 API (v2 only)
+v2Router.use('/user360', user360InteractionsRouter); // User 360 Interactions API (v2 only)
 v2Router.use('/mcp', mcpServerRouter); // MCP Server Control Tower API (v2 only)
 v2Router.use('/synth', synthV2Router); // Nova Synth - AI Engine v2 (Enhanced)
 v2Router.use('/alerts', alertsRouter); // Unified Alerts facade (Nova Alert)
@@ -2333,6 +2338,8 @@ v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
 v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - Enterprise AI/ML/RAG Management
 v1Router.use('/tickets', ticketsRouter);
 v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
+v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI
+v1Router.use('/nova-rag', novaRAGRouter); // Nova RAG with RBAC and Synth Integration
 v1Router.use('/spaces', spacesRouter);
 v1Router.use('/ai-fabric', aiFabricRouter);
 v1Router.use('/setup', setupRouter);
@@ -2370,6 +2377,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/tickets', ticketLimiter, ticketsRouter);
 app.use('/api/spaces', spacesRouter);
 app.use('/api/ai-fabric', aiFabricRouter);
+app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework
 app.use('/api/setup', setupRouter);
 app.use('/api/nova-tv', novaTVRouter);
 app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
@@ -2481,6 +2489,44 @@ if (
         }
       } catch (slackError) {
         logger.warn('Failed to start Slack app:', slackError.message);
+      }
+
+      // Initialize Nova RAG systems
+      try {
+        const { ragRBAC } = await import('./lib/nova-rag-rbac.js');
+        const { ragEngine } = await import('./lib/rag-engine.js');
+        const { ragDataConnectors } = await import('./lib/nova-rag-data-connectors.js');
+        const { novaSynthRAG } = await import('./lib/nova-synth-rag-integration.js');
+
+        logger.info('🧠 Initializing Nova RAG systems...');
+        
+        // Initialize in order of dependencies
+        await ragRBAC.initialize();
+        logger.info('✅ Nova RAG RBAC system initialized');
+        
+        await ragEngine.initialize();
+        logger.info('✅ Nova RAG engine initialized');
+        
+        await ragDataConnectors.initialize();
+        logger.info('✅ Nova RAG data connectors initialized');
+        
+        await novaSynthRAG.initialize();
+        logger.info('✅ Nova Synth RAG integration initialized');
+        
+        // Initialize Nova Synth Email Processor
+        const { novaSynthEmailProcessor } = await import('./lib/nova-synth-email-processor.js');
+        await novaSynthEmailProcessor.initialize();
+        logger.info('✅ Nova Synth Email Processor initialized');
+        
+        // Initialize User Interaction Service for User360 tracking
+        const { userInteractionService } = await import('./services/user-interaction.service.js');
+        await userInteractionService.initialize();
+        logger.info('✅ User Interaction Service initialized');
+        
+        logger.info('🎯 Nova RAG systems fully operational');
+      } catch (ragError) {
+        logger.error('Failed to initialize Nova RAG systems:', ragError);
+        logger.warn('Nova RAG functionality will be limited');
       }
     });
   });
