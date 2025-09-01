@@ -143,7 +143,7 @@ export function isValidEmail(email: string): boolean {
  * Utility function to validate phone number
  */
 export function isValidPhone(phone: string): boolean {
-  const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+  const phoneRegex = /^[+]?[1-9][\d]{9,14}$/;
   return phoneRegex.test(phone.replace(/[\s\-()]/g, ''));
 }
 

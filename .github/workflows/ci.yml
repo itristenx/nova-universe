@@ -116,7 +116,7 @@ jobs:
         run: pnpm prisma:generate:all
 
       - name: Run API tests
-        run: pnpm -C apps/api test -- --runInBand --ci
+        run: pnpm -C apps/api test --runInBand --ci
 
   unified-tests:
     name: Unified UI tests
@@ -142,7 +142,7 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Run Unified UI tests
-        run: pnpm -C apps/unified test -- --ci --runInBand --coverage
+        run: pnpm -C apps/unified test --ci --runInBand --coverage
 
       - name: Upload coverage reports
         if: always()

@@ -70,9 +70,9 @@ jobs:
       - name: Generate Prisma Client (all schemas)
         run: pnpm run prisma:generate:all
       - name: Run unit tests (API)
-        run: pnpm -C apps/api test -- --runInBand --ci
+        run: pnpm -C apps/api test --runInBand --ci
       - name: Run unit tests (Unified)
-        run: pnpm -C apps/unified test -- --ci --runInBand
+        run: pnpm -C apps/unified test --ci --runInBand
       - name: Run root tests
         run: pnpm run test:ci
 

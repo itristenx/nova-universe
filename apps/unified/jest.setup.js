@@ -4,6 +4,19 @@ import '@testing-library/jest-dom';
 process.env.VITE_USE_MOCK_DATA = 'false';
 process.env.NODE_ENV = 'test';
 
+// Mock clsx and tailwind-merge for tests
+jest.mock('clsx', () => ({
+  __esModule: true,
+  clsx: jest.fn().mockImplementation((...inputs) => inputs.filter(Boolean).join(' ')),
+  default: jest.fn().mockImplementation((...inputs) => inputs.filter(Boolean).join(' ')),
+}));
+
+jest.mock('tailwind-merge', () => ({
+  __esModule: true,
+  twMerge: jest.fn().mockImplementation((classes) => classes || ''),
+  default: jest.fn().mockImplementation((classes) => classes || ''),
+}));
+
 // Mock import.meta for Vite compatibility
 Object.defineProperty(global, 'import', {
   value: {
@@ -180,10 +193,21 @@ jest.mock('i18next', () => ({
     init: jest.fn().mockReturnThis(),
     isInitialized: true,
     language: 'en',
-    changeLanguage: jest.fn(),
-    getResourceBundle: jest.fn(() => ({})),
+    changeLanguage: jest.fn().mockImplementation((lang) => {
+      this.language = lang;
+      return Promise.resolve();
+    }),
+    getResourceBundle: jest.fn((lang, namespace) => ({
+      'app:name': 'Nova Universe',
+      'common:loading': 'Loading...',
+      'auth:login': 'Login',
+      'auth:logout': 'Logout',
+      'servicestatus:operational': 'Operational',
+      'cosmoai:available': 'Available',
+    })),
     hasResourceBundle: jest.fn(() => true),
     t: jest.fn((key) => key),
+    exists: jest.fn(() => true),
   },
 }));
 
