@@ -4,19 +4,21 @@
 version: '3.8'
 
 services:
-  # GoAlert - Core alerting and escalation engine (headless)
+  # GoAlert - Core alerting and escalation engine (headless, using Nova DB)
   nova-goalert:
     image: goalert/goalert:latest
     container_name: nova-goalert
     restart: unless-stopped
-    ports:
-      - '8081:8081'
+    # Ports removed - access blocked by nginx, only internal network access allowed
+    # Direct UI access is completely disabled for security
     environment:
-      - GOALERT_DB_URL=postgres://goalert:${GOALERT_DB_PASSWORD:-goalert_pass}@nova-goalert-postgres:5432/goalert?sslmode=disable
+      # Use Nova's PostgreSQL database instead of separate database
+      - GOALERT_DB_URL=postgres://${POSTGRES_USER:-nova_admin}:${POSTGRES_PASSWORD:-nova_password}@postgres:5432/${POSTGRES_DB:-nova_universe}?sslmode=disable&search_path=goalert,public
       - GOALERT_LISTEN=:8081
       - GOALERT_PUBLIC_URL=http://localhost:8081
-      - GOALERT_API_ONLY=true # Disable UI, use Nova interfaces only
-      - GOALERT_LOG_LEVEL=info
+      - GOALERT_API_ONLY=true # Disable UI completely, use Nova interfaces only
+      - GOALERT_DISABLE_HTTP_LOGS=true # Reduce noise
+      - GOALERT_LOG_LEVEL=warn # Reduce logging
       - GOALERT_WEBHOOK_SECRET=${GOALERT_WEBHOOK_SECRET:-nova-goalert-webhook-secret}
       - GOALERT_SMTP_FROM=${GOALERT_SMTP_FROM:-alerts@nova.local}
       - GOALERT_SMTP_HOST=${GOALERT_SMTP_HOST:-localhost}
@@ -24,10 +26,13 @@ services:
       - GOALERT_TWILIO_SID=${TWILIO_SID:-}
       - GOALERT_TWILIO_TOKEN=${TWILIO_TOKEN:-}
       - GOALERT_SLACK_TOKEN=${SLACK_BOT_TOKEN:-}
+      # Force GoAlert to run in API-only mode with Nova integration
+      - GOALERT_DISABLE_UI=true
+      - GOALERT_AUTH_PROVIDER=none # Disable internal auth, Nova handles this
     networks:
       - nova-network
     depends_on:
-      nova-goalert-postgres:
+      postgres:
         condition: service_healthy
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:8081/api/v2/user/profile']
@@ -37,47 +42,47 @@ services:
       start_period: 60s
     labels:
       - 'traefik.enable=false' # No direct access, proxy through Nova API only
+      - 'com.nova.service=goalert'
+      - 'com.nova.ui-access=disabled'
 
-  # GoAlert Database
-  nova-goalert-postgres:
-    image: postgres:15-alpine
-    container_name: nova-goalert-postgres
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=goalert
-      - POSTGRES_USER=goalert
-      - POSTGRES_PASSWORD=${GOALERT_DB_PASSWORD:-goalert_pass}
-      - PGDATA=/var/lib/postgresql/data/pgdata
-    volumes:
-      - goalert-postgres-data:/var/lib/postgresql/data
-    networks:
-      - nova-network
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U goalert -d goalert']
-      interval: 30s
-      timeout: 10s
-      retries: 5
+  # GoAlert Database - REMOVED: Using Nova's PostgreSQL database instead
+  # This service has been removed as GoAlert now uses Nova's main PostgreSQL database
+  # All GoAlert data is stored in the 'goalert' schema within Nova's database
 
-  # Uptime Kuma - Monitoring backend (embedded in Nova)
+  # Uptime Kuma - Monitoring backend (embedded in Nova, using Nova DB)
   nova-uptime-kuma-backend:
     image: louislam/uptime-kuma:1
     container_name: nova-uptime-kuma-backend
     restart: unless-stopped
-    ports:
-      - '3001:3001'
+    # Ports removed - access blocked by nginx, only internal network access allowed
+    # Direct UI access is completely disabled for security
     volumes:
-      - uptime-kuma-data:/app/data
       - ./monitoring/kuma-config:/config
+      # Custom initialization script for Nova database integration
+      - ./monitoring/kuma-db-init.js:/app/server/nova-db-init.js:ro
     environment:
       - UPTIME_KUMA_DISABLE_FRAME_SENTRY=1
       - UPTIME_KUMA_PORT=3001
       - NODE_ENV=production
       - UPTIME_KUMA_CLOUDFLARED_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:-}
-      # Disable direct UI access - Nova handles all frontend
-      - UPTIME_KUMA_DISABLE_LOGIN=0
+      # Completely disable UI access - Nova handles all frontend
+      - UPTIME_KUMA_DISABLE_LOGIN=1
       - UPTIME_KUMA_API_KEYS_ENABLED=1
+      - UPTIME_KUMA_DISABLE_WEB_UI=1
+      # Nova database integration
+      - UPTIME_KUMA_USE_NOVA_DB=true
+      - UPTIME_KUMA_NOVA_DB_HOST=postgres
+      - UPTIME_KUMA_NOVA_DB_PORT=5432
+      - UPTIME_KUMA_NOVA_DB_NAME=${POSTGRES_DB:-nova_universe}
+      - UPTIME_KUMA_NOVA_DB_USER=${POSTGRES_USER:-nova_admin}
+      - UPTIME_KUMA_NOVA_DB_PASSWORD=${POSTGRES_PASSWORD:-nova_password}
+      # Disable internal auth - Nova handles authentication
+      - UPTIME_KUMA_AUTH_METHOD=none
     networks:
       - nova-network
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:3001/api/ping']
       interval: 30s
@@ -86,6 +91,28 @@ services:
       start_period: 40s
     labels:
       - 'traefik.enable=false' # No direct external access - proxy through Nova only
+      - 'com.nova.service=uptime-kuma'
+      - 'com.nova.ui-access=disabled'
+
+  # Nginx Access Control - Blocks direct access to GoAlert and Uptime-Kuma UIs
+  nova-access-control:
+    image: nginx:alpine
+    container_name: nova-access-control
+    restart: unless-stopped
+    ports:
+      - '8081:8081' # Intercept GoAlert port
+      - '3001:3001' # Intercept Uptime-Kuma port
+    volumes:
+      - ./nginx/monitoring-access-control.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - nova-network
+    depends_on:
+      - nova-goalert
+      - nova-uptime-kuma-backend
+    labels:
+      - 'com.nova.service=access-control'
+      - 'com.nova.purpose=ui-blocking'
 
   # Redis for caching monitoring data
   nova-sentinel-redis:
@@ -177,10 +204,8 @@ services:
       - nova-network
 
 volumes:
-  goalert-postgres-data:
-    driver: local
-  uptime-kuma-data:
-    driver: local
+  # goalert-postgres-data: # REMOVED: GoAlert now uses Nova's PostgreSQL
+  # uptime-kuma-data: # REMOVED: Uptime-Kuma now uses Nova's PostgreSQL  
   redis-data:
     driver: local
   grafana-data:
