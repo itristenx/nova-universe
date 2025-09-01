@@ -1,9 +1,30 @@
 # Nova Sentinel + GoAlert Integration Stack
 # Complete monitoring and alerting infrastructure for Nova Universe
 
-version: '3.8'
-
 services:
+  # PostgreSQL Database (shared with Nova Universe)
+  postgres:
+    image: postgres:15-alpine
+    container_name: nova-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nova_universe}
+      POSTGRES_USER: ${POSTGRES_USER:-nova_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nova_password}
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale=en_US.UTF-8'
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-nova_admin} -d ${POSTGRES_DB:-nova_universe}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # GoAlert - Core alerting and escalation engine (headless, using Nova DB)
   nova-goalert:
     image: goalert/goalert:latest
@@ -44,10 +65,6 @@ services:
       - 'traefik.enable=false' # No direct access, proxy through Nova API only
       - 'com.nova.service=goalert'
       - 'com.nova.ui-access=disabled'
-
-  # GoAlert Database - REMOVED: Using Nova's PostgreSQL database instead
-  # This service has been removed as GoAlert now uses Nova's main PostgreSQL database
-  # All GoAlert data is stored in the 'goalert' schema within Nova's database
 
   # Uptime Kuma - Monitoring backend (embedded in Nova, using Nova DB)
   nova-uptime-kuma-backend:
@@ -204,8 +221,8 @@ services:
       - nova-network
 
 volumes:
-  # goalert-postgres-data: # REMOVED: GoAlert now uses Nova's PostgreSQL
-  # uptime-kuma-data: # REMOVED: Uptime-Kuma now uses Nova's PostgreSQL  
+  postgres_data:
+    driver: local
   redis-data:
     driver: local
   grafana-data:
@@ -215,5 +232,4 @@ volumes:
 
 networks:
   nova-network:
-    external: true
-    name: nova-universe_nova-network
+    driver: bridge
