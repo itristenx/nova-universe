@@ -26,9 +26,10 @@ cp .env.example .env
 
 **CRITICAL TIMING NOTES:**
 - **Dependencies**: 24 seconds, set timeout to 60+ seconds
-- **Prisma generation**: 9.5 seconds, set timeout to 30+ seconds  
+- **Prisma generation**: 8.4 seconds, set timeout to 30+ seconds  
 - **Test environment setup**: 3-5 minutes, set timeout to 10+ minutes
 - **Docker-based operations**: 2-10 minutes, set timeout to 15+ minutes
+- **Linting**: 45 seconds, set timeout to 120+ seconds
 
 ### Quick Validation (Post-Setup)
 ```bash
@@ -116,10 +117,13 @@ cd apps/api && npm run build  # Instant (just prints message)
 cd apps/core/nova-core && npm run build  # FAILS: missing framer-motion
 
 # Orbit (Next.js) - Works but has TypeScript errors  
-cd apps/orbit && npm run build  # ~15-20 seconds when working
+cd apps/orbit && npm run build  # ~20 seconds when working
 
 # Prisma clients regeneration
-pnpm run prisma:generate:all  # 15 seconds
+pnpm run prisma:generate:all  # 8.4 seconds
+
+# Linting (has many issues currently)
+pnpm run lint  # 45 seconds, expect errors
 ```
 
 ## Manual Validation Scenarios
@@ -196,6 +200,13 @@ cd apps/core/nova-core && npm run dev
 - Normal: 3-5 minutes for integration environment
 - Solution: Be patient, use longer timeouts
 
+### Linting Issues
+**Current linting state**:
+- Repository has 9,880+ linting errors currently
+- Linting process takes 45 seconds to complete
+- Common issues: unused variables, ES module problems, TypeScript errors
+- Solution: Fix linting incrementally as you make changes, don't expect clean lint initially
+
 ## Quick Reference
 
 ### Essential File Locations
@@ -214,11 +225,13 @@ cd apps/core/nova-core && npm run dev
 
 ### Important Timing Expectations
 - **Never cancel operations** that take <10 minutes
-- **Package installation**: 30 seconds (normal)
+- **Package installation**: 24 seconds (normal)
+- **Prisma generation**: 8.4 seconds (normal)
 - **Test environment setup**: 3-5 minutes (normal)
 - **Full system setup**: 5-10 minutes (normal)
 - **Unit tests**: <1 second (very fast)
 - **Integration tests**: 30 seconds - 2 minutes
+- **Linting**: 45 seconds (many current issues)
 
 ### Default Credentials
 - **Email**: `admin@example.com`  
@@ -237,7 +250,7 @@ cd apps/core/nova-core && npm run dev
 - [ ] Run `pnpm run test` to verify no regressions
 - [ ] Run `pnpm run test:smoke` if API changes (30s timeout)
 - [ ] Test affected service manually (start and verify endpoints)
-- [ ] Run `pnpm run lint` if available in modified workspace
+- [ ] Run `pnpm run lint` if available in modified workspace (45s timeout, expect errors)
 
 **For production readiness:**
 - [ ] Run `./validate-production-readiness.sh`
