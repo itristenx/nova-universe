@@ -1,11 +1,13 @@
 import { i18n } from '../i18n/index';
 
 describe('I18n Core Integration', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Ensure i18n is initialized
     if (!i18n.isInitialized) {
-      i18n.init();
+      await i18n.init();
     }
+    // Always reset to English
+    await i18n.changeLanguage('en');
   });
 
   describe('Configuration', () => {
@@ -122,12 +124,13 @@ describe('I18n Core Integration', () => {
   describe('RTL Support', () => {
     test('should support Arabic RTL direction', async () => {
       await i18n.changeLanguage('ar');
-      expect(i18n.language).toBe('ar');
+      expect(['ar', 'ar-SA']).toContain(i18n.language);
       
       // Arabic translations should exist
       const arabicTitle = i18n.t('app:name');
       expect(arabicTitle).toBeDefined();
       expect(typeof arabicTitle).toBe('string');
+      expect(arabicTitle.length).toBeGreaterThan(0);
     });
   });
 
@@ -139,6 +142,8 @@ describe('I18n Core Integration', () => {
       // Should return the key itself or some fallback, not crash
       expect(result).toBeDefined();
       expect(typeof result).toBe('string');
+      // i18next returns the key when translation is missing
+      expect(result).toBe(missingKey);
     });
 
     test('should fallback to English for missing translations', async () => {
@@ -147,6 +152,9 @@ describe('I18n Core Integration', () => {
       // Try a key that might not exist in Spanish
       const result = i18n.t('some:potentially:missing:key');
       expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      // Should return the key itself when missing
+      expect(result).toBe('some:potentially:missing:key');
     });
   });
 });

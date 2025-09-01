@@ -48,6 +48,8 @@ export default [
       'apps/comms/**/*.{js,ts}',
       'scripts/**/*.{js,ts}',
       'tools/**/*.{js,ts}',
+      'packages/**/*.{js,ts}',
+      'packages/**/*.mjs',
       'fix-lint-errors.js',
       '**/validate-*.js',
       'debug-*.js',
@@ -60,10 +62,15 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
     },
   },
-  // Browser/React apps
+  // Browser/React apps and isomorphic packages
   {
-    files: ['apps/**/src/**/*.{js,jsx,ts,tsx}'],
-    languageOptions: { globals: { ...globals.browser } },
+    files: [
+      'apps/**/src/**/*.{js,jsx,ts,tsx}',
+      'packages/design-system/**/*.{js,jsx,ts,tsx}',
+      'packages/ui/**/*.{js,jsx,ts,tsx}',
+      'packages/design-tokens/**/*.{js,jsx,ts,tsx}',
+    ],
+    languageOptions: { globals: { ...globals.browser, ...globals.node } },
     plugins: { 'react-hooks': reactHooks, 'jsx-a11y': jsxA11y },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -109,6 +116,8 @@ export default [
   {
     rules: {
       'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-undef': 'error',
+      'no-case-declarations': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
