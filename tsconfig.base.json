@@ -11,6 +11,6 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
-    "types": []
+    "types": ["jest", "node"]
   }
 }

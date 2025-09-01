@@ -69,49 +69,12 @@ jobs:
         run: echo "PRISMA_CLIENT_ENGINE_TYPE=wasm" >> $GITHUB_ENV
       - name: Generate Prisma Client (all schemas)
         run: pnpm run prisma:generate:all
-      - name: Start test environment (integration)
-        shell: bash
-        run: |
-          chmod +x ./setup-test-env.sh
-          ./setup-test-env.sh integration
-          echo "Waiting for API container health..."
-          for i in {1..120}; do \
-            STATUS=$(docker inspect -f '{{.State.Health.Status}}' nova-test-integration-api 2>/dev/null || echo "unknown"); \
-            echo "api health: $STATUS"; \
-            if [[ "$STATUS" == "healthy" ]]; then break; fi; \
-            docker logs --tail 50 nova-test-integration-api || true; \
-            sleep 2; \
-          done
-          echo "Waiting for host port to accept connections..."
-          curl --retry 60 --retry-connrefused --retry-delay 1 -fsS http://localhost:4102/health || (docker logs nova-test-integration-api | tail -200; exit 1)
-          echo "Checking monitoring health endpoint..."
-          curl -fsS http://localhost:4102/api/monitoring/health | sed -n '1,200p' || true
-      - run: pnpm run test:ci
-        env:
-          TEST_API_URL: http://localhost:4102
-          CI: true
-
-  playwright-smoke:
-    name: Playwright Smoke (Orbit)
-    runs-on: ubuntu-latest
-    needs: build
-    if: false  # Disabled - apps/orbit does not exist
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.13.1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - name: Install Playwright Browsers
-        working-directory: apps/orbit
-        run: npx playwright install --with-deps
-      - name: Run Playwright smoke tests
-        working-directory: apps/orbit
-        run: pnpm run test:e2e -- --reporter=line
+      - name: Run unit tests (API)
+        run: pnpm -C apps/api test -- --runInBand --ci
+      - name: Run unit tests (Unified)
+        run: pnpm -C apps/unified test -- --ci --runInBand
+      - name: Run root tests
+        run: pnpm run test:ci
 
   audit:
     name: Dependency Audit

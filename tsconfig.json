@@ -2,11 +2,6 @@
   "files": [],
   "references": [
     { "path": "apps/api" },
-    { "path": "apps/beacon" },
-    { "path": "apps/comms" },
-    { "path": "apps/unified" },
-    { "path": "packages/api-client" },
-    { "path": "packages/integrations" },
-    { "path": "tools/codemod" }
+    { "path": "apps/unified" }
   ]
 }

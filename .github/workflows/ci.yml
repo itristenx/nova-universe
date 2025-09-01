@@ -34,6 +34,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Generate Prisma clients
+        run: pnpm prisma:generate:all
+
       - name: Lint
         run: pnpm lint
 
@@ -106,16 +109,18 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      - name: Install API deps
-        run: pnpm -C apps/api install --no-frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Generate Prisma clients  
+        run: pnpm prisma:generate:all
 
       - name: Run API tests
         run: pnpm -C apps/api test -- --runInBand --ci
 
-  orbit-unit:
-    name: Orbit unit tests
+  unified-tests:
+    name: Unified UI tests
     runs-on: ubuntu-latest
-    if: false  # Disabled - apps/orbit does not exist
     env:
       CI: true
     steps:
@@ -133,51 +138,17 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      - name: Install Orbit deps
-        run: pnpm -C apps/orbit install --no-frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
 
-      - name: Run Orbit unit tests
-        run: pnpm -C apps/orbit test -- --ci --runInBand
+      - name: Run Unified UI tests
+        run: pnpm -C apps/unified test -- --ci --runInBand --coverage
 
-  orbit-e2e:
-    name: Orbit Playwright e2e
-    runs-on: ubuntu-latest
-    needs: [orbit-unit]
-    if: false  # Disabled - apps/orbit does not exist
-    timeout-minutes: 30
-    env:
-      CI: true
-      PLAYWRIGHT_HTML_REPORT: playwright-report
-      DISABLE_AUTH: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.13.1
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - name: Install Orbit deps
-        run: pnpm -C apps/orbit install --no-frozen-lockfile
-
-      - name: Install Playwright browsers
-        uses: microsoft/playwright-github-action@v1
-
-      - name: Run Playwright tests
-        run: pnpm -C apps/orbit test:e2e
-
-      - name: Upload Playwright report
+      - name: Upload coverage reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: orbit-playwright-report
-          path: apps/orbit/playwright-report
+          name: unified-coverage
+          path: apps/unified/coverage/
 
 

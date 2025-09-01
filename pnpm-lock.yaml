@@ -189,6 +189,9 @@ importers:
       '@types/jsonwebtoken':
         specifier: ^9.0.10
         version: 9.0.10
+      '@types/node':
+        specifier: ^24.3.0
+        version: 24.3.0
       '@types/qrcode':
         specifier: ^1.5.5
         version: 1.5.5
@@ -231,12 +234,18 @@ importers:
       husky:
         specifier: ^9.1.7
         version: 9.1.7
+      identity-obj-proxy:
+        specifier: ^3.0.0
+        version: 3.0.0
       jest:
         specifier: ^30.0.5
         version: 30.0.5(@types/node@24.3.0)(ts-node@10.9.2(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@24.3.0)(typescript@5.8.3))
       jest-environment-jsdom:
         specifier: ^29.7.0
         version: 29.7.0(canvas@2.11.2(encoding@0.1.13))
+      jest-transform-stub:
+        specifier: ^2.0.0
+        version: 2.0.0
       lint-staged:
         specifier: ^15.2.10
         version: 15.5.2
@@ -8611,6 +8620,9 @@ packages:
     resolution: {integrity: sha512-T00dWU/Ek3LqTp4+DcW6PraVxjk28WY5Ua/s+3zUKSERZSNyxTqhDXCWKG5p2HAJ+crVQ3WJ2P9YVHpj1tkW+g==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
+  jest-transform-stub@2.0.0:
+    resolution: {integrity: sha512-lspHaCRx/mBbnm3h4uMMS3R5aZzMwyNpNIJLXj4cEsV0mIUtS4IjYJLSoyjRCtnxb6RIGJ4NL2quZzfIeNhbkg==}
+
   jest-util@29.7.0:
     resolution: {integrity: sha512-z6EbKajIpqGKU56y5KBUgy1dt1ihhQJgWzUlZHArA/+X2ad7Cb5iF+AK1EWVL/Bo7Rz9uurpqw6SiBCefUbCGA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -16826,9 +16838,7 @@ snapshots:
       metro-runtime: 0.83.1
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-colors@0.81.0': {}
 
@@ -18476,7 +18486,7 @@ snapshots:
 
   '@types/nodemailer@6.4.17':
     dependencies:
-      '@types/node': 24.2.0
+      '@types/node': 24.3.0
 
   '@types/offscreencanvas@2019.3.0': {}
 
@@ -18582,7 +18592,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 24.2.0
+      '@types/node': 24.3.0
 
   '@types/xml-encryption@1.2.4':
     dependencies:
@@ -22442,6 +22452,8 @@ snapshots:
       synckit: 0.11.11
     transitivePeerDependencies:
       - supports-color
+
+  jest-transform-stub@2.0.0: {}
 
   jest-util@29.7.0:
     dependencies:
