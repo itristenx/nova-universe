@@ -1,5 +1,23 @@
 import '@testing-library/jest-dom';
 
+// Set up test environment variables
+process.env.VITE_USE_MOCK_DATA = 'false';
+process.env.NODE_ENV = 'test';
+
+// Mock import.meta for Vite compatibility
+Object.defineProperty(global, 'import', {
+  value: {
+    meta: {
+      env: {
+        DEV: false,
+        PROD: true,
+        MODE: 'test',
+        VITE_USE_MOCK_DATA: 'false',
+      },
+    },
+  },
+});
+
 // Mock network requests early to prevent HTTP calls
 global.fetch = jest.fn(() =>
   Promise.resolve({

@@ -52,7 +52,9 @@ export default {
   moduleFileExtensions: ['js', 'mjs', 'cjs', 'ts', 'tsx', 'json'],
   testMatch: [
     '<rootDir>/src/**/*.(test|spec).(ts|tsx|js)',
-    '<rootDir>/tests/**/*.(test|spec).(ts|tsx|js)',
+    '!<rootDir>/tests/**/*',
+    '!<rootDir>/**/*.e2e.*',
+    '!<rootDir>/**/*.spec.ts',
   ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
