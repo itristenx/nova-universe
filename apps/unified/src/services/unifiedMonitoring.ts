@@ -3,7 +3,7 @@
 import { apiClient } from './api';
 import { io, Socket } from 'socket.io-client';
 
-// Nova-Sentinel Monitor Types
+// Enhanced Monitor Types (combining Nova + Uptime-Kuma data)
 export interface NovaMonitor {
   id: string;
   name: string;
@@ -13,31 +13,96 @@ export interface NovaMonitor {
   url?: string;
   interval: number;
   timeout: number;
+  // Enhanced with Uptime-Kuma integration
+  kumaMonitorId?: number;
+  responseTime?: number;
+  pingTime?: number;
+  statusMessage?: string;
+  lastCheck?: string;
+  syncStatus?: 'synced' | 'failed' | 'pending';
   created_at: string;
   updated_at: string;
 }
 
-// Nova-Sentinel Alert Types
+// Enhanced Alert Types (combining Nova + GoAlert data)
 export interface NovaAlert {
   id: string;
   service_name: string;
-  severity: 'critical' | 'warning' | 'info';
-  status: 'active' | 'resolved' | 'acknowledged';
-  message: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  status: 'active' | 'acknowledged' | 'resolved' | 'closed';
+  summary: string;
+  details?: string;
+  source: 'monitoring' | 'manual' | 'api' | 'automated';
+  // Enhanced with GoAlert integration
+  goalertAlertId?: string;
+  serviceId?: string;
+  assignedTo?: string;
+  escalationLevel?: number;
+  slaBreached?: boolean;
   created_at: string;
+  acknowledged_at?: string;
+  resolved_at?: string;
   updated_at: string;
 }
 
-// GoAlert Service Types - Missing from original implementation
+// GoAlert Service Types - Enhanced
 export interface NovaService {
   id: string;
   name: string;
   description?: string;
   escalation_policy_id?: string;
+  // Enhanced with Nova integration
+  novaMonitorId?: string;
+  integrationMetadata?: Record<string, any>;
   labels: Record<string, string>;
   status: 'active' | 'inactive' | 'maintenance';
   created_at: string;
   updated_at: string;
+}
+
+// Enhanced Integration Health Types
+export interface ServiceHealth {
+  goalert_api: {
+    status: 'healthy' | 'unhealthy' | 'degraded';
+    message: string;
+  };
+  uptime_kuma_api: {
+    status: 'healthy' | 'unhealthy' | 'degraded'; 
+    message: string;
+  };
+  database: {
+    status: 'healthy' | 'unhealthy' | 'degraded';
+    message: string;
+  };
+  user_sync?: {
+    status: 'healthy' | 'degraded' | 'failed';
+    total_users: number;
+    synced_users: number;
+    failed_users: number;
+    last_sync: string;
+  };
+  monitor_sync?: {
+    status: 'healthy' | 'degraded' | 'failed';
+    total_monitors: number;
+    synced_monitors: number;
+    failed_monitors: number;
+    last_sync: string;
+  };
+  overall_status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+}
+
+// On-Call Types
+export interface OnCallAssignment {
+  id: string;
+  scheduleId: string;
+  scheduleName: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  startTime: string;
+  endTime: string;
+  isOverride: boolean;
 }
 
 // Integration Key Types
@@ -197,22 +262,43 @@ class UnifiedMonitoringService {
   }
 
   // ========================================================================
-  // BASIC MONITORING METHODS - Core functionality
+  // ENHANCED MONITORING METHODS - Integrated with GoAlert & Uptime-Kuma
   // ========================================================================
 
+  /**
+   * Get system health including GoAlert and Uptime-Kuma integration status
+   */
   async getSystemHealth(): Promise<any> {
     try {
-      const response = await apiClient.get('/api/v2/monitoring/system-health');
-      return (response as any).data.data;
+      // Get health from both integrated services
+      const [goalertHealth, kumaHealth] = await Promise.all([
+        apiClient.get('/api/v2/goalert/admin/health'),
+        apiClient.get('/api/v1/uptime-kuma/admin/health')
+      ]);
+
+      const goalertData = (goalertHealth as any).data.health;
+      const kumaData = (kumaHealth as any).data.health;
+
+      // Combine health data
+      return {
+        goalert: goalertData,
+        uptime_kuma: kumaData,
+        overall_status: goalertData.overall_status === 'healthy' && kumaData.overall_status === 'healthy' 
+          ? 'healthy' : 'degraded',
+        timestamp: new Date().toISOString()
+      };
     } catch (error) {
       console.error('Failed to fetch system health:', error);
       throw error;
     }
   }
 
-  async getMonitors(): Promise<any[]> {
+  /**
+   * Get monitors with Uptime-Kuma integration data
+   */
+  async getMonitors(): Promise<NovaMonitor[]> {
     try {
-      const response = await apiClient.get('/api/v2/monitoring/monitors');
+      const response = await apiClient.get('/api/v1/uptime-kuma/monitors');
       return (response as any).data.data || [];
     } catch (error) {
       console.error('Failed to fetch monitors:', error);
@@ -220,18 +306,206 @@ class UnifiedMonitoringService {
     }
   }
 
-  async getAlerts(): Promise<any[]> {
+  /**
+   * Get alerts with GoAlert integration data
+   */
+  async getAlerts(): Promise<NovaAlert[]> {
     try {
-      const response = await apiClient.get('/api/v2/monitoring/alerts');
-      return (response as any).data.data || [];
+      const response = await apiClient.get('/api/v2/goalert/alerts');
+      return (response as any).data.alerts || [];
     } catch (error) {
       console.error('Failed to fetch alerts:', error);
       throw error;
     }
   }
 
+  /**
+   * Get services from GoAlert integration
+   */
+  async getServices(): Promise<NovaService[]> {
+    try {
+      const response = await apiClient.get('/api/v2/goalert/services');
+      return (response as any).data.services || [];
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get current on-call assignments
+   */
+  async getOnCallAssignments(): Promise<OnCallAssignment[]> {
+    try {
+      const response = await apiClient.get('/api/v2/goalert/schedules/on-call/current');
+      return (response as any).data.assignments || [];
+    } catch (error) {
+      console.error('Failed to fetch on-call assignments:', error);
+      throw error;
+    }
+  }
+
   // ========================================================================
-  // GOALERT SERVICE MANAGEMENT - Missing from original implementation
+  // ALERT MANAGEMENT - Enhanced with GoAlert integration
+  // ========================================================================
+
+  /**
+   * Acknowledge an alert
+   */
+  async acknowledgeAlert(alertId: string): Promise<void> {
+    try {
+      await apiClient.post(`/api/v2/goalert/alerts/${alertId}/acknowledge`);
+    } catch (error) {
+      console.error('Failed to acknowledge alert:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Resolve an alert
+   */
+  async resolveAlert(alertId: string): Promise<void> {
+    try {
+      await apiClient.post(`/api/v2/goalert/alerts/${alertId}/close`);
+    } catch (error) {
+      console.error('Failed to resolve alert:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a manual alert
+   */
+  async createAlert(serviceId: string, summary: string, details?: string): Promise<NovaAlert> {
+    try {
+      const response = await apiClient.post('/api/v2/goalert/alerts', {
+        serviceID: serviceId,
+        summary,
+        details
+      });
+      return (response as any).data.alert;
+    } catch (error) {
+      console.error('Failed to create alert:', error);
+      throw error;
+    }
+  }
+
+  // ========================================================================
+  // MONITOR MANAGEMENT - Enhanced with Uptime-Kuma integration
+  // ========================================================================
+
+  /**
+   * Create a new monitor
+   */
+  async createMonitor(monitorData: Partial<NovaMonitor>): Promise<NovaMonitor> {
+    try {
+      const response = await apiClient.post('/api/v1/uptime-kuma/monitors', monitorData);
+      return (response as any).data.monitor;
+    } catch (error) {
+      console.error('Failed to create monitor:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a monitor
+   */
+  async updateMonitor(monitorId: string, monitorData: Partial<NovaMonitor>): Promise<NovaMonitor> {
+    try {
+      const response = await apiClient.put(`/api/v1/uptime-kuma/monitors/${monitorId}`, monitorData);
+      return (response as any).data.monitor;
+    } catch (error) {
+      console.error('Failed to update monitor:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a monitor
+   */
+  async deleteMonitor(monitorId: string): Promise<void> {
+    try {
+      await apiClient.delete(`/api/v1/uptime-kuma/monitors/${monitorId}`);
+    } catch (error) {
+      console.error('Failed to delete monitor:', error);
+      throw error;
+    }
+  }
+
+  // ========================================================================
+  // SERVICE MANAGEMENT - GoAlert integration
+  // ========================================================================
+
+  /**
+   * Create a new service
+   */
+  async createService(serviceData: Partial<NovaService>): Promise<NovaService> {
+    try {
+      const response = await apiClient.post('/api/v2/goalert/services', serviceData);
+      return (response as any).data.service;
+    } catch (error) {
+      console.error('Failed to create service:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a service
+   */
+  async updateService(serviceId: string, serviceData: Partial<NovaService>): Promise<NovaService> {
+    try {
+      const response = await apiClient.put(`/api/v2/goalert/services/${serviceId}`, serviceData);
+      return (response as any).data.service;
+    } catch (error) {
+      console.error('Failed to update service:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a service
+   */
+  async deleteService(serviceId: string): Promise<void> {
+    try {
+      await apiClient.delete(`/api/v2/goalert/services/${serviceId}`);
+    } catch (error) {
+      console.error('Failed to delete service:', error);
+      throw error;
+    }
+  }
+
+  // ========================================================================
+  // SYNCHRONIZATION - User and monitor sync management
+  // ========================================================================
+
+  /**
+   * Manually sync all users to GoAlert
+   */
+  async syncUsersToGoAlert(): Promise<{ syncedUsers: number }> {
+    try {
+      const response = await apiClient.post('/api/v2/goalert/admin/sync-users');
+      return (response as any).data;
+    } catch (error) {
+      console.error('Failed to sync users to GoAlert:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Manually sync all monitors to Uptime-Kuma
+   */
+  async syncMonitorsToUptimeKuma(): Promise<{ syncedMonitors: number }> {
+    try {
+      const response = await apiClient.post('/api/v1/uptime-kuma/admin/sync-monitors');
+      return (response as any).data;
+    } catch (error) {
+      console.error('Failed to sync monitors to Uptime-Kuma:', error);
+      throw error;
+    }
+  }
+
+  // ========================================================================
+  // LEGACY METHODS - Maintained for backward compatibility
   // ========================================================================
 
   async getServices(filters?: {
