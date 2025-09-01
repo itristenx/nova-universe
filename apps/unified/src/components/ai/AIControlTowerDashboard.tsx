@@ -68,6 +68,7 @@ import { LoadingSpinner } from '../common/LoadingSpinner';
 import { EmptyState } from '../common/EmptyState';
 import RAGManagementPanel from './RAGManagementPanel';
 import RBACTestingPanel from './RBACTestingPanel';
+import AIAgentManagementPanel from './AIAgentManagementPanel';
 
 // Styled components with modern design
 const DashboardContainer = styled(Container)(({ theme }) => ({
@@ -683,6 +684,7 @@ export const AIControlTowerDashboard = () => {
           <Tab icon={<Settings />} label="Cosmo AI" />
           <Tab icon={<QueryIcon />} label="RAG Management" />
           <Tab icon={<SecurityIcon />} label="RBAC Testing" />
+          <Tab icon={<SmartToy />} label="AI Agents" />
         </Tabs>
       </Paper>
 
@@ -800,6 +802,10 @@ export const AIControlTowerDashboard = () => {
             onCreateRBACPolicy={() => setRbacPolicyDialog(true)}
             onRefreshAuditLogs={loadRBACData}
           />
+        )}
+
+        {activeTab === 9 && (
+          <AIAgentManagementPanel />
         )}
       </Box>
 

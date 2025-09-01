@@ -43,6 +43,7 @@ import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
 import mlPipelineRouter from './routes/ml-pipeline.js'; // ML Pipeline Management
 import novaRAGRouter from './routes/nova-rag.js'; // Nova RAG with RBAC
+import aiAgentRouter from './routes/ai-agent.js'; // Nova AI Agent Framework
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
 import novaTVRouter from './routes/nova-tv.js'; // Nova TV - Channel Management
@@ -2374,6 +2375,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/tickets', ticketLimiter, ticketsRouter);
 app.use('/api/spaces', spacesRouter);
 app.use('/api/ai-fabric', aiFabricRouter);
+app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework
 app.use('/api/setup', setupRouter);
 app.use('/api/nova-tv', novaTVRouter);
 app.use('/api/kiosks', kioskOrAuth, kiosksRouter);

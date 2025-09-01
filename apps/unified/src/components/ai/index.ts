@@ -4,3 +4,4 @@ export { IntelligentTicketClassification } from './IntelligentTicketClassificati
 export { SmartKnowledgeBase } from './SmartKnowledgeBase';
 export { WorkflowAutomationEngine } from './WorkflowAutomationEngine';
 export { AIChatbot } from './AIChatbot';
+export { default as AIAgentManagementPanel } from './AIAgentManagementPanel';

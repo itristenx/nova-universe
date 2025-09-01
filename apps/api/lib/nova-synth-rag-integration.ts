@@ -886,7 +886,7 @@ Meanwhile, here's some general information that might be helpful:
       if (chunk.content.toLowerCase().includes('step') || 
           chunk.content.toLowerCase().includes('first') ||
           chunk.content.toLowerCase().includes('then')) {
-        steps.push(`${index + 1}. ${this.extractKey sentence(chunk.content)}`);
+        steps.push(`${index + 1}. ${this.extractKeySentence(chunk.content)}`);
       }
     });
 

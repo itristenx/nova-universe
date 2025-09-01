@@ -1388,7 +1388,6 @@ export class NovaMLPipeline extends EventEmitter {
     return times[classification.category]?.[classification.priority] || '1-3 business days';
   }
 }
-}
 
 // Export singleton instance
 export const novaMLPipeline = new NovaMLPipeline();
