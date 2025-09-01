@@ -1,0 +1,53 @@
+{
+  "startTime": 1756740819274,
+  "endTime": 1756740819316,
+  "suites": {
+    "integration": {
+      "name": "Integration Testing",
+      "success": true,
+      "skipped": true,
+      "duration": 0,
+      "warnings": [
+        "API not available"
+      ],
+      "timestamp": 1756740819315
+    },
+    "performance": {
+      "name": "Performance Testing",
+      "success": true,
+      "skipped": true,
+      "duration": 0,
+      "warnings": [
+        "API not available"
+      ],
+      "timestamp": 1756740819315
+    },
+    "security": {
+      "name": "Security Testing",
+      "success": true,
+      "skipped": true,
+      "duration": 0,
+      "warnings": [
+        "API not available"
+      ],
+      "timestamp": 1756740819315
+    },
+    "uat": {
+      "name": "User Acceptance Testing",
+      "success": true,
+      "skipped": true,
+      "duration": 0,
+      "warnings": [
+        "API not available"
+      ],
+      "timestamp": 1756740819315
+    }
+  },
+  "summary": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "duration": 42
+  }
+}
