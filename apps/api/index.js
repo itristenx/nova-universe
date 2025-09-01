@@ -42,9 +42,9 @@ import aiControlTowerRouter from './routes/ai-control-tower.js'; // AI Control T
 import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
-import mlPipelineRouter from './routes/ml-pipeline.js'; // ML Pipeline Management
-import novaRAGRouter from './routes/nova-rag.js'; // Nova RAG with RBAC
-import aiAgentRouter from './routes/ai-agent.js'; // Nova AI Agent Framework
+// import mlPipelineRouter from './routes/ml-pipeline.js'; // ML Pipeline Management - TEMPORARILY DISABLED
+// import novaRAGRouter from './routes/nova-rag.js'; // Nova RAG with RBAC - TEMPORARILY DISABLED
+// import aiAgentRouter from './routes/ai-agent.js'; // Nova AI Agent Framework - TEMPORARILY DISABLED
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
 import novaTVRouter from './routes/nova-tv.js'; // Nova TV - Channel Management
@@ -2338,8 +2338,8 @@ v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
 v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - Enterprise AI/ML/RAG Management
 v1Router.use('/tickets', ticketsRouter);
 v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
-v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI
-v1Router.use('/nova-rag', novaRAGRouter); // Nova RAG with RBAC and Synth Integration
+// v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI - TEMPORARILY DISABLED
+// v1Router.use('/nova-rag', novaRAGRouter); // Nova RAG with RBAC and Synth Integration - TEMPORARILY DISABLED
 v1Router.use('/spaces', spacesRouter);
 v1Router.use('/ai-fabric', aiFabricRouter);
 v1Router.use('/setup', setupRouter);
@@ -2377,7 +2377,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/tickets', ticketLimiter, ticketsRouter);
 app.use('/api/spaces', spacesRouter);
 app.use('/api/ai-fabric', aiFabricRouter);
-app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework
+// app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework - TEMPORARILY DISABLED
 app.use('/api/setup', setupRouter);
 app.use('/api/nova-tv', novaTVRouter);
 app.use('/api/kiosks', kioskOrAuth, kiosksRouter);

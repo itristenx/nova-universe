@@ -247,7 +247,7 @@ router.get('/sessions', async (req, res) => {
     
     const sessions = novaConversationalInterface.getActiveSessions(
       userId,
-      tenantId as string || req.user?.tenantId
+      tenantId || req.user?.tenantId
     );
     
     res.json({
@@ -437,16 +437,16 @@ router.post('/feedback', async (req, res) => {
 router.get('/analytics', async (req, res) => {
   try {
     const { tenantId, startDate, endDate, interval = 'day' } = req.query;
-    const userTenantId = tenantId as string || req.user?.tenantId || 'default';
+    const userTenantId = tenantId || req.user?.tenantId || 'default';
 
     // Default to last 7 days if dates not provided
-    const end = endDate ? new Date(endDate as string) : new Date();
-    const start = startDate ? new Date(startDate as string) : new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate) : new Date();
+    const start = startDate ? new Date(startDate) : new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const analytics = await novaAIAgentAnalytics.generateAnalytics(userTenantId, {
       start,
       end,
-      interval: interval as any
+      interval: interval
     });
 
     res.json({
@@ -562,7 +562,7 @@ router.post('/ab-tests', async (req, res) => {
       description,
       type,
       targetMetric,
-      variants: variants.map((v: any, index: number) => ({
+      variants: variants.map((v, index) => ({
         id: `variant_${index + 1}`,
         name: v.name || `Variant ${index + 1}`,
         description: v.description || '',
@@ -735,12 +735,12 @@ router.get('/performance', async (req, res) => {
   try {
     const { userId, tenantId, category, startDate, endDate } = req.query;
     
-    const filters: any = {};
-    if (userId) filters.userId = userId as string;
-    if (tenantId) filters.tenantId = tenantId as string;
-    if (category) filters.category = category as string;
-    if (startDate) filters.startDate = new Date(startDate as string);
-    if (endDate) filters.endDate = new Date(endDate as string);
+    const filters = {};
+    if (userId) filters.userId = userId;
+    if (tenantId) filters.tenantId = tenantId;
+    if (category) filters.category = category;
+    if (startDate) filters.startDate = new Date(startDate);
+    if (endDate) filters.endDate = new Date(endDate);
     
     const performance = await novaAIAgent.getPerformanceMetrics(filters);
     
