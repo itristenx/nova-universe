@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'nova-api'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: /api/metrics
+    scrape_interval: 30s
+
+  - job_name: 'nova-uptime-kuma'
+    static_configs:
+      - targets: ['nova-uptime-kuma-backend:3001']
+    scrape_interval: 30s
+
+  - job_name: 'nova-goalert'
+    static_configs:
+      - targets: ['nova-goalert:8081']
+    scrape_interval: 30s
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['nova-node-exporter:9100']
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['nova-postgres:5432']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['nova-redis:6379']

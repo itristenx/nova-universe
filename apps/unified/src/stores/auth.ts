@@ -82,15 +82,26 @@ function mapHelixUserToUser(helixUser: {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
-      // Initial state
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
-      error: null,
+    (set) => {
+      // Check if we're in demo mode
+      const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
+      
+      return {
+        // Initial state - enable auth for demo mode
+        user: useMockData ? mapHelixUserToUser({
+          id: 'demo-user-123',
+          email: 'demo@novauniverse.com',
+          firstName: 'Demo',
+          lastName: 'User',
+          role: 'admin',
+          tenantId: 'demo-tenant'
+        }) : null,
+        isAuthenticated: useMockData,
+        isLoading: false,
+        error: null,
 
-      // Legacy login action for backward compatibility
-      login: async (email: string, password: string, rememberMe = false) => {
+        // Legacy login action for backward compatibility
+        login: async (email: string, password: string, rememberMe = false) => {
         set({ isLoading: true, error: null });
 
         try {
@@ -264,11 +275,12 @@ export const useAuthStore = create<AuthState>()(
         set({ error: null });
       },
 
-      // Set loading state
-      setLoading: (loading: boolean) => {
-        set({ isLoading: loading });
-      },
-    }),
+        // Set loading state
+        setLoading: (loading: boolean) => {
+          set({ isLoading: loading });
+        },
+      };
+    },
     {
       name: 'nova-auth-storage',
       storage: createJSONStorage(() => localStorage),

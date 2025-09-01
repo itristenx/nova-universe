@@ -21,29 +21,38 @@ const supportGroupService = new SupportGroupService();
 // ========================================================================
 
 const GOALERT_CONFIG = {
-  baseUrl: process.env.GOALERT_API_BASE || 'http://localhost:8081',
+  baseUrl: process.env.GOALERT_API_BASE || 'http://nova-goalert:8081',
   apiKey: process.env.GOALERT_API_KEY,
-  enabled: process.env.GOALERT_PROXY_ENABLED === 'true',
-  webhookSecret: process.env.GOALERT_WEBHOOK_SECRET,
+  enabled: process.env.GOALERT_PROXY_ENABLED !== 'false', // Default enabled
+  webhookSecret: process.env.GOALERT_WEBHOOK_SECRET || 'nova-goalert-webhook-secret',
+  useNovaAuth: true, // Always use Nova authentication
+  dbSchema: 'goalert', // Nova database schema for GoAlert
 };
 
 /**
- * Make authenticated request to GoAlert API
+ * Make authenticated request to GoAlert API using Nova user context
  */
-async function makeGoAlertRequest(endpoint, options = {}) {
+async function makeGoAlertRequest(endpoint, options = {}, user = null) {
   if (!GOALERT_CONFIG.enabled) {
     throw new Error('GoAlert integration is disabled');
   }
 
   const url = `${GOALERT_CONFIG.baseUrl}${endpoint}`;
+  
+  // Use Nova authentication instead of API key
   const headers = {
-    Authorization: `Bearer ${GOALERT_CONFIG.apiKey}`,
     'Content-Type': 'application/json',
     'User-Agent': 'Nova-Universe/1.0',
+    'X-Nova-User-ID': user?.id || 'system',
+    'X-Nova-User-Email': user?.email || 'system@nova.local',
+    'Authorization': `Bearer ${GOALERT_CONFIG.apiKey || 'nova-system-token'}`,
     ...options.headers,
   };
 
-  logger.debug(`GoAlert API Request: ${options.method || 'GET'} ${url}`);
+  logger.debug(`GoAlert API Request: ${options.method || 'GET'} ${url}`, { 
+    userId: user?.id,
+    endpoint 
+  });
 
   const response = await fetch(url, {
     ...options,
@@ -53,11 +62,92 @@ async function makeGoAlertRequest(endpoint, options = {}) {
 
   if (!response.ok) {
     const error = await response.text();
-    logger.error(`GoAlert API Error: ${response.status} - ${error}`);
+    logger.error(`GoAlert API Error: ${response.status} - ${error}`, {
+      userId: user?.id,
+      endpoint,
+      status: response.status
+    });
     throw new Error(`GoAlert API request failed: ${response.status} ${response.statusText}`);
   }
 
   return response.json();
+}
+
+/**
+ * Ensure Nova user is synchronized with GoAlert
+ */
+async function ensureGoAlertUser(req) {
+  const user = req.user;
+  if (!user) {
+    throw new Error('No authenticated user');
+  }
+
+  try {
+    // Check if user exists in GoAlert schema
+    const result = await db.query(
+      'SELECT id, goalert_user_id FROM goalert.users WHERE nova_user_id = $1',
+      [user.id]
+    );
+
+    if (result.rows.length === 0) {
+      // Sync user to GoAlert
+      const goalertUserId = await db.query(
+        'SELECT goalert.sync_nova_user_to_goalert($1) as goalert_user_id',
+        [user.id]
+      );
+      
+      logger.info('User synchronized to GoAlert', { 
+        novaUserId: user.id, 
+        goalertUserId: goalertUserId.rows[0].goalert_user_id 
+      });
+      
+      return goalertUserId.rows[0].goalert_user_id;
+    }
+
+    return result.rows[0].goalert_user_id || result.rows[0].id;
+  } catch (error) {
+    logger.error('Failed to ensure GoAlert user', { 
+      novaUserId: user.id, 
+      error: error.message 
+    });
+    throw error;
+  }
+}
+
+/**
+ * Synchronize all Nova users to GoAlert
+ */
+async function syncAllUsersToGoAlert() {
+  try {
+    const result = await db.query(`
+      INSERT INTO goalert.users (nova_user_id, name, email, role, sync_status, last_sync_at)
+      SELECT 
+        u.id,
+        COALESCE(u.first_name || ' ' || u.last_name, u.email),
+        u.email,
+        CASE WHEN EXISTS (
+          SELECT 1 FROM user_roles ur 
+          JOIN roles r ON ur.role_id = r.id 
+          WHERE ur.user_id = u.id AND r.name = 'admin'
+        ) THEN 'admin' ELSE 'user' END,
+        'synced',
+        CURRENT_TIMESTAMP
+      FROM users u
+      WHERE u.id NOT IN (SELECT nova_user_id FROM goalert.users WHERE nova_user_id IS NOT NULL)
+      ON CONFLICT (nova_user_id) DO UPDATE SET
+        name = EXCLUDED.name,
+        email = EXCLUDED.email,
+        role = EXCLUDED.role,
+        sync_status = 'synced',
+        last_sync_at = CURRENT_TIMESTAMP
+    `);
+
+    logger.info(`Synchronized ${result.rowCount} users to GoAlert`);
+    return result.rowCount;
+  } catch (error) {
+    logger.error('Failed to sync users to GoAlert', { error: error.message });
+    throw error;
+  }
 }
 
 async function setConfigKey(key, value) {
@@ -72,6 +162,22 @@ async function setConfigKey(key, value) {
     logger.warn('Failed to persist config key', { key, error: e.message });
   }
 }
+
+// Middleware to ensure user is synchronized with GoAlert
+router.use(async (req, res, next) => {
+  if (req.user) {
+    try {
+      await ensureGoAlertUser(req);
+    } catch (error) {
+      logger.error('Failed to sync user to GoAlert', { 
+        userId: req.user.id, 
+        error: error.message 
+      });
+      // Continue anyway - don't block request
+    }
+  }
+  next();
+});
 
 async function resolveGoAlertUserIdByEmail(email) {
   try {
@@ -153,6 +259,107 @@ async function getHelixUserPreference(userId, key, defaultValue = null) {
 }
 
 // ========================================================================
+// SYSTEM ADMINISTRATION & USER SYNC (Nova Integration)
+// ========================================================================
+
+/**
+ * @swagger
+ * /api/v2/goalert/admin/sync-users:
+ *   post:
+ *     tags: [GoAlert Administration]
+ *     summary: Synchronize all Nova users to GoAlert
+ *     description: Ensures all Nova users are available in GoAlert
+ */
+router.post(
+  '/admin/sync-users',
+  authenticateJWT,
+  checkPermissions(['goalert:admin:manage']),
+  audit('goalert.admin.sync-users'),
+  async (req, res) => {
+    try {
+      const syncedCount = await syncAllUsersToGoAlert();
+      
+      res.json({
+        success: true,
+        message: 'User synchronization completed',
+        syncedUsers: syncedCount,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.error('User sync failed:', error);
+      res.status(500).json({
+        success: false,
+        error: 'User synchronization failed',
+        details: error.message,
+      });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/v2/goalert/admin/health:
+ *   get:
+ *     tags: [GoAlert Administration]
+ *     summary: Check GoAlert integration health
+ */
+router.get(
+  '/admin/health',
+  authenticateJWT,
+  checkPermissions(['goalert:admin:read']),
+  async (req, res) => {
+    try {
+      // Check GoAlert API connectivity
+      const goalertHealth = await makeGoAlertRequest('/api/v2/user/profile', {}, req.user)
+        .then(() => ({ status: 'healthy', message: 'API accessible' }))
+        .catch(err => ({ status: 'unhealthy', message: err.message }));
+
+      // Check database connectivity
+      const dbHealth = await db.query('SELECT 1 FROM goalert.users LIMIT 1')
+        .then(() => ({ status: 'healthy', message: 'Database accessible' }))
+        .catch(err => ({ status: 'unhealthy', message: err.message }));
+
+      // Check user sync status
+      const syncStats = await db.query(`
+        SELECT 
+          COUNT(*) as total_users,
+          COUNT(CASE WHEN sync_status = 'synced' THEN 1 END) as synced_users,
+          COUNT(CASE WHEN sync_status = 'failed' THEN 1 END) as failed_users,
+          MAX(last_sync_at) as last_sync
+        FROM goalert.users
+      `);
+
+      const healthData = {
+        goalert_api: goalertHealth,
+        database: dbHealth,
+        user_sync: {
+          status: syncStats.rows[0].failed_users > 0 ? 'degraded' : 'healthy',
+          total_users: parseInt(syncStats.rows[0].total_users),
+          synced_users: parseInt(syncStats.rows[0].synced_users),
+          failed_users: parseInt(syncStats.rows[0].failed_users),
+          last_sync: syncStats.rows[0].last_sync,
+        },
+        overall_status: (goalertHealth.status === 'healthy' && dbHealth.status === 'healthy') 
+          ? 'healthy' : 'unhealthy',
+        timestamp: new Date().toISOString(),
+      };
+
+      res.json({
+        success: true,
+        health: healthData,
+      });
+    } catch (error) {
+      logger.error('Health check failed:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Health check failed',
+        details: error.message,
+      });
+    }
+  },
+);
+
+// ========================================================================
 // SERVICE MANAGEMENT (1:1 GoAlert Services Feature)
 // ========================================================================
 
@@ -176,7 +383,7 @@ router.get(
       if (search) endpoint += `&search=${encodeURIComponent(search)}`;
       if (favorite) endpoint += `&favorite=${favorite}`;
 
-      const services = await makeGoAlertRequest(endpoint);
+      const services = await makeGoAlertRequest(endpoint, {}, req.user);
 
       // Enrich with Nova metadata and user preferences
       const enrichedServices = await Promise.all(
@@ -311,7 +518,7 @@ router.get(
     try {
       const { id } = req.params;
 
-      const service = await makeGoAlertRequest(`/api/v2/services/${id}`);
+      const service = await makeGoAlertRequest(`/api/v2/services/${id}`, {}, req.user);
 
       // Update last accessed
       await storeHelixUserPreference(
@@ -475,7 +682,7 @@ router.get(
       let endpoint = `/api/v2/escalation-policies?limit=${limit}&offset=${offset}`;
       if (search) endpoint += `&search=${encodeURIComponent(search)}`;
 
-      const policies = await makeGoAlertRequest(endpoint);
+      const policies = await makeGoAlertRequest(endpoint, {}, req.user);
 
       // Enrich with user preferences
       const enrichedPolicies = await Promise.all(
@@ -592,7 +799,7 @@ router.get(
       let endpoint = `/api/v2/schedules?limit=${limit}&offset=${offset}`;
       if (search) endpoint += `&search=${encodeURIComponent(search)}`;
 
-      const schedules = await makeGoAlertRequest(endpoint);
+      const schedules = await makeGoAlertRequest(endpoint, {}, req.user);
 
       // Enrich with user preferences and current on-call
       const enrichedSchedules = await Promise.all(
@@ -605,7 +812,7 @@ router.get(
 
           // Get current on-call for this schedule
           try {
-            const onCall = await makeGoAlertRequest(`/api/v2/schedules/${schedule.id}/on-call`);
+            const onCall = await makeGoAlertRequest(`/api/v2/schedules/${schedule.id}/on-call`, {}, req.user);
             schedule.currentOnCall = onCall;
           } catch (onCallError) {
             logger.debug('Failed to fetch on-call data:', onCallError);
@@ -755,7 +962,7 @@ router.get(
     try {
       const { id } = req.params;
 
-      const onCall = await makeGoAlertRequest(`/api/v2/schedules/${id}/on-call`);
+      const onCall = await makeGoAlertRequest(`/api/v2/schedules/${id}/on-call`, {}, req.user);
 
       res.json({
         success: true,
@@ -800,7 +1007,7 @@ router.get(
       if (end) params.append('end', end);
       if (params.toString()) endpoint += `?${params.toString()}`;
 
-      const assignments = await makeGoAlertRequest(endpoint);
+      const assignments = await makeGoAlertRequest(endpoint, {}, req.user);
 
       res.json({
         success: true,
@@ -889,7 +1096,7 @@ router.get(
       let endpoint = `/api/v2/users?limit=${limit}&offset=${offset}`;
       if (search) endpoint += `&search=${encodeURIComponent(search)}`;
 
-      const users = await makeGoAlertRequest(endpoint);
+      const users = await makeGoAlertRequest(endpoint, {}, req.user);
 
       res.json({
         success: true,
@@ -924,7 +1131,7 @@ router.get(
     try {
       const { id } = req.params;
 
-      const contactMethods = await makeGoAlertRequest(`/api/v2/users/${id}/contact-methods`);
+      const contactMethods = await makeGoAlertRequest(`/api/v2/users/${id}/contact-methods`, {}, req.user);
 
       res.json({
         success: true,
@@ -1015,7 +1222,7 @@ router.get(
     try {
       const { id } = req.params;
 
-      const notificationRules = await makeGoAlertRequest(`/api/v2/users/${id}/notification-rules`);
+      const notificationRules = await makeGoAlertRequest(`/api/v2/users/${id}/notification-rules`, {}, req.user);
 
       res.json({
         success: true,
@@ -1112,7 +1319,7 @@ router.get(
       if (start) endpoint += `&start=${encodeURIComponent(start)}`;
       if (end) endpoint += `&end=${encodeURIComponent(end)}`;
 
-      const alerts = await makeGoAlertRequest(endpoint);
+      const alerts = await makeGoAlertRequest(endpoint, {}, req.user);
 
       // Store user's alert viewing preferences
       await storeHelixUserPreference(req.user.id, 'goalert.alerts.lastViewFilter', {
@@ -1298,7 +1505,7 @@ router.get(
       let endpoint = `/api/v2/heartbeat-monitors?limit=${limit}&offset=${offset}`;
       if (serviceID) endpoint += `&serviceID=${serviceID}`;
 
-      const monitors = await makeGoAlertRequest(endpoint);
+      const monitors = await makeGoAlertRequest(endpoint, {}, req.user);
 
       res.json({
         success: true,
