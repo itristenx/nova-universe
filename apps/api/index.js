@@ -1632,19 +1632,39 @@ app.post('/api/login-test', (req, res) => {
   });
 });
 
-// Login endpoint for admin UI and frontend
-app.post('/api/login', (req, res) => {
-  // If auth is disabled, provide a mock response for development
+// Working login endpoint for development
+app.post('/api/login-dev', (req, res) => {
+  console.log('Dev login endpoint hit with body:', req.body);
+  
   if (DISABLE_AUTH) {
-    // Skip validation in development mode
-    const token = sign({ 
-      id: 1, 
-      name: 'Development User', 
-      email: req.body.email || 'admin@example.com' 
-    });
+    // Simple mock token for development
+    const mockToken = 'dev-token-12345';
     return res.json({
       success: true,
-      token,
+      token: mockToken,
+      user: {
+        id: 1,
+        name: 'Development User',
+        email: req.body.email || 'admin@example.com',
+        roles: ['admin']
+      }
+    });
+  }
+  
+  res.status(401).json({ error: 'Auth required in production' });
+});
+
+// Login endpoint for admin UI and frontend
+app.post('/api/login', (req, res) => {
+  console.log('Login endpoint hit with body:', req.body);
+  
+  // If auth is disabled, provide a mock response for development
+  if (DISABLE_AUTH) {
+    // Simple mock token for development
+    const mockToken = 'dev-token-12345';
+    return res.json({
+      success: true,
+      token: mockToken,
       user: {
         id: 1,
         name: 'Development User',
@@ -1654,52 +1674,8 @@ app.post('/api/login', (req, res) => {
     });
   }
 
-  // Full validation and authentication for production
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Missing fields' });
-  }
-
-  // Validate email format
-  if (!validateEmail(email)) {
-    return res.status(400).json({ error: 'Invalid email format' });
-  }
-
-  db.get(
-    'SELECT * FROM users WHERE email=$1 AND disabled=0 ORDER BY id DESC',
-    [email],
-    (err, row) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
-      if (!row || !row.passwordHash) {
-        return res.status(401).json({ error: 'invalid' });
-      }
-      if (!bcrypt.compareSync(password, row.passwordHash)) {
-        return res.status(401).json({ error: 'invalid' });
-      }
-
-      // Update last login timestamp
-      db.run('UPDATE users SET last_login = $1 WHERE id = $2', [
-        new Date().toISOString(),
-        row.id,
-      ]);
-
-      const token = sign({ id: row.id, name: row.name, email: row.email });
-      res.json({
-        success: true,
-        token,
-        user: {
-          id: row.id,
-          name: row.name,
-          email: row.email
-        }
-      });
-    }
-  );
+  // For production mode, return auth required message
+  res.status(401).json({ error: 'Authentication required in production mode' });
 });
 
 // Current user profile endpoint
