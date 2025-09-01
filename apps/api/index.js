@@ -55,7 +55,7 @@ import serviceCatalogRequestsRouter from './routes/serviceCatalogRequests.js';
 import rbacRouter from './routes/rbac.js';
 import approvalsRouter from './routes/approvals.js';
 import featureFlagsRouter from './routes/featureFlags.js';
-import emailIntegrationRouter from './routes/email-integration.js';
+// import emailIntegrationRouter from './routes/email-integration.js'; // TEMPORARILY DISABLED
 import emailTemplatesRouter from './routes/email-templates.js';
 import abTestingRouter from './routes/abTesting.js';
 import costCentersRouter from './routes/costCenters.js';
@@ -1519,7 +1519,7 @@ v1Router.put('/api/admin-password', ensureAuth, (req, res) => {
 });
 
 v1Router.post(
-  '/api/login',
+  '/login',
   apiLoginLimiter,
   authRateLimit,
   [body('email').isEmail().normalizeEmail(), body('password').isLength({ min: 8 }).trim()],
@@ -1620,6 +1620,119 @@ app.get('/api/auth/status', (req, res) => {
     authRequired: !DISABLE_AUTH,
     authDisabled: DISABLE_AUTH,
   });
+});
+
+// Simple test login endpoint for frontend connectivity testing
+app.post('/api/login-test', (req, res) => {
+  console.log('Login test endpoint hit with body:', req.body);
+  res.json({
+    success: true,
+    test: true,
+    message: 'Login endpoint working'
+  });
+});
+
+// Login endpoint for admin UI and frontend
+app.post('/api/login', (req, res) => {
+  // If auth is disabled, provide a mock response for development
+  if (DISABLE_AUTH) {
+    // Skip validation in development mode
+    const token = sign({ 
+      id: 1, 
+      name: 'Development User', 
+      email: req.body.email || 'admin@example.com' 
+    });
+    return res.json({
+      success: true,
+      token,
+      user: {
+        id: 1,
+        name: 'Development User',
+        email: req.body.email || 'admin@example.com',
+        roles: ['admin']
+      }
+    });
+  }
+
+  // Full validation and authentication for production
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Missing fields' });
+  }
+
+  // Validate email format
+  if (!validateEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+
+  db.get(
+    'SELECT * FROM users WHERE email=$1 AND disabled=0 ORDER BY id DESC',
+    [email],
+    (err, row) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      if (!row || !row.passwordHash) {
+        return res.status(401).json({ error: 'invalid' });
+      }
+      if (!bcrypt.compareSync(password, row.passwordHash)) {
+        return res.status(401).json({ error: 'invalid' });
+      }
+
+      // Update last login timestamp
+      db.run('UPDATE users SET last_login = $1 WHERE id = $2', [
+        new Date().toISOString(),
+        row.id,
+      ]);
+
+      const token = sign({ id: row.id, name: row.name, email: row.email });
+      res.json({
+        success: true,
+        token,
+        user: {
+          id: row.id,
+          name: row.name,
+          email: row.email
+        }
+      });
+    }
+  );
+});
+
+// Current user profile endpoint
+app.get('/api/me', ensureAuth, (req, res) => {
+  // If auth is disabled, return a mock user
+  if (DISABLE_AUTH) {
+    return res.json({
+      success: true,
+      user: {
+        id: 1,
+        name: 'Development User',
+        email: 'admin@example.com',
+        roles: ['admin'],
+        permissions: ['*']
+      }
+    });
+  }
+
+  // Return current authenticated user
+  if (req.user) {
+    res.json({
+      success: true,
+      user: {
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        roles: req.user.roles || [],
+        permissions: req.user.permissions || []
+      }
+    });
+  } else {
+    res.status(401).json({ error: 'Authentication required' });
+  }
 });
 
 // Server status endpoint for admin UI
@@ -2390,7 +2503,7 @@ app.use('/api/approvals', approvalsRouter);
 app.use('/api/feature-flags', featureFlagsRouter);
 app.use('/api/ab-testing', abTestingRouter);
 app.use('/api/cost-centers', costCentersRouter);
-app.use('/api/email', emailIntegrationRouter);
+// app.use('/api/email', emailIntegrationRouter); // TEMPORARILY DISABLED
 app.use('/api/email-templates', emailTemplatesRouter);
 app.use('/api/customer-activity', customerActivityRouter);
 
