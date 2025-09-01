@@ -2511,6 +2511,11 @@ if (
         await novaSynthRAG.initialize();
         logger.info('✅ Nova Synth RAG integration initialized');
         
+        // Initialize Nova Synth Email Processor
+        const { novaSynthEmailProcessor } = await import('./lib/nova-synth-email-processor.js');
+        await novaSynthEmailProcessor.initialize();
+        logger.info('✅ Nova Synth Email Processor initialized');
+        
         logger.info('🎯 Nova RAG systems fully operational');
       } catch (ragError) {
         logger.error('Failed to initialize Nova RAG systems:', ragError);

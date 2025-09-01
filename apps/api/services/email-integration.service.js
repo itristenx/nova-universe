@@ -6,6 +6,8 @@ import _EmailTemplateService from './email-template.service.js';
 import { EmailCommunicationService } from './email-communication.service.js';
 import { Client } from '@microsoft/microsoft-graph-client';
 import * as msal from '@azure/msal-node';
+import { novaSynthEmailProcessor } from '../lib/nova-synth-email-processor.js';
+import { EventEmitter } from 'events';
 
 const prisma = new PrismaClient();
 
@@ -13,12 +15,14 @@ const prisma = new PrismaClient();
  * Email Integration Service for ITSM
  * Handles email-to-ticket creation and email communications with comprehensive tracking
  */
-class EmailIntegrationService {
+class EmailIntegrationService extends EventEmitter {
   constructor() {
+    super();
     this.emailAccounts = new Map();
     this.processingQueue = [];
     this.isProcessing = false;
     this.communicationService = new EmailCommunicationService();
+    this.enableNovaSynthProcessing = true; // Enable Nova Synth by default
   }
 
   /**
@@ -27,6 +31,16 @@ class EmailIntegrationService {
   async initialize() {
     try {
       await this.loadEmailAccounts();
+      
+      // Initialize Nova Synth Email Processor
+      try {
+        await novaSynthEmailProcessor.initialize();
+        logger.info('Nova Synth Email Processor initialized successfully');
+      } catch (error) {
+        logger.warn('Nova Synth Email Processor initialization failed, falling back to basic processing:', error.message);
+        this.enableNovaSynthProcessing = false;
+      }
+      
       await this.startEmailProcessing();
       logger.info('Email Integration Service initialized successfully');
     } catch (error) {
@@ -216,7 +230,7 @@ class EmailIntegrationService {
   }
 
   /**
-   * Process individual email and create ticket
+   * Process individual email and create ticket with Nova Synth intelligence
    */
   async processEmail(email, account) {
     try {
@@ -251,8 +265,63 @@ class EmailIntegrationService {
       // Find or create user
       const user = await this.findOrCreateUser(senderEmail, senderName);
 
-      // Parse email content and extract ticket information
-      const ticketData = await this.parseEmailToTicket(email, account, user);
+      let ticketData;
+      let aiAnalysis = null;
+
+      // Use Nova Synth for intelligent processing if available
+      if (this.enableNovaSynthProcessing && novaSynthEmailProcessor.isInitialized) {
+        try {
+          logger.info(`Processing email ${messageId} with Nova Synth intelligence`);
+          
+          // Build processing context
+          const processingContext = await this.buildProcessingContext(account, user);
+          
+          // Process with Nova Synth
+          aiAnalysis = await novaSynthEmailProcessor.processEmailForTicket(
+            email,
+            account,
+            processingContext
+          );
+
+          // Use Nova Synth recommendations for ticket creation
+          ticketData = {
+            ...aiAnalysis.recommendations.ticketData,
+            userId: user.id,
+            source: 'EMAIL',
+            channel: account.address,
+            assignedToQueueId: aiAnalysis.recommendations.assignment.queueId || account.queueId,
+            assignedToGroupId: aiAnalysis.recommendations.assignment.teamId || account.groupId,
+            assignedToUserId: aiAnalysis.recommendations.assignment.agentId,
+            customFields: {
+              ...aiAnalysis.recommendations.ticketData.customFields,
+              email_message_id: messageId,
+              sender_email: senderEmail,
+              sender_name: senderName,
+              original_to: email.to ? email.to.map((t) => t.address || t).join(', ') : account.address,
+              received_at: email.receivedDateTime || email.date || new Date().toISOString(),
+              ai_analysis_id: aiAnalysis.id,
+              ai_processing_version: aiAnalysis.metadata.version,
+              nova_synth_processed: true,
+            },
+          };
+
+          logger.info(
+            `Nova Synth processing completed for ${messageId}: ` +
+            `Category: ${aiAnalysis.analysis.incident.category}, ` +
+            `Priority: ${aiAnalysis.analysis.priority.level}, ` +
+            `Confidence: ${aiAnalysis.metadata.aiConfidence.toFixed(2)}`
+          );
+
+        } catch (synthError) {
+          logger.error(`Nova Synth processing failed for email ${messageId}:`, synthError);
+          // Fall back to basic processing
+          ticketData = await this.parseEmailToTicketBasic(email, account, user);
+        }
+      } else {
+        // Use basic processing
+        logger.info(`Processing email ${messageId} with basic parsing (Nova Synth not available)`);
+        ticketData = await this.parseEmailToTicketBasic(email, account, user);
+      }
 
       // Create ticket
       const ticket = await EnhancedTicketService.createTicket(ticketData);
@@ -265,15 +334,38 @@ class EmailIntegrationService {
         await this.processEmailAttachments(email.attachments, ticket.id);
       }
 
-      // Send confirmation email if configured
+      // Handle auto-reply with Nova Synth recommendations
       if (account.sendAutoReply) {
-        await this.sendAutoReplyEmail(email, ticket, account);
+        const autoReplyTemplate = aiAnalysis?.recommendations?.communications?.templateRecommendation || 'standard_ack';
+        await this.sendAutoReplyEmail(email, ticket, account, autoReplyTemplate);
+      }
+
+      // Handle escalation notifications
+      if (aiAnalysis?.recommendations?.communications?.escalationNotifications?.length > 0) {
+        await this.sendEscalationNotifications(
+          ticket,
+          aiAnalysis.recommendations.communications.escalationNotifications
+        );
       }
 
       // Mark email as read
       await this.markEmailAsRead(email, account);
 
-      logger.info(`Created ticket ${ticket.ticketNumber} from email: ${email.subject}`);
+      logger.info(
+        `Created ticket ${ticket.ticketNumber} from email: ${email.subject}` +
+        (aiAnalysis ? ` (AI Confidence: ${aiAnalysis.metadata.aiConfidence.toFixed(2)})` : '')
+      );
+
+      // Emit event for monitoring
+      if (aiAnalysis) {
+        this.emit('novaSynthTicketCreated', {
+          ticketId: ticket.id,
+          ticketNumber: ticket.ticketNumber,
+          aiAnalysis,
+          email: { subject: email.subject, from: senderEmail },
+        });
+      }
+
     } catch (error) {
       logger.error('Error processing email:', error);
     }
@@ -383,7 +475,10 @@ class EmailIntegrationService {
       throw error;
     }
   }
-  async parseEmailToTicket(email, account, user) {
+  /**
+   * Parse email to ticket data (legacy method, now renamed for clarity)
+   */
+  async parseEmailToTicketBasic(email, account, user) {
     const subject = email.subject || 'No Subject';
     const body = this.extractEmailBody(email);
 
@@ -411,8 +506,438 @@ class EmailIntegrationService {
         sender_name: this.extractSenderName(email),
         original_to: email.to ? email.to.map((t) => t.address || t).join(', ') : account.address,
         received_at: email.receivedDateTime || email.date || new Date().toISOString(),
+        nova_synth_processed: false,
       },
       tags: this.extractTags(subject, body),
+    };
+  }
+
+  /**
+   * Parse email to ticket data (wrapper for backward compatibility)
+   */
+  async parseEmailToTicket(email, account, user) {
+    return this.parseEmailToTicketBasic(email, account, user);
+  }
+
+  /**
+   * Build processing context for Nova Synth
+   */
+  async buildProcessingContext(account, user) {
+    try {
+      // Get organization context
+      const organizationContext = await this.getOrganizationContext(user);
+      
+      // Get historical context
+      const historicalContext = await this.getHistoricalContext(user);
+      
+      // Get system context
+      const systemContext = await this.getSystemContext();
+
+      return {
+        emailAccount: account,
+        organizationContext,
+        historicalContext,
+        systemContext,
+      };
+    } catch (error) {
+      logger.warn('Error building processing context:', error.message);
+      return { emailAccount: account };
+    }
+  }
+
+  /**
+   * Get organization context for processing
+   */
+  async getOrganizationContext(user) {
+    try {
+      // Query user's organization information
+      const userWithOrg = await prisma.user.findUnique({
+        where: { id: user.id },
+        include: {
+          organization: true,
+          department: true,
+        },
+      });
+
+      if (userWithOrg?.organization) {
+        return {
+          name: userWithOrg.organization.name,
+          industry: userWithOrg.organization.industry,
+          size: userWithOrg.organization.size,
+          customFields: userWithOrg.organization.customFields || {},
+        };
+      }
+    } catch (error) {
+      logger.warn('Error getting organization context:', error.message);
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get historical context for processing
+   */
+  async getHistoricalContext(user) {
+    try {
+      // Get user's previous tickets
+      const previousTickets = await prisma.enhancedSupportTicket.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          priority: true,
+          category: true,
+          status: true,
+          createdAt: true,
+          resolvedAt: true,
+        },
+      });
+
+      // Get recent similar incidents (same subject patterns)
+      const recentSimilarIncidents = await prisma.enhancedSupportTicket.findMany({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
+          },
+          status: { in: ['RESOLVED', 'CLOSED'] },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          title: true,
+          category: true,
+          resolution: true,
+          resolutionTime: true,
+        },
+      });
+
+      return {
+        senderPreviousTickets: previousTickets,
+        recentSimilarIncidents,
+        organizationalPatterns: {
+          commonCategories: await this.getCommonCategories(),
+          avgResolutionTime: await this.getAvgResolutionTime(),
+        },
+      };
+    } catch (error) {
+      logger.warn('Error getting historical context:', error.message);
+      return null;
+    }
+  }
+
+  /**
+   * Get system context for processing
+   */
+  async getSystemContext() {
+    try {
+      // Get known systems from CMDB or configuration
+      const knownSystems = [
+        'email', 'network', 'database', 'application', 'server',
+        'phone', 'printer', 'software', 'hardware', 'security'
+      ];
+
+      // Get common issues from recent tickets
+      const commonIssues = await this.getCommonIssues();
+
+      return {
+        knownSystems,
+        commonIssues,
+        maintenanceSchedule: [], // Could be populated from maintenance system
+        serviceStatus: {}, // Could be populated from monitoring system
+      };
+    } catch (error) {
+      logger.warn('Error getting system context:', error.message);
+      return {
+        knownSystems: ['email', 'network', 'application'],
+        commonIssues: [],
+        maintenanceSchedule: [],
+        serviceStatus: {},
+      };
+    }
+  }
+
+  /**
+   * Send escalation notifications
+   */
+  async sendEscalationNotifications(ticket, escalationRecipients) {
+    try {
+      for (const recipient of escalationRecipients) {
+        await this.sendTicketEmail(
+          ticket.id,
+          'system',
+          {
+            to: recipient,
+            subject: `ESCALATION: ${ticket.title}`,
+            text: `Ticket ${ticket.ticketNumber} has been escalated and requires immediate attention.\n\nPriority: ${ticket.priority}\nCustomer: ${ticket.user?.email}\nDescription: ${ticket.description}`,
+          },
+          'escalation_notification'
+        );
+      }
+      
+      logger.info(`Sent escalation notifications for ticket ${ticket.ticketNumber} to ${escalationRecipients.length} recipients`);
+    } catch (error) {
+      logger.error('Error sending escalation notifications:', error);
+    }
+  }
+
+  /**
+   * Enhanced auto-reply with template selection
+   */
+  async sendAutoReplyEmail(email, ticket, account, templateName = 'standard_ack') {
+    try {
+      const senderEmail = this.extractSenderEmail(email);
+      
+      // Get email template
+      const template = await this.getEmailTemplate(templateName, {
+        ticketNumber: ticket.ticketNumber,
+        customerName: ticket.user?.firstName || 'Customer',
+        subject: email.subject,
+        priority: ticket.priority,
+        estimatedResolution: this.getEstimatedResolution(ticket.priority),
+      });
+
+      await this.sendTicketEmail(
+        ticket.id,
+        'system',
+        {
+          to: senderEmail,
+          subject: `Re: ${email.subject} [Ticket: ${ticket.ticketNumber}]`,
+          html: template.html,
+          text: template.text,
+        },
+        templateName
+      );
+
+      logger.info(`Auto-reply sent for ticket ${ticket.ticketNumber} using template ${templateName}`);
+    } catch (error) {
+      logger.error('Error sending auto-reply email:', error);
+    }
+  }
+
+  /**
+   * Get email template with variable substitution
+   */
+  async getEmailTemplate(templateName, variables) {
+    try {
+      // Default templates
+      const templates = {
+        standard_ack: {
+          html: `
+            <p>Dear ${variables.customerName},</p>
+            <p>Thank you for contacting support. We have received your request and created ticket <strong>${variables.ticketNumber}</strong>.</p>
+            <p><strong>Subject:</strong> ${variables.subject}</p>
+            <p><strong>Priority:</strong> ${variables.priority}</p>
+            <p><strong>Estimated Resolution:</strong> ${variables.estimatedResolution}</p>
+            <p>We will respond to your request within our standard SLA timeframes. You will receive updates as we work on your issue.</p>
+            <p>Best regards,<br>Nova Support Team</p>
+          `,
+          text: `Dear ${variables.customerName},\n\nThank you for contacting support. We have received your request and created ticket ${variables.ticketNumber}.\n\nSubject: ${variables.subject}\nPriority: ${variables.priority}\nEstimated Resolution: ${variables.estimatedResolution}\n\nWe will respond to your request within our standard SLA timeframes.\n\nBest regards,\nNova Support Team`,
+        },
+        critical_incident_ack: {
+          html: `
+            <p>Dear ${variables.customerName},</p>
+            <p><strong>URGENT:</strong> We have received your critical support request and created high-priority ticket <strong>${variables.ticketNumber}</strong>.</p>
+            <p><strong>Subject:</strong> ${variables.subject}</p>
+            <p>This issue has been escalated to our senior support team and will be addressed immediately.</p>
+            <p>You can expect an initial response within 15 minutes.</p>
+            <p>If this is a true emergency, please also call our emergency support line.</p>
+            <p>Best regards,<br>Nova Support Team</p>
+          `,
+          text: `Dear ${variables.customerName},\n\nURGENT: We have received your critical support request and created high-priority ticket ${variables.ticketNumber}.\n\nSubject: ${variables.subject}\n\nThis issue has been escalated to our senior support team and will be addressed immediately.\n\nYou can expect an initial response within 15 minutes.\n\nBest regards,\nNova Support Team`,
+        },
+        password_reset_ack: {
+          html: `
+            <p>Dear ${variables.customerName},</p>
+            <p>We have received your password reset request and created ticket <strong>${variables.ticketNumber}</strong>.</p>
+            <p>Our security team will process this request and contact you within 2 hours with instructions.</p>
+            <p>For security purposes, please have your employee ID ready when we contact you.</p>
+            <p>Best regards,<br>Nova Support Team</p>
+          `,
+          text: `Dear ${variables.customerName},\n\nWe have received your password reset request and created ticket ${variables.ticketNumber}.\n\nOur security team will process this request and contact you within 2 hours with instructions.\n\nFor security purposes, please have your employee ID ready when we contact you.\n\nBest regards,\nNova Support Team`,
+        },
+      };
+
+      return templates[templateName] || templates.standard_ack;
+    } catch (error) {
+      logger.error('Error getting email template:', error);
+      return {
+        html: `<p>Thank you for your support request. Ticket ${variables.ticketNumber} has been created.</p>`,
+        text: `Thank you for your support request. Ticket ${variables.ticketNumber} has been created.`,
+      };
+    }
+  }
+
+  /**
+   * Get estimated resolution time based on priority
+   */
+  getEstimatedResolution(priority) {
+    const resolutionTimes = {
+      'CRITICAL': '4 hours',
+      'HIGH': '8 hours',
+      'MEDIUM': '24 hours',
+      'LOW': '72 hours',
+    };
+    
+    return resolutionTimes[priority] || '24 hours';
+  }
+
+  /**
+   * Get common categories from recent tickets
+   */
+  async getCommonCategories() {
+    try {
+      const categories = await prisma.enhancedSupportTicket.groupBy({
+        by: ['category'],
+        _count: { category: true },
+        orderBy: { _count: { category: 'desc' } },
+        take: 10,
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
+          },
+        },
+      });
+
+      return categories.map(cat => cat.category);
+    } catch (error) {
+      logger.warn('Error getting common categories:', error.message);
+      return ['Hardware', 'Software', 'Network', 'Access'];
+    }
+  }
+
+  /**
+   * Get average resolution time
+   */
+  async getAvgResolutionTime() {
+    try {
+      const resolved = await prisma.enhancedSupportTicket.findMany({
+        where: {
+          status: 'RESOLVED',
+          resolvedAt: { not: null },
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          },
+        },
+        select: {
+          createdAt: true,
+          resolvedAt: true,
+        },
+      });
+
+      if (resolved.length === 0) return 24; // Default 24 hours
+
+      const totalResolutionTime = resolved.reduce((sum, ticket) => {
+        const resolutionTime = ticket.resolvedAt.getTime() - ticket.createdAt.getTime();
+        return sum + resolutionTime;
+      }, 0);
+
+      const avgMs = totalResolutionTime / resolved.length;
+      return Math.round(avgMs / (1000 * 60 * 60)); // Convert to hours
+    } catch (error) {
+      logger.warn('Error getting average resolution time:', error.message);
+      return 24;
+    }
+  }
+
+  /**
+   * Get common issues from recent tickets
+   */
+  async getCommonIssues() {
+    try {
+      const issues = await prisma.enhancedSupportTicket.findMany({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          },
+          status: { in: ['RESOLVED', 'CLOSED'] },
+        },
+        select: {
+          title: true,
+          category: true,
+          resolution: true,
+        },
+        take: 50,
+      });
+
+      return issues.map(issue => ({
+        title: issue.title,
+        category: issue.category,
+        resolution: issue.resolution,
+      }));
+    } catch (error) {
+      logger.warn('Error getting common issues:', error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Test Nova Synth email processing
+   */
+  async testNovaSynthProcessing(testEmail, testAccount) {
+    try {
+      if (!this.enableNovaSynthProcessing || !novaSynthEmailProcessor.isInitialized) {
+        return {
+          success: false,
+          error: 'Nova Synth processing not available',
+        };
+      }
+
+      const processingContext = {
+        emailAccount: testAccount,
+        organizationContext: {
+          name: 'Test Organization',
+          industry: 'Technology',
+          size: 'Medium',
+        },
+        systemContext: {
+          knownSystems: ['email', 'network', 'database'],
+          commonIssues: [],
+          maintenanceSchedule: [],
+          serviceStatus: {},
+        },
+      };
+
+      const analysis = await novaSynthEmailProcessor.processEmailForTicket(
+        testEmail,
+        testAccount,
+        processingContext
+      );
+
+      return {
+        success: true,
+        analysis,
+        recommendations: analysis.recommendations,
+        confidence: analysis.metadata.aiConfidence,
+        processingTime: analysis.metadata.processingTime,
+      };
+    } catch (error) {
+      logger.error('Error testing Nova Synth processing:', error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Get Nova Synth processing statistics
+   */
+  getNovaSynthStats() {
+    if (!this.enableNovaSynthProcessing || !novaSynthEmailProcessor.isInitialized) {
+      return {
+        available: false,
+        reason: 'Nova Synth not initialized',
+      };
+    }
+
+    return {
+      available: true,
+      stats: novaSynthEmailProcessor.getStats(),
+      isInitialized: novaSynthEmailProcessor.isInitialized,
     };
   }
 

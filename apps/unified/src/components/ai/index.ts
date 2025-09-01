@@ -5,3 +5,4 @@ export { SmartKnowledgeBase } from './SmartKnowledgeBase';
 export { WorkflowAutomationEngine } from './WorkflowAutomationEngine';
 export { AIChatbot } from './AIChatbot';
 export { default as AIAgentManagementPanel } from './AIAgentManagementPanel';
+export { default as EmailProcessingPanel } from './EmailProcessingPanel';

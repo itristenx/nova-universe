@@ -60,6 +60,7 @@ import {
   ModelTraining as ModelTrainingIcon,
   Tune as TuneIcon,
   AutoFixHigh as AutoFixHighIcon,
+  Email as EmailIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
@@ -69,6 +70,7 @@ import { EmptyState } from '../common/EmptyState';
 import RAGManagementPanel from './RAGManagementPanel';
 import RBACTestingPanel from './RBACTestingPanel';
 import AIAgentManagementPanel from './AIAgentManagementPanel';
+import EmailProcessingPanel from './EmailProcessingPanel';
 
 // Styled components with modern design
 const DashboardContainer = styled(Container)(({ theme }) => ({
@@ -685,6 +687,7 @@ export const AIControlTowerDashboard = () => {
           <Tab icon={<QueryIcon />} label="RAG Management" />
           <Tab icon={<SecurityIcon />} label="RBAC Testing" />
           <Tab icon={<SmartToy />} label="AI Agents" />
+          <Tab icon={<EmailIcon />} label="Email Processing" />
         </Tabs>
       </Paper>
 
@@ -806,6 +809,10 @@ export const AIControlTowerDashboard = () => {
 
         {activeTab === 9 && (
           <AIAgentManagementPanel />
+        )}
+
+        {activeTab === 10 && (
+          <EmailProcessingPanel />
         )}
       </Box>
 
