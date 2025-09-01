@@ -59,7 +59,7 @@ import {
   Assignment as AssignmentIcon,
   Description as DescriptionIcon,
 } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
+import { styled, alpha } from '@mui/material/styles';
 
 const TestCard = styled(Card)(({ theme, status }) => {
   let borderColor = theme.palette.grey[300];
@@ -67,10 +67,10 @@ const TestCard = styled(Card)(({ theme, status }) => {
   
   if (status === 'passed') {
     borderColor = theme.palette.success.main;
-    backgroundColor = theme.palette.success.light + '10';
+    backgroundColor = alpha(theme.palette.success.light, 0.1);
   } else if (status === 'failed') {
     borderColor = theme.palette.error.main;
-    backgroundColor = theme.palette.error.light + '10';
+    backgroundColor = alpha(theme.palette.error.light, 0.1);
   }
   
   return {

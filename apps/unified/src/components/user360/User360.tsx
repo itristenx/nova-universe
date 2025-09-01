@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   UserIcon,
@@ -317,7 +317,7 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
     }
   };
 
-  const getSecurityScore = () => {
+  const getSecurityScore = useMemo(() => {
     if (!profile) return 0;
 
     let score = 100;
@@ -332,7 +332,7 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
     if (securityAlerts.filter((a) => a.status === 'open').length > 0) score -= 15;
 
     return Math.max(0, score);
-  };
+  }, [profile, securityAlerts]);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: UserIcon },
@@ -410,9 +410,9 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
           <div className="text-right">
             <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">Security Score</div>
             <div
-              className={`text-2xl font-bold ${getSecurityScore() >= 80 ? 'text-green-600' : getSecurityScore() >= 60 ? 'text-yellow-600' : 'text-red-600'}`}
+              className={`text-2xl font-bold ${getSecurityScore >= 80 ? 'text-green-600' : getSecurityScore >= 60 ? 'text-yellow-600' : 'text-red-600'}`}
             >
-              {getSecurityScore()}%
+              {getSecurityScore}%
             </div>
           </div>
         </div>
@@ -575,9 +575,9 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                       Security Score
                     </div>
                     <div
-                      className={`text-sm font-semibold ${getSecurityScore() >= 80 ? 'text-green-600' : getSecurityScore() >= 60 ? 'text-yellow-600' : 'text-red-600'}`}
+                      className={`text-sm font-semibold ${getSecurityScore >= 80 ? 'text-green-600' : getSecurityScore >= 60 ? 'text-yellow-600' : 'text-red-600'}`}
                     >
-                      {getSecurityScore()}%
+                      {getSecurityScore}%
                     </div>
                   </div>
                 </div>
@@ -823,7 +823,7 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                             <div className="flex-1">
                               <div className="flex items-center space-x-2">
                                 <h4 className="font-medium text-gray-900 dark:text-white">
-                                  {interaction.subject || `${interaction.interactionType.replace('_', ' ')}`}
+                                  {interaction.subject || `${interaction.interactionType.replace(/_/g, ' ')}`}
                                 </h4>
                                 
                                 {/* Direction Badge */}

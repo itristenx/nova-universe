@@ -72,6 +72,9 @@ import RBACTestingPanel from './RBACTestingPanel';
 import AIAgentManagementPanel from './AIAgentManagementPanel';
 import EmailProcessingPanel from './EmailProcessingPanel';
 
+// Constants
+const POLLING_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour
+
 // Styled components with modern design
 const DashboardContainer = styled(Container)(({ theme }) => ({
   paddingTop: theme.spacing(3),
@@ -403,7 +406,7 @@ export const AIControlTowerDashboard = () => {
     }, 5000); // Poll every 5 seconds
 
     // Clear interval after 1 hour to prevent infinite polling
-    setTimeout(() => clearInterval(pollInterval), 3600000);
+    setTimeout(() => clearInterval(pollInterval), POLLING_TIMEOUT_MS);
   };
 
   const updateCosmoPersonality = async (experimentId, personalityData) => {

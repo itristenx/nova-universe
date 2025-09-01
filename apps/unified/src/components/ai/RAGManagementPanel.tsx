@@ -50,7 +50,7 @@ import {
   Sync as SyncIcon,
   CloudSync as CloudSyncIcon,
 } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
+import { styled, alpha } from '@mui/material/styles';
 
 const StatsCard = styled(Card)(({ theme }) => ({
   height: '100%',
@@ -65,7 +65,7 @@ const StatsCard = styled(Card)(({ theme }) => ({
 
 const ConnectorCard = styled(Card)(({ theme, connected }) => ({
   border: `2px solid ${connected ? theme.palette.success.main : theme.palette.grey[300]}`,
-  backgroundColor: connected ? theme.palette.success.light + '10' : theme.palette.grey[50],
+  backgroundColor: connected ? alpha(theme.palette.success.light, 0.1) : theme.palette.grey[50],
 }));
 
 const RAGManagementPanel = ({
