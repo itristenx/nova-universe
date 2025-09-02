@@ -7,7 +7,7 @@ import { EmailCommunicationService } from './email-communication.service.js';
 import { userInteractionService } from './user-interaction.service.js';
 import { Client } from '@microsoft/microsoft-graph-client';
 import * as msal from '@azure/msal-node';
-import { novaSynthEmailProcessor } from '../lib/nova-synth-email-processor.js';
+import { novaSynthEmailProcessor } from '../lib/nova-synth-email-processor.ts';
 import { EventEmitter } from 'events';
 
 const prisma = new PrismaClient();

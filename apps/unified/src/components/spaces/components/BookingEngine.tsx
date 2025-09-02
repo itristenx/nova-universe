@@ -553,7 +553,8 @@ export function BookingEngine({
               </CardHeader>
               <CardBody>
                 <form onSubmit={handleSubmitBooking} className="booking-form">
-                <div className="form-group">
+                  <div className="form-fields">
+                    <div className="form-group">
                   <label htmlFor="booking-title">Title *</label>
                   <input
                     id="booking-title"
@@ -661,25 +662,25 @@ export function BookingEngine({
                     placeholder="Additional notes"
                     rows={2}
                   />
+                  </div>
                 </div>
-              </div>
 
-              <div className="form-footer">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowBookingForm(false);
-                    setEditingBooking(null);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  <CheckCircle className="icon-sm" />
-                  {editingBooking ? 'Update Booking' : 'Create Booking'}
-                </Button>
-              </div>
+                <div className="form-footer">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowBookingForm(false);
+                      setEditingBooking(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    <CheckCircle className="icon-sm" />
+                    {editingBooking ? 'Update Booking' : 'Create Booking'}
+                  </Button>
+                </div>
                 </form>
               </CardBody>
             </Card>

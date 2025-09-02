@@ -4,8 +4,8 @@
  */
 
 import express from 'express';
-import { novaMLPipeline } from '../lib/nova-ml-pipeline.js';
-import { itsmTrainingData } from '../lib/itsm-training-data.js';
+import { novaMLPipeline } from '../lib/nova-ml-pipeline.ts';
+import { itsmTrainingData } from '../lib/itsm-training-data.ts';
 import { logger } from '../logger.js';
 import { authenticateJWT as authMiddleware } from '../middleware/auth.js';
 

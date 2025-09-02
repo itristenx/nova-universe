@@ -42,9 +42,9 @@ import aiControlTowerRouter from './routes/ai-control-tower.js'; // AI Control T
 import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
-import mlPipelineRouter from './routes/ml-pipeline.js'; // ML Pipeline Management
-import novaRAGRouter from './routes/nova-rag.js'; // Nova RAG with RBAC
-import aiAgentRouter from './routes/ai-agent.js'; // Nova AI Agent Framework
+// import mlPipelineRouter from './routes/ml-pipeline.js'; // ML Pipeline Management - TEMPORARILY DISABLED
+// import novaRAGRouter from './routes/nova-rag.js'; // Nova RAG with RBAC - TEMPORARILY DISABLED
+// import aiAgentRouter from './routes/ai-agent.js'; // Nova AI Agent Framework - TEMPORARILY DISABLED
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
 import novaTVRouter from './routes/nova-tv.js'; // Nova TV - Channel Management
@@ -55,7 +55,7 @@ import serviceCatalogRequestsRouter from './routes/serviceCatalogRequests.js';
 import rbacRouter from './routes/rbac.js';
 import approvalsRouter from './routes/approvals.js';
 import featureFlagsRouter from './routes/featureFlags.js';
-import emailIntegrationRouter from './routes/email-integration.js';
+// import emailIntegrationRouter from './routes/email-integration.js'; // TEMPORARILY DISABLED
 import emailTemplatesRouter from './routes/email-templates.js';
 import abTestingRouter from './routes/abTesting.js';
 import costCentersRouter from './routes/costCenters.js';
@@ -1519,7 +1519,7 @@ v1Router.put('/api/admin-password', ensureAuth, (req, res) => {
 });
 
 v1Router.post(
-  '/api/login',
+  '/login',
   apiLoginLimiter,
   authRateLimit,
   [body('email').isEmail().normalizeEmail(), body('password').isLength({ min: 8 }).trim()],
@@ -1620,6 +1620,95 @@ app.get('/api/auth/status', (req, res) => {
     authRequired: !DISABLE_AUTH,
     authDisabled: DISABLE_AUTH,
   });
+});
+
+// Simple test login endpoint for frontend connectivity testing
+app.post('/api/login-test', (req, res) => {
+  console.log('Login test endpoint hit with body:', req.body);
+  res.json({
+    success: true,
+    test: true,
+    message: 'Login endpoint working'
+  });
+});
+
+// Working login endpoint for development
+app.post('/api/login-dev', (req, res) => {
+  console.log('Dev login endpoint hit with body:', req.body);
+  
+  if (DISABLE_AUTH) {
+    // Simple mock token for development
+    const mockToken = 'dev-token-12345';
+    return res.json({
+      success: true,
+      token: mockToken,
+      user: {
+        id: 1,
+        name: 'Development User',
+        email: req.body.email || 'admin@example.com',
+        roles: ['admin']
+      }
+    });
+  }
+  
+  res.status(401).json({ error: 'Auth required in production' });
+});
+
+// Login endpoint for admin UI and frontend
+app.post('/api/login', (req, res) => {
+  console.log('Login endpoint hit with body:', req.body);
+  
+  // If auth is disabled, provide a mock response for development
+  if (DISABLE_AUTH) {
+    // Simple mock token for development
+    const mockToken = 'dev-token-12345';
+    return res.json({
+      success: true,
+      token: mockToken,
+      user: {
+        id: 1,
+        name: 'Development User',
+        email: req.body.email || 'admin@example.com',
+        roles: ['admin']
+      }
+    });
+  }
+
+  // For production mode, return auth required message
+  res.status(401).json({ error: 'Authentication required in production mode' });
+});
+
+// Current user profile endpoint
+app.get('/api/me', ensureAuth, (req, res) => {
+  // If auth is disabled, return a mock user
+  if (DISABLE_AUTH) {
+    return res.json({
+      success: true,
+      user: {
+        id: 1,
+        name: 'Development User',
+        email: 'admin@example.com',
+        roles: ['admin'],
+        permissions: ['*']
+      }
+    });
+  }
+
+  // Return current authenticated user
+  if (req.user) {
+    res.json({
+      success: true,
+      user: {
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        roles: req.user.roles || [],
+        permissions: req.user.permissions || []
+      }
+    });
+  } else {
+    res.status(401).json({ error: 'Authentication required' });
+  }
 });
 
 // Server status endpoint for admin UI
@@ -2338,8 +2427,8 @@ v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
 v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - Enterprise AI/ML/RAG Management
 v1Router.use('/tickets', ticketsRouter);
 v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
-v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI
-v1Router.use('/nova-rag', novaRAGRouter); // Nova RAG with RBAC and Synth Integration
+// v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI - TEMPORARILY DISABLED
+// v1Router.use('/nova-rag', novaRAGRouter); // Nova RAG with RBAC and Synth Integration - TEMPORARILY DISABLED
 v1Router.use('/spaces', spacesRouter);
 v1Router.use('/ai-fabric', aiFabricRouter);
 v1Router.use('/setup', setupRouter);
@@ -2377,7 +2466,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/tickets', ticketLimiter, ticketsRouter);
 app.use('/api/spaces', spacesRouter);
 app.use('/api/ai-fabric', aiFabricRouter);
-app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework
+// app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework - TEMPORARILY DISABLED
 app.use('/api/setup', setupRouter);
 app.use('/api/nova-tv', novaTVRouter);
 app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
@@ -2390,7 +2479,7 @@ app.use('/api/approvals', approvalsRouter);
 app.use('/api/feature-flags', featureFlagsRouter);
 app.use('/api/ab-testing', abTestingRouter);
 app.use('/api/cost-centers', costCentersRouter);
-app.use('/api/email', emailIntegrationRouter);
+// app.use('/api/email', emailIntegrationRouter); // TEMPORARILY DISABLED
 app.use('/api/email-templates', emailTemplatesRouter);
 app.use('/api/customer-activity', customerActivityRouter);
 
