@@ -48,6 +48,21 @@ export type SecurityEvent = $Result.DefaultSelection<Prisma.$SecurityEventPayloa
  * 
  */
 export type TrainingRecord = $Result.DefaultSelection<Prisma.$TrainingRecordPayload>
+/**
+ * Model ConversationSession
+ * 
+ */
+export type ConversationSession = $Result.DefaultSelection<Prisma.$ConversationSessionPayload>
+/**
+ * Model UserInteraction
+ * 
+ */
+export type UserInteraction = $Result.DefaultSelection<Prisma.$UserInteractionPayload>
+/**
+ * Model AIConversationMemory
+ * 
+ */
+export type AIConversationMemory = $Result.DefaultSelection<Prisma.$AIConversationMemoryPayload>
 
 /**
  * Enums
@@ -166,6 +181,134 @@ export const TrainingStatus: {
 
 export type TrainingStatus = (typeof TrainingStatus)[keyof typeof TrainingStatus]
 
+
+export const ConversationType: {
+  EMAIL_THREAD: 'EMAIL_THREAD',
+  AI_CHAT: 'AI_CHAT',
+  VOICE_CALL: 'VOICE_CALL',
+  VIDEO_CALL: 'VIDEO_CALL',
+  TICKET_CONVERSATION: 'TICKET_CONVERSATION',
+  SUPPORT_SESSION: 'SUPPORT_SESSION',
+  SALES_INQUIRY: 'SALES_INQUIRY',
+  GENERAL_INQUIRY: 'GENERAL_INQUIRY'
+};
+
+export type ConversationType = (typeof ConversationType)[keyof typeof ConversationType]
+
+
+export const CommunicationChannel: {
+  EMAIL: 'EMAIL',
+  WEB_CHAT: 'WEB_CHAT',
+  MOBILE_CHAT: 'MOBILE_CHAT',
+  PHONE: 'PHONE',
+  VIDEO: 'VIDEO',
+  SLACK: 'SLACK',
+  TEAMS: 'TEAMS',
+  WHATSAPP: 'WHATSAPP',
+  SMS: 'SMS',
+  API: 'API',
+  WEBHOOK: 'WEBHOOK',
+  FORM_SUBMISSION: 'FORM_SUBMISSION',
+  SOCIAL_MEDIA: 'SOCIAL_MEDIA'
+};
+
+export type CommunicationChannel = (typeof CommunicationChannel)[keyof typeof CommunicationChannel]
+
+
+export const SessionStatus: {
+  ACTIVE: 'ACTIVE',
+  WAITING_RESPONSE: 'WAITING_RESPONSE',
+  ESCALATED: 'ESCALATED',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED',
+  ABANDONED: 'ABANDONED',
+  TRANSFERRED: 'TRANSFERRED'
+};
+
+export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus]
+
+
+export const SessionPriority: {
+  LOW: 'LOW',
+  NORMAL: 'NORMAL',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT',
+  CRITICAL: 'CRITICAL'
+};
+
+export type SessionPriority = (typeof SessionPriority)[keyof typeof SessionPriority]
+
+
+export const InteractionType: {
+  EMAIL_SENT: 'EMAIL_SENT',
+  EMAIL_RECEIVED: 'EMAIL_RECEIVED',
+  CHAT_MESSAGE: 'CHAT_MESSAGE',
+  VOICE_CALL: 'VOICE_CALL',
+  VIDEO_CALL: 'VIDEO_CALL',
+  FILE_ATTACHMENT: 'FILE_ATTACHMENT',
+  FORM_SUBMISSION: 'FORM_SUBMISSION',
+  AI_RESPONSE: 'AI_RESPONSE',
+  AUTO_REPLY: 'AUTO_REPLY',
+  ESCALATION: 'ESCALATION',
+  RESOLUTION: 'RESOLUTION',
+  NOTE: 'NOTE',
+  STATUS_UPDATE: 'STATUS_UPDATE'
+};
+
+export type InteractionType = (typeof InteractionType)[keyof typeof InteractionType]
+
+
+export const InteractionDirection: {
+  INBOUND: 'INBOUND',
+  OUTBOUND: 'OUTBOUND',
+  INTERNAL: 'INTERNAL',
+  SYSTEM_GENERATED: 'SYSTEM_GENERATED'
+};
+
+export type InteractionDirection = (typeof InteractionDirection)[keyof typeof InteractionDirection]
+
+
+export const ProcessingStatus: {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED',
+  REQUIRES_ATTENTION: 'REQUIRES_ATTENTION'
+};
+
+export type ProcessingStatus = (typeof ProcessingStatus)[keyof typeof ProcessingStatus]
+
+
+export const InteractionPriority: {
+  LOW: 'LOW',
+  NORMAL: 'NORMAL',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT',
+  CRITICAL: 'CRITICAL'
+};
+
+export type InteractionPriority = (typeof InteractionPriority)[keyof typeof InteractionPriority]
+
+
+export const UrgencyLevel: {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL'
+};
+
+export type UrgencyLevel = (typeof UrgencyLevel)[keyof typeof UrgencyLevel]
+
+
+export const BusinessImpact: {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL'
+};
+
+export type BusinessImpact = (typeof BusinessImpact)[keyof typeof BusinessImpact]
+
 }
 
 export type UserStatus = $Enums.UserStatus
@@ -207,6 +350,46 @@ export const EventStatus: typeof $Enums.EventStatus
 export type TrainingStatus = $Enums.TrainingStatus
 
 export const TrainingStatus: typeof $Enums.TrainingStatus
+
+export type ConversationType = $Enums.ConversationType
+
+export const ConversationType: typeof $Enums.ConversationType
+
+export type CommunicationChannel = $Enums.CommunicationChannel
+
+export const CommunicationChannel: typeof $Enums.CommunicationChannel
+
+export type SessionStatus = $Enums.SessionStatus
+
+export const SessionStatus: typeof $Enums.SessionStatus
+
+export type SessionPriority = $Enums.SessionPriority
+
+export const SessionPriority: typeof $Enums.SessionPriority
+
+export type InteractionType = $Enums.InteractionType
+
+export const InteractionType: typeof $Enums.InteractionType
+
+export type InteractionDirection = $Enums.InteractionDirection
+
+export const InteractionDirection: typeof $Enums.InteractionDirection
+
+export type ProcessingStatus = $Enums.ProcessingStatus
+
+export const ProcessingStatus: typeof $Enums.ProcessingStatus
+
+export type InteractionPriority = $Enums.InteractionPriority
+
+export const InteractionPriority: typeof $Enums.InteractionPriority
+
+export type UrgencyLevel = $Enums.UrgencyLevel
+
+export const UrgencyLevel: typeof $Enums.UrgencyLevel
+
+export type BusinessImpact = $Enums.BusinessImpact
+
+export const BusinessImpact: typeof $Enums.BusinessImpact
 
 /**
  * ##  Prisma Client ʲˢ
@@ -395,6 +578,36 @@ export class PrismaClient<
     * ```
     */
   get trainingRecord(): Prisma.TrainingRecordDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.conversationSession`: Exposes CRUD operations for the **ConversationSession** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ConversationSessions
+    * const conversationSessions = await prisma.conversationSession.findMany()
+    * ```
+    */
+  get conversationSession(): Prisma.ConversationSessionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userInteraction`: Exposes CRUD operations for the **UserInteraction** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserInteractions
+    * const userInteractions = await prisma.userInteraction.findMany()
+    * ```
+    */
+  get userInteraction(): Prisma.UserInteractionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aIConversationMemory`: Exposes CRUD operations for the **AIConversationMemory** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AIConversationMemories
+    * const aIConversationMemories = await prisma.aIConversationMemory.findMany()
+    * ```
+    */
+  get aIConversationMemory(): Prisma.AIConversationMemoryDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -841,7 +1054,10 @@ export namespace Prisma {
     UserTicket: 'UserTicket',
     ActivityLog: 'ActivityLog',
     SecurityEvent: 'SecurityEvent',
-    TrainingRecord: 'TrainingRecord'
+    TrainingRecord: 'TrainingRecord',
+    ConversationSession: 'ConversationSession',
+    UserInteraction: 'UserInteraction',
+    AIConversationMemory: 'AIConversationMemory'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -860,7 +1076,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "userProfile" | "linkedAccount" | "assetAssignment" | "userTicket" | "activityLog" | "securityEvent" | "trainingRecord"
+      modelProps: "userProfile" | "linkedAccount" | "assetAssignment" | "userTicket" | "activityLog" | "securityEvent" | "trainingRecord" | "conversationSession" | "userInteraction" | "aIConversationMemory"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1382,6 +1598,228 @@ export namespace Prisma {
           }
         }
       }
+      ConversationSession: {
+        payload: Prisma.$ConversationSessionPayload<ExtArgs>
+        fields: Prisma.ConversationSessionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ConversationSessionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ConversationSessionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload>
+          }
+          findFirst: {
+            args: Prisma.ConversationSessionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ConversationSessionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload>
+          }
+          findMany: {
+            args: Prisma.ConversationSessionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload>[]
+          }
+          create: {
+            args: Prisma.ConversationSessionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload>
+          }
+          createMany: {
+            args: Prisma.ConversationSessionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ConversationSessionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload>[]
+          }
+          delete: {
+            args: Prisma.ConversationSessionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload>
+          }
+          update: {
+            args: Prisma.ConversationSessionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload>
+          }
+          deleteMany: {
+            args: Prisma.ConversationSessionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ConversationSessionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ConversationSessionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload>[]
+          }
+          upsert: {
+            args: Prisma.ConversationSessionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ConversationSessionPayload>
+          }
+          aggregate: {
+            args: Prisma.ConversationSessionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateConversationSession>
+          }
+          groupBy: {
+            args: Prisma.ConversationSessionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ConversationSessionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ConversationSessionCountArgs<ExtArgs>
+            result: $Utils.Optional<ConversationSessionCountAggregateOutputType> | number
+          }
+        }
+      }
+      UserInteraction: {
+        payload: Prisma.$UserInteractionPayload<ExtArgs>
+        fields: Prisma.UserInteractionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserInteractionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserInteractionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload>
+          }
+          findFirst: {
+            args: Prisma.UserInteractionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserInteractionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload>
+          }
+          findMany: {
+            args: Prisma.UserInteractionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload>[]
+          }
+          create: {
+            args: Prisma.UserInteractionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload>
+          }
+          createMany: {
+            args: Prisma.UserInteractionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserInteractionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload>[]
+          }
+          delete: {
+            args: Prisma.UserInteractionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload>
+          }
+          update: {
+            args: Prisma.UserInteractionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserInteractionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserInteractionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UserInteractionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload>[]
+          }
+          upsert: {
+            args: Prisma.UserInteractionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserInteractionPayload>
+          }
+          aggregate: {
+            args: Prisma.UserInteractionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserInteraction>
+          }
+          groupBy: {
+            args: Prisma.UserInteractionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserInteractionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserInteractionCountArgs<ExtArgs>
+            result: $Utils.Optional<UserInteractionCountAggregateOutputType> | number
+          }
+        }
+      }
+      AIConversationMemory: {
+        payload: Prisma.$AIConversationMemoryPayload<ExtArgs>
+        fields: Prisma.AIConversationMemoryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AIConversationMemoryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AIConversationMemoryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload>
+          }
+          findFirst: {
+            args: Prisma.AIConversationMemoryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AIConversationMemoryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload>
+          }
+          findMany: {
+            args: Prisma.AIConversationMemoryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload>[]
+          }
+          create: {
+            args: Prisma.AIConversationMemoryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload>
+          }
+          createMany: {
+            args: Prisma.AIConversationMemoryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AIConversationMemoryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload>[]
+          }
+          delete: {
+            args: Prisma.AIConversationMemoryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload>
+          }
+          update: {
+            args: Prisma.AIConversationMemoryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload>
+          }
+          deleteMany: {
+            args: Prisma.AIConversationMemoryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AIConversationMemoryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AIConversationMemoryUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload>[]
+          }
+          upsert: {
+            args: Prisma.AIConversationMemoryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIConversationMemoryPayload>
+          }
+          aggregate: {
+            args: Prisma.AIConversationMemoryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAIConversationMemory>
+          }
+          groupBy: {
+            args: Prisma.AIConversationMemoryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AIConversationMemoryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AIConversationMemoryCountArgs<ExtArgs>
+            result: $Utils.Optional<AIConversationMemoryCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1481,6 +1919,9 @@ export namespace Prisma {
     activityLog?: ActivityLogOmit
     securityEvent?: SecurityEventOmit
     trainingRecord?: TrainingRecordOmit
+    conversationSession?: ConversationSessionOmit
+    userInteraction?: UserInteractionOmit
+    aIConversationMemory?: AIConversationMemoryOmit
   }
 
   /* Types for Logging */
@@ -1568,6 +2009,9 @@ export namespace Prisma {
     activityLogs: number
     securityEvents: number
     trainingRecords: number
+    conversationSessions: number
+    interactions: number
+    aiMemories: number
   }
 
   export type UserProfileCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1578,6 +2022,9 @@ export namespace Prisma {
     activityLogs?: boolean | UserProfileCountOutputTypeCountActivityLogsArgs
     securityEvents?: boolean | UserProfileCountOutputTypeCountSecurityEventsArgs
     trainingRecords?: boolean | UserProfileCountOutputTypeCountTrainingRecordsArgs
+    conversationSessions?: boolean | UserProfileCountOutputTypeCountConversationSessionsArgs
+    interactions?: boolean | UserProfileCountOutputTypeCountInteractionsArgs
+    aiMemories?: boolean | UserProfileCountOutputTypeCountAiMemoriesArgs
   }
 
   // Custom InputTypes
@@ -1638,6 +2085,58 @@ export namespace Prisma {
    */
   export type UserProfileCountOutputTypeCountTrainingRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TrainingRecordWhereInput
+  }
+
+  /**
+   * UserProfileCountOutputType without action
+   */
+  export type UserProfileCountOutputTypeCountConversationSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ConversationSessionWhereInput
+  }
+
+  /**
+   * UserProfileCountOutputType without action
+   */
+  export type UserProfileCountOutputTypeCountInteractionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserInteractionWhereInput
+  }
+
+  /**
+   * UserProfileCountOutputType without action
+   */
+  export type UserProfileCountOutputTypeCountAiMemoriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AIConversationMemoryWhereInput
+  }
+
+
+  /**
+   * Count Type ConversationSessionCountOutputType
+   */
+
+  export type ConversationSessionCountOutputType = {
+    interactions: number
+  }
+
+  export type ConversationSessionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    interactions?: boolean | ConversationSessionCountOutputTypeCountInteractionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ConversationSessionCountOutputType without action
+   */
+  export type ConversationSessionCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSessionCountOutputType
+     */
+    select?: ConversationSessionCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ConversationSessionCountOutputType without action
+   */
+  export type ConversationSessionCountOutputTypeCountInteractionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserInteractionWhereInput
   }
 
 
@@ -2079,6 +2578,9 @@ export namespace Prisma {
     activityLogs?: boolean | UserProfile$activityLogsArgs<ExtArgs>
     securityEvents?: boolean | UserProfile$securityEventsArgs<ExtArgs>
     trainingRecords?: boolean | UserProfile$trainingRecordsArgs<ExtArgs>
+    conversationSessions?: boolean | UserProfile$conversationSessionsArgs<ExtArgs>
+    interactions?: boolean | UserProfile$interactionsArgs<ExtArgs>
+    aiMemories?: boolean | UserProfile$aiMemoriesArgs<ExtArgs>
     _count?: boolean | UserProfileCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userProfile"]>
 
@@ -2205,6 +2707,9 @@ export namespace Prisma {
     activityLogs?: boolean | UserProfile$activityLogsArgs<ExtArgs>
     securityEvents?: boolean | UserProfile$securityEventsArgs<ExtArgs>
     trainingRecords?: boolean | UserProfile$trainingRecordsArgs<ExtArgs>
+    conversationSessions?: boolean | UserProfile$conversationSessionsArgs<ExtArgs>
+    interactions?: boolean | UserProfile$interactionsArgs<ExtArgs>
+    aiMemories?: boolean | UserProfile$aiMemoriesArgs<ExtArgs>
     _count?: boolean | UserProfileCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserProfileIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2225,6 +2730,9 @@ export namespace Prisma {
       activityLogs: Prisma.$ActivityLogPayload<ExtArgs>[]
       securityEvents: Prisma.$SecurityEventPayload<ExtArgs>[]
       trainingRecords: Prisma.$TrainingRecordPayload<ExtArgs>[]
+      conversationSessions: Prisma.$ConversationSessionPayload<ExtArgs>[]
+      interactions: Prisma.$UserInteractionPayload<ExtArgs>[]
+      aiMemories: Prisma.$AIConversationMemoryPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2663,6 +3171,9 @@ export namespace Prisma {
     activityLogs<T extends UserProfile$activityLogsArgs<ExtArgs> = {}>(args?: Subset<T, UserProfile$activityLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     securityEvents<T extends UserProfile$securityEventsArgs<ExtArgs> = {}>(args?: Subset<T, UserProfile$securityEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SecurityEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     trainingRecords<T extends UserProfile$trainingRecordsArgs<ExtArgs> = {}>(args?: Subset<T, UserProfile$trainingRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrainingRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    conversationSessions<T extends UserProfile$conversationSessionsArgs<ExtArgs> = {}>(args?: Subset<T, UserProfile$conversationSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    interactions<T extends UserProfile$interactionsArgs<ExtArgs> = {}>(args?: Subset<T, UserProfile$interactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    aiMemories<T extends UserProfile$aiMemoriesArgs<ExtArgs> = {}>(args?: Subset<T, UserProfile$aiMemoriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3306,6 +3817,78 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TrainingRecordScalarFieldEnum | TrainingRecordScalarFieldEnum[]
+  }
+
+  /**
+   * UserProfile.conversationSessions
+   */
+  export type UserProfile$conversationSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    where?: ConversationSessionWhereInput
+    orderBy?: ConversationSessionOrderByWithRelationInput | ConversationSessionOrderByWithRelationInput[]
+    cursor?: ConversationSessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ConversationSessionScalarFieldEnum | ConversationSessionScalarFieldEnum[]
+  }
+
+  /**
+   * UserProfile.interactions
+   */
+  export type UserProfile$interactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    where?: UserInteractionWhereInput
+    orderBy?: UserInteractionOrderByWithRelationInput | UserInteractionOrderByWithRelationInput[]
+    cursor?: UserInteractionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserInteractionScalarFieldEnum | UserInteractionScalarFieldEnum[]
+  }
+
+  /**
+   * UserProfile.aiMemories
+   */
+  export type UserProfile$aiMemoriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+    where?: AIConversationMemoryWhereInput
+    orderBy?: AIConversationMemoryOrderByWithRelationInput | AIConversationMemoryOrderByWithRelationInput[]
+    cursor?: AIConversationMemoryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AIConversationMemoryScalarFieldEnum | AIConversationMemoryScalarFieldEnum[]
   }
 
   /**
@@ -10439,6 +11022,4541 @@ export namespace Prisma {
 
 
   /**
+   * Model ConversationSession
+   */
+
+  export type AggregateConversationSession = {
+    _count: ConversationSessionCountAggregateOutputType | null
+    _avg: ConversationSessionAvgAggregateOutputType | null
+    _sum: ConversationSessionSumAggregateOutputType | null
+    _min: ConversationSessionMinAggregateOutputType | null
+    _max: ConversationSessionMaxAggregateOutputType | null
+  }
+
+  export type ConversationSessionAvgAggregateOutputType = {
+    escalationLevel: number | null
+    totalInteractions: number | null
+    avgResponseTime: number | null
+    firstResponseTime: number | null
+    resolutionTime: number | null
+    satisfactionScore: number | null
+    qualityScore: number | null
+  }
+
+  export type ConversationSessionSumAggregateOutputType = {
+    escalationLevel: number | null
+    totalInteractions: number | null
+    avgResponseTime: number | null
+    firstResponseTime: number | null
+    resolutionTime: number | null
+    satisfactionScore: number | null
+    qualityScore: number | null
+  }
+
+  export type ConversationSessionMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    sessionType: $Enums.ConversationType | null
+    channel: $Enums.CommunicationChannel | null
+    externalId: string | null
+    subject: string | null
+    status: $Enums.SessionStatus | null
+    priority: $Enums.SessionPriority | null
+    assignedAgentId: string | null
+    escalationLevel: number | null
+    category: string | null
+    subcategory: string | null
+    totalInteractions: number | null
+    avgResponseTime: number | null
+    firstResponseTime: number | null
+    resolutionTime: number | null
+    startedAt: Date | null
+    lastActivityAt: Date | null
+    endedAt: Date | null
+    satisfactionScore: number | null
+    qualityScore: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ConversationSessionMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    sessionType: $Enums.ConversationType | null
+    channel: $Enums.CommunicationChannel | null
+    externalId: string | null
+    subject: string | null
+    status: $Enums.SessionStatus | null
+    priority: $Enums.SessionPriority | null
+    assignedAgentId: string | null
+    escalationLevel: number | null
+    category: string | null
+    subcategory: string | null
+    totalInteractions: number | null
+    avgResponseTime: number | null
+    firstResponseTime: number | null
+    resolutionTime: number | null
+    startedAt: Date | null
+    lastActivityAt: Date | null
+    endedAt: Date | null
+    satisfactionScore: number | null
+    qualityScore: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ConversationSessionCountAggregateOutputType = {
+    id: number
+    userId: number
+    sessionType: number
+    channel: number
+    externalId: number
+    subject: number
+    status: number
+    priority: number
+    participantIds: number
+    assignedAgentId: number
+    escalationLevel: number
+    context: number
+    tags: number
+    category: number
+    subcategory: number
+    totalInteractions: number
+    avgResponseTime: number
+    firstResponseTime: number
+    resolutionTime: number
+    startedAt: number
+    lastActivityAt: number
+    endedAt: number
+    satisfactionScore: number
+    qualityScore: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ConversationSessionAvgAggregateInputType = {
+    escalationLevel?: true
+    totalInteractions?: true
+    avgResponseTime?: true
+    firstResponseTime?: true
+    resolutionTime?: true
+    satisfactionScore?: true
+    qualityScore?: true
+  }
+
+  export type ConversationSessionSumAggregateInputType = {
+    escalationLevel?: true
+    totalInteractions?: true
+    avgResponseTime?: true
+    firstResponseTime?: true
+    resolutionTime?: true
+    satisfactionScore?: true
+    qualityScore?: true
+  }
+
+  export type ConversationSessionMinAggregateInputType = {
+    id?: true
+    userId?: true
+    sessionType?: true
+    channel?: true
+    externalId?: true
+    subject?: true
+    status?: true
+    priority?: true
+    assignedAgentId?: true
+    escalationLevel?: true
+    category?: true
+    subcategory?: true
+    totalInteractions?: true
+    avgResponseTime?: true
+    firstResponseTime?: true
+    resolutionTime?: true
+    startedAt?: true
+    lastActivityAt?: true
+    endedAt?: true
+    satisfactionScore?: true
+    qualityScore?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ConversationSessionMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    sessionType?: true
+    channel?: true
+    externalId?: true
+    subject?: true
+    status?: true
+    priority?: true
+    assignedAgentId?: true
+    escalationLevel?: true
+    category?: true
+    subcategory?: true
+    totalInteractions?: true
+    avgResponseTime?: true
+    firstResponseTime?: true
+    resolutionTime?: true
+    startedAt?: true
+    lastActivityAt?: true
+    endedAt?: true
+    satisfactionScore?: true
+    qualityScore?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ConversationSessionCountAggregateInputType = {
+    id?: true
+    userId?: true
+    sessionType?: true
+    channel?: true
+    externalId?: true
+    subject?: true
+    status?: true
+    priority?: true
+    participantIds?: true
+    assignedAgentId?: true
+    escalationLevel?: true
+    context?: true
+    tags?: true
+    category?: true
+    subcategory?: true
+    totalInteractions?: true
+    avgResponseTime?: true
+    firstResponseTime?: true
+    resolutionTime?: true
+    startedAt?: true
+    lastActivityAt?: true
+    endedAt?: true
+    satisfactionScore?: true
+    qualityScore?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ConversationSessionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ConversationSession to aggregate.
+     */
+    where?: ConversationSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ConversationSessions to fetch.
+     */
+    orderBy?: ConversationSessionOrderByWithRelationInput | ConversationSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ConversationSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ConversationSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ConversationSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ConversationSessions
+    **/
+    _count?: true | ConversationSessionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ConversationSessionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ConversationSessionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ConversationSessionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ConversationSessionMaxAggregateInputType
+  }
+
+  export type GetConversationSessionAggregateType<T extends ConversationSessionAggregateArgs> = {
+        [P in keyof T & keyof AggregateConversationSession]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateConversationSession[P]>
+      : GetScalarType<T[P], AggregateConversationSession[P]>
+  }
+
+
+
+
+  export type ConversationSessionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ConversationSessionWhereInput
+    orderBy?: ConversationSessionOrderByWithAggregationInput | ConversationSessionOrderByWithAggregationInput[]
+    by: ConversationSessionScalarFieldEnum[] | ConversationSessionScalarFieldEnum
+    having?: ConversationSessionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ConversationSessionCountAggregateInputType | true
+    _avg?: ConversationSessionAvgAggregateInputType
+    _sum?: ConversationSessionSumAggregateInputType
+    _min?: ConversationSessionMinAggregateInputType
+    _max?: ConversationSessionMaxAggregateInputType
+  }
+
+  export type ConversationSessionGroupByOutputType = {
+    id: string
+    userId: string
+    sessionType: $Enums.ConversationType
+    channel: $Enums.CommunicationChannel
+    externalId: string | null
+    subject: string | null
+    status: $Enums.SessionStatus
+    priority: $Enums.SessionPriority
+    participantIds: string[]
+    assignedAgentId: string | null
+    escalationLevel: number
+    context: JsonValue | null
+    tags: string[]
+    category: string | null
+    subcategory: string | null
+    totalInteractions: number
+    avgResponseTime: number | null
+    firstResponseTime: number | null
+    resolutionTime: number | null
+    startedAt: Date
+    lastActivityAt: Date
+    endedAt: Date | null
+    satisfactionScore: number | null
+    qualityScore: number | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ConversationSessionCountAggregateOutputType | null
+    _avg: ConversationSessionAvgAggregateOutputType | null
+    _sum: ConversationSessionSumAggregateOutputType | null
+    _min: ConversationSessionMinAggregateOutputType | null
+    _max: ConversationSessionMaxAggregateOutputType | null
+  }
+
+  type GetConversationSessionGroupByPayload<T extends ConversationSessionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ConversationSessionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ConversationSessionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ConversationSessionGroupByOutputType[P]>
+            : GetScalarType<T[P], ConversationSessionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ConversationSessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sessionType?: boolean
+    channel?: boolean
+    externalId?: boolean
+    subject?: boolean
+    status?: boolean
+    priority?: boolean
+    participantIds?: boolean
+    assignedAgentId?: boolean
+    escalationLevel?: boolean
+    context?: boolean
+    tags?: boolean
+    category?: boolean
+    subcategory?: boolean
+    totalInteractions?: boolean
+    avgResponseTime?: boolean
+    firstResponseTime?: boolean
+    resolutionTime?: boolean
+    startedAt?: boolean
+    lastActivityAt?: boolean
+    endedAt?: boolean
+    satisfactionScore?: boolean
+    qualityScore?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+    interactions?: boolean | ConversationSession$interactionsArgs<ExtArgs>
+    _count?: boolean | ConversationSessionCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["conversationSession"]>
+
+  export type ConversationSessionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sessionType?: boolean
+    channel?: boolean
+    externalId?: boolean
+    subject?: boolean
+    status?: boolean
+    priority?: boolean
+    participantIds?: boolean
+    assignedAgentId?: boolean
+    escalationLevel?: boolean
+    context?: boolean
+    tags?: boolean
+    category?: boolean
+    subcategory?: boolean
+    totalInteractions?: boolean
+    avgResponseTime?: boolean
+    firstResponseTime?: boolean
+    resolutionTime?: boolean
+    startedAt?: boolean
+    lastActivityAt?: boolean
+    endedAt?: boolean
+    satisfactionScore?: boolean
+    qualityScore?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["conversationSession"]>
+
+  export type ConversationSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sessionType?: boolean
+    channel?: boolean
+    externalId?: boolean
+    subject?: boolean
+    status?: boolean
+    priority?: boolean
+    participantIds?: boolean
+    assignedAgentId?: boolean
+    escalationLevel?: boolean
+    context?: boolean
+    tags?: boolean
+    category?: boolean
+    subcategory?: boolean
+    totalInteractions?: boolean
+    avgResponseTime?: boolean
+    firstResponseTime?: boolean
+    resolutionTime?: boolean
+    startedAt?: boolean
+    lastActivityAt?: boolean
+    endedAt?: boolean
+    satisfactionScore?: boolean
+    qualityScore?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["conversationSession"]>
+
+  export type ConversationSessionSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    sessionType?: boolean
+    channel?: boolean
+    externalId?: boolean
+    subject?: boolean
+    status?: boolean
+    priority?: boolean
+    participantIds?: boolean
+    assignedAgentId?: boolean
+    escalationLevel?: boolean
+    context?: boolean
+    tags?: boolean
+    category?: boolean
+    subcategory?: boolean
+    totalInteractions?: boolean
+    avgResponseTime?: boolean
+    firstResponseTime?: boolean
+    resolutionTime?: boolean
+    startedAt?: boolean
+    lastActivityAt?: boolean
+    endedAt?: boolean
+    satisfactionScore?: boolean
+    qualityScore?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ConversationSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sessionType" | "channel" | "externalId" | "subject" | "status" | "priority" | "participantIds" | "assignedAgentId" | "escalationLevel" | "context" | "tags" | "category" | "subcategory" | "totalInteractions" | "avgResponseTime" | "firstResponseTime" | "resolutionTime" | "startedAt" | "lastActivityAt" | "endedAt" | "satisfactionScore" | "qualityScore" | "createdAt" | "updatedAt", ExtArgs["result"]["conversationSession"]>
+  export type ConversationSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+    interactions?: boolean | ConversationSession$interactionsArgs<ExtArgs>
+    _count?: boolean | ConversationSessionCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type ConversationSessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+  }
+  export type ConversationSessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+  }
+
+  export type $ConversationSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ConversationSession"
+    objects: {
+      user: Prisma.$UserProfilePayload<ExtArgs>
+      interactions: Prisma.$UserInteractionPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      sessionType: $Enums.ConversationType
+      channel: $Enums.CommunicationChannel
+      externalId: string | null
+      subject: string | null
+      status: $Enums.SessionStatus
+      priority: $Enums.SessionPriority
+      participantIds: string[]
+      assignedAgentId: string | null
+      escalationLevel: number
+      context: Prisma.JsonValue | null
+      tags: string[]
+      category: string | null
+      subcategory: string | null
+      totalInteractions: number
+      avgResponseTime: number | null
+      firstResponseTime: number | null
+      resolutionTime: number | null
+      startedAt: Date
+      lastActivityAt: Date
+      endedAt: Date | null
+      satisfactionScore: number | null
+      qualityScore: number | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["conversationSession"]>
+    composites: {}
+  }
+
+  type ConversationSessionGetPayload<S extends boolean | null | undefined | ConversationSessionDefaultArgs> = $Result.GetResult<Prisma.$ConversationSessionPayload, S>
+
+  type ConversationSessionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ConversationSessionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ConversationSessionCountAggregateInputType | true
+    }
+
+  export interface ConversationSessionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ConversationSession'], meta: { name: 'ConversationSession' } }
+    /**
+     * Find zero or one ConversationSession that matches the filter.
+     * @param {ConversationSessionFindUniqueArgs} args - Arguments to find a ConversationSession
+     * @example
+     * // Get one ConversationSession
+     * const conversationSession = await prisma.conversationSession.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ConversationSessionFindUniqueArgs>(args: SelectSubset<T, ConversationSessionFindUniqueArgs<ExtArgs>>): Prisma__ConversationSessionClient<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ConversationSession that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ConversationSessionFindUniqueOrThrowArgs} args - Arguments to find a ConversationSession
+     * @example
+     * // Get one ConversationSession
+     * const conversationSession = await prisma.conversationSession.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ConversationSessionFindUniqueOrThrowArgs>(args: SelectSubset<T, ConversationSessionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ConversationSessionClient<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ConversationSession that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ConversationSessionFindFirstArgs} args - Arguments to find a ConversationSession
+     * @example
+     * // Get one ConversationSession
+     * const conversationSession = await prisma.conversationSession.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ConversationSessionFindFirstArgs>(args?: SelectSubset<T, ConversationSessionFindFirstArgs<ExtArgs>>): Prisma__ConversationSessionClient<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ConversationSession that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ConversationSessionFindFirstOrThrowArgs} args - Arguments to find a ConversationSession
+     * @example
+     * // Get one ConversationSession
+     * const conversationSession = await prisma.conversationSession.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ConversationSessionFindFirstOrThrowArgs>(args?: SelectSubset<T, ConversationSessionFindFirstOrThrowArgs<ExtArgs>>): Prisma__ConversationSessionClient<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ConversationSessions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ConversationSessionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ConversationSessions
+     * const conversationSessions = await prisma.conversationSession.findMany()
+     * 
+     * // Get first 10 ConversationSessions
+     * const conversationSessions = await prisma.conversationSession.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const conversationSessionWithIdOnly = await prisma.conversationSession.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ConversationSessionFindManyArgs>(args?: SelectSubset<T, ConversationSessionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ConversationSession.
+     * @param {ConversationSessionCreateArgs} args - Arguments to create a ConversationSession.
+     * @example
+     * // Create one ConversationSession
+     * const ConversationSession = await prisma.conversationSession.create({
+     *   data: {
+     *     // ... data to create a ConversationSession
+     *   }
+     * })
+     * 
+     */
+    create<T extends ConversationSessionCreateArgs>(args: SelectSubset<T, ConversationSessionCreateArgs<ExtArgs>>): Prisma__ConversationSessionClient<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ConversationSessions.
+     * @param {ConversationSessionCreateManyArgs} args - Arguments to create many ConversationSessions.
+     * @example
+     * // Create many ConversationSessions
+     * const conversationSession = await prisma.conversationSession.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ConversationSessionCreateManyArgs>(args?: SelectSubset<T, ConversationSessionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ConversationSessions and returns the data saved in the database.
+     * @param {ConversationSessionCreateManyAndReturnArgs} args - Arguments to create many ConversationSessions.
+     * @example
+     * // Create many ConversationSessions
+     * const conversationSession = await prisma.conversationSession.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ConversationSessions and only return the `id`
+     * const conversationSessionWithIdOnly = await prisma.conversationSession.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ConversationSessionCreateManyAndReturnArgs>(args?: SelectSubset<T, ConversationSessionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ConversationSession.
+     * @param {ConversationSessionDeleteArgs} args - Arguments to delete one ConversationSession.
+     * @example
+     * // Delete one ConversationSession
+     * const ConversationSession = await prisma.conversationSession.delete({
+     *   where: {
+     *     // ... filter to delete one ConversationSession
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ConversationSessionDeleteArgs>(args: SelectSubset<T, ConversationSessionDeleteArgs<ExtArgs>>): Prisma__ConversationSessionClient<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ConversationSession.
+     * @param {ConversationSessionUpdateArgs} args - Arguments to update one ConversationSession.
+     * @example
+     * // Update one ConversationSession
+     * const conversationSession = await prisma.conversationSession.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ConversationSessionUpdateArgs>(args: SelectSubset<T, ConversationSessionUpdateArgs<ExtArgs>>): Prisma__ConversationSessionClient<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ConversationSessions.
+     * @param {ConversationSessionDeleteManyArgs} args - Arguments to filter ConversationSessions to delete.
+     * @example
+     * // Delete a few ConversationSessions
+     * const { count } = await prisma.conversationSession.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ConversationSessionDeleteManyArgs>(args?: SelectSubset<T, ConversationSessionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ConversationSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ConversationSessionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ConversationSessions
+     * const conversationSession = await prisma.conversationSession.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ConversationSessionUpdateManyArgs>(args: SelectSubset<T, ConversationSessionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ConversationSessions and returns the data updated in the database.
+     * @param {ConversationSessionUpdateManyAndReturnArgs} args - Arguments to update many ConversationSessions.
+     * @example
+     * // Update many ConversationSessions
+     * const conversationSession = await prisma.conversationSession.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ConversationSessions and only return the `id`
+     * const conversationSessionWithIdOnly = await prisma.conversationSession.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ConversationSessionUpdateManyAndReturnArgs>(args: SelectSubset<T, ConversationSessionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ConversationSession.
+     * @param {ConversationSessionUpsertArgs} args - Arguments to update or create a ConversationSession.
+     * @example
+     * // Update or create a ConversationSession
+     * const conversationSession = await prisma.conversationSession.upsert({
+     *   create: {
+     *     // ... data to create a ConversationSession
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ConversationSession we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ConversationSessionUpsertArgs>(args: SelectSubset<T, ConversationSessionUpsertArgs<ExtArgs>>): Prisma__ConversationSessionClient<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ConversationSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ConversationSessionCountArgs} args - Arguments to filter ConversationSessions to count.
+     * @example
+     * // Count the number of ConversationSessions
+     * const count = await prisma.conversationSession.count({
+     *   where: {
+     *     // ... the filter for the ConversationSessions we want to count
+     *   }
+     * })
+    **/
+    count<T extends ConversationSessionCountArgs>(
+      args?: Subset<T, ConversationSessionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ConversationSessionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ConversationSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ConversationSessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ConversationSessionAggregateArgs>(args: Subset<T, ConversationSessionAggregateArgs>): Prisma.PrismaPromise<GetConversationSessionAggregateType<T>>
+
+    /**
+     * Group by ConversationSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ConversationSessionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ConversationSessionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ConversationSessionGroupByArgs['orderBy'] }
+        : { orderBy?: ConversationSessionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ConversationSessionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetConversationSessionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ConversationSession model
+   */
+  readonly fields: ConversationSessionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ConversationSession.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ConversationSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserProfileDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserProfileDefaultArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    interactions<T extends ConversationSession$interactionsArgs<ExtArgs> = {}>(args?: Subset<T, ConversationSession$interactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ConversationSession model
+   */
+  interface ConversationSessionFieldRefs {
+    readonly id: FieldRef<"ConversationSession", 'String'>
+    readonly userId: FieldRef<"ConversationSession", 'String'>
+    readonly sessionType: FieldRef<"ConversationSession", 'ConversationType'>
+    readonly channel: FieldRef<"ConversationSession", 'CommunicationChannel'>
+    readonly externalId: FieldRef<"ConversationSession", 'String'>
+    readonly subject: FieldRef<"ConversationSession", 'String'>
+    readonly status: FieldRef<"ConversationSession", 'SessionStatus'>
+    readonly priority: FieldRef<"ConversationSession", 'SessionPriority'>
+    readonly participantIds: FieldRef<"ConversationSession", 'String[]'>
+    readonly assignedAgentId: FieldRef<"ConversationSession", 'String'>
+    readonly escalationLevel: FieldRef<"ConversationSession", 'Int'>
+    readonly context: FieldRef<"ConversationSession", 'Json'>
+    readonly tags: FieldRef<"ConversationSession", 'String[]'>
+    readonly category: FieldRef<"ConversationSession", 'String'>
+    readonly subcategory: FieldRef<"ConversationSession", 'String'>
+    readonly totalInteractions: FieldRef<"ConversationSession", 'Int'>
+    readonly avgResponseTime: FieldRef<"ConversationSession", 'Int'>
+    readonly firstResponseTime: FieldRef<"ConversationSession", 'Int'>
+    readonly resolutionTime: FieldRef<"ConversationSession", 'Int'>
+    readonly startedAt: FieldRef<"ConversationSession", 'DateTime'>
+    readonly lastActivityAt: FieldRef<"ConversationSession", 'DateTime'>
+    readonly endedAt: FieldRef<"ConversationSession", 'DateTime'>
+    readonly satisfactionScore: FieldRef<"ConversationSession", 'Int'>
+    readonly qualityScore: FieldRef<"ConversationSession", 'Int'>
+    readonly createdAt: FieldRef<"ConversationSession", 'DateTime'>
+    readonly updatedAt: FieldRef<"ConversationSession", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ConversationSession findUnique
+   */
+  export type ConversationSessionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which ConversationSession to fetch.
+     */
+    where: ConversationSessionWhereUniqueInput
+  }
+
+  /**
+   * ConversationSession findUniqueOrThrow
+   */
+  export type ConversationSessionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which ConversationSession to fetch.
+     */
+    where: ConversationSessionWhereUniqueInput
+  }
+
+  /**
+   * ConversationSession findFirst
+   */
+  export type ConversationSessionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which ConversationSession to fetch.
+     */
+    where?: ConversationSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ConversationSessions to fetch.
+     */
+    orderBy?: ConversationSessionOrderByWithRelationInput | ConversationSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ConversationSessions.
+     */
+    cursor?: ConversationSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ConversationSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ConversationSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ConversationSessions.
+     */
+    distinct?: ConversationSessionScalarFieldEnum | ConversationSessionScalarFieldEnum[]
+  }
+
+  /**
+   * ConversationSession findFirstOrThrow
+   */
+  export type ConversationSessionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which ConversationSession to fetch.
+     */
+    where?: ConversationSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ConversationSessions to fetch.
+     */
+    orderBy?: ConversationSessionOrderByWithRelationInput | ConversationSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ConversationSessions.
+     */
+    cursor?: ConversationSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ConversationSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ConversationSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ConversationSessions.
+     */
+    distinct?: ConversationSessionScalarFieldEnum | ConversationSessionScalarFieldEnum[]
+  }
+
+  /**
+   * ConversationSession findMany
+   */
+  export type ConversationSessionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which ConversationSessions to fetch.
+     */
+    where?: ConversationSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ConversationSessions to fetch.
+     */
+    orderBy?: ConversationSessionOrderByWithRelationInput | ConversationSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ConversationSessions.
+     */
+    cursor?: ConversationSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ConversationSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ConversationSessions.
+     */
+    skip?: number
+    distinct?: ConversationSessionScalarFieldEnum | ConversationSessionScalarFieldEnum[]
+  }
+
+  /**
+   * ConversationSession create
+   */
+  export type ConversationSessionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ConversationSession.
+     */
+    data: XOR<ConversationSessionCreateInput, ConversationSessionUncheckedCreateInput>
+  }
+
+  /**
+   * ConversationSession createMany
+   */
+  export type ConversationSessionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ConversationSessions.
+     */
+    data: ConversationSessionCreateManyInput | ConversationSessionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ConversationSession createManyAndReturn
+   */
+  export type ConversationSessionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * The data used to create many ConversationSessions.
+     */
+    data: ConversationSessionCreateManyInput | ConversationSessionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ConversationSession update
+   */
+  export type ConversationSessionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ConversationSession.
+     */
+    data: XOR<ConversationSessionUpdateInput, ConversationSessionUncheckedUpdateInput>
+    /**
+     * Choose, which ConversationSession to update.
+     */
+    where: ConversationSessionWhereUniqueInput
+  }
+
+  /**
+   * ConversationSession updateMany
+   */
+  export type ConversationSessionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ConversationSessions.
+     */
+    data: XOR<ConversationSessionUpdateManyMutationInput, ConversationSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which ConversationSessions to update
+     */
+    where?: ConversationSessionWhereInput
+    /**
+     * Limit how many ConversationSessions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ConversationSession updateManyAndReturn
+   */
+  export type ConversationSessionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * The data used to update ConversationSessions.
+     */
+    data: XOR<ConversationSessionUpdateManyMutationInput, ConversationSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which ConversationSessions to update
+     */
+    where?: ConversationSessionWhereInput
+    /**
+     * Limit how many ConversationSessions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ConversationSession upsert
+   */
+  export type ConversationSessionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ConversationSession to update in case it exists.
+     */
+    where: ConversationSessionWhereUniqueInput
+    /**
+     * In case the ConversationSession found by the `where` argument doesn't exist, create a new ConversationSession with this data.
+     */
+    create: XOR<ConversationSessionCreateInput, ConversationSessionUncheckedCreateInput>
+    /**
+     * In case the ConversationSession was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ConversationSessionUpdateInput, ConversationSessionUncheckedUpdateInput>
+  }
+
+  /**
+   * ConversationSession delete
+   */
+  export type ConversationSessionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    /**
+     * Filter which ConversationSession to delete.
+     */
+    where: ConversationSessionWhereUniqueInput
+  }
+
+  /**
+   * ConversationSession deleteMany
+   */
+  export type ConversationSessionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ConversationSessions to delete
+     */
+    where?: ConversationSessionWhereInput
+    /**
+     * Limit how many ConversationSessions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ConversationSession.interactions
+   */
+  export type ConversationSession$interactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    where?: UserInteractionWhereInput
+    orderBy?: UserInteractionOrderByWithRelationInput | UserInteractionOrderByWithRelationInput[]
+    cursor?: UserInteractionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserInteractionScalarFieldEnum | UserInteractionScalarFieldEnum[]
+  }
+
+  /**
+   * ConversationSession without action
+   */
+  export type ConversationSessionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UserInteraction
+   */
+
+  export type AggregateUserInteraction = {
+    _count: UserInteractionCountAggregateOutputType | null
+    _avg: UserInteractionAvgAggregateOutputType | null
+    _sum: UserInteractionSumAggregateOutputType | null
+    _min: UserInteractionMinAggregateOutputType | null
+    _max: UserInteractionMaxAggregateOutputType | null
+  }
+
+  export type UserInteractionAvgAggregateOutputType = {
+    aiConfidence: number | null
+    responseTime: number | null
+    attachmentCount: number | null
+    qualityScore: number | null
+    readabilityScore: number | null
+    satisfactionScore: number | null
+    customerEffort: number | null
+    npsScore: number | null
+  }
+
+  export type UserInteractionSumAggregateOutputType = {
+    aiConfidence: number | null
+    responseTime: number | null
+    attachmentCount: number | null
+    qualityScore: number | null
+    readabilityScore: number | null
+    satisfactionScore: number | null
+    customerEffort: number | null
+    npsScore: number | null
+  }
+
+  export type UserInteractionMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    sessionId: string | null
+    interactionType: $Enums.InteractionType | null
+    channel: $Enums.CommunicationChannel | null
+    direction: $Enums.InteractionDirection | null
+    externalId: string | null
+    subject: string | null
+    content: string | null
+    summary: string | null
+    contentType: string | null
+    fromUserId: string | null
+    isAIGenerated: boolean | null
+    aiPersonality: string | null
+    aiConfidence: number | null
+    aiIntent: string | null
+    aiSentiment: string | null
+    processedAt: Date | null
+    processingStatus: $Enums.ProcessingStatus | null
+    errorMessage: string | null
+    requiresResponse: boolean | null
+    responseDeadline: Date | null
+    respondedAt: Date | null
+    responseTime: number | null
+    category: string | null
+    subcategory: string | null
+    priority: $Enums.InteractionPriority | null
+    urgency: $Enums.UrgencyLevel | null
+    businessImpact: $Enums.BusinessImpact | null
+    hasAttachments: boolean | null
+    attachmentCount: number | null
+    qualityScore: number | null
+    readabilityScore: number | null
+    isFollowUp: boolean | null
+    parentInteractionId: string | null
+    isEscalated: boolean | null
+    escalatedAt: Date | null
+    escalatedTo: string | null
+    escalationReason: string | null
+    isResolved: boolean | null
+    resolvedAt: Date | null
+    resolution: string | null
+    satisfactionScore: number | null
+    customerEffort: number | null
+    npsScore: number | null
+    ipAddress: string | null
+    userAgent: string | null
+    containsPII: boolean | null
+    isConfidential: boolean | null
+    dataClassification: string | null
+    retentionDate: Date | null
+    timestamp: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserInteractionMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    sessionId: string | null
+    interactionType: $Enums.InteractionType | null
+    channel: $Enums.CommunicationChannel | null
+    direction: $Enums.InteractionDirection | null
+    externalId: string | null
+    subject: string | null
+    content: string | null
+    summary: string | null
+    contentType: string | null
+    fromUserId: string | null
+    isAIGenerated: boolean | null
+    aiPersonality: string | null
+    aiConfidence: number | null
+    aiIntent: string | null
+    aiSentiment: string | null
+    processedAt: Date | null
+    processingStatus: $Enums.ProcessingStatus | null
+    errorMessage: string | null
+    requiresResponse: boolean | null
+    responseDeadline: Date | null
+    respondedAt: Date | null
+    responseTime: number | null
+    category: string | null
+    subcategory: string | null
+    priority: $Enums.InteractionPriority | null
+    urgency: $Enums.UrgencyLevel | null
+    businessImpact: $Enums.BusinessImpact | null
+    hasAttachments: boolean | null
+    attachmentCount: number | null
+    qualityScore: number | null
+    readabilityScore: number | null
+    isFollowUp: boolean | null
+    parentInteractionId: string | null
+    isEscalated: boolean | null
+    escalatedAt: Date | null
+    escalatedTo: string | null
+    escalationReason: string | null
+    isResolved: boolean | null
+    resolvedAt: Date | null
+    resolution: string | null
+    satisfactionScore: number | null
+    customerEffort: number | null
+    npsScore: number | null
+    ipAddress: string | null
+    userAgent: string | null
+    containsPII: boolean | null
+    isConfidential: boolean | null
+    dataClassification: string | null
+    retentionDate: Date | null
+    timestamp: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserInteractionCountAggregateOutputType = {
+    id: number
+    userId: number
+    sessionId: number
+    interactionType: number
+    channel: number
+    direction: number
+    externalId: number
+    subject: number
+    content: number
+    summary: number
+    contentType: number
+    fromUserId: number
+    toUserIds: number
+    ccUserIds: number
+    bccUserIds: number
+    isAIGenerated: number
+    aiPersonality: number
+    aiConfidence: number
+    aiIntent: number
+    aiSentiment: number
+    processedAt: number
+    processingStatus: number
+    errorMessage: number
+    requiresResponse: number
+    responseDeadline: number
+    respondedAt: number
+    responseTime: number
+    category: number
+    subcategory: number
+    priority: number
+    urgency: number
+    businessImpact: number
+    hasAttachments: number
+    attachmentCount: number
+    attachmentSizes: number
+    attachmentTypes: number
+    qualityScore: number
+    readabilityScore: number
+    toneScore: number
+    isFollowUp: number
+    parentInteractionId: number
+    relatedInteractionIds: number
+    isEscalated: number
+    escalatedAt: number
+    escalatedTo: number
+    escalationReason: number
+    isResolved: number
+    resolvedAt: number
+    resolution: number
+    satisfactionScore: number
+    customerEffort: number
+    npsScore: number
+    ipAddress: number
+    userAgent: number
+    deviceInfo: number
+    location: number
+    containsPII: number
+    isConfidential: number
+    dataClassification: number
+    retentionDate: number
+    metadata: number
+    tags: number
+    keywords: number
+    timestamp: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UserInteractionAvgAggregateInputType = {
+    aiConfidence?: true
+    responseTime?: true
+    attachmentCount?: true
+    qualityScore?: true
+    readabilityScore?: true
+    satisfactionScore?: true
+    customerEffort?: true
+    npsScore?: true
+  }
+
+  export type UserInteractionSumAggregateInputType = {
+    aiConfidence?: true
+    responseTime?: true
+    attachmentCount?: true
+    qualityScore?: true
+    readabilityScore?: true
+    satisfactionScore?: true
+    customerEffort?: true
+    npsScore?: true
+  }
+
+  export type UserInteractionMinAggregateInputType = {
+    id?: true
+    userId?: true
+    sessionId?: true
+    interactionType?: true
+    channel?: true
+    direction?: true
+    externalId?: true
+    subject?: true
+    content?: true
+    summary?: true
+    contentType?: true
+    fromUserId?: true
+    isAIGenerated?: true
+    aiPersonality?: true
+    aiConfidence?: true
+    aiIntent?: true
+    aiSentiment?: true
+    processedAt?: true
+    processingStatus?: true
+    errorMessage?: true
+    requiresResponse?: true
+    responseDeadline?: true
+    respondedAt?: true
+    responseTime?: true
+    category?: true
+    subcategory?: true
+    priority?: true
+    urgency?: true
+    businessImpact?: true
+    hasAttachments?: true
+    attachmentCount?: true
+    qualityScore?: true
+    readabilityScore?: true
+    isFollowUp?: true
+    parentInteractionId?: true
+    isEscalated?: true
+    escalatedAt?: true
+    escalatedTo?: true
+    escalationReason?: true
+    isResolved?: true
+    resolvedAt?: true
+    resolution?: true
+    satisfactionScore?: true
+    customerEffort?: true
+    npsScore?: true
+    ipAddress?: true
+    userAgent?: true
+    containsPII?: true
+    isConfidential?: true
+    dataClassification?: true
+    retentionDate?: true
+    timestamp?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserInteractionMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    sessionId?: true
+    interactionType?: true
+    channel?: true
+    direction?: true
+    externalId?: true
+    subject?: true
+    content?: true
+    summary?: true
+    contentType?: true
+    fromUserId?: true
+    isAIGenerated?: true
+    aiPersonality?: true
+    aiConfidence?: true
+    aiIntent?: true
+    aiSentiment?: true
+    processedAt?: true
+    processingStatus?: true
+    errorMessage?: true
+    requiresResponse?: true
+    responseDeadline?: true
+    respondedAt?: true
+    responseTime?: true
+    category?: true
+    subcategory?: true
+    priority?: true
+    urgency?: true
+    businessImpact?: true
+    hasAttachments?: true
+    attachmentCount?: true
+    qualityScore?: true
+    readabilityScore?: true
+    isFollowUp?: true
+    parentInteractionId?: true
+    isEscalated?: true
+    escalatedAt?: true
+    escalatedTo?: true
+    escalationReason?: true
+    isResolved?: true
+    resolvedAt?: true
+    resolution?: true
+    satisfactionScore?: true
+    customerEffort?: true
+    npsScore?: true
+    ipAddress?: true
+    userAgent?: true
+    containsPII?: true
+    isConfidential?: true
+    dataClassification?: true
+    retentionDate?: true
+    timestamp?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserInteractionCountAggregateInputType = {
+    id?: true
+    userId?: true
+    sessionId?: true
+    interactionType?: true
+    channel?: true
+    direction?: true
+    externalId?: true
+    subject?: true
+    content?: true
+    summary?: true
+    contentType?: true
+    fromUserId?: true
+    toUserIds?: true
+    ccUserIds?: true
+    bccUserIds?: true
+    isAIGenerated?: true
+    aiPersonality?: true
+    aiConfidence?: true
+    aiIntent?: true
+    aiSentiment?: true
+    processedAt?: true
+    processingStatus?: true
+    errorMessage?: true
+    requiresResponse?: true
+    responseDeadline?: true
+    respondedAt?: true
+    responseTime?: true
+    category?: true
+    subcategory?: true
+    priority?: true
+    urgency?: true
+    businessImpact?: true
+    hasAttachments?: true
+    attachmentCount?: true
+    attachmentSizes?: true
+    attachmentTypes?: true
+    qualityScore?: true
+    readabilityScore?: true
+    toneScore?: true
+    isFollowUp?: true
+    parentInteractionId?: true
+    relatedInteractionIds?: true
+    isEscalated?: true
+    escalatedAt?: true
+    escalatedTo?: true
+    escalationReason?: true
+    isResolved?: true
+    resolvedAt?: true
+    resolution?: true
+    satisfactionScore?: true
+    customerEffort?: true
+    npsScore?: true
+    ipAddress?: true
+    userAgent?: true
+    deviceInfo?: true
+    location?: true
+    containsPII?: true
+    isConfidential?: true
+    dataClassification?: true
+    retentionDate?: true
+    metadata?: true
+    tags?: true
+    keywords?: true
+    timestamp?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UserInteractionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserInteraction to aggregate.
+     */
+    where?: UserInteractionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserInteractions to fetch.
+     */
+    orderBy?: UserInteractionOrderByWithRelationInput | UserInteractionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserInteractionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserInteractions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserInteractions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserInteractions
+    **/
+    _count?: true | UserInteractionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UserInteractionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserInteractionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserInteractionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserInteractionMaxAggregateInputType
+  }
+
+  export type GetUserInteractionAggregateType<T extends UserInteractionAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserInteraction]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserInteraction[P]>
+      : GetScalarType<T[P], AggregateUserInteraction[P]>
+  }
+
+
+
+
+  export type UserInteractionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserInteractionWhereInput
+    orderBy?: UserInteractionOrderByWithAggregationInput | UserInteractionOrderByWithAggregationInput[]
+    by: UserInteractionScalarFieldEnum[] | UserInteractionScalarFieldEnum
+    having?: UserInteractionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserInteractionCountAggregateInputType | true
+    _avg?: UserInteractionAvgAggregateInputType
+    _sum?: UserInteractionSumAggregateInputType
+    _min?: UserInteractionMinAggregateInputType
+    _max?: UserInteractionMaxAggregateInputType
+  }
+
+  export type UserInteractionGroupByOutputType = {
+    id: string
+    userId: string
+    sessionId: string | null
+    interactionType: $Enums.InteractionType
+    channel: $Enums.CommunicationChannel
+    direction: $Enums.InteractionDirection
+    externalId: string | null
+    subject: string | null
+    content: string | null
+    summary: string | null
+    contentType: string
+    fromUserId: string | null
+    toUserIds: string[]
+    ccUserIds: string[]
+    bccUserIds: string[]
+    isAIGenerated: boolean
+    aiPersonality: string | null
+    aiConfidence: number | null
+    aiIntent: string | null
+    aiSentiment: string | null
+    processedAt: Date | null
+    processingStatus: $Enums.ProcessingStatus
+    errorMessage: string | null
+    requiresResponse: boolean
+    responseDeadline: Date | null
+    respondedAt: Date | null
+    responseTime: number | null
+    category: string | null
+    subcategory: string | null
+    priority: $Enums.InteractionPriority
+    urgency: $Enums.UrgencyLevel
+    businessImpact: $Enums.BusinessImpact
+    hasAttachments: boolean
+    attachmentCount: number
+    attachmentSizes: JsonValue | null
+    attachmentTypes: string[]
+    qualityScore: number | null
+    readabilityScore: number | null
+    toneScore: JsonValue | null
+    isFollowUp: boolean
+    parentInteractionId: string | null
+    relatedInteractionIds: string[]
+    isEscalated: boolean
+    escalatedAt: Date | null
+    escalatedTo: string | null
+    escalationReason: string | null
+    isResolved: boolean
+    resolvedAt: Date | null
+    resolution: string | null
+    satisfactionScore: number | null
+    customerEffort: number | null
+    npsScore: number | null
+    ipAddress: string | null
+    userAgent: string | null
+    deviceInfo: JsonValue | null
+    location: JsonValue | null
+    containsPII: boolean
+    isConfidential: boolean
+    dataClassification: string | null
+    retentionDate: Date | null
+    metadata: JsonValue | null
+    tags: string[]
+    keywords: string[]
+    timestamp: Date
+    createdAt: Date
+    updatedAt: Date
+    _count: UserInteractionCountAggregateOutputType | null
+    _avg: UserInteractionAvgAggregateOutputType | null
+    _sum: UserInteractionSumAggregateOutputType | null
+    _min: UserInteractionMinAggregateOutputType | null
+    _max: UserInteractionMaxAggregateOutputType | null
+  }
+
+  type GetUserInteractionGroupByPayload<T extends UserInteractionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserInteractionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserInteractionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserInteractionGroupByOutputType[P]>
+            : GetScalarType<T[P], UserInteractionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserInteractionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sessionId?: boolean
+    interactionType?: boolean
+    channel?: boolean
+    direction?: boolean
+    externalId?: boolean
+    subject?: boolean
+    content?: boolean
+    summary?: boolean
+    contentType?: boolean
+    fromUserId?: boolean
+    toUserIds?: boolean
+    ccUserIds?: boolean
+    bccUserIds?: boolean
+    isAIGenerated?: boolean
+    aiPersonality?: boolean
+    aiConfidence?: boolean
+    aiIntent?: boolean
+    aiSentiment?: boolean
+    processedAt?: boolean
+    processingStatus?: boolean
+    errorMessage?: boolean
+    requiresResponse?: boolean
+    responseDeadline?: boolean
+    respondedAt?: boolean
+    responseTime?: boolean
+    category?: boolean
+    subcategory?: boolean
+    priority?: boolean
+    urgency?: boolean
+    businessImpact?: boolean
+    hasAttachments?: boolean
+    attachmentCount?: boolean
+    attachmentSizes?: boolean
+    attachmentTypes?: boolean
+    qualityScore?: boolean
+    readabilityScore?: boolean
+    toneScore?: boolean
+    isFollowUp?: boolean
+    parentInteractionId?: boolean
+    relatedInteractionIds?: boolean
+    isEscalated?: boolean
+    escalatedAt?: boolean
+    escalatedTo?: boolean
+    escalationReason?: boolean
+    isResolved?: boolean
+    resolvedAt?: boolean
+    resolution?: boolean
+    satisfactionScore?: boolean
+    customerEffort?: boolean
+    npsScore?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    deviceInfo?: boolean
+    location?: boolean
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: boolean
+    retentionDate?: boolean
+    metadata?: boolean
+    tags?: boolean
+    keywords?: boolean
+    timestamp?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+    session?: boolean | UserInteraction$sessionArgs<ExtArgs>
+  }, ExtArgs["result"]["userInteraction"]>
+
+  export type UserInteractionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sessionId?: boolean
+    interactionType?: boolean
+    channel?: boolean
+    direction?: boolean
+    externalId?: boolean
+    subject?: boolean
+    content?: boolean
+    summary?: boolean
+    contentType?: boolean
+    fromUserId?: boolean
+    toUserIds?: boolean
+    ccUserIds?: boolean
+    bccUserIds?: boolean
+    isAIGenerated?: boolean
+    aiPersonality?: boolean
+    aiConfidence?: boolean
+    aiIntent?: boolean
+    aiSentiment?: boolean
+    processedAt?: boolean
+    processingStatus?: boolean
+    errorMessage?: boolean
+    requiresResponse?: boolean
+    responseDeadline?: boolean
+    respondedAt?: boolean
+    responseTime?: boolean
+    category?: boolean
+    subcategory?: boolean
+    priority?: boolean
+    urgency?: boolean
+    businessImpact?: boolean
+    hasAttachments?: boolean
+    attachmentCount?: boolean
+    attachmentSizes?: boolean
+    attachmentTypes?: boolean
+    qualityScore?: boolean
+    readabilityScore?: boolean
+    toneScore?: boolean
+    isFollowUp?: boolean
+    parentInteractionId?: boolean
+    relatedInteractionIds?: boolean
+    isEscalated?: boolean
+    escalatedAt?: boolean
+    escalatedTo?: boolean
+    escalationReason?: boolean
+    isResolved?: boolean
+    resolvedAt?: boolean
+    resolution?: boolean
+    satisfactionScore?: boolean
+    customerEffort?: boolean
+    npsScore?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    deviceInfo?: boolean
+    location?: boolean
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: boolean
+    retentionDate?: boolean
+    metadata?: boolean
+    tags?: boolean
+    keywords?: boolean
+    timestamp?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+    session?: boolean | UserInteraction$sessionArgs<ExtArgs>
+  }, ExtArgs["result"]["userInteraction"]>
+
+  export type UserInteractionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sessionId?: boolean
+    interactionType?: boolean
+    channel?: boolean
+    direction?: boolean
+    externalId?: boolean
+    subject?: boolean
+    content?: boolean
+    summary?: boolean
+    contentType?: boolean
+    fromUserId?: boolean
+    toUserIds?: boolean
+    ccUserIds?: boolean
+    bccUserIds?: boolean
+    isAIGenerated?: boolean
+    aiPersonality?: boolean
+    aiConfidence?: boolean
+    aiIntent?: boolean
+    aiSentiment?: boolean
+    processedAt?: boolean
+    processingStatus?: boolean
+    errorMessage?: boolean
+    requiresResponse?: boolean
+    responseDeadline?: boolean
+    respondedAt?: boolean
+    responseTime?: boolean
+    category?: boolean
+    subcategory?: boolean
+    priority?: boolean
+    urgency?: boolean
+    businessImpact?: boolean
+    hasAttachments?: boolean
+    attachmentCount?: boolean
+    attachmentSizes?: boolean
+    attachmentTypes?: boolean
+    qualityScore?: boolean
+    readabilityScore?: boolean
+    toneScore?: boolean
+    isFollowUp?: boolean
+    parentInteractionId?: boolean
+    relatedInteractionIds?: boolean
+    isEscalated?: boolean
+    escalatedAt?: boolean
+    escalatedTo?: boolean
+    escalationReason?: boolean
+    isResolved?: boolean
+    resolvedAt?: boolean
+    resolution?: boolean
+    satisfactionScore?: boolean
+    customerEffort?: boolean
+    npsScore?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    deviceInfo?: boolean
+    location?: boolean
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: boolean
+    retentionDate?: boolean
+    metadata?: boolean
+    tags?: boolean
+    keywords?: boolean
+    timestamp?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+    session?: boolean | UserInteraction$sessionArgs<ExtArgs>
+  }, ExtArgs["result"]["userInteraction"]>
+
+  export type UserInteractionSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    sessionId?: boolean
+    interactionType?: boolean
+    channel?: boolean
+    direction?: boolean
+    externalId?: boolean
+    subject?: boolean
+    content?: boolean
+    summary?: boolean
+    contentType?: boolean
+    fromUserId?: boolean
+    toUserIds?: boolean
+    ccUserIds?: boolean
+    bccUserIds?: boolean
+    isAIGenerated?: boolean
+    aiPersonality?: boolean
+    aiConfidence?: boolean
+    aiIntent?: boolean
+    aiSentiment?: boolean
+    processedAt?: boolean
+    processingStatus?: boolean
+    errorMessage?: boolean
+    requiresResponse?: boolean
+    responseDeadline?: boolean
+    respondedAt?: boolean
+    responseTime?: boolean
+    category?: boolean
+    subcategory?: boolean
+    priority?: boolean
+    urgency?: boolean
+    businessImpact?: boolean
+    hasAttachments?: boolean
+    attachmentCount?: boolean
+    attachmentSizes?: boolean
+    attachmentTypes?: boolean
+    qualityScore?: boolean
+    readabilityScore?: boolean
+    toneScore?: boolean
+    isFollowUp?: boolean
+    parentInteractionId?: boolean
+    relatedInteractionIds?: boolean
+    isEscalated?: boolean
+    escalatedAt?: boolean
+    escalatedTo?: boolean
+    escalationReason?: boolean
+    isResolved?: boolean
+    resolvedAt?: boolean
+    resolution?: boolean
+    satisfactionScore?: boolean
+    customerEffort?: boolean
+    npsScore?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    deviceInfo?: boolean
+    location?: boolean
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: boolean
+    retentionDate?: boolean
+    metadata?: boolean
+    tags?: boolean
+    keywords?: boolean
+    timestamp?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UserInteractionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sessionId" | "interactionType" | "channel" | "direction" | "externalId" | "subject" | "content" | "summary" | "contentType" | "fromUserId" | "toUserIds" | "ccUserIds" | "bccUserIds" | "isAIGenerated" | "aiPersonality" | "aiConfidence" | "aiIntent" | "aiSentiment" | "processedAt" | "processingStatus" | "errorMessage" | "requiresResponse" | "responseDeadline" | "respondedAt" | "responseTime" | "category" | "subcategory" | "priority" | "urgency" | "businessImpact" | "hasAttachments" | "attachmentCount" | "attachmentSizes" | "attachmentTypes" | "qualityScore" | "readabilityScore" | "toneScore" | "isFollowUp" | "parentInteractionId" | "relatedInteractionIds" | "isEscalated" | "escalatedAt" | "escalatedTo" | "escalationReason" | "isResolved" | "resolvedAt" | "resolution" | "satisfactionScore" | "customerEffort" | "npsScore" | "ipAddress" | "userAgent" | "deviceInfo" | "location" | "containsPII" | "isConfidential" | "dataClassification" | "retentionDate" | "metadata" | "tags" | "keywords" | "timestamp" | "createdAt" | "updatedAt", ExtArgs["result"]["userInteraction"]>
+  export type UserInteractionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+    session?: boolean | UserInteraction$sessionArgs<ExtArgs>
+  }
+  export type UserInteractionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+    session?: boolean | UserInteraction$sessionArgs<ExtArgs>
+  }
+  export type UserInteractionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+    session?: boolean | UserInteraction$sessionArgs<ExtArgs>
+  }
+
+  export type $UserInteractionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserInteraction"
+    objects: {
+      user: Prisma.$UserProfilePayload<ExtArgs>
+      session: Prisma.$ConversationSessionPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      sessionId: string | null
+      interactionType: $Enums.InteractionType
+      channel: $Enums.CommunicationChannel
+      direction: $Enums.InteractionDirection
+      externalId: string | null
+      subject: string | null
+      content: string | null
+      summary: string | null
+      contentType: string
+      fromUserId: string | null
+      toUserIds: string[]
+      ccUserIds: string[]
+      bccUserIds: string[]
+      isAIGenerated: boolean
+      aiPersonality: string | null
+      aiConfidence: number | null
+      aiIntent: string | null
+      aiSentiment: string | null
+      processedAt: Date | null
+      processingStatus: $Enums.ProcessingStatus
+      errorMessage: string | null
+      requiresResponse: boolean
+      responseDeadline: Date | null
+      respondedAt: Date | null
+      responseTime: number | null
+      category: string | null
+      subcategory: string | null
+      priority: $Enums.InteractionPriority
+      urgency: $Enums.UrgencyLevel
+      businessImpact: $Enums.BusinessImpact
+      hasAttachments: boolean
+      attachmentCount: number
+      attachmentSizes: Prisma.JsonValue | null
+      attachmentTypes: string[]
+      qualityScore: number | null
+      readabilityScore: number | null
+      toneScore: Prisma.JsonValue | null
+      isFollowUp: boolean
+      parentInteractionId: string | null
+      relatedInteractionIds: string[]
+      isEscalated: boolean
+      escalatedAt: Date | null
+      escalatedTo: string | null
+      escalationReason: string | null
+      isResolved: boolean
+      resolvedAt: Date | null
+      resolution: string | null
+      satisfactionScore: number | null
+      customerEffort: number | null
+      npsScore: number | null
+      ipAddress: string | null
+      userAgent: string | null
+      deviceInfo: Prisma.JsonValue | null
+      location: Prisma.JsonValue | null
+      containsPII: boolean
+      isConfidential: boolean
+      dataClassification: string | null
+      retentionDate: Date | null
+      metadata: Prisma.JsonValue | null
+      tags: string[]
+      keywords: string[]
+      timestamp: Date
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["userInteraction"]>
+    composites: {}
+  }
+
+  type UserInteractionGetPayload<S extends boolean | null | undefined | UserInteractionDefaultArgs> = $Result.GetResult<Prisma.$UserInteractionPayload, S>
+
+  type UserInteractionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserInteractionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserInteractionCountAggregateInputType | true
+    }
+
+  export interface UserInteractionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserInteraction'], meta: { name: 'UserInteraction' } }
+    /**
+     * Find zero or one UserInteraction that matches the filter.
+     * @param {UserInteractionFindUniqueArgs} args - Arguments to find a UserInteraction
+     * @example
+     * // Get one UserInteraction
+     * const userInteraction = await prisma.userInteraction.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserInteractionFindUniqueArgs>(args: SelectSubset<T, UserInteractionFindUniqueArgs<ExtArgs>>): Prisma__UserInteractionClient<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserInteraction that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserInteractionFindUniqueOrThrowArgs} args - Arguments to find a UserInteraction
+     * @example
+     * // Get one UserInteraction
+     * const userInteraction = await prisma.userInteraction.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserInteractionFindUniqueOrThrowArgs>(args: SelectSubset<T, UserInteractionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserInteractionClient<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserInteraction that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserInteractionFindFirstArgs} args - Arguments to find a UserInteraction
+     * @example
+     * // Get one UserInteraction
+     * const userInteraction = await prisma.userInteraction.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserInteractionFindFirstArgs>(args?: SelectSubset<T, UserInteractionFindFirstArgs<ExtArgs>>): Prisma__UserInteractionClient<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserInteraction that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserInteractionFindFirstOrThrowArgs} args - Arguments to find a UserInteraction
+     * @example
+     * // Get one UserInteraction
+     * const userInteraction = await prisma.userInteraction.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserInteractionFindFirstOrThrowArgs>(args?: SelectSubset<T, UserInteractionFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserInteractionClient<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserInteractions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserInteractionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserInteractions
+     * const userInteractions = await prisma.userInteraction.findMany()
+     * 
+     * // Get first 10 UserInteractions
+     * const userInteractions = await prisma.userInteraction.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userInteractionWithIdOnly = await prisma.userInteraction.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserInteractionFindManyArgs>(args?: SelectSubset<T, UserInteractionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserInteraction.
+     * @param {UserInteractionCreateArgs} args - Arguments to create a UserInteraction.
+     * @example
+     * // Create one UserInteraction
+     * const UserInteraction = await prisma.userInteraction.create({
+     *   data: {
+     *     // ... data to create a UserInteraction
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserInteractionCreateArgs>(args: SelectSubset<T, UserInteractionCreateArgs<ExtArgs>>): Prisma__UserInteractionClient<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserInteractions.
+     * @param {UserInteractionCreateManyArgs} args - Arguments to create many UserInteractions.
+     * @example
+     * // Create many UserInteractions
+     * const userInteraction = await prisma.userInteraction.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserInteractionCreateManyArgs>(args?: SelectSubset<T, UserInteractionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UserInteractions and returns the data saved in the database.
+     * @param {UserInteractionCreateManyAndReturnArgs} args - Arguments to create many UserInteractions.
+     * @example
+     * // Create many UserInteractions
+     * const userInteraction = await prisma.userInteraction.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UserInteractions and only return the `id`
+     * const userInteractionWithIdOnly = await prisma.userInteraction.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserInteractionCreateManyAndReturnArgs>(args?: SelectSubset<T, UserInteractionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UserInteraction.
+     * @param {UserInteractionDeleteArgs} args - Arguments to delete one UserInteraction.
+     * @example
+     * // Delete one UserInteraction
+     * const UserInteraction = await prisma.userInteraction.delete({
+     *   where: {
+     *     // ... filter to delete one UserInteraction
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserInteractionDeleteArgs>(args: SelectSubset<T, UserInteractionDeleteArgs<ExtArgs>>): Prisma__UserInteractionClient<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserInteraction.
+     * @param {UserInteractionUpdateArgs} args - Arguments to update one UserInteraction.
+     * @example
+     * // Update one UserInteraction
+     * const userInteraction = await prisma.userInteraction.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserInteractionUpdateArgs>(args: SelectSubset<T, UserInteractionUpdateArgs<ExtArgs>>): Prisma__UserInteractionClient<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserInteractions.
+     * @param {UserInteractionDeleteManyArgs} args - Arguments to filter UserInteractions to delete.
+     * @example
+     * // Delete a few UserInteractions
+     * const { count } = await prisma.userInteraction.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserInteractionDeleteManyArgs>(args?: SelectSubset<T, UserInteractionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserInteractions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserInteractionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserInteractions
+     * const userInteraction = await prisma.userInteraction.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserInteractionUpdateManyArgs>(args: SelectSubset<T, UserInteractionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserInteractions and returns the data updated in the database.
+     * @param {UserInteractionUpdateManyAndReturnArgs} args - Arguments to update many UserInteractions.
+     * @example
+     * // Update many UserInteractions
+     * const userInteraction = await prisma.userInteraction.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UserInteractions and only return the `id`
+     * const userInteractionWithIdOnly = await prisma.userInteraction.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UserInteractionUpdateManyAndReturnArgs>(args: SelectSubset<T, UserInteractionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UserInteraction.
+     * @param {UserInteractionUpsertArgs} args - Arguments to update or create a UserInteraction.
+     * @example
+     * // Update or create a UserInteraction
+     * const userInteraction = await prisma.userInteraction.upsert({
+     *   create: {
+     *     // ... data to create a UserInteraction
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserInteraction we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserInteractionUpsertArgs>(args: SelectSubset<T, UserInteractionUpsertArgs<ExtArgs>>): Prisma__UserInteractionClient<$Result.GetResult<Prisma.$UserInteractionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserInteractions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserInteractionCountArgs} args - Arguments to filter UserInteractions to count.
+     * @example
+     * // Count the number of UserInteractions
+     * const count = await prisma.userInteraction.count({
+     *   where: {
+     *     // ... the filter for the UserInteractions we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserInteractionCountArgs>(
+      args?: Subset<T, UserInteractionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserInteractionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserInteraction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserInteractionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserInteractionAggregateArgs>(args: Subset<T, UserInteractionAggregateArgs>): Prisma.PrismaPromise<GetUserInteractionAggregateType<T>>
+
+    /**
+     * Group by UserInteraction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserInteractionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserInteractionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserInteractionGroupByArgs['orderBy'] }
+        : { orderBy?: UserInteractionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserInteractionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserInteractionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserInteraction model
+   */
+  readonly fields: UserInteractionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserInteraction.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserInteractionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserProfileDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserProfileDefaultArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    session<T extends UserInteraction$sessionArgs<ExtArgs> = {}>(args?: Subset<T, UserInteraction$sessionArgs<ExtArgs>>): Prisma__ConversationSessionClient<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserInteraction model
+   */
+  interface UserInteractionFieldRefs {
+    readonly id: FieldRef<"UserInteraction", 'String'>
+    readonly userId: FieldRef<"UserInteraction", 'String'>
+    readonly sessionId: FieldRef<"UserInteraction", 'String'>
+    readonly interactionType: FieldRef<"UserInteraction", 'InteractionType'>
+    readonly channel: FieldRef<"UserInteraction", 'CommunicationChannel'>
+    readonly direction: FieldRef<"UserInteraction", 'InteractionDirection'>
+    readonly externalId: FieldRef<"UserInteraction", 'String'>
+    readonly subject: FieldRef<"UserInteraction", 'String'>
+    readonly content: FieldRef<"UserInteraction", 'String'>
+    readonly summary: FieldRef<"UserInteraction", 'String'>
+    readonly contentType: FieldRef<"UserInteraction", 'String'>
+    readonly fromUserId: FieldRef<"UserInteraction", 'String'>
+    readonly toUserIds: FieldRef<"UserInteraction", 'String[]'>
+    readonly ccUserIds: FieldRef<"UserInteraction", 'String[]'>
+    readonly bccUserIds: FieldRef<"UserInteraction", 'String[]'>
+    readonly isAIGenerated: FieldRef<"UserInteraction", 'Boolean'>
+    readonly aiPersonality: FieldRef<"UserInteraction", 'String'>
+    readonly aiConfidence: FieldRef<"UserInteraction", 'Float'>
+    readonly aiIntent: FieldRef<"UserInteraction", 'String'>
+    readonly aiSentiment: FieldRef<"UserInteraction", 'String'>
+    readonly processedAt: FieldRef<"UserInteraction", 'DateTime'>
+    readonly processingStatus: FieldRef<"UserInteraction", 'ProcessingStatus'>
+    readonly errorMessage: FieldRef<"UserInteraction", 'String'>
+    readonly requiresResponse: FieldRef<"UserInteraction", 'Boolean'>
+    readonly responseDeadline: FieldRef<"UserInteraction", 'DateTime'>
+    readonly respondedAt: FieldRef<"UserInteraction", 'DateTime'>
+    readonly responseTime: FieldRef<"UserInteraction", 'Int'>
+    readonly category: FieldRef<"UserInteraction", 'String'>
+    readonly subcategory: FieldRef<"UserInteraction", 'String'>
+    readonly priority: FieldRef<"UserInteraction", 'InteractionPriority'>
+    readonly urgency: FieldRef<"UserInteraction", 'UrgencyLevel'>
+    readonly businessImpact: FieldRef<"UserInteraction", 'BusinessImpact'>
+    readonly hasAttachments: FieldRef<"UserInteraction", 'Boolean'>
+    readonly attachmentCount: FieldRef<"UserInteraction", 'Int'>
+    readonly attachmentSizes: FieldRef<"UserInteraction", 'Json'>
+    readonly attachmentTypes: FieldRef<"UserInteraction", 'String[]'>
+    readonly qualityScore: FieldRef<"UserInteraction", 'Int'>
+    readonly readabilityScore: FieldRef<"UserInteraction", 'Int'>
+    readonly toneScore: FieldRef<"UserInteraction", 'Json'>
+    readonly isFollowUp: FieldRef<"UserInteraction", 'Boolean'>
+    readonly parentInteractionId: FieldRef<"UserInteraction", 'String'>
+    readonly relatedInteractionIds: FieldRef<"UserInteraction", 'String[]'>
+    readonly isEscalated: FieldRef<"UserInteraction", 'Boolean'>
+    readonly escalatedAt: FieldRef<"UserInteraction", 'DateTime'>
+    readonly escalatedTo: FieldRef<"UserInteraction", 'String'>
+    readonly escalationReason: FieldRef<"UserInteraction", 'String'>
+    readonly isResolved: FieldRef<"UserInteraction", 'Boolean'>
+    readonly resolvedAt: FieldRef<"UserInteraction", 'DateTime'>
+    readonly resolution: FieldRef<"UserInteraction", 'String'>
+    readonly satisfactionScore: FieldRef<"UserInteraction", 'Int'>
+    readonly customerEffort: FieldRef<"UserInteraction", 'Int'>
+    readonly npsScore: FieldRef<"UserInteraction", 'Int'>
+    readonly ipAddress: FieldRef<"UserInteraction", 'String'>
+    readonly userAgent: FieldRef<"UserInteraction", 'String'>
+    readonly deviceInfo: FieldRef<"UserInteraction", 'Json'>
+    readonly location: FieldRef<"UserInteraction", 'Json'>
+    readonly containsPII: FieldRef<"UserInteraction", 'Boolean'>
+    readonly isConfidential: FieldRef<"UserInteraction", 'Boolean'>
+    readonly dataClassification: FieldRef<"UserInteraction", 'String'>
+    readonly retentionDate: FieldRef<"UserInteraction", 'DateTime'>
+    readonly metadata: FieldRef<"UserInteraction", 'Json'>
+    readonly tags: FieldRef<"UserInteraction", 'String[]'>
+    readonly keywords: FieldRef<"UserInteraction", 'String[]'>
+    readonly timestamp: FieldRef<"UserInteraction", 'DateTime'>
+    readonly createdAt: FieldRef<"UserInteraction", 'DateTime'>
+    readonly updatedAt: FieldRef<"UserInteraction", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserInteraction findUnique
+   */
+  export type UserInteractionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    /**
+     * Filter, which UserInteraction to fetch.
+     */
+    where: UserInteractionWhereUniqueInput
+  }
+
+  /**
+   * UserInteraction findUniqueOrThrow
+   */
+  export type UserInteractionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    /**
+     * Filter, which UserInteraction to fetch.
+     */
+    where: UserInteractionWhereUniqueInput
+  }
+
+  /**
+   * UserInteraction findFirst
+   */
+  export type UserInteractionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    /**
+     * Filter, which UserInteraction to fetch.
+     */
+    where?: UserInteractionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserInteractions to fetch.
+     */
+    orderBy?: UserInteractionOrderByWithRelationInput | UserInteractionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserInteractions.
+     */
+    cursor?: UserInteractionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserInteractions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserInteractions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserInteractions.
+     */
+    distinct?: UserInteractionScalarFieldEnum | UserInteractionScalarFieldEnum[]
+  }
+
+  /**
+   * UserInteraction findFirstOrThrow
+   */
+  export type UserInteractionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    /**
+     * Filter, which UserInteraction to fetch.
+     */
+    where?: UserInteractionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserInteractions to fetch.
+     */
+    orderBy?: UserInteractionOrderByWithRelationInput | UserInteractionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserInteractions.
+     */
+    cursor?: UserInteractionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserInteractions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserInteractions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserInteractions.
+     */
+    distinct?: UserInteractionScalarFieldEnum | UserInteractionScalarFieldEnum[]
+  }
+
+  /**
+   * UserInteraction findMany
+   */
+  export type UserInteractionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    /**
+     * Filter, which UserInteractions to fetch.
+     */
+    where?: UserInteractionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserInteractions to fetch.
+     */
+    orderBy?: UserInteractionOrderByWithRelationInput | UserInteractionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserInteractions.
+     */
+    cursor?: UserInteractionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserInteractions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserInteractions.
+     */
+    skip?: number
+    distinct?: UserInteractionScalarFieldEnum | UserInteractionScalarFieldEnum[]
+  }
+
+  /**
+   * UserInteraction create
+   */
+  export type UserInteractionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserInteraction.
+     */
+    data: XOR<UserInteractionCreateInput, UserInteractionUncheckedCreateInput>
+  }
+
+  /**
+   * UserInteraction createMany
+   */
+  export type UserInteractionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserInteractions.
+     */
+    data: UserInteractionCreateManyInput | UserInteractionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserInteraction createManyAndReturn
+   */
+  export type UserInteractionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * The data used to create many UserInteractions.
+     */
+    data: UserInteractionCreateManyInput | UserInteractionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserInteraction update
+   */
+  export type UserInteractionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserInteraction.
+     */
+    data: XOR<UserInteractionUpdateInput, UserInteractionUncheckedUpdateInput>
+    /**
+     * Choose, which UserInteraction to update.
+     */
+    where: UserInteractionWhereUniqueInput
+  }
+
+  /**
+   * UserInteraction updateMany
+   */
+  export type UserInteractionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserInteractions.
+     */
+    data: XOR<UserInteractionUpdateManyMutationInput, UserInteractionUncheckedUpdateManyInput>
+    /**
+     * Filter which UserInteractions to update
+     */
+    where?: UserInteractionWhereInput
+    /**
+     * Limit how many UserInteractions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserInteraction updateManyAndReturn
+   */
+  export type UserInteractionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * The data used to update UserInteractions.
+     */
+    data: XOR<UserInteractionUpdateManyMutationInput, UserInteractionUncheckedUpdateManyInput>
+    /**
+     * Filter which UserInteractions to update
+     */
+    where?: UserInteractionWhereInput
+    /**
+     * Limit how many UserInteractions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserInteraction upsert
+   */
+  export type UserInteractionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserInteraction to update in case it exists.
+     */
+    where: UserInteractionWhereUniqueInput
+    /**
+     * In case the UserInteraction found by the `where` argument doesn't exist, create a new UserInteraction with this data.
+     */
+    create: XOR<UserInteractionCreateInput, UserInteractionUncheckedCreateInput>
+    /**
+     * In case the UserInteraction was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserInteractionUpdateInput, UserInteractionUncheckedUpdateInput>
+  }
+
+  /**
+   * UserInteraction delete
+   */
+  export type UserInteractionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+    /**
+     * Filter which UserInteraction to delete.
+     */
+    where: UserInteractionWhereUniqueInput
+  }
+
+  /**
+   * UserInteraction deleteMany
+   */
+  export type UserInteractionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserInteractions to delete
+     */
+    where?: UserInteractionWhereInput
+    /**
+     * Limit how many UserInteractions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserInteraction.session
+   */
+  export type UserInteraction$sessionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    where?: ConversationSessionWhereInput
+  }
+
+  /**
+   * UserInteraction without action
+   */
+  export type UserInteractionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserInteraction
+     */
+    select?: UserInteractionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserInteraction
+     */
+    omit?: UserInteractionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInteractionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AIConversationMemory
+   */
+
+  export type AggregateAIConversationMemory = {
+    _count: AIConversationMemoryCountAggregateOutputType | null
+    _avg: AIConversationMemoryAvgAggregateOutputType | null
+    _sum: AIConversationMemorySumAggregateOutputType | null
+    _min: AIConversationMemoryMinAggregateOutputType | null
+    _max: AIConversationMemoryMaxAggregateOutputType | null
+  }
+
+  export type AIConversationMemoryAvgAggregateOutputType = {
+    interactionCount: number | null
+    memoryStrength: number | null
+  }
+
+  export type AIConversationMemorySumAggregateOutputType = {
+    interactionCount: number | null
+    memoryStrength: number | null
+  }
+
+  export type AIConversationMemoryMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    sessionId: string | null
+    conversationId: string | null
+    aiPersonality: string | null
+    interactionCount: number | null
+    lastInteractionId: string | null
+    memoryStrength: number | null
+    lastAccessedAt: Date | null
+    expiresAt: Date | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AIConversationMemoryMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    sessionId: string | null
+    conversationId: string | null
+    aiPersonality: string | null
+    interactionCount: number | null
+    lastInteractionId: string | null
+    memoryStrength: number | null
+    lastAccessedAt: Date | null
+    expiresAt: Date | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AIConversationMemoryCountAggregateOutputType = {
+    id: number
+    userId: number
+    sessionId: number
+    conversationId: number
+    aiPersonality: number
+    context: number
+    userPreferences: number
+    conversationState: number
+    entityMemory: number
+    interactionCount: number
+    lastInteractionId: number
+    memoryStrength: number
+    lastAccessedAt: number
+    expiresAt: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AIConversationMemoryAvgAggregateInputType = {
+    interactionCount?: true
+    memoryStrength?: true
+  }
+
+  export type AIConversationMemorySumAggregateInputType = {
+    interactionCount?: true
+    memoryStrength?: true
+  }
+
+  export type AIConversationMemoryMinAggregateInputType = {
+    id?: true
+    userId?: true
+    sessionId?: true
+    conversationId?: true
+    aiPersonality?: true
+    interactionCount?: true
+    lastInteractionId?: true
+    memoryStrength?: true
+    lastAccessedAt?: true
+    expiresAt?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AIConversationMemoryMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    sessionId?: true
+    conversationId?: true
+    aiPersonality?: true
+    interactionCount?: true
+    lastInteractionId?: true
+    memoryStrength?: true
+    lastAccessedAt?: true
+    expiresAt?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AIConversationMemoryCountAggregateInputType = {
+    id?: true
+    userId?: true
+    sessionId?: true
+    conversationId?: true
+    aiPersonality?: true
+    context?: true
+    userPreferences?: true
+    conversationState?: true
+    entityMemory?: true
+    interactionCount?: true
+    lastInteractionId?: true
+    memoryStrength?: true
+    lastAccessedAt?: true
+    expiresAt?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AIConversationMemoryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AIConversationMemory to aggregate.
+     */
+    where?: AIConversationMemoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIConversationMemories to fetch.
+     */
+    orderBy?: AIConversationMemoryOrderByWithRelationInput | AIConversationMemoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AIConversationMemoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIConversationMemories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIConversationMemories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AIConversationMemories
+    **/
+    _count?: true | AIConversationMemoryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AIConversationMemoryAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AIConversationMemorySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AIConversationMemoryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AIConversationMemoryMaxAggregateInputType
+  }
+
+  export type GetAIConversationMemoryAggregateType<T extends AIConversationMemoryAggregateArgs> = {
+        [P in keyof T & keyof AggregateAIConversationMemory]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAIConversationMemory[P]>
+      : GetScalarType<T[P], AggregateAIConversationMemory[P]>
+  }
+
+
+
+
+  export type AIConversationMemoryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AIConversationMemoryWhereInput
+    orderBy?: AIConversationMemoryOrderByWithAggregationInput | AIConversationMemoryOrderByWithAggregationInput[]
+    by: AIConversationMemoryScalarFieldEnum[] | AIConversationMemoryScalarFieldEnum
+    having?: AIConversationMemoryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AIConversationMemoryCountAggregateInputType | true
+    _avg?: AIConversationMemoryAvgAggregateInputType
+    _sum?: AIConversationMemorySumAggregateInputType
+    _min?: AIConversationMemoryMinAggregateInputType
+    _max?: AIConversationMemoryMaxAggregateInputType
+  }
+
+  export type AIConversationMemoryGroupByOutputType = {
+    id: string
+    userId: string
+    sessionId: string | null
+    conversationId: string
+    aiPersonality: string
+    context: JsonValue
+    userPreferences: JsonValue | null
+    conversationState: JsonValue | null
+    entityMemory: JsonValue | null
+    interactionCount: number
+    lastInteractionId: string | null
+    memoryStrength: number
+    lastAccessedAt: Date
+    expiresAt: Date | null
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: AIConversationMemoryCountAggregateOutputType | null
+    _avg: AIConversationMemoryAvgAggregateOutputType | null
+    _sum: AIConversationMemorySumAggregateOutputType | null
+    _min: AIConversationMemoryMinAggregateOutputType | null
+    _max: AIConversationMemoryMaxAggregateOutputType | null
+  }
+
+  type GetAIConversationMemoryGroupByPayload<T extends AIConversationMemoryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AIConversationMemoryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AIConversationMemoryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AIConversationMemoryGroupByOutputType[P]>
+            : GetScalarType<T[P], AIConversationMemoryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AIConversationMemorySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sessionId?: boolean
+    conversationId?: boolean
+    aiPersonality?: boolean
+    context?: boolean
+    userPreferences?: boolean
+    conversationState?: boolean
+    entityMemory?: boolean
+    interactionCount?: boolean
+    lastInteractionId?: boolean
+    memoryStrength?: boolean
+    lastAccessedAt?: boolean
+    expiresAt?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aIConversationMemory"]>
+
+  export type AIConversationMemorySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sessionId?: boolean
+    conversationId?: boolean
+    aiPersonality?: boolean
+    context?: boolean
+    userPreferences?: boolean
+    conversationState?: boolean
+    entityMemory?: boolean
+    interactionCount?: boolean
+    lastInteractionId?: boolean
+    memoryStrength?: boolean
+    lastAccessedAt?: boolean
+    expiresAt?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aIConversationMemory"]>
+
+  export type AIConversationMemorySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    sessionId?: boolean
+    conversationId?: boolean
+    aiPersonality?: boolean
+    context?: boolean
+    userPreferences?: boolean
+    conversationState?: boolean
+    entityMemory?: boolean
+    interactionCount?: boolean
+    lastInteractionId?: boolean
+    memoryStrength?: boolean
+    lastAccessedAt?: boolean
+    expiresAt?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aIConversationMemory"]>
+
+  export type AIConversationMemorySelectScalar = {
+    id?: boolean
+    userId?: boolean
+    sessionId?: boolean
+    conversationId?: boolean
+    aiPersonality?: boolean
+    context?: boolean
+    userPreferences?: boolean
+    conversationState?: boolean
+    entityMemory?: boolean
+    interactionCount?: boolean
+    lastInteractionId?: boolean
+    memoryStrength?: boolean
+    lastAccessedAt?: boolean
+    expiresAt?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AIConversationMemoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "sessionId" | "conversationId" | "aiPersonality" | "context" | "userPreferences" | "conversationState" | "entityMemory" | "interactionCount" | "lastInteractionId" | "memoryStrength" | "lastAccessedAt" | "expiresAt" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["aIConversationMemory"]>
+  export type AIConversationMemoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+  }
+  export type AIConversationMemoryIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+  }
+  export type AIConversationMemoryIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserProfileDefaultArgs<ExtArgs>
+  }
+
+  export type $AIConversationMemoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AIConversationMemory"
+    objects: {
+      user: Prisma.$UserProfilePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      sessionId: string | null
+      conversationId: string
+      aiPersonality: string
+      context: Prisma.JsonValue
+      userPreferences: Prisma.JsonValue | null
+      conversationState: Prisma.JsonValue | null
+      entityMemory: Prisma.JsonValue | null
+      interactionCount: number
+      lastInteractionId: string | null
+      memoryStrength: number
+      lastAccessedAt: Date
+      expiresAt: Date | null
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["aIConversationMemory"]>
+    composites: {}
+  }
+
+  type AIConversationMemoryGetPayload<S extends boolean | null | undefined | AIConversationMemoryDefaultArgs> = $Result.GetResult<Prisma.$AIConversationMemoryPayload, S>
+
+  type AIConversationMemoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AIConversationMemoryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AIConversationMemoryCountAggregateInputType | true
+    }
+
+  export interface AIConversationMemoryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AIConversationMemory'], meta: { name: 'AIConversationMemory' } }
+    /**
+     * Find zero or one AIConversationMemory that matches the filter.
+     * @param {AIConversationMemoryFindUniqueArgs} args - Arguments to find a AIConversationMemory
+     * @example
+     * // Get one AIConversationMemory
+     * const aIConversationMemory = await prisma.aIConversationMemory.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AIConversationMemoryFindUniqueArgs>(args: SelectSubset<T, AIConversationMemoryFindUniqueArgs<ExtArgs>>): Prisma__AIConversationMemoryClient<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AIConversationMemory that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AIConversationMemoryFindUniqueOrThrowArgs} args - Arguments to find a AIConversationMemory
+     * @example
+     * // Get one AIConversationMemory
+     * const aIConversationMemory = await prisma.aIConversationMemory.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AIConversationMemoryFindUniqueOrThrowArgs>(args: SelectSubset<T, AIConversationMemoryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AIConversationMemoryClient<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AIConversationMemory that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIConversationMemoryFindFirstArgs} args - Arguments to find a AIConversationMemory
+     * @example
+     * // Get one AIConversationMemory
+     * const aIConversationMemory = await prisma.aIConversationMemory.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AIConversationMemoryFindFirstArgs>(args?: SelectSubset<T, AIConversationMemoryFindFirstArgs<ExtArgs>>): Prisma__AIConversationMemoryClient<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AIConversationMemory that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIConversationMemoryFindFirstOrThrowArgs} args - Arguments to find a AIConversationMemory
+     * @example
+     * // Get one AIConversationMemory
+     * const aIConversationMemory = await prisma.aIConversationMemory.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AIConversationMemoryFindFirstOrThrowArgs>(args?: SelectSubset<T, AIConversationMemoryFindFirstOrThrowArgs<ExtArgs>>): Prisma__AIConversationMemoryClient<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AIConversationMemories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIConversationMemoryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AIConversationMemories
+     * const aIConversationMemories = await prisma.aIConversationMemory.findMany()
+     * 
+     * // Get first 10 AIConversationMemories
+     * const aIConversationMemories = await prisma.aIConversationMemory.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aIConversationMemoryWithIdOnly = await prisma.aIConversationMemory.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AIConversationMemoryFindManyArgs>(args?: SelectSubset<T, AIConversationMemoryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AIConversationMemory.
+     * @param {AIConversationMemoryCreateArgs} args - Arguments to create a AIConversationMemory.
+     * @example
+     * // Create one AIConversationMemory
+     * const AIConversationMemory = await prisma.aIConversationMemory.create({
+     *   data: {
+     *     // ... data to create a AIConversationMemory
+     *   }
+     * })
+     * 
+     */
+    create<T extends AIConversationMemoryCreateArgs>(args: SelectSubset<T, AIConversationMemoryCreateArgs<ExtArgs>>): Prisma__AIConversationMemoryClient<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AIConversationMemories.
+     * @param {AIConversationMemoryCreateManyArgs} args - Arguments to create many AIConversationMemories.
+     * @example
+     * // Create many AIConversationMemories
+     * const aIConversationMemory = await prisma.aIConversationMemory.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AIConversationMemoryCreateManyArgs>(args?: SelectSubset<T, AIConversationMemoryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AIConversationMemories and returns the data saved in the database.
+     * @param {AIConversationMemoryCreateManyAndReturnArgs} args - Arguments to create many AIConversationMemories.
+     * @example
+     * // Create many AIConversationMemories
+     * const aIConversationMemory = await prisma.aIConversationMemory.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AIConversationMemories and only return the `id`
+     * const aIConversationMemoryWithIdOnly = await prisma.aIConversationMemory.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AIConversationMemoryCreateManyAndReturnArgs>(args?: SelectSubset<T, AIConversationMemoryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AIConversationMemory.
+     * @param {AIConversationMemoryDeleteArgs} args - Arguments to delete one AIConversationMemory.
+     * @example
+     * // Delete one AIConversationMemory
+     * const AIConversationMemory = await prisma.aIConversationMemory.delete({
+     *   where: {
+     *     // ... filter to delete one AIConversationMemory
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AIConversationMemoryDeleteArgs>(args: SelectSubset<T, AIConversationMemoryDeleteArgs<ExtArgs>>): Prisma__AIConversationMemoryClient<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AIConversationMemory.
+     * @param {AIConversationMemoryUpdateArgs} args - Arguments to update one AIConversationMemory.
+     * @example
+     * // Update one AIConversationMemory
+     * const aIConversationMemory = await prisma.aIConversationMemory.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AIConversationMemoryUpdateArgs>(args: SelectSubset<T, AIConversationMemoryUpdateArgs<ExtArgs>>): Prisma__AIConversationMemoryClient<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AIConversationMemories.
+     * @param {AIConversationMemoryDeleteManyArgs} args - Arguments to filter AIConversationMemories to delete.
+     * @example
+     * // Delete a few AIConversationMemories
+     * const { count } = await prisma.aIConversationMemory.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AIConversationMemoryDeleteManyArgs>(args?: SelectSubset<T, AIConversationMemoryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AIConversationMemories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIConversationMemoryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AIConversationMemories
+     * const aIConversationMemory = await prisma.aIConversationMemory.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AIConversationMemoryUpdateManyArgs>(args: SelectSubset<T, AIConversationMemoryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AIConversationMemories and returns the data updated in the database.
+     * @param {AIConversationMemoryUpdateManyAndReturnArgs} args - Arguments to update many AIConversationMemories.
+     * @example
+     * // Update many AIConversationMemories
+     * const aIConversationMemory = await prisma.aIConversationMemory.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AIConversationMemories and only return the `id`
+     * const aIConversationMemoryWithIdOnly = await prisma.aIConversationMemory.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AIConversationMemoryUpdateManyAndReturnArgs>(args: SelectSubset<T, AIConversationMemoryUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AIConversationMemory.
+     * @param {AIConversationMemoryUpsertArgs} args - Arguments to update or create a AIConversationMemory.
+     * @example
+     * // Update or create a AIConversationMemory
+     * const aIConversationMemory = await prisma.aIConversationMemory.upsert({
+     *   create: {
+     *     // ... data to create a AIConversationMemory
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AIConversationMemory we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AIConversationMemoryUpsertArgs>(args: SelectSubset<T, AIConversationMemoryUpsertArgs<ExtArgs>>): Prisma__AIConversationMemoryClient<$Result.GetResult<Prisma.$AIConversationMemoryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AIConversationMemories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIConversationMemoryCountArgs} args - Arguments to filter AIConversationMemories to count.
+     * @example
+     * // Count the number of AIConversationMemories
+     * const count = await prisma.aIConversationMemory.count({
+     *   where: {
+     *     // ... the filter for the AIConversationMemories we want to count
+     *   }
+     * })
+    **/
+    count<T extends AIConversationMemoryCountArgs>(
+      args?: Subset<T, AIConversationMemoryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AIConversationMemoryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AIConversationMemory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIConversationMemoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AIConversationMemoryAggregateArgs>(args: Subset<T, AIConversationMemoryAggregateArgs>): Prisma.PrismaPromise<GetAIConversationMemoryAggregateType<T>>
+
+    /**
+     * Group by AIConversationMemory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIConversationMemoryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AIConversationMemoryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AIConversationMemoryGroupByArgs['orderBy'] }
+        : { orderBy?: AIConversationMemoryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AIConversationMemoryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAIConversationMemoryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AIConversationMemory model
+   */
+  readonly fields: AIConversationMemoryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AIConversationMemory.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AIConversationMemoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserProfileDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserProfileDefaultArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AIConversationMemory model
+   */
+  interface AIConversationMemoryFieldRefs {
+    readonly id: FieldRef<"AIConversationMemory", 'String'>
+    readonly userId: FieldRef<"AIConversationMemory", 'String'>
+    readonly sessionId: FieldRef<"AIConversationMemory", 'String'>
+    readonly conversationId: FieldRef<"AIConversationMemory", 'String'>
+    readonly aiPersonality: FieldRef<"AIConversationMemory", 'String'>
+    readonly context: FieldRef<"AIConversationMemory", 'Json'>
+    readonly userPreferences: FieldRef<"AIConversationMemory", 'Json'>
+    readonly conversationState: FieldRef<"AIConversationMemory", 'Json'>
+    readonly entityMemory: FieldRef<"AIConversationMemory", 'Json'>
+    readonly interactionCount: FieldRef<"AIConversationMemory", 'Int'>
+    readonly lastInteractionId: FieldRef<"AIConversationMemory", 'String'>
+    readonly memoryStrength: FieldRef<"AIConversationMemory", 'Float'>
+    readonly lastAccessedAt: FieldRef<"AIConversationMemory", 'DateTime'>
+    readonly expiresAt: FieldRef<"AIConversationMemory", 'DateTime'>
+    readonly isActive: FieldRef<"AIConversationMemory", 'Boolean'>
+    readonly createdAt: FieldRef<"AIConversationMemory", 'DateTime'>
+    readonly updatedAt: FieldRef<"AIConversationMemory", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AIConversationMemory findUnique
+   */
+  export type AIConversationMemoryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+    /**
+     * Filter, which AIConversationMemory to fetch.
+     */
+    where: AIConversationMemoryWhereUniqueInput
+  }
+
+  /**
+   * AIConversationMemory findUniqueOrThrow
+   */
+  export type AIConversationMemoryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+    /**
+     * Filter, which AIConversationMemory to fetch.
+     */
+    where: AIConversationMemoryWhereUniqueInput
+  }
+
+  /**
+   * AIConversationMemory findFirst
+   */
+  export type AIConversationMemoryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+    /**
+     * Filter, which AIConversationMemory to fetch.
+     */
+    where?: AIConversationMemoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIConversationMemories to fetch.
+     */
+    orderBy?: AIConversationMemoryOrderByWithRelationInput | AIConversationMemoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AIConversationMemories.
+     */
+    cursor?: AIConversationMemoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIConversationMemories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIConversationMemories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AIConversationMemories.
+     */
+    distinct?: AIConversationMemoryScalarFieldEnum | AIConversationMemoryScalarFieldEnum[]
+  }
+
+  /**
+   * AIConversationMemory findFirstOrThrow
+   */
+  export type AIConversationMemoryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+    /**
+     * Filter, which AIConversationMemory to fetch.
+     */
+    where?: AIConversationMemoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIConversationMemories to fetch.
+     */
+    orderBy?: AIConversationMemoryOrderByWithRelationInput | AIConversationMemoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AIConversationMemories.
+     */
+    cursor?: AIConversationMemoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIConversationMemories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIConversationMemories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AIConversationMemories.
+     */
+    distinct?: AIConversationMemoryScalarFieldEnum | AIConversationMemoryScalarFieldEnum[]
+  }
+
+  /**
+   * AIConversationMemory findMany
+   */
+  export type AIConversationMemoryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+    /**
+     * Filter, which AIConversationMemories to fetch.
+     */
+    where?: AIConversationMemoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIConversationMemories to fetch.
+     */
+    orderBy?: AIConversationMemoryOrderByWithRelationInput | AIConversationMemoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AIConversationMemories.
+     */
+    cursor?: AIConversationMemoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIConversationMemories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIConversationMemories.
+     */
+    skip?: number
+    distinct?: AIConversationMemoryScalarFieldEnum | AIConversationMemoryScalarFieldEnum[]
+  }
+
+  /**
+   * AIConversationMemory create
+   */
+  export type AIConversationMemoryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AIConversationMemory.
+     */
+    data: XOR<AIConversationMemoryCreateInput, AIConversationMemoryUncheckedCreateInput>
+  }
+
+  /**
+   * AIConversationMemory createMany
+   */
+  export type AIConversationMemoryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AIConversationMemories.
+     */
+    data: AIConversationMemoryCreateManyInput | AIConversationMemoryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AIConversationMemory createManyAndReturn
+   */
+  export type AIConversationMemoryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * The data used to create many AIConversationMemories.
+     */
+    data: AIConversationMemoryCreateManyInput | AIConversationMemoryCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AIConversationMemory update
+   */
+  export type AIConversationMemoryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AIConversationMemory.
+     */
+    data: XOR<AIConversationMemoryUpdateInput, AIConversationMemoryUncheckedUpdateInput>
+    /**
+     * Choose, which AIConversationMemory to update.
+     */
+    where: AIConversationMemoryWhereUniqueInput
+  }
+
+  /**
+   * AIConversationMemory updateMany
+   */
+  export type AIConversationMemoryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AIConversationMemories.
+     */
+    data: XOR<AIConversationMemoryUpdateManyMutationInput, AIConversationMemoryUncheckedUpdateManyInput>
+    /**
+     * Filter which AIConversationMemories to update
+     */
+    where?: AIConversationMemoryWhereInput
+    /**
+     * Limit how many AIConversationMemories to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AIConversationMemory updateManyAndReturn
+   */
+  export type AIConversationMemoryUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * The data used to update AIConversationMemories.
+     */
+    data: XOR<AIConversationMemoryUpdateManyMutationInput, AIConversationMemoryUncheckedUpdateManyInput>
+    /**
+     * Filter which AIConversationMemories to update
+     */
+    where?: AIConversationMemoryWhereInput
+    /**
+     * Limit how many AIConversationMemories to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AIConversationMemory upsert
+   */
+  export type AIConversationMemoryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AIConversationMemory to update in case it exists.
+     */
+    where: AIConversationMemoryWhereUniqueInput
+    /**
+     * In case the AIConversationMemory found by the `where` argument doesn't exist, create a new AIConversationMemory with this data.
+     */
+    create: XOR<AIConversationMemoryCreateInput, AIConversationMemoryUncheckedCreateInput>
+    /**
+     * In case the AIConversationMemory was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AIConversationMemoryUpdateInput, AIConversationMemoryUncheckedUpdateInput>
+  }
+
+  /**
+   * AIConversationMemory delete
+   */
+  export type AIConversationMemoryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+    /**
+     * Filter which AIConversationMemory to delete.
+     */
+    where: AIConversationMemoryWhereUniqueInput
+  }
+
+  /**
+   * AIConversationMemory deleteMany
+   */
+  export type AIConversationMemoryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AIConversationMemories to delete
+     */
+    where?: AIConversationMemoryWhereInput
+    /**
+     * Limit how many AIConversationMemories to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AIConversationMemory without action
+   */
+  export type AIConversationMemoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIConversationMemory
+     */
+    select?: AIConversationMemorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIConversationMemory
+     */
+    omit?: AIConversationMemoryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AIConversationMemoryInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -10613,6 +15731,133 @@ export namespace Prisma {
   export type TrainingRecordScalarFieldEnum = (typeof TrainingRecordScalarFieldEnum)[keyof typeof TrainingRecordScalarFieldEnum]
 
 
+  export const ConversationSessionScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    sessionType: 'sessionType',
+    channel: 'channel',
+    externalId: 'externalId',
+    subject: 'subject',
+    status: 'status',
+    priority: 'priority',
+    participantIds: 'participantIds',
+    assignedAgentId: 'assignedAgentId',
+    escalationLevel: 'escalationLevel',
+    context: 'context',
+    tags: 'tags',
+    category: 'category',
+    subcategory: 'subcategory',
+    totalInteractions: 'totalInteractions',
+    avgResponseTime: 'avgResponseTime',
+    firstResponseTime: 'firstResponseTime',
+    resolutionTime: 'resolutionTime',
+    startedAt: 'startedAt',
+    lastActivityAt: 'lastActivityAt',
+    endedAt: 'endedAt',
+    satisfactionScore: 'satisfactionScore',
+    qualityScore: 'qualityScore',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ConversationSessionScalarFieldEnum = (typeof ConversationSessionScalarFieldEnum)[keyof typeof ConversationSessionScalarFieldEnum]
+
+
+  export const UserInteractionScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    sessionId: 'sessionId',
+    interactionType: 'interactionType',
+    channel: 'channel',
+    direction: 'direction',
+    externalId: 'externalId',
+    subject: 'subject',
+    content: 'content',
+    summary: 'summary',
+    contentType: 'contentType',
+    fromUserId: 'fromUserId',
+    toUserIds: 'toUserIds',
+    ccUserIds: 'ccUserIds',
+    bccUserIds: 'bccUserIds',
+    isAIGenerated: 'isAIGenerated',
+    aiPersonality: 'aiPersonality',
+    aiConfidence: 'aiConfidence',
+    aiIntent: 'aiIntent',
+    aiSentiment: 'aiSentiment',
+    processedAt: 'processedAt',
+    processingStatus: 'processingStatus',
+    errorMessage: 'errorMessage',
+    requiresResponse: 'requiresResponse',
+    responseDeadline: 'responseDeadline',
+    respondedAt: 'respondedAt',
+    responseTime: 'responseTime',
+    category: 'category',
+    subcategory: 'subcategory',
+    priority: 'priority',
+    urgency: 'urgency',
+    businessImpact: 'businessImpact',
+    hasAttachments: 'hasAttachments',
+    attachmentCount: 'attachmentCount',
+    attachmentSizes: 'attachmentSizes',
+    attachmentTypes: 'attachmentTypes',
+    qualityScore: 'qualityScore',
+    readabilityScore: 'readabilityScore',
+    toneScore: 'toneScore',
+    isFollowUp: 'isFollowUp',
+    parentInteractionId: 'parentInteractionId',
+    relatedInteractionIds: 'relatedInteractionIds',
+    isEscalated: 'isEscalated',
+    escalatedAt: 'escalatedAt',
+    escalatedTo: 'escalatedTo',
+    escalationReason: 'escalationReason',
+    isResolved: 'isResolved',
+    resolvedAt: 'resolvedAt',
+    resolution: 'resolution',
+    satisfactionScore: 'satisfactionScore',
+    customerEffort: 'customerEffort',
+    npsScore: 'npsScore',
+    ipAddress: 'ipAddress',
+    userAgent: 'userAgent',
+    deviceInfo: 'deviceInfo',
+    location: 'location',
+    containsPII: 'containsPII',
+    isConfidential: 'isConfidential',
+    dataClassification: 'dataClassification',
+    retentionDate: 'retentionDate',
+    metadata: 'metadata',
+    tags: 'tags',
+    keywords: 'keywords',
+    timestamp: 'timestamp',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UserInteractionScalarFieldEnum = (typeof UserInteractionScalarFieldEnum)[keyof typeof UserInteractionScalarFieldEnum]
+
+
+  export const AIConversationMemoryScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    sessionId: 'sessionId',
+    conversationId: 'conversationId',
+    aiPersonality: 'aiPersonality',
+    context: 'context',
+    userPreferences: 'userPreferences',
+    conversationState: 'conversationState',
+    entityMemory: 'entityMemory',
+    interactionCount: 'interactionCount',
+    lastInteractionId: 'lastInteractionId',
+    memoryStrength: 'memoryStrength',
+    lastAccessedAt: 'lastAccessedAt',
+    expiresAt: 'expiresAt',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AIConversationMemoryScalarFieldEnum = (typeof AIConversationMemoryScalarFieldEnum)[keyof typeof AIConversationMemoryScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -10627,6 +15872,13 @@ export namespace Prisma {
   };
 
   export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const QueryMode: {
@@ -10863,6 +16115,90 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'ConversationType'
+   */
+  export type EnumConversationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationType'>
+    
+
+
+  /**
+   * Reference to a field of type 'ConversationType[]'
+   */
+  export type ListEnumConversationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'CommunicationChannel'
+   */
+  export type EnumCommunicationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommunicationChannel'>
+    
+
+
+  /**
+   * Reference to a field of type 'CommunicationChannel[]'
+   */
+  export type ListEnumCommunicationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommunicationChannel[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'SessionStatus'
+   */
+  export type EnumSessionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SessionStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'SessionStatus[]'
+   */
+  export type ListEnumSessionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SessionStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'SessionPriority'
+   */
+  export type EnumSessionPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SessionPriority'>
+    
+
+
+  /**
+   * Reference to a field of type 'SessionPriority[]'
+   */
+  export type ListEnumSessionPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SessionPriority[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'InteractionType'
+   */
+  export type EnumInteractionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InteractionType'>
+    
+
+
+  /**
+   * Reference to a field of type 'InteractionType[]'
+   */
+  export type ListEnumInteractionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InteractionType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'InteractionDirection'
+   */
+  export type EnumInteractionDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InteractionDirection'>
+    
+
+
+  /**
+   * Reference to a field of type 'InteractionDirection[]'
+   */
+  export type ListEnumInteractionDirectionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InteractionDirection[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -10873,6 +16209,62 @@ export namespace Prisma {
    * Reference to a field of type 'Float[]'
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ProcessingStatus'
+   */
+  export type EnumProcessingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProcessingStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ProcessingStatus[]'
+   */
+  export type ListEnumProcessingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProcessingStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'InteractionPriority'
+   */
+  export type EnumInteractionPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InteractionPriority'>
+    
+
+
+  /**
+   * Reference to a field of type 'InteractionPriority[]'
+   */
+  export type ListEnumInteractionPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InteractionPriority[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'UrgencyLevel'
+   */
+  export type EnumUrgencyLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UrgencyLevel'>
+    
+
+
+  /**
+   * Reference to a field of type 'UrgencyLevel[]'
+   */
+  export type ListEnumUrgencyLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UrgencyLevel[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'BusinessImpact'
+   */
+  export type EnumBusinessImpactFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BusinessImpact'>
+    
+
+
+  /**
+   * Reference to a field of type 'BusinessImpact[]'
+   */
+  export type ListEnumBusinessImpactFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BusinessImpact[]'>
     
   /**
    * Deep Input Types
@@ -10925,6 +16317,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogListRelationFilter
     securityEvents?: SecurityEventListRelationFilter
     trainingRecords?: TrainingRecordListRelationFilter
+    conversationSessions?: ConversationSessionListRelationFilter
+    interactions?: UserInteractionListRelationFilter
+    aiMemories?: AIConversationMemoryListRelationFilter
   }
 
   export type UserProfileOrderByWithRelationInput = {
@@ -10970,6 +16365,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogOrderByRelationAggregateInput
     securityEvents?: SecurityEventOrderByRelationAggregateInput
     trainingRecords?: TrainingRecordOrderByRelationAggregateInput
+    conversationSessions?: ConversationSessionOrderByRelationAggregateInput
+    interactions?: UserInteractionOrderByRelationAggregateInput
+    aiMemories?: AIConversationMemoryOrderByRelationAggregateInput
   }
 
   export type UserProfileWhereUniqueInput = Prisma.AtLeast<{
@@ -11018,6 +16416,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogListRelationFilter
     securityEvents?: SecurityEventListRelationFilter
     trainingRecords?: TrainingRecordListRelationFilter
+    conversationSessions?: ConversationSessionListRelationFilter
+    interactions?: UserInteractionListRelationFilter
+    aiMemories?: AIConversationMemoryListRelationFilter
   }, "id" | "helixUid" | "email" | "emailCanonical" | "employeeId">
 
   export type UserProfileOrderByWithAggregationInput = {
@@ -11714,6 +17115,654 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"TrainingRecord"> | Date | string
   }
 
+  export type ConversationSessionWhereInput = {
+    AND?: ConversationSessionWhereInput | ConversationSessionWhereInput[]
+    OR?: ConversationSessionWhereInput[]
+    NOT?: ConversationSessionWhereInput | ConversationSessionWhereInput[]
+    id?: StringFilter<"ConversationSession"> | string
+    userId?: StringFilter<"ConversationSession"> | string
+    sessionType?: EnumConversationTypeFilter<"ConversationSession"> | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFilter<"ConversationSession"> | $Enums.CommunicationChannel
+    externalId?: StringNullableFilter<"ConversationSession"> | string | null
+    subject?: StringNullableFilter<"ConversationSession"> | string | null
+    status?: EnumSessionStatusFilter<"ConversationSession"> | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFilter<"ConversationSession"> | $Enums.SessionPriority
+    participantIds?: StringNullableListFilter<"ConversationSession">
+    assignedAgentId?: StringNullableFilter<"ConversationSession"> | string | null
+    escalationLevel?: IntFilter<"ConversationSession"> | number
+    context?: JsonNullableFilter<"ConversationSession">
+    tags?: StringNullableListFilter<"ConversationSession">
+    category?: StringNullableFilter<"ConversationSession"> | string | null
+    subcategory?: StringNullableFilter<"ConversationSession"> | string | null
+    totalInteractions?: IntFilter<"ConversationSession"> | number
+    avgResponseTime?: IntNullableFilter<"ConversationSession"> | number | null
+    firstResponseTime?: IntNullableFilter<"ConversationSession"> | number | null
+    resolutionTime?: IntNullableFilter<"ConversationSession"> | number | null
+    startedAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    lastActivityAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    endedAt?: DateTimeNullableFilter<"ConversationSession"> | Date | string | null
+    satisfactionScore?: IntNullableFilter<"ConversationSession"> | number | null
+    qualityScore?: IntNullableFilter<"ConversationSession"> | number | null
+    createdAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    updatedAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    user?: XOR<UserProfileScalarRelationFilter, UserProfileWhereInput>
+    interactions?: UserInteractionListRelationFilter
+  }
+
+  export type ConversationSessionOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionType?: SortOrder
+    channel?: SortOrder
+    externalId?: SortOrderInput | SortOrder
+    subject?: SortOrderInput | SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    participantIds?: SortOrder
+    assignedAgentId?: SortOrderInput | SortOrder
+    escalationLevel?: SortOrder
+    context?: SortOrderInput | SortOrder
+    tags?: SortOrder
+    category?: SortOrderInput | SortOrder
+    subcategory?: SortOrderInput | SortOrder
+    totalInteractions?: SortOrder
+    avgResponseTime?: SortOrderInput | SortOrder
+    firstResponseTime?: SortOrderInput | SortOrder
+    resolutionTime?: SortOrderInput | SortOrder
+    startedAt?: SortOrder
+    lastActivityAt?: SortOrder
+    endedAt?: SortOrderInput | SortOrder
+    satisfactionScore?: SortOrderInput | SortOrder
+    qualityScore?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserProfileOrderByWithRelationInput
+    interactions?: UserInteractionOrderByRelationAggregateInput
+  }
+
+  export type ConversationSessionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ConversationSessionWhereInput | ConversationSessionWhereInput[]
+    OR?: ConversationSessionWhereInput[]
+    NOT?: ConversationSessionWhereInput | ConversationSessionWhereInput[]
+    userId?: StringFilter<"ConversationSession"> | string
+    sessionType?: EnumConversationTypeFilter<"ConversationSession"> | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFilter<"ConversationSession"> | $Enums.CommunicationChannel
+    externalId?: StringNullableFilter<"ConversationSession"> | string | null
+    subject?: StringNullableFilter<"ConversationSession"> | string | null
+    status?: EnumSessionStatusFilter<"ConversationSession"> | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFilter<"ConversationSession"> | $Enums.SessionPriority
+    participantIds?: StringNullableListFilter<"ConversationSession">
+    assignedAgentId?: StringNullableFilter<"ConversationSession"> | string | null
+    escalationLevel?: IntFilter<"ConversationSession"> | number
+    context?: JsonNullableFilter<"ConversationSession">
+    tags?: StringNullableListFilter<"ConversationSession">
+    category?: StringNullableFilter<"ConversationSession"> | string | null
+    subcategory?: StringNullableFilter<"ConversationSession"> | string | null
+    totalInteractions?: IntFilter<"ConversationSession"> | number
+    avgResponseTime?: IntNullableFilter<"ConversationSession"> | number | null
+    firstResponseTime?: IntNullableFilter<"ConversationSession"> | number | null
+    resolutionTime?: IntNullableFilter<"ConversationSession"> | number | null
+    startedAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    lastActivityAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    endedAt?: DateTimeNullableFilter<"ConversationSession"> | Date | string | null
+    satisfactionScore?: IntNullableFilter<"ConversationSession"> | number | null
+    qualityScore?: IntNullableFilter<"ConversationSession"> | number | null
+    createdAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    updatedAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    user?: XOR<UserProfileScalarRelationFilter, UserProfileWhereInput>
+    interactions?: UserInteractionListRelationFilter
+  }, "id">
+
+  export type ConversationSessionOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionType?: SortOrder
+    channel?: SortOrder
+    externalId?: SortOrderInput | SortOrder
+    subject?: SortOrderInput | SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    participantIds?: SortOrder
+    assignedAgentId?: SortOrderInput | SortOrder
+    escalationLevel?: SortOrder
+    context?: SortOrderInput | SortOrder
+    tags?: SortOrder
+    category?: SortOrderInput | SortOrder
+    subcategory?: SortOrderInput | SortOrder
+    totalInteractions?: SortOrder
+    avgResponseTime?: SortOrderInput | SortOrder
+    firstResponseTime?: SortOrderInput | SortOrder
+    resolutionTime?: SortOrderInput | SortOrder
+    startedAt?: SortOrder
+    lastActivityAt?: SortOrder
+    endedAt?: SortOrderInput | SortOrder
+    satisfactionScore?: SortOrderInput | SortOrder
+    qualityScore?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ConversationSessionCountOrderByAggregateInput
+    _avg?: ConversationSessionAvgOrderByAggregateInput
+    _max?: ConversationSessionMaxOrderByAggregateInput
+    _min?: ConversationSessionMinOrderByAggregateInput
+    _sum?: ConversationSessionSumOrderByAggregateInput
+  }
+
+  export type ConversationSessionScalarWhereWithAggregatesInput = {
+    AND?: ConversationSessionScalarWhereWithAggregatesInput | ConversationSessionScalarWhereWithAggregatesInput[]
+    OR?: ConversationSessionScalarWhereWithAggregatesInput[]
+    NOT?: ConversationSessionScalarWhereWithAggregatesInput | ConversationSessionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ConversationSession"> | string
+    userId?: StringWithAggregatesFilter<"ConversationSession"> | string
+    sessionType?: EnumConversationTypeWithAggregatesFilter<"ConversationSession"> | $Enums.ConversationType
+    channel?: EnumCommunicationChannelWithAggregatesFilter<"ConversationSession"> | $Enums.CommunicationChannel
+    externalId?: StringNullableWithAggregatesFilter<"ConversationSession"> | string | null
+    subject?: StringNullableWithAggregatesFilter<"ConversationSession"> | string | null
+    status?: EnumSessionStatusWithAggregatesFilter<"ConversationSession"> | $Enums.SessionStatus
+    priority?: EnumSessionPriorityWithAggregatesFilter<"ConversationSession"> | $Enums.SessionPriority
+    participantIds?: StringNullableListFilter<"ConversationSession">
+    assignedAgentId?: StringNullableWithAggregatesFilter<"ConversationSession"> | string | null
+    escalationLevel?: IntWithAggregatesFilter<"ConversationSession"> | number
+    context?: JsonNullableWithAggregatesFilter<"ConversationSession">
+    tags?: StringNullableListFilter<"ConversationSession">
+    category?: StringNullableWithAggregatesFilter<"ConversationSession"> | string | null
+    subcategory?: StringNullableWithAggregatesFilter<"ConversationSession"> | string | null
+    totalInteractions?: IntWithAggregatesFilter<"ConversationSession"> | number
+    avgResponseTime?: IntNullableWithAggregatesFilter<"ConversationSession"> | number | null
+    firstResponseTime?: IntNullableWithAggregatesFilter<"ConversationSession"> | number | null
+    resolutionTime?: IntNullableWithAggregatesFilter<"ConversationSession"> | number | null
+    startedAt?: DateTimeWithAggregatesFilter<"ConversationSession"> | Date | string
+    lastActivityAt?: DateTimeWithAggregatesFilter<"ConversationSession"> | Date | string
+    endedAt?: DateTimeNullableWithAggregatesFilter<"ConversationSession"> | Date | string | null
+    satisfactionScore?: IntNullableWithAggregatesFilter<"ConversationSession"> | number | null
+    qualityScore?: IntNullableWithAggregatesFilter<"ConversationSession"> | number | null
+    createdAt?: DateTimeWithAggregatesFilter<"ConversationSession"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ConversationSession"> | Date | string
+  }
+
+  export type UserInteractionWhereInput = {
+    AND?: UserInteractionWhereInput | UserInteractionWhereInput[]
+    OR?: UserInteractionWhereInput[]
+    NOT?: UserInteractionWhereInput | UserInteractionWhereInput[]
+    id?: StringFilter<"UserInteraction"> | string
+    userId?: StringFilter<"UserInteraction"> | string
+    sessionId?: StringNullableFilter<"UserInteraction"> | string | null
+    interactionType?: EnumInteractionTypeFilter<"UserInteraction"> | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFilter<"UserInteraction"> | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFilter<"UserInteraction"> | $Enums.InteractionDirection
+    externalId?: StringNullableFilter<"UserInteraction"> | string | null
+    subject?: StringNullableFilter<"UserInteraction"> | string | null
+    content?: StringNullableFilter<"UserInteraction"> | string | null
+    summary?: StringNullableFilter<"UserInteraction"> | string | null
+    contentType?: StringFilter<"UserInteraction"> | string
+    fromUserId?: StringNullableFilter<"UserInteraction"> | string | null
+    toUserIds?: StringNullableListFilter<"UserInteraction">
+    ccUserIds?: StringNullableListFilter<"UserInteraction">
+    bccUserIds?: StringNullableListFilter<"UserInteraction">
+    isAIGenerated?: BoolFilter<"UserInteraction"> | boolean
+    aiPersonality?: StringNullableFilter<"UserInteraction"> | string | null
+    aiConfidence?: FloatNullableFilter<"UserInteraction"> | number | null
+    aiIntent?: StringNullableFilter<"UserInteraction"> | string | null
+    aiSentiment?: StringNullableFilter<"UserInteraction"> | string | null
+    processedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    processingStatus?: EnumProcessingStatusFilter<"UserInteraction"> | $Enums.ProcessingStatus
+    errorMessage?: StringNullableFilter<"UserInteraction"> | string | null
+    requiresResponse?: BoolFilter<"UserInteraction"> | boolean
+    responseDeadline?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    respondedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    responseTime?: IntNullableFilter<"UserInteraction"> | number | null
+    category?: StringNullableFilter<"UserInteraction"> | string | null
+    subcategory?: StringNullableFilter<"UserInteraction"> | string | null
+    priority?: EnumInteractionPriorityFilter<"UserInteraction"> | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFilter<"UserInteraction"> | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFilter<"UserInteraction"> | $Enums.BusinessImpact
+    hasAttachments?: BoolFilter<"UserInteraction"> | boolean
+    attachmentCount?: IntFilter<"UserInteraction"> | number
+    attachmentSizes?: JsonNullableFilter<"UserInteraction">
+    attachmentTypes?: StringNullableListFilter<"UserInteraction">
+    qualityScore?: IntNullableFilter<"UserInteraction"> | number | null
+    readabilityScore?: IntNullableFilter<"UserInteraction"> | number | null
+    toneScore?: JsonNullableFilter<"UserInteraction">
+    isFollowUp?: BoolFilter<"UserInteraction"> | boolean
+    parentInteractionId?: StringNullableFilter<"UserInteraction"> | string | null
+    relatedInteractionIds?: StringNullableListFilter<"UserInteraction">
+    isEscalated?: BoolFilter<"UserInteraction"> | boolean
+    escalatedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    escalatedTo?: StringNullableFilter<"UserInteraction"> | string | null
+    escalationReason?: StringNullableFilter<"UserInteraction"> | string | null
+    isResolved?: BoolFilter<"UserInteraction"> | boolean
+    resolvedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    resolution?: StringNullableFilter<"UserInteraction"> | string | null
+    satisfactionScore?: IntNullableFilter<"UserInteraction"> | number | null
+    customerEffort?: IntNullableFilter<"UserInteraction"> | number | null
+    npsScore?: IntNullableFilter<"UserInteraction"> | number | null
+    ipAddress?: StringNullableFilter<"UserInteraction"> | string | null
+    userAgent?: StringNullableFilter<"UserInteraction"> | string | null
+    deviceInfo?: JsonNullableFilter<"UserInteraction">
+    location?: JsonNullableFilter<"UserInteraction">
+    containsPII?: BoolFilter<"UserInteraction"> | boolean
+    isConfidential?: BoolFilter<"UserInteraction"> | boolean
+    dataClassification?: StringNullableFilter<"UserInteraction"> | string | null
+    retentionDate?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    metadata?: JsonNullableFilter<"UserInteraction">
+    tags?: StringNullableListFilter<"UserInteraction">
+    keywords?: StringNullableListFilter<"UserInteraction">
+    timestamp?: DateTimeFilter<"UserInteraction"> | Date | string
+    createdAt?: DateTimeFilter<"UserInteraction"> | Date | string
+    updatedAt?: DateTimeFilter<"UserInteraction"> | Date | string
+    user?: XOR<UserProfileScalarRelationFilter, UserProfileWhereInput>
+    session?: XOR<ConversationSessionNullableScalarRelationFilter, ConversationSessionWhereInput> | null
+  }
+
+  export type UserInteractionOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionId?: SortOrderInput | SortOrder
+    interactionType?: SortOrder
+    channel?: SortOrder
+    direction?: SortOrder
+    externalId?: SortOrderInput | SortOrder
+    subject?: SortOrderInput | SortOrder
+    content?: SortOrderInput | SortOrder
+    summary?: SortOrderInput | SortOrder
+    contentType?: SortOrder
+    fromUserId?: SortOrderInput | SortOrder
+    toUserIds?: SortOrder
+    ccUserIds?: SortOrder
+    bccUserIds?: SortOrder
+    isAIGenerated?: SortOrder
+    aiPersonality?: SortOrderInput | SortOrder
+    aiConfidence?: SortOrderInput | SortOrder
+    aiIntent?: SortOrderInput | SortOrder
+    aiSentiment?: SortOrderInput | SortOrder
+    processedAt?: SortOrderInput | SortOrder
+    processingStatus?: SortOrder
+    errorMessage?: SortOrderInput | SortOrder
+    requiresResponse?: SortOrder
+    responseDeadline?: SortOrderInput | SortOrder
+    respondedAt?: SortOrderInput | SortOrder
+    responseTime?: SortOrderInput | SortOrder
+    category?: SortOrderInput | SortOrder
+    subcategory?: SortOrderInput | SortOrder
+    priority?: SortOrder
+    urgency?: SortOrder
+    businessImpact?: SortOrder
+    hasAttachments?: SortOrder
+    attachmentCount?: SortOrder
+    attachmentSizes?: SortOrderInput | SortOrder
+    attachmentTypes?: SortOrder
+    qualityScore?: SortOrderInput | SortOrder
+    readabilityScore?: SortOrderInput | SortOrder
+    toneScore?: SortOrderInput | SortOrder
+    isFollowUp?: SortOrder
+    parentInteractionId?: SortOrderInput | SortOrder
+    relatedInteractionIds?: SortOrder
+    isEscalated?: SortOrder
+    escalatedAt?: SortOrderInput | SortOrder
+    escalatedTo?: SortOrderInput | SortOrder
+    escalationReason?: SortOrderInput | SortOrder
+    isResolved?: SortOrder
+    resolvedAt?: SortOrderInput | SortOrder
+    resolution?: SortOrderInput | SortOrder
+    satisfactionScore?: SortOrderInput | SortOrder
+    customerEffort?: SortOrderInput | SortOrder
+    npsScore?: SortOrderInput | SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    deviceInfo?: SortOrderInput | SortOrder
+    location?: SortOrderInput | SortOrder
+    containsPII?: SortOrder
+    isConfidential?: SortOrder
+    dataClassification?: SortOrderInput | SortOrder
+    retentionDate?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    tags?: SortOrder
+    keywords?: SortOrder
+    timestamp?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserProfileOrderByWithRelationInput
+    session?: ConversationSessionOrderByWithRelationInput
+  }
+
+  export type UserInteractionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: UserInteractionWhereInput | UserInteractionWhereInput[]
+    OR?: UserInteractionWhereInput[]
+    NOT?: UserInteractionWhereInput | UserInteractionWhereInput[]
+    userId?: StringFilter<"UserInteraction"> | string
+    sessionId?: StringNullableFilter<"UserInteraction"> | string | null
+    interactionType?: EnumInteractionTypeFilter<"UserInteraction"> | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFilter<"UserInteraction"> | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFilter<"UserInteraction"> | $Enums.InteractionDirection
+    externalId?: StringNullableFilter<"UserInteraction"> | string | null
+    subject?: StringNullableFilter<"UserInteraction"> | string | null
+    content?: StringNullableFilter<"UserInteraction"> | string | null
+    summary?: StringNullableFilter<"UserInteraction"> | string | null
+    contentType?: StringFilter<"UserInteraction"> | string
+    fromUserId?: StringNullableFilter<"UserInteraction"> | string | null
+    toUserIds?: StringNullableListFilter<"UserInteraction">
+    ccUserIds?: StringNullableListFilter<"UserInteraction">
+    bccUserIds?: StringNullableListFilter<"UserInteraction">
+    isAIGenerated?: BoolFilter<"UserInteraction"> | boolean
+    aiPersonality?: StringNullableFilter<"UserInteraction"> | string | null
+    aiConfidence?: FloatNullableFilter<"UserInteraction"> | number | null
+    aiIntent?: StringNullableFilter<"UserInteraction"> | string | null
+    aiSentiment?: StringNullableFilter<"UserInteraction"> | string | null
+    processedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    processingStatus?: EnumProcessingStatusFilter<"UserInteraction"> | $Enums.ProcessingStatus
+    errorMessage?: StringNullableFilter<"UserInteraction"> | string | null
+    requiresResponse?: BoolFilter<"UserInteraction"> | boolean
+    responseDeadline?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    respondedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    responseTime?: IntNullableFilter<"UserInteraction"> | number | null
+    category?: StringNullableFilter<"UserInteraction"> | string | null
+    subcategory?: StringNullableFilter<"UserInteraction"> | string | null
+    priority?: EnumInteractionPriorityFilter<"UserInteraction"> | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFilter<"UserInteraction"> | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFilter<"UserInteraction"> | $Enums.BusinessImpact
+    hasAttachments?: BoolFilter<"UserInteraction"> | boolean
+    attachmentCount?: IntFilter<"UserInteraction"> | number
+    attachmentSizes?: JsonNullableFilter<"UserInteraction">
+    attachmentTypes?: StringNullableListFilter<"UserInteraction">
+    qualityScore?: IntNullableFilter<"UserInteraction"> | number | null
+    readabilityScore?: IntNullableFilter<"UserInteraction"> | number | null
+    toneScore?: JsonNullableFilter<"UserInteraction">
+    isFollowUp?: BoolFilter<"UserInteraction"> | boolean
+    parentInteractionId?: StringNullableFilter<"UserInteraction"> | string | null
+    relatedInteractionIds?: StringNullableListFilter<"UserInteraction">
+    isEscalated?: BoolFilter<"UserInteraction"> | boolean
+    escalatedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    escalatedTo?: StringNullableFilter<"UserInteraction"> | string | null
+    escalationReason?: StringNullableFilter<"UserInteraction"> | string | null
+    isResolved?: BoolFilter<"UserInteraction"> | boolean
+    resolvedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    resolution?: StringNullableFilter<"UserInteraction"> | string | null
+    satisfactionScore?: IntNullableFilter<"UserInteraction"> | number | null
+    customerEffort?: IntNullableFilter<"UserInteraction"> | number | null
+    npsScore?: IntNullableFilter<"UserInteraction"> | number | null
+    ipAddress?: StringNullableFilter<"UserInteraction"> | string | null
+    userAgent?: StringNullableFilter<"UserInteraction"> | string | null
+    deviceInfo?: JsonNullableFilter<"UserInteraction">
+    location?: JsonNullableFilter<"UserInteraction">
+    containsPII?: BoolFilter<"UserInteraction"> | boolean
+    isConfidential?: BoolFilter<"UserInteraction"> | boolean
+    dataClassification?: StringNullableFilter<"UserInteraction"> | string | null
+    retentionDate?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    metadata?: JsonNullableFilter<"UserInteraction">
+    tags?: StringNullableListFilter<"UserInteraction">
+    keywords?: StringNullableListFilter<"UserInteraction">
+    timestamp?: DateTimeFilter<"UserInteraction"> | Date | string
+    createdAt?: DateTimeFilter<"UserInteraction"> | Date | string
+    updatedAt?: DateTimeFilter<"UserInteraction"> | Date | string
+    user?: XOR<UserProfileScalarRelationFilter, UserProfileWhereInput>
+    session?: XOR<ConversationSessionNullableScalarRelationFilter, ConversationSessionWhereInput> | null
+  }, "id">
+
+  export type UserInteractionOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionId?: SortOrderInput | SortOrder
+    interactionType?: SortOrder
+    channel?: SortOrder
+    direction?: SortOrder
+    externalId?: SortOrderInput | SortOrder
+    subject?: SortOrderInput | SortOrder
+    content?: SortOrderInput | SortOrder
+    summary?: SortOrderInput | SortOrder
+    contentType?: SortOrder
+    fromUserId?: SortOrderInput | SortOrder
+    toUserIds?: SortOrder
+    ccUserIds?: SortOrder
+    bccUserIds?: SortOrder
+    isAIGenerated?: SortOrder
+    aiPersonality?: SortOrderInput | SortOrder
+    aiConfidence?: SortOrderInput | SortOrder
+    aiIntent?: SortOrderInput | SortOrder
+    aiSentiment?: SortOrderInput | SortOrder
+    processedAt?: SortOrderInput | SortOrder
+    processingStatus?: SortOrder
+    errorMessage?: SortOrderInput | SortOrder
+    requiresResponse?: SortOrder
+    responseDeadline?: SortOrderInput | SortOrder
+    respondedAt?: SortOrderInput | SortOrder
+    responseTime?: SortOrderInput | SortOrder
+    category?: SortOrderInput | SortOrder
+    subcategory?: SortOrderInput | SortOrder
+    priority?: SortOrder
+    urgency?: SortOrder
+    businessImpact?: SortOrder
+    hasAttachments?: SortOrder
+    attachmentCount?: SortOrder
+    attachmentSizes?: SortOrderInput | SortOrder
+    attachmentTypes?: SortOrder
+    qualityScore?: SortOrderInput | SortOrder
+    readabilityScore?: SortOrderInput | SortOrder
+    toneScore?: SortOrderInput | SortOrder
+    isFollowUp?: SortOrder
+    parentInteractionId?: SortOrderInput | SortOrder
+    relatedInteractionIds?: SortOrder
+    isEscalated?: SortOrder
+    escalatedAt?: SortOrderInput | SortOrder
+    escalatedTo?: SortOrderInput | SortOrder
+    escalationReason?: SortOrderInput | SortOrder
+    isResolved?: SortOrder
+    resolvedAt?: SortOrderInput | SortOrder
+    resolution?: SortOrderInput | SortOrder
+    satisfactionScore?: SortOrderInput | SortOrder
+    customerEffort?: SortOrderInput | SortOrder
+    npsScore?: SortOrderInput | SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    deviceInfo?: SortOrderInput | SortOrder
+    location?: SortOrderInput | SortOrder
+    containsPII?: SortOrder
+    isConfidential?: SortOrder
+    dataClassification?: SortOrderInput | SortOrder
+    retentionDate?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    tags?: SortOrder
+    keywords?: SortOrder
+    timestamp?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UserInteractionCountOrderByAggregateInput
+    _avg?: UserInteractionAvgOrderByAggregateInput
+    _max?: UserInteractionMaxOrderByAggregateInput
+    _min?: UserInteractionMinOrderByAggregateInput
+    _sum?: UserInteractionSumOrderByAggregateInput
+  }
+
+  export type UserInteractionScalarWhereWithAggregatesInput = {
+    AND?: UserInteractionScalarWhereWithAggregatesInput | UserInteractionScalarWhereWithAggregatesInput[]
+    OR?: UserInteractionScalarWhereWithAggregatesInput[]
+    NOT?: UserInteractionScalarWhereWithAggregatesInput | UserInteractionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserInteraction"> | string
+    userId?: StringWithAggregatesFilter<"UserInteraction"> | string
+    sessionId?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    interactionType?: EnumInteractionTypeWithAggregatesFilter<"UserInteraction"> | $Enums.InteractionType
+    channel?: EnumCommunicationChannelWithAggregatesFilter<"UserInteraction"> | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionWithAggregatesFilter<"UserInteraction"> | $Enums.InteractionDirection
+    externalId?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    subject?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    content?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    summary?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    contentType?: StringWithAggregatesFilter<"UserInteraction"> | string
+    fromUserId?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    toUserIds?: StringNullableListFilter<"UserInteraction">
+    ccUserIds?: StringNullableListFilter<"UserInteraction">
+    bccUserIds?: StringNullableListFilter<"UserInteraction">
+    isAIGenerated?: BoolWithAggregatesFilter<"UserInteraction"> | boolean
+    aiPersonality?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    aiConfidence?: FloatNullableWithAggregatesFilter<"UserInteraction"> | number | null
+    aiIntent?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    aiSentiment?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    processedAt?: DateTimeNullableWithAggregatesFilter<"UserInteraction"> | Date | string | null
+    processingStatus?: EnumProcessingStatusWithAggregatesFilter<"UserInteraction"> | $Enums.ProcessingStatus
+    errorMessage?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    requiresResponse?: BoolWithAggregatesFilter<"UserInteraction"> | boolean
+    responseDeadline?: DateTimeNullableWithAggregatesFilter<"UserInteraction"> | Date | string | null
+    respondedAt?: DateTimeNullableWithAggregatesFilter<"UserInteraction"> | Date | string | null
+    responseTime?: IntNullableWithAggregatesFilter<"UserInteraction"> | number | null
+    category?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    subcategory?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    priority?: EnumInteractionPriorityWithAggregatesFilter<"UserInteraction"> | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelWithAggregatesFilter<"UserInteraction"> | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactWithAggregatesFilter<"UserInteraction"> | $Enums.BusinessImpact
+    hasAttachments?: BoolWithAggregatesFilter<"UserInteraction"> | boolean
+    attachmentCount?: IntWithAggregatesFilter<"UserInteraction"> | number
+    attachmentSizes?: JsonNullableWithAggregatesFilter<"UserInteraction">
+    attachmentTypes?: StringNullableListFilter<"UserInteraction">
+    qualityScore?: IntNullableWithAggregatesFilter<"UserInteraction"> | number | null
+    readabilityScore?: IntNullableWithAggregatesFilter<"UserInteraction"> | number | null
+    toneScore?: JsonNullableWithAggregatesFilter<"UserInteraction">
+    isFollowUp?: BoolWithAggregatesFilter<"UserInteraction"> | boolean
+    parentInteractionId?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    relatedInteractionIds?: StringNullableListFilter<"UserInteraction">
+    isEscalated?: BoolWithAggregatesFilter<"UserInteraction"> | boolean
+    escalatedAt?: DateTimeNullableWithAggregatesFilter<"UserInteraction"> | Date | string | null
+    escalatedTo?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    escalationReason?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    isResolved?: BoolWithAggregatesFilter<"UserInteraction"> | boolean
+    resolvedAt?: DateTimeNullableWithAggregatesFilter<"UserInteraction"> | Date | string | null
+    resolution?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    satisfactionScore?: IntNullableWithAggregatesFilter<"UserInteraction"> | number | null
+    customerEffort?: IntNullableWithAggregatesFilter<"UserInteraction"> | number | null
+    npsScore?: IntNullableWithAggregatesFilter<"UserInteraction"> | number | null
+    ipAddress?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    userAgent?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    deviceInfo?: JsonNullableWithAggregatesFilter<"UserInteraction">
+    location?: JsonNullableWithAggregatesFilter<"UserInteraction">
+    containsPII?: BoolWithAggregatesFilter<"UserInteraction"> | boolean
+    isConfidential?: BoolWithAggregatesFilter<"UserInteraction"> | boolean
+    dataClassification?: StringNullableWithAggregatesFilter<"UserInteraction"> | string | null
+    retentionDate?: DateTimeNullableWithAggregatesFilter<"UserInteraction"> | Date | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"UserInteraction">
+    tags?: StringNullableListFilter<"UserInteraction">
+    keywords?: StringNullableListFilter<"UserInteraction">
+    timestamp?: DateTimeWithAggregatesFilter<"UserInteraction"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"UserInteraction"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UserInteraction"> | Date | string
+  }
+
+  export type AIConversationMemoryWhereInput = {
+    AND?: AIConversationMemoryWhereInput | AIConversationMemoryWhereInput[]
+    OR?: AIConversationMemoryWhereInput[]
+    NOT?: AIConversationMemoryWhereInput | AIConversationMemoryWhereInput[]
+    id?: StringFilter<"AIConversationMemory"> | string
+    userId?: StringFilter<"AIConversationMemory"> | string
+    sessionId?: StringNullableFilter<"AIConversationMemory"> | string | null
+    conversationId?: StringFilter<"AIConversationMemory"> | string
+    aiPersonality?: StringFilter<"AIConversationMemory"> | string
+    context?: JsonFilter<"AIConversationMemory">
+    userPreferences?: JsonNullableFilter<"AIConversationMemory">
+    conversationState?: JsonNullableFilter<"AIConversationMemory">
+    entityMemory?: JsonNullableFilter<"AIConversationMemory">
+    interactionCount?: IntFilter<"AIConversationMemory"> | number
+    lastInteractionId?: StringNullableFilter<"AIConversationMemory"> | string | null
+    memoryStrength?: FloatFilter<"AIConversationMemory"> | number
+    lastAccessedAt?: DateTimeFilter<"AIConversationMemory"> | Date | string
+    expiresAt?: DateTimeNullableFilter<"AIConversationMemory"> | Date | string | null
+    isActive?: BoolFilter<"AIConversationMemory"> | boolean
+    createdAt?: DateTimeFilter<"AIConversationMemory"> | Date | string
+    updatedAt?: DateTimeFilter<"AIConversationMemory"> | Date | string
+    user?: XOR<UserProfileScalarRelationFilter, UserProfileWhereInput>
+  }
+
+  export type AIConversationMemoryOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionId?: SortOrderInput | SortOrder
+    conversationId?: SortOrder
+    aiPersonality?: SortOrder
+    context?: SortOrder
+    userPreferences?: SortOrderInput | SortOrder
+    conversationState?: SortOrderInput | SortOrder
+    entityMemory?: SortOrderInput | SortOrder
+    interactionCount?: SortOrder
+    lastInteractionId?: SortOrderInput | SortOrder
+    memoryStrength?: SortOrder
+    lastAccessedAt?: SortOrder
+    expiresAt?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserProfileOrderByWithRelationInput
+  }
+
+  export type AIConversationMemoryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_conversationId_aiPersonality?: AIConversationMemoryUserIdConversationIdAiPersonalityCompoundUniqueInput
+    AND?: AIConversationMemoryWhereInput | AIConversationMemoryWhereInput[]
+    OR?: AIConversationMemoryWhereInput[]
+    NOT?: AIConversationMemoryWhereInput | AIConversationMemoryWhereInput[]
+    userId?: StringFilter<"AIConversationMemory"> | string
+    sessionId?: StringNullableFilter<"AIConversationMemory"> | string | null
+    conversationId?: StringFilter<"AIConversationMemory"> | string
+    aiPersonality?: StringFilter<"AIConversationMemory"> | string
+    context?: JsonFilter<"AIConversationMemory">
+    userPreferences?: JsonNullableFilter<"AIConversationMemory">
+    conversationState?: JsonNullableFilter<"AIConversationMemory">
+    entityMemory?: JsonNullableFilter<"AIConversationMemory">
+    interactionCount?: IntFilter<"AIConversationMemory"> | number
+    lastInteractionId?: StringNullableFilter<"AIConversationMemory"> | string | null
+    memoryStrength?: FloatFilter<"AIConversationMemory"> | number
+    lastAccessedAt?: DateTimeFilter<"AIConversationMemory"> | Date | string
+    expiresAt?: DateTimeNullableFilter<"AIConversationMemory"> | Date | string | null
+    isActive?: BoolFilter<"AIConversationMemory"> | boolean
+    createdAt?: DateTimeFilter<"AIConversationMemory"> | Date | string
+    updatedAt?: DateTimeFilter<"AIConversationMemory"> | Date | string
+    user?: XOR<UserProfileScalarRelationFilter, UserProfileWhereInput>
+  }, "id" | "userId_conversationId_aiPersonality">
+
+  export type AIConversationMemoryOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionId?: SortOrderInput | SortOrder
+    conversationId?: SortOrder
+    aiPersonality?: SortOrder
+    context?: SortOrder
+    userPreferences?: SortOrderInput | SortOrder
+    conversationState?: SortOrderInput | SortOrder
+    entityMemory?: SortOrderInput | SortOrder
+    interactionCount?: SortOrder
+    lastInteractionId?: SortOrderInput | SortOrder
+    memoryStrength?: SortOrder
+    lastAccessedAt?: SortOrder
+    expiresAt?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AIConversationMemoryCountOrderByAggregateInput
+    _avg?: AIConversationMemoryAvgOrderByAggregateInput
+    _max?: AIConversationMemoryMaxOrderByAggregateInput
+    _min?: AIConversationMemoryMinOrderByAggregateInput
+    _sum?: AIConversationMemorySumOrderByAggregateInput
+  }
+
+  export type AIConversationMemoryScalarWhereWithAggregatesInput = {
+    AND?: AIConversationMemoryScalarWhereWithAggregatesInput | AIConversationMemoryScalarWhereWithAggregatesInput[]
+    OR?: AIConversationMemoryScalarWhereWithAggregatesInput[]
+    NOT?: AIConversationMemoryScalarWhereWithAggregatesInput | AIConversationMemoryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AIConversationMemory"> | string
+    userId?: StringWithAggregatesFilter<"AIConversationMemory"> | string
+    sessionId?: StringNullableWithAggregatesFilter<"AIConversationMemory"> | string | null
+    conversationId?: StringWithAggregatesFilter<"AIConversationMemory"> | string
+    aiPersonality?: StringWithAggregatesFilter<"AIConversationMemory"> | string
+    context?: JsonWithAggregatesFilter<"AIConversationMemory">
+    userPreferences?: JsonNullableWithAggregatesFilter<"AIConversationMemory">
+    conversationState?: JsonNullableWithAggregatesFilter<"AIConversationMemory">
+    entityMemory?: JsonNullableWithAggregatesFilter<"AIConversationMemory">
+    interactionCount?: IntWithAggregatesFilter<"AIConversationMemory"> | number
+    lastInteractionId?: StringNullableWithAggregatesFilter<"AIConversationMemory"> | string | null
+    memoryStrength?: FloatWithAggregatesFilter<"AIConversationMemory"> | number
+    lastAccessedAt?: DateTimeWithAggregatesFilter<"AIConversationMemory"> | Date | string
+    expiresAt?: DateTimeNullableWithAggregatesFilter<"AIConversationMemory"> | Date | string | null
+    isActive?: BoolWithAggregatesFilter<"AIConversationMemory"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"AIConversationMemory"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AIConversationMemory"> | Date | string
+  }
+
   export type UserProfileCreateInput = {
     id?: string
     helixUid: string
@@ -11756,6 +17805,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileUncheckedCreateInput = {
@@ -11800,6 +17852,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileUpdateInput = {
@@ -11844,6 +17899,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUncheckedUpdateInput = {
@@ -11888,6 +17946,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileCreateManyInput = {
@@ -12715,6 +18776,832 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ConversationSessionCreateInput = {
+    id?: string
+    sessionType: $Enums.ConversationType
+    channel: $Enums.CommunicationChannel
+    externalId?: string | null
+    subject?: string | null
+    status?: $Enums.SessionStatus
+    priority?: $Enums.SessionPriority
+    participantIds?: ConversationSessionCreateparticipantIdsInput | string[]
+    assignedAgentId?: string | null
+    escalationLevel?: number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionCreatetagsInput | string[]
+    category?: string | null
+    subcategory?: string | null
+    totalInteractions?: number
+    avgResponseTime?: number | null
+    firstResponseTime?: number | null
+    resolutionTime?: number | null
+    startedAt?: Date | string
+    lastActivityAt?: Date | string
+    endedAt?: Date | string | null
+    satisfactionScore?: number | null
+    qualityScore?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserProfileCreateNestedOneWithoutConversationSessionsInput
+    interactions?: UserInteractionCreateNestedManyWithoutSessionInput
+  }
+
+  export type ConversationSessionUncheckedCreateInput = {
+    id?: string
+    userId: string
+    sessionType: $Enums.ConversationType
+    channel: $Enums.CommunicationChannel
+    externalId?: string | null
+    subject?: string | null
+    status?: $Enums.SessionStatus
+    priority?: $Enums.SessionPriority
+    participantIds?: ConversationSessionCreateparticipantIdsInput | string[]
+    assignedAgentId?: string | null
+    escalationLevel?: number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionCreatetagsInput | string[]
+    category?: string | null
+    subcategory?: string | null
+    totalInteractions?: number
+    avgResponseTime?: number | null
+    firstResponseTime?: number | null
+    resolutionTime?: number | null
+    startedAt?: Date | string
+    lastActivityAt?: Date | string
+    endedAt?: Date | string | null
+    satisfactionScore?: number | null
+    qualityScore?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutSessionInput
+  }
+
+  export type ConversationSessionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionType?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFieldUpdateOperationsInput | $Enums.SessionPriority
+    participantIds?: ConversationSessionUpdateparticipantIdsInput | string[]
+    assignedAgentId?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationLevel?: IntFieldUpdateOperationsInput | number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionUpdatetagsInput | string[]
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    totalInteractions?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    firstResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    resolutionTime?: NullableIntFieldUpdateOperationsInput | number | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserProfileUpdateOneRequiredWithoutConversationSessionsNestedInput
+    interactions?: UserInteractionUpdateManyWithoutSessionNestedInput
+  }
+
+  export type ConversationSessionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    sessionType?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFieldUpdateOperationsInput | $Enums.SessionPriority
+    participantIds?: ConversationSessionUpdateparticipantIdsInput | string[]
+    assignedAgentId?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationLevel?: IntFieldUpdateOperationsInput | number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionUpdatetagsInput | string[]
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    totalInteractions?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    firstResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    resolutionTime?: NullableIntFieldUpdateOperationsInput | number | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    interactions?: UserInteractionUncheckedUpdateManyWithoutSessionNestedInput
+  }
+
+  export type ConversationSessionCreateManyInput = {
+    id?: string
+    userId: string
+    sessionType: $Enums.ConversationType
+    channel: $Enums.CommunicationChannel
+    externalId?: string | null
+    subject?: string | null
+    status?: $Enums.SessionStatus
+    priority?: $Enums.SessionPriority
+    participantIds?: ConversationSessionCreateparticipantIdsInput | string[]
+    assignedAgentId?: string | null
+    escalationLevel?: number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionCreatetagsInput | string[]
+    category?: string | null
+    subcategory?: string | null
+    totalInteractions?: number
+    avgResponseTime?: number | null
+    firstResponseTime?: number | null
+    resolutionTime?: number | null
+    startedAt?: Date | string
+    lastActivityAt?: Date | string
+    endedAt?: Date | string | null
+    satisfactionScore?: number | null
+    qualityScore?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ConversationSessionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionType?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFieldUpdateOperationsInput | $Enums.SessionPriority
+    participantIds?: ConversationSessionUpdateparticipantIdsInput | string[]
+    assignedAgentId?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationLevel?: IntFieldUpdateOperationsInput | number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionUpdatetagsInput | string[]
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    totalInteractions?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    firstResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    resolutionTime?: NullableIntFieldUpdateOperationsInput | number | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ConversationSessionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    sessionType?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFieldUpdateOperationsInput | $Enums.SessionPriority
+    participantIds?: ConversationSessionUpdateparticipantIdsInput | string[]
+    assignedAgentId?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationLevel?: IntFieldUpdateOperationsInput | number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionUpdatetagsInput | string[]
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    totalInteractions?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    firstResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    resolutionTime?: NullableIntFieldUpdateOperationsInput | number | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserInteractionCreateInput = {
+    id?: string
+    interactionType: $Enums.InteractionType
+    channel: $Enums.CommunicationChannel
+    direction: $Enums.InteractionDirection
+    externalId?: string | null
+    subject?: string | null
+    content?: string | null
+    summary?: string | null
+    contentType?: string
+    fromUserId?: string | null
+    toUserIds?: UserInteractionCreatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionCreateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionCreatebccUserIdsInput | string[]
+    isAIGenerated?: boolean
+    aiPersonality?: string | null
+    aiConfidence?: number | null
+    aiIntent?: string | null
+    aiSentiment?: string | null
+    processedAt?: Date | string | null
+    processingStatus?: $Enums.ProcessingStatus
+    errorMessage?: string | null
+    requiresResponse?: boolean
+    responseDeadline?: Date | string | null
+    respondedAt?: Date | string | null
+    responseTime?: number | null
+    category?: string | null
+    subcategory?: string | null
+    priority?: $Enums.InteractionPriority
+    urgency?: $Enums.UrgencyLevel
+    businessImpact?: $Enums.BusinessImpact
+    hasAttachments?: boolean
+    attachmentCount?: number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionCreateattachmentTypesInput | string[]
+    qualityScore?: number | null
+    readabilityScore?: number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: boolean
+    parentInteractionId?: string | null
+    relatedInteractionIds?: UserInteractionCreaterelatedInteractionIdsInput | string[]
+    isEscalated?: boolean
+    escalatedAt?: Date | string | null
+    escalatedTo?: string | null
+    escalationReason?: string | null
+    isResolved?: boolean
+    resolvedAt?: Date | string | null
+    resolution?: string | null
+    satisfactionScore?: number | null
+    customerEffort?: number | null
+    npsScore?: number | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: string | null
+    retentionDate?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionCreatetagsInput | string[]
+    keywords?: UserInteractionCreatekeywordsInput | string[]
+    timestamp?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserProfileCreateNestedOneWithoutInteractionsInput
+    session?: ConversationSessionCreateNestedOneWithoutInteractionsInput
+  }
+
+  export type UserInteractionUncheckedCreateInput = {
+    id?: string
+    userId: string
+    sessionId?: string | null
+    interactionType: $Enums.InteractionType
+    channel: $Enums.CommunicationChannel
+    direction: $Enums.InteractionDirection
+    externalId?: string | null
+    subject?: string | null
+    content?: string | null
+    summary?: string | null
+    contentType?: string
+    fromUserId?: string | null
+    toUserIds?: UserInteractionCreatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionCreateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionCreatebccUserIdsInput | string[]
+    isAIGenerated?: boolean
+    aiPersonality?: string | null
+    aiConfidence?: number | null
+    aiIntent?: string | null
+    aiSentiment?: string | null
+    processedAt?: Date | string | null
+    processingStatus?: $Enums.ProcessingStatus
+    errorMessage?: string | null
+    requiresResponse?: boolean
+    responseDeadline?: Date | string | null
+    respondedAt?: Date | string | null
+    responseTime?: number | null
+    category?: string | null
+    subcategory?: string | null
+    priority?: $Enums.InteractionPriority
+    urgency?: $Enums.UrgencyLevel
+    businessImpact?: $Enums.BusinessImpact
+    hasAttachments?: boolean
+    attachmentCount?: number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionCreateattachmentTypesInput | string[]
+    qualityScore?: number | null
+    readabilityScore?: number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: boolean
+    parentInteractionId?: string | null
+    relatedInteractionIds?: UserInteractionCreaterelatedInteractionIdsInput | string[]
+    isEscalated?: boolean
+    escalatedAt?: Date | string | null
+    escalatedTo?: string | null
+    escalationReason?: string | null
+    isResolved?: boolean
+    resolvedAt?: Date | string | null
+    resolution?: string | null
+    satisfactionScore?: number | null
+    customerEffort?: number | null
+    npsScore?: number | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: string | null
+    retentionDate?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionCreatetagsInput | string[]
+    keywords?: UserInteractionCreatekeywordsInput | string[]
+    timestamp?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserInteractionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    interactionType?: EnumInteractionTypeFieldUpdateOperationsInput | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFieldUpdateOperationsInput | $Enums.InteractionDirection
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    contentType?: StringFieldUpdateOperationsInput | string
+    fromUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    toUserIds?: UserInteractionUpdatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionUpdateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionUpdatebccUserIdsInput | string[]
+    isAIGenerated?: BoolFieldUpdateOperationsInput | boolean
+    aiPersonality?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSentiment?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStatus?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresResponse?: BoolFieldUpdateOperationsInput | boolean
+    responseDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    respondedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumInteractionPriorityFieldUpdateOperationsInput | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFieldUpdateOperationsInput | $Enums.BusinessImpact
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachmentCount?: IntFieldUpdateOperationsInput | number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionUpdateattachmentTypesInput | string[]
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    readabilityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    parentInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedInteractionIds?: UserInteractionUpdaterelatedInteractionIdsInput | string[]
+    isEscalated?: BoolFieldUpdateOperationsInput | boolean
+    escalatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    escalatedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    isResolved?: BoolFieldUpdateOperationsInput | boolean
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    customerEffort?: NullableIntFieldUpdateOperationsInput | number | null
+    npsScore?: NullableIntFieldUpdateOperationsInput | number | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: BoolFieldUpdateOperationsInput | boolean
+    isConfidential?: BoolFieldUpdateOperationsInput | boolean
+    dataClassification?: NullableStringFieldUpdateOperationsInput | string | null
+    retentionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionUpdatetagsInput | string[]
+    keywords?: UserInteractionUpdatekeywordsInput | string[]
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserProfileUpdateOneRequiredWithoutInteractionsNestedInput
+    session?: ConversationSessionUpdateOneWithoutInteractionsNestedInput
+  }
+
+  export type UserInteractionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    interactionType?: EnumInteractionTypeFieldUpdateOperationsInput | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFieldUpdateOperationsInput | $Enums.InteractionDirection
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    contentType?: StringFieldUpdateOperationsInput | string
+    fromUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    toUserIds?: UserInteractionUpdatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionUpdateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionUpdatebccUserIdsInput | string[]
+    isAIGenerated?: BoolFieldUpdateOperationsInput | boolean
+    aiPersonality?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSentiment?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStatus?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresResponse?: BoolFieldUpdateOperationsInput | boolean
+    responseDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    respondedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumInteractionPriorityFieldUpdateOperationsInput | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFieldUpdateOperationsInput | $Enums.BusinessImpact
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachmentCount?: IntFieldUpdateOperationsInput | number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionUpdateattachmentTypesInput | string[]
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    readabilityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    parentInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedInteractionIds?: UserInteractionUpdaterelatedInteractionIdsInput | string[]
+    isEscalated?: BoolFieldUpdateOperationsInput | boolean
+    escalatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    escalatedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    isResolved?: BoolFieldUpdateOperationsInput | boolean
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    customerEffort?: NullableIntFieldUpdateOperationsInput | number | null
+    npsScore?: NullableIntFieldUpdateOperationsInput | number | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: BoolFieldUpdateOperationsInput | boolean
+    isConfidential?: BoolFieldUpdateOperationsInput | boolean
+    dataClassification?: NullableStringFieldUpdateOperationsInput | string | null
+    retentionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionUpdatetagsInput | string[]
+    keywords?: UserInteractionUpdatekeywordsInput | string[]
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserInteractionCreateManyInput = {
+    id?: string
+    userId: string
+    sessionId?: string | null
+    interactionType: $Enums.InteractionType
+    channel: $Enums.CommunicationChannel
+    direction: $Enums.InteractionDirection
+    externalId?: string | null
+    subject?: string | null
+    content?: string | null
+    summary?: string | null
+    contentType?: string
+    fromUserId?: string | null
+    toUserIds?: UserInteractionCreatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionCreateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionCreatebccUserIdsInput | string[]
+    isAIGenerated?: boolean
+    aiPersonality?: string | null
+    aiConfidence?: number | null
+    aiIntent?: string | null
+    aiSentiment?: string | null
+    processedAt?: Date | string | null
+    processingStatus?: $Enums.ProcessingStatus
+    errorMessage?: string | null
+    requiresResponse?: boolean
+    responseDeadline?: Date | string | null
+    respondedAt?: Date | string | null
+    responseTime?: number | null
+    category?: string | null
+    subcategory?: string | null
+    priority?: $Enums.InteractionPriority
+    urgency?: $Enums.UrgencyLevel
+    businessImpact?: $Enums.BusinessImpact
+    hasAttachments?: boolean
+    attachmentCount?: number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionCreateattachmentTypesInput | string[]
+    qualityScore?: number | null
+    readabilityScore?: number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: boolean
+    parentInteractionId?: string | null
+    relatedInteractionIds?: UserInteractionCreaterelatedInteractionIdsInput | string[]
+    isEscalated?: boolean
+    escalatedAt?: Date | string | null
+    escalatedTo?: string | null
+    escalationReason?: string | null
+    isResolved?: boolean
+    resolvedAt?: Date | string | null
+    resolution?: string | null
+    satisfactionScore?: number | null
+    customerEffort?: number | null
+    npsScore?: number | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: string | null
+    retentionDate?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionCreatetagsInput | string[]
+    keywords?: UserInteractionCreatekeywordsInput | string[]
+    timestamp?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserInteractionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    interactionType?: EnumInteractionTypeFieldUpdateOperationsInput | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFieldUpdateOperationsInput | $Enums.InteractionDirection
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    contentType?: StringFieldUpdateOperationsInput | string
+    fromUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    toUserIds?: UserInteractionUpdatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionUpdateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionUpdatebccUserIdsInput | string[]
+    isAIGenerated?: BoolFieldUpdateOperationsInput | boolean
+    aiPersonality?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSentiment?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStatus?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresResponse?: BoolFieldUpdateOperationsInput | boolean
+    responseDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    respondedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumInteractionPriorityFieldUpdateOperationsInput | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFieldUpdateOperationsInput | $Enums.BusinessImpact
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachmentCount?: IntFieldUpdateOperationsInput | number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionUpdateattachmentTypesInput | string[]
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    readabilityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    parentInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedInteractionIds?: UserInteractionUpdaterelatedInteractionIdsInput | string[]
+    isEscalated?: BoolFieldUpdateOperationsInput | boolean
+    escalatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    escalatedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    isResolved?: BoolFieldUpdateOperationsInput | boolean
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    customerEffort?: NullableIntFieldUpdateOperationsInput | number | null
+    npsScore?: NullableIntFieldUpdateOperationsInput | number | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: BoolFieldUpdateOperationsInput | boolean
+    isConfidential?: BoolFieldUpdateOperationsInput | boolean
+    dataClassification?: NullableStringFieldUpdateOperationsInput | string | null
+    retentionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionUpdatetagsInput | string[]
+    keywords?: UserInteractionUpdatekeywordsInput | string[]
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserInteractionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    interactionType?: EnumInteractionTypeFieldUpdateOperationsInput | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFieldUpdateOperationsInput | $Enums.InteractionDirection
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    contentType?: StringFieldUpdateOperationsInput | string
+    fromUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    toUserIds?: UserInteractionUpdatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionUpdateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionUpdatebccUserIdsInput | string[]
+    isAIGenerated?: BoolFieldUpdateOperationsInput | boolean
+    aiPersonality?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSentiment?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStatus?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresResponse?: BoolFieldUpdateOperationsInput | boolean
+    responseDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    respondedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumInteractionPriorityFieldUpdateOperationsInput | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFieldUpdateOperationsInput | $Enums.BusinessImpact
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachmentCount?: IntFieldUpdateOperationsInput | number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionUpdateattachmentTypesInput | string[]
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    readabilityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    parentInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedInteractionIds?: UserInteractionUpdaterelatedInteractionIdsInput | string[]
+    isEscalated?: BoolFieldUpdateOperationsInput | boolean
+    escalatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    escalatedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    isResolved?: BoolFieldUpdateOperationsInput | boolean
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    customerEffort?: NullableIntFieldUpdateOperationsInput | number | null
+    npsScore?: NullableIntFieldUpdateOperationsInput | number | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: BoolFieldUpdateOperationsInput | boolean
+    isConfidential?: BoolFieldUpdateOperationsInput | boolean
+    dataClassification?: NullableStringFieldUpdateOperationsInput | string | null
+    retentionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionUpdatetagsInput | string[]
+    keywords?: UserInteractionUpdatekeywordsInput | string[]
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIConversationMemoryCreateInput = {
+    id?: string
+    sessionId?: string | null
+    conversationId: string
+    aiPersonality: string
+    context: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: number
+    lastInteractionId?: string | null
+    memoryStrength?: number
+    lastAccessedAt?: Date | string
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserProfileCreateNestedOneWithoutAiMemoriesInput
+  }
+
+  export type AIConversationMemoryUncheckedCreateInput = {
+    id?: string
+    userId: string
+    sessionId?: string | null
+    conversationId: string
+    aiPersonality: string
+    context: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: number
+    lastInteractionId?: string | null
+    memoryStrength?: number
+    lastAccessedAt?: Date | string
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AIConversationMemoryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: StringFieldUpdateOperationsInput | string
+    aiPersonality?: StringFieldUpdateOperationsInput | string
+    context?: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: IntFieldUpdateOperationsInput | number
+    lastInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memoryStrength?: FloatFieldUpdateOperationsInput | number
+    lastAccessedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserProfileUpdateOneRequiredWithoutAiMemoriesNestedInput
+  }
+
+  export type AIConversationMemoryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: StringFieldUpdateOperationsInput | string
+    aiPersonality?: StringFieldUpdateOperationsInput | string
+    context?: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: IntFieldUpdateOperationsInput | number
+    lastInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memoryStrength?: FloatFieldUpdateOperationsInput | number
+    lastAccessedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIConversationMemoryCreateManyInput = {
+    id?: string
+    userId: string
+    sessionId?: string | null
+    conversationId: string
+    aiPersonality: string
+    context: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: number
+    lastInteractionId?: string | null
+    memoryStrength?: number
+    lastAccessedAt?: Date | string
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AIConversationMemoryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: StringFieldUpdateOperationsInput | string
+    aiPersonality?: StringFieldUpdateOperationsInput | string
+    context?: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: IntFieldUpdateOperationsInput | number
+    lastInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memoryStrength?: FloatFieldUpdateOperationsInput | number
+    lastAccessedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIConversationMemoryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: StringFieldUpdateOperationsInput | string
+    aiPersonality?: StringFieldUpdateOperationsInput | string
+    context?: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: IntFieldUpdateOperationsInput | number
+    lastInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memoryStrength?: FloatFieldUpdateOperationsInput | number
+    lastAccessedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -12863,6 +19750,24 @@ export namespace Prisma {
     none?: TrainingRecordWhereInput
   }
 
+  export type ConversationSessionListRelationFilter = {
+    every?: ConversationSessionWhereInput
+    some?: ConversationSessionWhereInput
+    none?: ConversationSessionWhereInput
+  }
+
+  export type UserInteractionListRelationFilter = {
+    every?: UserInteractionWhereInput
+    some?: UserInteractionWhereInput
+    none?: UserInteractionWhereInput
+  }
+
+  export type AIConversationMemoryListRelationFilter = {
+    every?: AIConversationMemoryWhereInput
+    some?: AIConversationMemoryWhereInput
+    none?: AIConversationMemoryWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -12893,6 +19798,18 @@ export namespace Prisma {
   }
 
   export type TrainingRecordOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ConversationSessionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UserInteractionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AIConversationMemoryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -13658,6 +20575,658 @@ export namespace Prisma {
     _max?: NestedEnumTrainingStatusFilter<$PrismaModel>
   }
 
+  export type EnumConversationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ConversationType | EnumConversationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumConversationTypeFilter<$PrismaModel> | $Enums.ConversationType
+  }
+
+  export type EnumCommunicationChannelFilter<$PrismaModel = never> = {
+    equals?: $Enums.CommunicationChannel | EnumCommunicationChannelFieldRefInput<$PrismaModel>
+    in?: $Enums.CommunicationChannel[] | ListEnumCommunicationChannelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CommunicationChannel[] | ListEnumCommunicationChannelFieldRefInput<$PrismaModel>
+    not?: NestedEnumCommunicationChannelFilter<$PrismaModel> | $Enums.CommunicationChannel
+  }
+
+  export type EnumSessionStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.SessionStatus | EnumSessionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SessionStatus[] | ListEnumSessionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SessionStatus[] | ListEnumSessionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSessionStatusFilter<$PrismaModel> | $Enums.SessionStatus
+  }
+
+  export type EnumSessionPriorityFilter<$PrismaModel = never> = {
+    equals?: $Enums.SessionPriority | EnumSessionPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.SessionPriority[] | ListEnumSessionPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SessionPriority[] | ListEnumSessionPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumSessionPriorityFilter<$PrismaModel> | $Enums.SessionPriority
+  }
+
+  export type ConversationSessionCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionType?: SortOrder
+    channel?: SortOrder
+    externalId?: SortOrder
+    subject?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    participantIds?: SortOrder
+    assignedAgentId?: SortOrder
+    escalationLevel?: SortOrder
+    context?: SortOrder
+    tags?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrder
+    totalInteractions?: SortOrder
+    avgResponseTime?: SortOrder
+    firstResponseTime?: SortOrder
+    resolutionTime?: SortOrder
+    startedAt?: SortOrder
+    lastActivityAt?: SortOrder
+    endedAt?: SortOrder
+    satisfactionScore?: SortOrder
+    qualityScore?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ConversationSessionAvgOrderByAggregateInput = {
+    escalationLevel?: SortOrder
+    totalInteractions?: SortOrder
+    avgResponseTime?: SortOrder
+    firstResponseTime?: SortOrder
+    resolutionTime?: SortOrder
+    satisfactionScore?: SortOrder
+    qualityScore?: SortOrder
+  }
+
+  export type ConversationSessionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionType?: SortOrder
+    channel?: SortOrder
+    externalId?: SortOrder
+    subject?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    assignedAgentId?: SortOrder
+    escalationLevel?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrder
+    totalInteractions?: SortOrder
+    avgResponseTime?: SortOrder
+    firstResponseTime?: SortOrder
+    resolutionTime?: SortOrder
+    startedAt?: SortOrder
+    lastActivityAt?: SortOrder
+    endedAt?: SortOrder
+    satisfactionScore?: SortOrder
+    qualityScore?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ConversationSessionMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionType?: SortOrder
+    channel?: SortOrder
+    externalId?: SortOrder
+    subject?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    assignedAgentId?: SortOrder
+    escalationLevel?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrder
+    totalInteractions?: SortOrder
+    avgResponseTime?: SortOrder
+    firstResponseTime?: SortOrder
+    resolutionTime?: SortOrder
+    startedAt?: SortOrder
+    lastActivityAt?: SortOrder
+    endedAt?: SortOrder
+    satisfactionScore?: SortOrder
+    qualityScore?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ConversationSessionSumOrderByAggregateInput = {
+    escalationLevel?: SortOrder
+    totalInteractions?: SortOrder
+    avgResponseTime?: SortOrder
+    firstResponseTime?: SortOrder
+    resolutionTime?: SortOrder
+    satisfactionScore?: SortOrder
+    qualityScore?: SortOrder
+  }
+
+  export type EnumConversationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ConversationType | EnumConversationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumConversationTypeWithAggregatesFilter<$PrismaModel> | $Enums.ConversationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumConversationTypeFilter<$PrismaModel>
+    _max?: NestedEnumConversationTypeFilter<$PrismaModel>
+  }
+
+  export type EnumCommunicationChannelWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CommunicationChannel | EnumCommunicationChannelFieldRefInput<$PrismaModel>
+    in?: $Enums.CommunicationChannel[] | ListEnumCommunicationChannelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CommunicationChannel[] | ListEnumCommunicationChannelFieldRefInput<$PrismaModel>
+    not?: NestedEnumCommunicationChannelWithAggregatesFilter<$PrismaModel> | $Enums.CommunicationChannel
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCommunicationChannelFilter<$PrismaModel>
+    _max?: NestedEnumCommunicationChannelFilter<$PrismaModel>
+  }
+
+  export type EnumSessionStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SessionStatus | EnumSessionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SessionStatus[] | ListEnumSessionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SessionStatus[] | ListEnumSessionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSessionStatusWithAggregatesFilter<$PrismaModel> | $Enums.SessionStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSessionStatusFilter<$PrismaModel>
+    _max?: NestedEnumSessionStatusFilter<$PrismaModel>
+  }
+
+  export type EnumSessionPriorityWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SessionPriority | EnumSessionPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.SessionPriority[] | ListEnumSessionPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SessionPriority[] | ListEnumSessionPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumSessionPriorityWithAggregatesFilter<$PrismaModel> | $Enums.SessionPriority
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSessionPriorityFilter<$PrismaModel>
+    _max?: NestedEnumSessionPriorityFilter<$PrismaModel>
+  }
+
+  export type EnumInteractionTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionType | EnumInteractionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionType[] | ListEnumInteractionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionType[] | ListEnumInteractionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionTypeFilter<$PrismaModel> | $Enums.InteractionType
+  }
+
+  export type EnumInteractionDirectionFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionDirection | EnumInteractionDirectionFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionDirection[] | ListEnumInteractionDirectionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionDirection[] | ListEnumInteractionDirectionFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionDirectionFilter<$PrismaModel> | $Enums.InteractionDirection
+  }
+
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type EnumProcessingStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingStatus | EnumProcessingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProcessingStatusFilter<$PrismaModel> | $Enums.ProcessingStatus
+  }
+
+  export type EnumInteractionPriorityFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionPriority | EnumInteractionPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionPriority[] | ListEnumInteractionPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionPriority[] | ListEnumInteractionPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionPriorityFilter<$PrismaModel> | $Enums.InteractionPriority
+  }
+
+  export type EnumUrgencyLevelFilter<$PrismaModel = never> = {
+    equals?: $Enums.UrgencyLevel | EnumUrgencyLevelFieldRefInput<$PrismaModel>
+    in?: $Enums.UrgencyLevel[] | ListEnumUrgencyLevelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.UrgencyLevel[] | ListEnumUrgencyLevelFieldRefInput<$PrismaModel>
+    not?: NestedEnumUrgencyLevelFilter<$PrismaModel> | $Enums.UrgencyLevel
+  }
+
+  export type EnumBusinessImpactFilter<$PrismaModel = never> = {
+    equals?: $Enums.BusinessImpact | EnumBusinessImpactFieldRefInput<$PrismaModel>
+    in?: $Enums.BusinessImpact[] | ListEnumBusinessImpactFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BusinessImpact[] | ListEnumBusinessImpactFieldRefInput<$PrismaModel>
+    not?: NestedEnumBusinessImpactFilter<$PrismaModel> | $Enums.BusinessImpact
+  }
+
+  export type ConversationSessionNullableScalarRelationFilter = {
+    is?: ConversationSessionWhereInput | null
+    isNot?: ConversationSessionWhereInput | null
+  }
+
+  export type UserInteractionCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionId?: SortOrder
+    interactionType?: SortOrder
+    channel?: SortOrder
+    direction?: SortOrder
+    externalId?: SortOrder
+    subject?: SortOrder
+    content?: SortOrder
+    summary?: SortOrder
+    contentType?: SortOrder
+    fromUserId?: SortOrder
+    toUserIds?: SortOrder
+    ccUserIds?: SortOrder
+    bccUserIds?: SortOrder
+    isAIGenerated?: SortOrder
+    aiPersonality?: SortOrder
+    aiConfidence?: SortOrder
+    aiIntent?: SortOrder
+    aiSentiment?: SortOrder
+    processedAt?: SortOrder
+    processingStatus?: SortOrder
+    errorMessage?: SortOrder
+    requiresResponse?: SortOrder
+    responseDeadline?: SortOrder
+    respondedAt?: SortOrder
+    responseTime?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrder
+    priority?: SortOrder
+    urgency?: SortOrder
+    businessImpact?: SortOrder
+    hasAttachments?: SortOrder
+    attachmentCount?: SortOrder
+    attachmentSizes?: SortOrder
+    attachmentTypes?: SortOrder
+    qualityScore?: SortOrder
+    readabilityScore?: SortOrder
+    toneScore?: SortOrder
+    isFollowUp?: SortOrder
+    parentInteractionId?: SortOrder
+    relatedInteractionIds?: SortOrder
+    isEscalated?: SortOrder
+    escalatedAt?: SortOrder
+    escalatedTo?: SortOrder
+    escalationReason?: SortOrder
+    isResolved?: SortOrder
+    resolvedAt?: SortOrder
+    resolution?: SortOrder
+    satisfactionScore?: SortOrder
+    customerEffort?: SortOrder
+    npsScore?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    deviceInfo?: SortOrder
+    location?: SortOrder
+    containsPII?: SortOrder
+    isConfidential?: SortOrder
+    dataClassification?: SortOrder
+    retentionDate?: SortOrder
+    metadata?: SortOrder
+    tags?: SortOrder
+    keywords?: SortOrder
+    timestamp?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserInteractionAvgOrderByAggregateInput = {
+    aiConfidence?: SortOrder
+    responseTime?: SortOrder
+    attachmentCount?: SortOrder
+    qualityScore?: SortOrder
+    readabilityScore?: SortOrder
+    satisfactionScore?: SortOrder
+    customerEffort?: SortOrder
+    npsScore?: SortOrder
+  }
+
+  export type UserInteractionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionId?: SortOrder
+    interactionType?: SortOrder
+    channel?: SortOrder
+    direction?: SortOrder
+    externalId?: SortOrder
+    subject?: SortOrder
+    content?: SortOrder
+    summary?: SortOrder
+    contentType?: SortOrder
+    fromUserId?: SortOrder
+    isAIGenerated?: SortOrder
+    aiPersonality?: SortOrder
+    aiConfidence?: SortOrder
+    aiIntent?: SortOrder
+    aiSentiment?: SortOrder
+    processedAt?: SortOrder
+    processingStatus?: SortOrder
+    errorMessage?: SortOrder
+    requiresResponse?: SortOrder
+    responseDeadline?: SortOrder
+    respondedAt?: SortOrder
+    responseTime?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrder
+    priority?: SortOrder
+    urgency?: SortOrder
+    businessImpact?: SortOrder
+    hasAttachments?: SortOrder
+    attachmentCount?: SortOrder
+    qualityScore?: SortOrder
+    readabilityScore?: SortOrder
+    isFollowUp?: SortOrder
+    parentInteractionId?: SortOrder
+    isEscalated?: SortOrder
+    escalatedAt?: SortOrder
+    escalatedTo?: SortOrder
+    escalationReason?: SortOrder
+    isResolved?: SortOrder
+    resolvedAt?: SortOrder
+    resolution?: SortOrder
+    satisfactionScore?: SortOrder
+    customerEffort?: SortOrder
+    npsScore?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    containsPII?: SortOrder
+    isConfidential?: SortOrder
+    dataClassification?: SortOrder
+    retentionDate?: SortOrder
+    timestamp?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserInteractionMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionId?: SortOrder
+    interactionType?: SortOrder
+    channel?: SortOrder
+    direction?: SortOrder
+    externalId?: SortOrder
+    subject?: SortOrder
+    content?: SortOrder
+    summary?: SortOrder
+    contentType?: SortOrder
+    fromUserId?: SortOrder
+    isAIGenerated?: SortOrder
+    aiPersonality?: SortOrder
+    aiConfidence?: SortOrder
+    aiIntent?: SortOrder
+    aiSentiment?: SortOrder
+    processedAt?: SortOrder
+    processingStatus?: SortOrder
+    errorMessage?: SortOrder
+    requiresResponse?: SortOrder
+    responseDeadline?: SortOrder
+    respondedAt?: SortOrder
+    responseTime?: SortOrder
+    category?: SortOrder
+    subcategory?: SortOrder
+    priority?: SortOrder
+    urgency?: SortOrder
+    businessImpact?: SortOrder
+    hasAttachments?: SortOrder
+    attachmentCount?: SortOrder
+    qualityScore?: SortOrder
+    readabilityScore?: SortOrder
+    isFollowUp?: SortOrder
+    parentInteractionId?: SortOrder
+    isEscalated?: SortOrder
+    escalatedAt?: SortOrder
+    escalatedTo?: SortOrder
+    escalationReason?: SortOrder
+    isResolved?: SortOrder
+    resolvedAt?: SortOrder
+    resolution?: SortOrder
+    satisfactionScore?: SortOrder
+    customerEffort?: SortOrder
+    npsScore?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    containsPII?: SortOrder
+    isConfidential?: SortOrder
+    dataClassification?: SortOrder
+    retentionDate?: SortOrder
+    timestamp?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserInteractionSumOrderByAggregateInput = {
+    aiConfidence?: SortOrder
+    responseTime?: SortOrder
+    attachmentCount?: SortOrder
+    qualityScore?: SortOrder
+    readabilityScore?: SortOrder
+    satisfactionScore?: SortOrder
+    customerEffort?: SortOrder
+    npsScore?: SortOrder
+  }
+
+  export type EnumInteractionTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionType | EnumInteractionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionType[] | ListEnumInteractionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionType[] | ListEnumInteractionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionTypeWithAggregatesFilter<$PrismaModel> | $Enums.InteractionType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInteractionTypeFilter<$PrismaModel>
+    _max?: NestedEnumInteractionTypeFilter<$PrismaModel>
+  }
+
+  export type EnumInteractionDirectionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionDirection | EnumInteractionDirectionFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionDirection[] | ListEnumInteractionDirectionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionDirection[] | ListEnumInteractionDirectionFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionDirectionWithAggregatesFilter<$PrismaModel> | $Enums.InteractionDirection
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInteractionDirectionFilter<$PrismaModel>
+    _max?: NestedEnumInteractionDirectionFilter<$PrismaModel>
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type EnumProcessingStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingStatus | EnumProcessingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProcessingStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProcessingStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumProcessingStatusFilter<$PrismaModel>
+    _max?: NestedEnumProcessingStatusFilter<$PrismaModel>
+  }
+
+  export type EnumInteractionPriorityWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionPriority | EnumInteractionPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionPriority[] | ListEnumInteractionPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionPriority[] | ListEnumInteractionPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionPriorityWithAggregatesFilter<$PrismaModel> | $Enums.InteractionPriority
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInteractionPriorityFilter<$PrismaModel>
+    _max?: NestedEnumInteractionPriorityFilter<$PrismaModel>
+  }
+
+  export type EnumUrgencyLevelWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.UrgencyLevel | EnumUrgencyLevelFieldRefInput<$PrismaModel>
+    in?: $Enums.UrgencyLevel[] | ListEnumUrgencyLevelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.UrgencyLevel[] | ListEnumUrgencyLevelFieldRefInput<$PrismaModel>
+    not?: NestedEnumUrgencyLevelWithAggregatesFilter<$PrismaModel> | $Enums.UrgencyLevel
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumUrgencyLevelFilter<$PrismaModel>
+    _max?: NestedEnumUrgencyLevelFilter<$PrismaModel>
+  }
+
+  export type EnumBusinessImpactWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BusinessImpact | EnumBusinessImpactFieldRefInput<$PrismaModel>
+    in?: $Enums.BusinessImpact[] | ListEnumBusinessImpactFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BusinessImpact[] | ListEnumBusinessImpactFieldRefInput<$PrismaModel>
+    not?: NestedEnumBusinessImpactWithAggregatesFilter<$PrismaModel> | $Enums.BusinessImpact
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBusinessImpactFilter<$PrismaModel>
+    _max?: NestedEnumBusinessImpactFilter<$PrismaModel>
+  }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type AIConversationMemoryUserIdConversationIdAiPersonalityCompoundUniqueInput = {
+    userId: string
+    conversationId: string
+    aiPersonality: string
+  }
+
+  export type AIConversationMemoryCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionId?: SortOrder
+    conversationId?: SortOrder
+    aiPersonality?: SortOrder
+    context?: SortOrder
+    userPreferences?: SortOrder
+    conversationState?: SortOrder
+    entityMemory?: SortOrder
+    interactionCount?: SortOrder
+    lastInteractionId?: SortOrder
+    memoryStrength?: SortOrder
+    lastAccessedAt?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AIConversationMemoryAvgOrderByAggregateInput = {
+    interactionCount?: SortOrder
+    memoryStrength?: SortOrder
+  }
+
+  export type AIConversationMemoryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionId?: SortOrder
+    conversationId?: SortOrder
+    aiPersonality?: SortOrder
+    interactionCount?: SortOrder
+    lastInteractionId?: SortOrder
+    memoryStrength?: SortOrder
+    lastAccessedAt?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AIConversationMemoryMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    sessionId?: SortOrder
+    conversationId?: SortOrder
+    aiPersonality?: SortOrder
+    interactionCount?: SortOrder
+    lastInteractionId?: SortOrder
+    memoryStrength?: SortOrder
+    lastAccessedAt?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AIConversationMemorySumOrderByAggregateInput = {
+    interactionCount?: SortOrder
+    memoryStrength?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
   export type UserProfileCreaterolesInput = {
     set: string[]
   }
@@ -13721,6 +21290,27 @@ export namespace Prisma {
     connect?: TrainingRecordWhereUniqueInput | TrainingRecordWhereUniqueInput[]
   }
 
+  export type ConversationSessionCreateNestedManyWithoutUserInput = {
+    create?: XOR<ConversationSessionCreateWithoutUserInput, ConversationSessionUncheckedCreateWithoutUserInput> | ConversationSessionCreateWithoutUserInput[] | ConversationSessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ConversationSessionCreateOrConnectWithoutUserInput | ConversationSessionCreateOrConnectWithoutUserInput[]
+    createMany?: ConversationSessionCreateManyUserInputEnvelope
+    connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+  }
+
+  export type UserInteractionCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserInteractionCreateWithoutUserInput, UserInteractionUncheckedCreateWithoutUserInput> | UserInteractionCreateWithoutUserInput[] | UserInteractionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserInteractionCreateOrConnectWithoutUserInput | UserInteractionCreateOrConnectWithoutUserInput[]
+    createMany?: UserInteractionCreateManyUserInputEnvelope
+    connect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+  }
+
+  export type AIConversationMemoryCreateNestedManyWithoutUserInput = {
+    create?: XOR<AIConversationMemoryCreateWithoutUserInput, AIConversationMemoryUncheckedCreateWithoutUserInput> | AIConversationMemoryCreateWithoutUserInput[] | AIConversationMemoryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AIConversationMemoryCreateOrConnectWithoutUserInput | AIConversationMemoryCreateOrConnectWithoutUserInput[]
+    createMany?: AIConversationMemoryCreateManyUserInputEnvelope
+    connect?: AIConversationMemoryWhereUniqueInput | AIConversationMemoryWhereUniqueInput[]
+  }
+
   export type UserProfileUncheckedCreateNestedManyWithoutManagerInput = {
     create?: XOR<UserProfileCreateWithoutManagerInput, UserProfileUncheckedCreateWithoutManagerInput> | UserProfileCreateWithoutManagerInput[] | UserProfileUncheckedCreateWithoutManagerInput[]
     connectOrCreate?: UserProfileCreateOrConnectWithoutManagerInput | UserProfileCreateOrConnectWithoutManagerInput[]
@@ -13768,6 +21358,27 @@ export namespace Prisma {
     connectOrCreate?: TrainingRecordCreateOrConnectWithoutUserInput | TrainingRecordCreateOrConnectWithoutUserInput[]
     createMany?: TrainingRecordCreateManyUserInputEnvelope
     connect?: TrainingRecordWhereUniqueInput | TrainingRecordWhereUniqueInput[]
+  }
+
+  export type ConversationSessionUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<ConversationSessionCreateWithoutUserInput, ConversationSessionUncheckedCreateWithoutUserInput> | ConversationSessionCreateWithoutUserInput[] | ConversationSessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ConversationSessionCreateOrConnectWithoutUserInput | ConversationSessionCreateOrConnectWithoutUserInput[]
+    createMany?: ConversationSessionCreateManyUserInputEnvelope
+    connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+  }
+
+  export type UserInteractionUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserInteractionCreateWithoutUserInput, UserInteractionUncheckedCreateWithoutUserInput> | UserInteractionCreateWithoutUserInput[] | UserInteractionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserInteractionCreateOrConnectWithoutUserInput | UserInteractionCreateOrConnectWithoutUserInput[]
+    createMany?: UserInteractionCreateManyUserInputEnvelope
+    connect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+  }
+
+  export type AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<AIConversationMemoryCreateWithoutUserInput, AIConversationMemoryUncheckedCreateWithoutUserInput> | AIConversationMemoryCreateWithoutUserInput[] | AIConversationMemoryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AIConversationMemoryCreateOrConnectWithoutUserInput | AIConversationMemoryCreateOrConnectWithoutUserInput[]
+    createMany?: AIConversationMemoryCreateManyUserInputEnvelope
+    connect?: AIConversationMemoryWhereUniqueInput | AIConversationMemoryWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -13932,6 +21543,48 @@ export namespace Prisma {
     deleteMany?: TrainingRecordScalarWhereInput | TrainingRecordScalarWhereInput[]
   }
 
+  export type ConversationSessionUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ConversationSessionCreateWithoutUserInput, ConversationSessionUncheckedCreateWithoutUserInput> | ConversationSessionCreateWithoutUserInput[] | ConversationSessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ConversationSessionCreateOrConnectWithoutUserInput | ConversationSessionCreateOrConnectWithoutUserInput[]
+    upsert?: ConversationSessionUpsertWithWhereUniqueWithoutUserInput | ConversationSessionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ConversationSessionCreateManyUserInputEnvelope
+    set?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    disconnect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    delete?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    update?: ConversationSessionUpdateWithWhereUniqueWithoutUserInput | ConversationSessionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ConversationSessionUpdateManyWithWhereWithoutUserInput | ConversationSessionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ConversationSessionScalarWhereInput | ConversationSessionScalarWhereInput[]
+  }
+
+  export type UserInteractionUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserInteractionCreateWithoutUserInput, UserInteractionUncheckedCreateWithoutUserInput> | UserInteractionCreateWithoutUserInput[] | UserInteractionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserInteractionCreateOrConnectWithoutUserInput | UserInteractionCreateOrConnectWithoutUserInput[]
+    upsert?: UserInteractionUpsertWithWhereUniqueWithoutUserInput | UserInteractionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserInteractionCreateManyUserInputEnvelope
+    set?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    disconnect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    delete?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    connect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    update?: UserInteractionUpdateWithWhereUniqueWithoutUserInput | UserInteractionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserInteractionUpdateManyWithWhereWithoutUserInput | UserInteractionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserInteractionScalarWhereInput | UserInteractionScalarWhereInput[]
+  }
+
+  export type AIConversationMemoryUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AIConversationMemoryCreateWithoutUserInput, AIConversationMemoryUncheckedCreateWithoutUserInput> | AIConversationMemoryCreateWithoutUserInput[] | AIConversationMemoryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AIConversationMemoryCreateOrConnectWithoutUserInput | AIConversationMemoryCreateOrConnectWithoutUserInput[]
+    upsert?: AIConversationMemoryUpsertWithWhereUniqueWithoutUserInput | AIConversationMemoryUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AIConversationMemoryCreateManyUserInputEnvelope
+    set?: AIConversationMemoryWhereUniqueInput | AIConversationMemoryWhereUniqueInput[]
+    disconnect?: AIConversationMemoryWhereUniqueInput | AIConversationMemoryWhereUniqueInput[]
+    delete?: AIConversationMemoryWhereUniqueInput | AIConversationMemoryWhereUniqueInput[]
+    connect?: AIConversationMemoryWhereUniqueInput | AIConversationMemoryWhereUniqueInput[]
+    update?: AIConversationMemoryUpdateWithWhereUniqueWithoutUserInput | AIConversationMemoryUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AIConversationMemoryUpdateManyWithWhereWithoutUserInput | AIConversationMemoryUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AIConversationMemoryScalarWhereInput | AIConversationMemoryScalarWhereInput[]
+  }
+
   export type UserProfileUncheckedUpdateManyWithoutManagerNestedInput = {
     create?: XOR<UserProfileCreateWithoutManagerInput, UserProfileUncheckedCreateWithoutManagerInput> | UserProfileCreateWithoutManagerInput[] | UserProfileUncheckedCreateWithoutManagerInput[]
     connectOrCreate?: UserProfileCreateOrConnectWithoutManagerInput | UserProfileCreateOrConnectWithoutManagerInput[]
@@ -14028,6 +21681,48 @@ export namespace Prisma {
     update?: TrainingRecordUpdateWithWhereUniqueWithoutUserInput | TrainingRecordUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: TrainingRecordUpdateManyWithWhereWithoutUserInput | TrainingRecordUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: TrainingRecordScalarWhereInput | TrainingRecordScalarWhereInput[]
+  }
+
+  export type ConversationSessionUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ConversationSessionCreateWithoutUserInput, ConversationSessionUncheckedCreateWithoutUserInput> | ConversationSessionCreateWithoutUserInput[] | ConversationSessionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ConversationSessionCreateOrConnectWithoutUserInput | ConversationSessionCreateOrConnectWithoutUserInput[]
+    upsert?: ConversationSessionUpsertWithWhereUniqueWithoutUserInput | ConversationSessionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ConversationSessionCreateManyUserInputEnvelope
+    set?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    disconnect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    delete?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    update?: ConversationSessionUpdateWithWhereUniqueWithoutUserInput | ConversationSessionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ConversationSessionUpdateManyWithWhereWithoutUserInput | ConversationSessionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ConversationSessionScalarWhereInput | ConversationSessionScalarWhereInput[]
+  }
+
+  export type UserInteractionUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserInteractionCreateWithoutUserInput, UserInteractionUncheckedCreateWithoutUserInput> | UserInteractionCreateWithoutUserInput[] | UserInteractionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserInteractionCreateOrConnectWithoutUserInput | UserInteractionCreateOrConnectWithoutUserInput[]
+    upsert?: UserInteractionUpsertWithWhereUniqueWithoutUserInput | UserInteractionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserInteractionCreateManyUserInputEnvelope
+    set?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    disconnect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    delete?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    connect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    update?: UserInteractionUpdateWithWhereUniqueWithoutUserInput | UserInteractionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserInteractionUpdateManyWithWhereWithoutUserInput | UserInteractionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserInteractionScalarWhereInput | UserInteractionScalarWhereInput[]
+  }
+
+  export type AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AIConversationMemoryCreateWithoutUserInput, AIConversationMemoryUncheckedCreateWithoutUserInput> | AIConversationMemoryCreateWithoutUserInput[] | AIConversationMemoryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AIConversationMemoryCreateOrConnectWithoutUserInput | AIConversationMemoryCreateOrConnectWithoutUserInput[]
+    upsert?: AIConversationMemoryUpsertWithWhereUniqueWithoutUserInput | AIConversationMemoryUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AIConversationMemoryCreateManyUserInputEnvelope
+    set?: AIConversationMemoryWhereUniqueInput | AIConversationMemoryWhereUniqueInput[]
+    disconnect?: AIConversationMemoryWhereUniqueInput | AIConversationMemoryWhereUniqueInput[]
+    delete?: AIConversationMemoryWhereUniqueInput | AIConversationMemoryWhereUniqueInput[]
+    connect?: AIConversationMemoryWhereUniqueInput | AIConversationMemoryWhereUniqueInput[]
+    update?: AIConversationMemoryUpdateWithWhereUniqueWithoutUserInput | AIConversationMemoryUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AIConversationMemoryUpdateManyWithWhereWithoutUserInput | AIConversationMemoryUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AIConversationMemoryScalarWhereInput | AIConversationMemoryScalarWhereInput[]
   }
 
   export type UserProfileCreateNestedOneWithoutLinkedAccountsInput = {
@@ -14144,6 +21839,243 @@ export namespace Prisma {
     upsert?: UserProfileUpsertWithoutTrainingRecordsInput
     connect?: UserProfileWhereUniqueInput
     update?: XOR<XOR<UserProfileUpdateToOneWithWhereWithoutTrainingRecordsInput, UserProfileUpdateWithoutTrainingRecordsInput>, UserProfileUncheckedUpdateWithoutTrainingRecordsInput>
+  }
+
+  export type ConversationSessionCreateparticipantIdsInput = {
+    set: string[]
+  }
+
+  export type ConversationSessionCreatetagsInput = {
+    set: string[]
+  }
+
+  export type UserProfileCreateNestedOneWithoutConversationSessionsInput = {
+    create?: XOR<UserProfileCreateWithoutConversationSessionsInput, UserProfileUncheckedCreateWithoutConversationSessionsInput>
+    connectOrCreate?: UserProfileCreateOrConnectWithoutConversationSessionsInput
+    connect?: UserProfileWhereUniqueInput
+  }
+
+  export type UserInteractionCreateNestedManyWithoutSessionInput = {
+    create?: XOR<UserInteractionCreateWithoutSessionInput, UserInteractionUncheckedCreateWithoutSessionInput> | UserInteractionCreateWithoutSessionInput[] | UserInteractionUncheckedCreateWithoutSessionInput[]
+    connectOrCreate?: UserInteractionCreateOrConnectWithoutSessionInput | UserInteractionCreateOrConnectWithoutSessionInput[]
+    createMany?: UserInteractionCreateManySessionInputEnvelope
+    connect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+  }
+
+  export type UserInteractionUncheckedCreateNestedManyWithoutSessionInput = {
+    create?: XOR<UserInteractionCreateWithoutSessionInput, UserInteractionUncheckedCreateWithoutSessionInput> | UserInteractionCreateWithoutSessionInput[] | UserInteractionUncheckedCreateWithoutSessionInput[]
+    connectOrCreate?: UserInteractionCreateOrConnectWithoutSessionInput | UserInteractionCreateOrConnectWithoutSessionInput[]
+    createMany?: UserInteractionCreateManySessionInputEnvelope
+    connect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+  }
+
+  export type EnumConversationTypeFieldUpdateOperationsInput = {
+    set?: $Enums.ConversationType
+  }
+
+  export type EnumCommunicationChannelFieldUpdateOperationsInput = {
+    set?: $Enums.CommunicationChannel
+  }
+
+  export type EnumSessionStatusFieldUpdateOperationsInput = {
+    set?: $Enums.SessionStatus
+  }
+
+  export type EnumSessionPriorityFieldUpdateOperationsInput = {
+    set?: $Enums.SessionPriority
+  }
+
+  export type ConversationSessionUpdateparticipantIdsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type ConversationSessionUpdatetagsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserProfileUpdateOneRequiredWithoutConversationSessionsNestedInput = {
+    create?: XOR<UserProfileCreateWithoutConversationSessionsInput, UserProfileUncheckedCreateWithoutConversationSessionsInput>
+    connectOrCreate?: UserProfileCreateOrConnectWithoutConversationSessionsInput
+    upsert?: UserProfileUpsertWithoutConversationSessionsInput
+    connect?: UserProfileWhereUniqueInput
+    update?: XOR<XOR<UserProfileUpdateToOneWithWhereWithoutConversationSessionsInput, UserProfileUpdateWithoutConversationSessionsInput>, UserProfileUncheckedUpdateWithoutConversationSessionsInput>
+  }
+
+  export type UserInteractionUpdateManyWithoutSessionNestedInput = {
+    create?: XOR<UserInteractionCreateWithoutSessionInput, UserInteractionUncheckedCreateWithoutSessionInput> | UserInteractionCreateWithoutSessionInput[] | UserInteractionUncheckedCreateWithoutSessionInput[]
+    connectOrCreate?: UserInteractionCreateOrConnectWithoutSessionInput | UserInteractionCreateOrConnectWithoutSessionInput[]
+    upsert?: UserInteractionUpsertWithWhereUniqueWithoutSessionInput | UserInteractionUpsertWithWhereUniqueWithoutSessionInput[]
+    createMany?: UserInteractionCreateManySessionInputEnvelope
+    set?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    disconnect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    delete?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    connect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    update?: UserInteractionUpdateWithWhereUniqueWithoutSessionInput | UserInteractionUpdateWithWhereUniqueWithoutSessionInput[]
+    updateMany?: UserInteractionUpdateManyWithWhereWithoutSessionInput | UserInteractionUpdateManyWithWhereWithoutSessionInput[]
+    deleteMany?: UserInteractionScalarWhereInput | UserInteractionScalarWhereInput[]
+  }
+
+  export type UserInteractionUncheckedUpdateManyWithoutSessionNestedInput = {
+    create?: XOR<UserInteractionCreateWithoutSessionInput, UserInteractionUncheckedCreateWithoutSessionInput> | UserInteractionCreateWithoutSessionInput[] | UserInteractionUncheckedCreateWithoutSessionInput[]
+    connectOrCreate?: UserInteractionCreateOrConnectWithoutSessionInput | UserInteractionCreateOrConnectWithoutSessionInput[]
+    upsert?: UserInteractionUpsertWithWhereUniqueWithoutSessionInput | UserInteractionUpsertWithWhereUniqueWithoutSessionInput[]
+    createMany?: UserInteractionCreateManySessionInputEnvelope
+    set?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    disconnect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    delete?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    connect?: UserInteractionWhereUniqueInput | UserInteractionWhereUniqueInput[]
+    update?: UserInteractionUpdateWithWhereUniqueWithoutSessionInput | UserInteractionUpdateWithWhereUniqueWithoutSessionInput[]
+    updateMany?: UserInteractionUpdateManyWithWhereWithoutSessionInput | UserInteractionUpdateManyWithWhereWithoutSessionInput[]
+    deleteMany?: UserInteractionScalarWhereInput | UserInteractionScalarWhereInput[]
+  }
+
+  export type UserInteractionCreatetoUserIdsInput = {
+    set: string[]
+  }
+
+  export type UserInteractionCreateccUserIdsInput = {
+    set: string[]
+  }
+
+  export type UserInteractionCreatebccUserIdsInput = {
+    set: string[]
+  }
+
+  export type UserInteractionCreateattachmentTypesInput = {
+    set: string[]
+  }
+
+  export type UserInteractionCreaterelatedInteractionIdsInput = {
+    set: string[]
+  }
+
+  export type UserInteractionCreatetagsInput = {
+    set: string[]
+  }
+
+  export type UserInteractionCreatekeywordsInput = {
+    set: string[]
+  }
+
+  export type UserProfileCreateNestedOneWithoutInteractionsInput = {
+    create?: XOR<UserProfileCreateWithoutInteractionsInput, UserProfileUncheckedCreateWithoutInteractionsInput>
+    connectOrCreate?: UserProfileCreateOrConnectWithoutInteractionsInput
+    connect?: UserProfileWhereUniqueInput
+  }
+
+  export type ConversationSessionCreateNestedOneWithoutInteractionsInput = {
+    create?: XOR<ConversationSessionCreateWithoutInteractionsInput, ConversationSessionUncheckedCreateWithoutInteractionsInput>
+    connectOrCreate?: ConversationSessionCreateOrConnectWithoutInteractionsInput
+    connect?: ConversationSessionWhereUniqueInput
+  }
+
+  export type EnumInteractionTypeFieldUpdateOperationsInput = {
+    set?: $Enums.InteractionType
+  }
+
+  export type EnumInteractionDirectionFieldUpdateOperationsInput = {
+    set?: $Enums.InteractionDirection
+  }
+
+  export type UserInteractionUpdatetoUserIdsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserInteractionUpdateccUserIdsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserInteractionUpdatebccUserIdsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type EnumProcessingStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ProcessingStatus
+  }
+
+  export type EnumInteractionPriorityFieldUpdateOperationsInput = {
+    set?: $Enums.InteractionPriority
+  }
+
+  export type EnumUrgencyLevelFieldUpdateOperationsInput = {
+    set?: $Enums.UrgencyLevel
+  }
+
+  export type EnumBusinessImpactFieldUpdateOperationsInput = {
+    set?: $Enums.BusinessImpact
+  }
+
+  export type UserInteractionUpdateattachmentTypesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserInteractionUpdaterelatedInteractionIdsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserInteractionUpdatetagsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserInteractionUpdatekeywordsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserProfileUpdateOneRequiredWithoutInteractionsNestedInput = {
+    create?: XOR<UserProfileCreateWithoutInteractionsInput, UserProfileUncheckedCreateWithoutInteractionsInput>
+    connectOrCreate?: UserProfileCreateOrConnectWithoutInteractionsInput
+    upsert?: UserProfileUpsertWithoutInteractionsInput
+    connect?: UserProfileWhereUniqueInput
+    update?: XOR<XOR<UserProfileUpdateToOneWithWhereWithoutInteractionsInput, UserProfileUpdateWithoutInteractionsInput>, UserProfileUncheckedUpdateWithoutInteractionsInput>
+  }
+
+  export type ConversationSessionUpdateOneWithoutInteractionsNestedInput = {
+    create?: XOR<ConversationSessionCreateWithoutInteractionsInput, ConversationSessionUncheckedCreateWithoutInteractionsInput>
+    connectOrCreate?: ConversationSessionCreateOrConnectWithoutInteractionsInput
+    upsert?: ConversationSessionUpsertWithoutInteractionsInput
+    disconnect?: ConversationSessionWhereInput | boolean
+    delete?: ConversationSessionWhereInput | boolean
+    connect?: ConversationSessionWhereUniqueInput
+    update?: XOR<XOR<ConversationSessionUpdateToOneWithWhereWithoutInteractionsInput, ConversationSessionUpdateWithoutInteractionsInput>, ConversationSessionUncheckedUpdateWithoutInteractionsInput>
+  }
+
+  export type UserProfileCreateNestedOneWithoutAiMemoriesInput = {
+    create?: XOR<UserProfileCreateWithoutAiMemoriesInput, UserProfileUncheckedCreateWithoutAiMemoriesInput>
+    connectOrCreate?: UserProfileCreateOrConnectWithoutAiMemoriesInput
+    connect?: UserProfileWhereUniqueInput
+  }
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type UserProfileUpdateOneRequiredWithoutAiMemoriesNestedInput = {
+    create?: XOR<UserProfileCreateWithoutAiMemoriesInput, UserProfileUncheckedCreateWithoutAiMemoriesInput>
+    connectOrCreate?: UserProfileCreateOrConnectWithoutAiMemoriesInput
+    upsert?: UserProfileUpsertWithoutAiMemoriesInput
+    connect?: UserProfileWhereUniqueInput
+    update?: XOR<XOR<UserProfileUpdateToOneWithWhereWithoutAiMemoriesInput, UserProfileUpdateWithoutAiMemoriesInput>, UserProfileUncheckedUpdateWithoutAiMemoriesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -14540,6 +22472,231 @@ export namespace Prisma {
     _max?: NestedEnumTrainingStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumConversationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ConversationType | EnumConversationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumConversationTypeFilter<$PrismaModel> | $Enums.ConversationType
+  }
+
+  export type NestedEnumCommunicationChannelFilter<$PrismaModel = never> = {
+    equals?: $Enums.CommunicationChannel | EnumCommunicationChannelFieldRefInput<$PrismaModel>
+    in?: $Enums.CommunicationChannel[] | ListEnumCommunicationChannelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CommunicationChannel[] | ListEnumCommunicationChannelFieldRefInput<$PrismaModel>
+    not?: NestedEnumCommunicationChannelFilter<$PrismaModel> | $Enums.CommunicationChannel
+  }
+
+  export type NestedEnumSessionStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.SessionStatus | EnumSessionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SessionStatus[] | ListEnumSessionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SessionStatus[] | ListEnumSessionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSessionStatusFilter<$PrismaModel> | $Enums.SessionStatus
+  }
+
+  export type NestedEnumSessionPriorityFilter<$PrismaModel = never> = {
+    equals?: $Enums.SessionPriority | EnumSessionPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.SessionPriority[] | ListEnumSessionPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SessionPriority[] | ListEnumSessionPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumSessionPriorityFilter<$PrismaModel> | $Enums.SessionPriority
+  }
+
+  export type NestedEnumConversationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ConversationType | EnumConversationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumConversationTypeWithAggregatesFilter<$PrismaModel> | $Enums.ConversationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumConversationTypeFilter<$PrismaModel>
+    _max?: NestedEnumConversationTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumCommunicationChannelWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CommunicationChannel | EnumCommunicationChannelFieldRefInput<$PrismaModel>
+    in?: $Enums.CommunicationChannel[] | ListEnumCommunicationChannelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CommunicationChannel[] | ListEnumCommunicationChannelFieldRefInput<$PrismaModel>
+    not?: NestedEnumCommunicationChannelWithAggregatesFilter<$PrismaModel> | $Enums.CommunicationChannel
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCommunicationChannelFilter<$PrismaModel>
+    _max?: NestedEnumCommunicationChannelFilter<$PrismaModel>
+  }
+
+  export type NestedEnumSessionStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SessionStatus | EnumSessionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.SessionStatus[] | ListEnumSessionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SessionStatus[] | ListEnumSessionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumSessionStatusWithAggregatesFilter<$PrismaModel> | $Enums.SessionStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSessionStatusFilter<$PrismaModel>
+    _max?: NestedEnumSessionStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumSessionPriorityWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SessionPriority | EnumSessionPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.SessionPriority[] | ListEnumSessionPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SessionPriority[] | ListEnumSessionPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumSessionPriorityWithAggregatesFilter<$PrismaModel> | $Enums.SessionPriority
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSessionPriorityFilter<$PrismaModel>
+    _max?: NestedEnumSessionPriorityFilter<$PrismaModel>
+  }
+
+  export type NestedEnumInteractionTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionType | EnumInteractionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionType[] | ListEnumInteractionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionType[] | ListEnumInteractionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionTypeFilter<$PrismaModel> | $Enums.InteractionType
+  }
+
+  export type NestedEnumInteractionDirectionFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionDirection | EnumInteractionDirectionFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionDirection[] | ListEnumInteractionDirectionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionDirection[] | ListEnumInteractionDirectionFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionDirectionFilter<$PrismaModel> | $Enums.InteractionDirection
+  }
+
+  export type NestedEnumProcessingStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingStatus | EnumProcessingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProcessingStatusFilter<$PrismaModel> | $Enums.ProcessingStatus
+  }
+
+  export type NestedEnumInteractionPriorityFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionPriority | EnumInteractionPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionPriority[] | ListEnumInteractionPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionPriority[] | ListEnumInteractionPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionPriorityFilter<$PrismaModel> | $Enums.InteractionPriority
+  }
+
+  export type NestedEnumUrgencyLevelFilter<$PrismaModel = never> = {
+    equals?: $Enums.UrgencyLevel | EnumUrgencyLevelFieldRefInput<$PrismaModel>
+    in?: $Enums.UrgencyLevel[] | ListEnumUrgencyLevelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.UrgencyLevel[] | ListEnumUrgencyLevelFieldRefInput<$PrismaModel>
+    not?: NestedEnumUrgencyLevelFilter<$PrismaModel> | $Enums.UrgencyLevel
+  }
+
+  export type NestedEnumBusinessImpactFilter<$PrismaModel = never> = {
+    equals?: $Enums.BusinessImpact | EnumBusinessImpactFieldRefInput<$PrismaModel>
+    in?: $Enums.BusinessImpact[] | ListEnumBusinessImpactFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BusinessImpact[] | ListEnumBusinessImpactFieldRefInput<$PrismaModel>
+    not?: NestedEnumBusinessImpactFilter<$PrismaModel> | $Enums.BusinessImpact
+  }
+
+  export type NestedEnumInteractionTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionType | EnumInteractionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionType[] | ListEnumInteractionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionType[] | ListEnumInteractionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionTypeWithAggregatesFilter<$PrismaModel> | $Enums.InteractionType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInteractionTypeFilter<$PrismaModel>
+    _max?: NestedEnumInteractionTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumInteractionDirectionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionDirection | EnumInteractionDirectionFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionDirection[] | ListEnumInteractionDirectionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionDirection[] | ListEnumInteractionDirectionFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionDirectionWithAggregatesFilter<$PrismaModel> | $Enums.InteractionDirection
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInteractionDirectionFilter<$PrismaModel>
+    _max?: NestedEnumInteractionDirectionFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumProcessingStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProcessingStatus | EnumProcessingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProcessingStatus[] | ListEnumProcessingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProcessingStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProcessingStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumProcessingStatusFilter<$PrismaModel>
+    _max?: NestedEnumProcessingStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumInteractionPriorityWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InteractionPriority | EnumInteractionPriorityFieldRefInput<$PrismaModel>
+    in?: $Enums.InteractionPriority[] | ListEnumInteractionPriorityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InteractionPriority[] | ListEnumInteractionPriorityFieldRefInput<$PrismaModel>
+    not?: NestedEnumInteractionPriorityWithAggregatesFilter<$PrismaModel> | $Enums.InteractionPriority
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInteractionPriorityFilter<$PrismaModel>
+    _max?: NestedEnumInteractionPriorityFilter<$PrismaModel>
+  }
+
+  export type NestedEnumUrgencyLevelWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.UrgencyLevel | EnumUrgencyLevelFieldRefInput<$PrismaModel>
+    in?: $Enums.UrgencyLevel[] | ListEnumUrgencyLevelFieldRefInput<$PrismaModel>
+    notIn?: $Enums.UrgencyLevel[] | ListEnumUrgencyLevelFieldRefInput<$PrismaModel>
+    not?: NestedEnumUrgencyLevelWithAggregatesFilter<$PrismaModel> | $Enums.UrgencyLevel
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumUrgencyLevelFilter<$PrismaModel>
+    _max?: NestedEnumUrgencyLevelFilter<$PrismaModel>
+  }
+
+  export type NestedEnumBusinessImpactWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BusinessImpact | EnumBusinessImpactFieldRefInput<$PrismaModel>
+    in?: $Enums.BusinessImpact[] | ListEnumBusinessImpactFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BusinessImpact[] | ListEnumBusinessImpactFieldRefInput<$PrismaModel>
+    not?: NestedEnumBusinessImpactWithAggregatesFilter<$PrismaModel> | $Enums.BusinessImpact
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBusinessImpactFilter<$PrismaModel>
+    _max?: NestedEnumBusinessImpactFilter<$PrismaModel>
+  }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
   export type UserProfileCreateWithoutDirectReportsInput = {
     id?: string
     helixUid: string
@@ -14581,6 +22738,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileUncheckedCreateWithoutDirectReportsInput = {
@@ -14624,6 +22784,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileCreateOrConnectWithoutDirectReportsInput = {
@@ -14672,6 +22835,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileUncheckedCreateWithoutManagerInput = {
@@ -14715,6 +22881,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileCreateOrConnectWithoutManagerInput = {
@@ -14981,6 +23150,268 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ConversationSessionCreateWithoutUserInput = {
+    id?: string
+    sessionType: $Enums.ConversationType
+    channel: $Enums.CommunicationChannel
+    externalId?: string | null
+    subject?: string | null
+    status?: $Enums.SessionStatus
+    priority?: $Enums.SessionPriority
+    participantIds?: ConversationSessionCreateparticipantIdsInput | string[]
+    assignedAgentId?: string | null
+    escalationLevel?: number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionCreatetagsInput | string[]
+    category?: string | null
+    subcategory?: string | null
+    totalInteractions?: number
+    avgResponseTime?: number | null
+    firstResponseTime?: number | null
+    resolutionTime?: number | null
+    startedAt?: Date | string
+    lastActivityAt?: Date | string
+    endedAt?: Date | string | null
+    satisfactionScore?: number | null
+    qualityScore?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    interactions?: UserInteractionCreateNestedManyWithoutSessionInput
+  }
+
+  export type ConversationSessionUncheckedCreateWithoutUserInput = {
+    id?: string
+    sessionType: $Enums.ConversationType
+    channel: $Enums.CommunicationChannel
+    externalId?: string | null
+    subject?: string | null
+    status?: $Enums.SessionStatus
+    priority?: $Enums.SessionPriority
+    participantIds?: ConversationSessionCreateparticipantIdsInput | string[]
+    assignedAgentId?: string | null
+    escalationLevel?: number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionCreatetagsInput | string[]
+    category?: string | null
+    subcategory?: string | null
+    totalInteractions?: number
+    avgResponseTime?: number | null
+    firstResponseTime?: number | null
+    resolutionTime?: number | null
+    startedAt?: Date | string
+    lastActivityAt?: Date | string
+    endedAt?: Date | string | null
+    satisfactionScore?: number | null
+    qualityScore?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutSessionInput
+  }
+
+  export type ConversationSessionCreateOrConnectWithoutUserInput = {
+    where: ConversationSessionWhereUniqueInput
+    create: XOR<ConversationSessionCreateWithoutUserInput, ConversationSessionUncheckedCreateWithoutUserInput>
+  }
+
+  export type ConversationSessionCreateManyUserInputEnvelope = {
+    data: ConversationSessionCreateManyUserInput | ConversationSessionCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserInteractionCreateWithoutUserInput = {
+    id?: string
+    interactionType: $Enums.InteractionType
+    channel: $Enums.CommunicationChannel
+    direction: $Enums.InteractionDirection
+    externalId?: string | null
+    subject?: string | null
+    content?: string | null
+    summary?: string | null
+    contentType?: string
+    fromUserId?: string | null
+    toUserIds?: UserInteractionCreatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionCreateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionCreatebccUserIdsInput | string[]
+    isAIGenerated?: boolean
+    aiPersonality?: string | null
+    aiConfidence?: number | null
+    aiIntent?: string | null
+    aiSentiment?: string | null
+    processedAt?: Date | string | null
+    processingStatus?: $Enums.ProcessingStatus
+    errorMessage?: string | null
+    requiresResponse?: boolean
+    responseDeadline?: Date | string | null
+    respondedAt?: Date | string | null
+    responseTime?: number | null
+    category?: string | null
+    subcategory?: string | null
+    priority?: $Enums.InteractionPriority
+    urgency?: $Enums.UrgencyLevel
+    businessImpact?: $Enums.BusinessImpact
+    hasAttachments?: boolean
+    attachmentCount?: number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionCreateattachmentTypesInput | string[]
+    qualityScore?: number | null
+    readabilityScore?: number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: boolean
+    parentInteractionId?: string | null
+    relatedInteractionIds?: UserInteractionCreaterelatedInteractionIdsInput | string[]
+    isEscalated?: boolean
+    escalatedAt?: Date | string | null
+    escalatedTo?: string | null
+    escalationReason?: string | null
+    isResolved?: boolean
+    resolvedAt?: Date | string | null
+    resolution?: string | null
+    satisfactionScore?: number | null
+    customerEffort?: number | null
+    npsScore?: number | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: string | null
+    retentionDate?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionCreatetagsInput | string[]
+    keywords?: UserInteractionCreatekeywordsInput | string[]
+    timestamp?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    session?: ConversationSessionCreateNestedOneWithoutInteractionsInput
+  }
+
+  export type UserInteractionUncheckedCreateWithoutUserInput = {
+    id?: string
+    sessionId?: string | null
+    interactionType: $Enums.InteractionType
+    channel: $Enums.CommunicationChannel
+    direction: $Enums.InteractionDirection
+    externalId?: string | null
+    subject?: string | null
+    content?: string | null
+    summary?: string | null
+    contentType?: string
+    fromUserId?: string | null
+    toUserIds?: UserInteractionCreatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionCreateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionCreatebccUserIdsInput | string[]
+    isAIGenerated?: boolean
+    aiPersonality?: string | null
+    aiConfidence?: number | null
+    aiIntent?: string | null
+    aiSentiment?: string | null
+    processedAt?: Date | string | null
+    processingStatus?: $Enums.ProcessingStatus
+    errorMessage?: string | null
+    requiresResponse?: boolean
+    responseDeadline?: Date | string | null
+    respondedAt?: Date | string | null
+    responseTime?: number | null
+    category?: string | null
+    subcategory?: string | null
+    priority?: $Enums.InteractionPriority
+    urgency?: $Enums.UrgencyLevel
+    businessImpact?: $Enums.BusinessImpact
+    hasAttachments?: boolean
+    attachmentCount?: number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionCreateattachmentTypesInput | string[]
+    qualityScore?: number | null
+    readabilityScore?: number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: boolean
+    parentInteractionId?: string | null
+    relatedInteractionIds?: UserInteractionCreaterelatedInteractionIdsInput | string[]
+    isEscalated?: boolean
+    escalatedAt?: Date | string | null
+    escalatedTo?: string | null
+    escalationReason?: string | null
+    isResolved?: boolean
+    resolvedAt?: Date | string | null
+    resolution?: string | null
+    satisfactionScore?: number | null
+    customerEffort?: number | null
+    npsScore?: number | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: string | null
+    retentionDate?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionCreatetagsInput | string[]
+    keywords?: UserInteractionCreatekeywordsInput | string[]
+    timestamp?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserInteractionCreateOrConnectWithoutUserInput = {
+    where: UserInteractionWhereUniqueInput
+    create: XOR<UserInteractionCreateWithoutUserInput, UserInteractionUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserInteractionCreateManyUserInputEnvelope = {
+    data: UserInteractionCreateManyUserInput | UserInteractionCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AIConversationMemoryCreateWithoutUserInput = {
+    id?: string
+    sessionId?: string | null
+    conversationId: string
+    aiPersonality: string
+    context: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: number
+    lastInteractionId?: string | null
+    memoryStrength?: number
+    lastAccessedAt?: Date | string
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AIConversationMemoryUncheckedCreateWithoutUserInput = {
+    id?: string
+    sessionId?: string | null
+    conversationId: string
+    aiPersonality: string
+    context: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: number
+    lastInteractionId?: string | null
+    memoryStrength?: number
+    lastAccessedAt?: Date | string
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AIConversationMemoryCreateOrConnectWithoutUserInput = {
+    where: AIConversationMemoryWhereUniqueInput
+    create: XOR<AIConversationMemoryCreateWithoutUserInput, AIConversationMemoryUncheckedCreateWithoutUserInput>
+  }
+
+  export type AIConversationMemoryCreateManyUserInputEnvelope = {
+    data: AIConversationMemoryCreateManyUserInput | AIConversationMemoryCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserProfileUpsertWithoutDirectReportsInput = {
     update: XOR<UserProfileUpdateWithoutDirectReportsInput, UserProfileUncheckedUpdateWithoutDirectReportsInput>
     create: XOR<UserProfileCreateWithoutDirectReportsInput, UserProfileUncheckedCreateWithoutDirectReportsInput>
@@ -15033,6 +23464,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUncheckedUpdateWithoutDirectReportsInput = {
@@ -15076,6 +23510,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUpsertWithWhereUniqueWithoutManagerInput = {
@@ -15351,6 +23788,181 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"TrainingRecord"> | Date | string
   }
 
+  export type ConversationSessionUpsertWithWhereUniqueWithoutUserInput = {
+    where: ConversationSessionWhereUniqueInput
+    update: XOR<ConversationSessionUpdateWithoutUserInput, ConversationSessionUncheckedUpdateWithoutUserInput>
+    create: XOR<ConversationSessionCreateWithoutUserInput, ConversationSessionUncheckedCreateWithoutUserInput>
+  }
+
+  export type ConversationSessionUpdateWithWhereUniqueWithoutUserInput = {
+    where: ConversationSessionWhereUniqueInput
+    data: XOR<ConversationSessionUpdateWithoutUserInput, ConversationSessionUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ConversationSessionUpdateManyWithWhereWithoutUserInput = {
+    where: ConversationSessionScalarWhereInput
+    data: XOR<ConversationSessionUpdateManyMutationInput, ConversationSessionUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type ConversationSessionScalarWhereInput = {
+    AND?: ConversationSessionScalarWhereInput | ConversationSessionScalarWhereInput[]
+    OR?: ConversationSessionScalarWhereInput[]
+    NOT?: ConversationSessionScalarWhereInput | ConversationSessionScalarWhereInput[]
+    id?: StringFilter<"ConversationSession"> | string
+    userId?: StringFilter<"ConversationSession"> | string
+    sessionType?: EnumConversationTypeFilter<"ConversationSession"> | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFilter<"ConversationSession"> | $Enums.CommunicationChannel
+    externalId?: StringNullableFilter<"ConversationSession"> | string | null
+    subject?: StringNullableFilter<"ConversationSession"> | string | null
+    status?: EnumSessionStatusFilter<"ConversationSession"> | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFilter<"ConversationSession"> | $Enums.SessionPriority
+    participantIds?: StringNullableListFilter<"ConversationSession">
+    assignedAgentId?: StringNullableFilter<"ConversationSession"> | string | null
+    escalationLevel?: IntFilter<"ConversationSession"> | number
+    context?: JsonNullableFilter<"ConversationSession">
+    tags?: StringNullableListFilter<"ConversationSession">
+    category?: StringNullableFilter<"ConversationSession"> | string | null
+    subcategory?: StringNullableFilter<"ConversationSession"> | string | null
+    totalInteractions?: IntFilter<"ConversationSession"> | number
+    avgResponseTime?: IntNullableFilter<"ConversationSession"> | number | null
+    firstResponseTime?: IntNullableFilter<"ConversationSession"> | number | null
+    resolutionTime?: IntNullableFilter<"ConversationSession"> | number | null
+    startedAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    lastActivityAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    endedAt?: DateTimeNullableFilter<"ConversationSession"> | Date | string | null
+    satisfactionScore?: IntNullableFilter<"ConversationSession"> | number | null
+    qualityScore?: IntNullableFilter<"ConversationSession"> | number | null
+    createdAt?: DateTimeFilter<"ConversationSession"> | Date | string
+    updatedAt?: DateTimeFilter<"ConversationSession"> | Date | string
+  }
+
+  export type UserInteractionUpsertWithWhereUniqueWithoutUserInput = {
+    where: UserInteractionWhereUniqueInput
+    update: XOR<UserInteractionUpdateWithoutUserInput, UserInteractionUncheckedUpdateWithoutUserInput>
+    create: XOR<UserInteractionCreateWithoutUserInput, UserInteractionUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserInteractionUpdateWithWhereUniqueWithoutUserInput = {
+    where: UserInteractionWhereUniqueInput
+    data: XOR<UserInteractionUpdateWithoutUserInput, UserInteractionUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserInteractionUpdateManyWithWhereWithoutUserInput = {
+    where: UserInteractionScalarWhereInput
+    data: XOR<UserInteractionUpdateManyMutationInput, UserInteractionUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type UserInteractionScalarWhereInput = {
+    AND?: UserInteractionScalarWhereInput | UserInteractionScalarWhereInput[]
+    OR?: UserInteractionScalarWhereInput[]
+    NOT?: UserInteractionScalarWhereInput | UserInteractionScalarWhereInput[]
+    id?: StringFilter<"UserInteraction"> | string
+    userId?: StringFilter<"UserInteraction"> | string
+    sessionId?: StringNullableFilter<"UserInteraction"> | string | null
+    interactionType?: EnumInteractionTypeFilter<"UserInteraction"> | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFilter<"UserInteraction"> | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFilter<"UserInteraction"> | $Enums.InteractionDirection
+    externalId?: StringNullableFilter<"UserInteraction"> | string | null
+    subject?: StringNullableFilter<"UserInteraction"> | string | null
+    content?: StringNullableFilter<"UserInteraction"> | string | null
+    summary?: StringNullableFilter<"UserInteraction"> | string | null
+    contentType?: StringFilter<"UserInteraction"> | string
+    fromUserId?: StringNullableFilter<"UserInteraction"> | string | null
+    toUserIds?: StringNullableListFilter<"UserInteraction">
+    ccUserIds?: StringNullableListFilter<"UserInteraction">
+    bccUserIds?: StringNullableListFilter<"UserInteraction">
+    isAIGenerated?: BoolFilter<"UserInteraction"> | boolean
+    aiPersonality?: StringNullableFilter<"UserInteraction"> | string | null
+    aiConfidence?: FloatNullableFilter<"UserInteraction"> | number | null
+    aiIntent?: StringNullableFilter<"UserInteraction"> | string | null
+    aiSentiment?: StringNullableFilter<"UserInteraction"> | string | null
+    processedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    processingStatus?: EnumProcessingStatusFilter<"UserInteraction"> | $Enums.ProcessingStatus
+    errorMessage?: StringNullableFilter<"UserInteraction"> | string | null
+    requiresResponse?: BoolFilter<"UserInteraction"> | boolean
+    responseDeadline?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    respondedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    responseTime?: IntNullableFilter<"UserInteraction"> | number | null
+    category?: StringNullableFilter<"UserInteraction"> | string | null
+    subcategory?: StringNullableFilter<"UserInteraction"> | string | null
+    priority?: EnumInteractionPriorityFilter<"UserInteraction"> | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFilter<"UserInteraction"> | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFilter<"UserInteraction"> | $Enums.BusinessImpact
+    hasAttachments?: BoolFilter<"UserInteraction"> | boolean
+    attachmentCount?: IntFilter<"UserInteraction"> | number
+    attachmentSizes?: JsonNullableFilter<"UserInteraction">
+    attachmentTypes?: StringNullableListFilter<"UserInteraction">
+    qualityScore?: IntNullableFilter<"UserInteraction"> | number | null
+    readabilityScore?: IntNullableFilter<"UserInteraction"> | number | null
+    toneScore?: JsonNullableFilter<"UserInteraction">
+    isFollowUp?: BoolFilter<"UserInteraction"> | boolean
+    parentInteractionId?: StringNullableFilter<"UserInteraction"> | string | null
+    relatedInteractionIds?: StringNullableListFilter<"UserInteraction">
+    isEscalated?: BoolFilter<"UserInteraction"> | boolean
+    escalatedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    escalatedTo?: StringNullableFilter<"UserInteraction"> | string | null
+    escalationReason?: StringNullableFilter<"UserInteraction"> | string | null
+    isResolved?: BoolFilter<"UserInteraction"> | boolean
+    resolvedAt?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    resolution?: StringNullableFilter<"UserInteraction"> | string | null
+    satisfactionScore?: IntNullableFilter<"UserInteraction"> | number | null
+    customerEffort?: IntNullableFilter<"UserInteraction"> | number | null
+    npsScore?: IntNullableFilter<"UserInteraction"> | number | null
+    ipAddress?: StringNullableFilter<"UserInteraction"> | string | null
+    userAgent?: StringNullableFilter<"UserInteraction"> | string | null
+    deviceInfo?: JsonNullableFilter<"UserInteraction">
+    location?: JsonNullableFilter<"UserInteraction">
+    containsPII?: BoolFilter<"UserInteraction"> | boolean
+    isConfidential?: BoolFilter<"UserInteraction"> | boolean
+    dataClassification?: StringNullableFilter<"UserInteraction"> | string | null
+    retentionDate?: DateTimeNullableFilter<"UserInteraction"> | Date | string | null
+    metadata?: JsonNullableFilter<"UserInteraction">
+    tags?: StringNullableListFilter<"UserInteraction">
+    keywords?: StringNullableListFilter<"UserInteraction">
+    timestamp?: DateTimeFilter<"UserInteraction"> | Date | string
+    createdAt?: DateTimeFilter<"UserInteraction"> | Date | string
+    updatedAt?: DateTimeFilter<"UserInteraction"> | Date | string
+  }
+
+  export type AIConversationMemoryUpsertWithWhereUniqueWithoutUserInput = {
+    where: AIConversationMemoryWhereUniqueInput
+    update: XOR<AIConversationMemoryUpdateWithoutUserInput, AIConversationMemoryUncheckedUpdateWithoutUserInput>
+    create: XOR<AIConversationMemoryCreateWithoutUserInput, AIConversationMemoryUncheckedCreateWithoutUserInput>
+  }
+
+  export type AIConversationMemoryUpdateWithWhereUniqueWithoutUserInput = {
+    where: AIConversationMemoryWhereUniqueInput
+    data: XOR<AIConversationMemoryUpdateWithoutUserInput, AIConversationMemoryUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AIConversationMemoryUpdateManyWithWhereWithoutUserInput = {
+    where: AIConversationMemoryScalarWhereInput
+    data: XOR<AIConversationMemoryUpdateManyMutationInput, AIConversationMemoryUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type AIConversationMemoryScalarWhereInput = {
+    AND?: AIConversationMemoryScalarWhereInput | AIConversationMemoryScalarWhereInput[]
+    OR?: AIConversationMemoryScalarWhereInput[]
+    NOT?: AIConversationMemoryScalarWhereInput | AIConversationMemoryScalarWhereInput[]
+    id?: StringFilter<"AIConversationMemory"> | string
+    userId?: StringFilter<"AIConversationMemory"> | string
+    sessionId?: StringNullableFilter<"AIConversationMemory"> | string | null
+    conversationId?: StringFilter<"AIConversationMemory"> | string
+    aiPersonality?: StringFilter<"AIConversationMemory"> | string
+    context?: JsonFilter<"AIConversationMemory">
+    userPreferences?: JsonNullableFilter<"AIConversationMemory">
+    conversationState?: JsonNullableFilter<"AIConversationMemory">
+    entityMemory?: JsonNullableFilter<"AIConversationMemory">
+    interactionCount?: IntFilter<"AIConversationMemory"> | number
+    lastInteractionId?: StringNullableFilter<"AIConversationMemory"> | string | null
+    memoryStrength?: FloatFilter<"AIConversationMemory"> | number
+    lastAccessedAt?: DateTimeFilter<"AIConversationMemory"> | Date | string
+    expiresAt?: DateTimeNullableFilter<"AIConversationMemory"> | Date | string | null
+    isActive?: BoolFilter<"AIConversationMemory"> | boolean
+    createdAt?: DateTimeFilter<"AIConversationMemory"> | Date | string
+    updatedAt?: DateTimeFilter<"AIConversationMemory"> | Date | string
+  }
+
   export type UserProfileCreateWithoutLinkedAccountsInput = {
     id?: string
     helixUid: string
@@ -15392,6 +24004,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileUncheckedCreateWithoutLinkedAccountsInput = {
@@ -15435,6 +24050,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileCreateOrConnectWithoutLinkedAccountsInput = {
@@ -15494,6 +24112,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUncheckedUpdateWithoutLinkedAccountsInput = {
@@ -15537,6 +24158,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileCreateWithoutAssetsInput = {
@@ -15580,6 +24204,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileUncheckedCreateWithoutAssetsInput = {
@@ -15623,6 +24250,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileCreateOrConnectWithoutAssetsInput = {
@@ -15682,6 +24312,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUncheckedUpdateWithoutAssetsInput = {
@@ -15725,6 +24358,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileCreateWithoutTicketsInput = {
@@ -15768,6 +24404,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileUncheckedCreateWithoutTicketsInput = {
@@ -15811,6 +24450,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileCreateOrConnectWithoutTicketsInput = {
@@ -15870,6 +24512,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUncheckedUpdateWithoutTicketsInput = {
@@ -15913,6 +24558,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileCreateWithoutActivityLogsInput = {
@@ -15956,6 +24604,9 @@ export namespace Prisma {
     tickets?: UserTicketCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileUncheckedCreateWithoutActivityLogsInput = {
@@ -15999,6 +24650,9 @@ export namespace Prisma {
     tickets?: UserTicketUncheckedCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileCreateOrConnectWithoutActivityLogsInput = {
@@ -16058,6 +24712,9 @@ export namespace Prisma {
     tickets?: UserTicketUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUncheckedUpdateWithoutActivityLogsInput = {
@@ -16101,6 +24758,9 @@ export namespace Prisma {
     tickets?: UserTicketUncheckedUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileCreateWithoutSecurityEventsInput = {
@@ -16144,6 +24804,9 @@ export namespace Prisma {
     tickets?: UserTicketCreateNestedManyWithoutUserInput
     activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileUncheckedCreateWithoutSecurityEventsInput = {
@@ -16187,6 +24850,9 @@ export namespace Prisma {
     tickets?: UserTicketUncheckedCreateNestedManyWithoutUserInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
     trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileCreateOrConnectWithoutSecurityEventsInput = {
@@ -16246,6 +24912,9 @@ export namespace Prisma {
     tickets?: UserTicketUpdateManyWithoutUserNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUncheckedUpdateWithoutSecurityEventsInput = {
@@ -16289,6 +24958,9 @@ export namespace Prisma {
     tickets?: UserTicketUncheckedUpdateManyWithoutUserNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileCreateWithoutTrainingRecordsInput = {
@@ -16332,6 +25004,9 @@ export namespace Prisma {
     tickets?: UserTicketCreateNestedManyWithoutUserInput
     activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileUncheckedCreateWithoutTrainingRecordsInput = {
@@ -16375,6 +25050,9 @@ export namespace Prisma {
     tickets?: UserTicketUncheckedCreateNestedManyWithoutUserInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
     securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserProfileCreateOrConnectWithoutTrainingRecordsInput = {
@@ -16434,6 +25112,9 @@ export namespace Prisma {
     tickets?: UserTicketUpdateManyWithoutUserNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUncheckedUpdateWithoutTrainingRecordsInput = {
@@ -16477,6 +25158,903 @@ export namespace Prisma {
     tickets?: UserTicketUncheckedUpdateManyWithoutUserNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserProfileCreateWithoutConversationSessionsInput = {
+    id?: string
+    helixUid: string
+    email: string
+    emailCanonical: string
+    employeeId?: string | null
+    firstName: string
+    lastName: string
+    displayName?: string | null
+    preferredName?: string | null
+    profilePicture?: string | null
+    phoneNumber?: string | null
+    mobileNumber?: string | null
+    department?: string | null
+    jobTitle?: string | null
+    location?: string | null
+    timezone?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    lastActiveAt?: Date | string | null
+    isServiceAccount?: boolean
+    securityScore?: number | null
+    riskLevel?: $Enums.RiskLevel
+    mfaEnabled?: boolean
+    tenantId: string
+    roles?: UserProfileCreaterolesInput | string[]
+    permissions?: UserProfileCreatepermissionsInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy?: string | null
+    lastUpdatedBy?: string | null
+    dataVersion?: number
+    manager?: UserProfileCreateNestedOneWithoutDirectReportsInput
+    directReports?: UserProfileCreateNestedManyWithoutManagerInput
+    linkedAccounts?: LinkedAccountCreateNestedManyWithoutUserInput
+    assets?: AssetAssignmentCreateNestedManyWithoutUserInput
+    tickets?: UserTicketCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
+    securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
+    trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
+  }
+
+  export type UserProfileUncheckedCreateWithoutConversationSessionsInput = {
+    id?: string
+    helixUid: string
+    email: string
+    emailCanonical: string
+    employeeId?: string | null
+    firstName: string
+    lastName: string
+    displayName?: string | null
+    preferredName?: string | null
+    profilePicture?: string | null
+    phoneNumber?: string | null
+    mobileNumber?: string | null
+    department?: string | null
+    jobTitle?: string | null
+    managerId?: string | null
+    location?: string | null
+    timezone?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    lastActiveAt?: Date | string | null
+    isServiceAccount?: boolean
+    securityScore?: number | null
+    riskLevel?: $Enums.RiskLevel
+    mfaEnabled?: boolean
+    tenantId: string
+    roles?: UserProfileCreaterolesInput | string[]
+    permissions?: UserProfileCreatepermissionsInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy?: string | null
+    lastUpdatedBy?: string | null
+    dataVersion?: number
+    directReports?: UserProfileUncheckedCreateNestedManyWithoutManagerInput
+    linkedAccounts?: LinkedAccountUncheckedCreateNestedManyWithoutUserInput
+    assets?: AssetAssignmentUncheckedCreateNestedManyWithoutUserInput
+    tickets?: UserTicketUncheckedCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
+    securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
+    trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserProfileCreateOrConnectWithoutConversationSessionsInput = {
+    where: UserProfileWhereUniqueInput
+    create: XOR<UserProfileCreateWithoutConversationSessionsInput, UserProfileUncheckedCreateWithoutConversationSessionsInput>
+  }
+
+  export type UserInteractionCreateWithoutSessionInput = {
+    id?: string
+    interactionType: $Enums.InteractionType
+    channel: $Enums.CommunicationChannel
+    direction: $Enums.InteractionDirection
+    externalId?: string | null
+    subject?: string | null
+    content?: string | null
+    summary?: string | null
+    contentType?: string
+    fromUserId?: string | null
+    toUserIds?: UserInteractionCreatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionCreateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionCreatebccUserIdsInput | string[]
+    isAIGenerated?: boolean
+    aiPersonality?: string | null
+    aiConfidence?: number | null
+    aiIntent?: string | null
+    aiSentiment?: string | null
+    processedAt?: Date | string | null
+    processingStatus?: $Enums.ProcessingStatus
+    errorMessage?: string | null
+    requiresResponse?: boolean
+    responseDeadline?: Date | string | null
+    respondedAt?: Date | string | null
+    responseTime?: number | null
+    category?: string | null
+    subcategory?: string | null
+    priority?: $Enums.InteractionPriority
+    urgency?: $Enums.UrgencyLevel
+    businessImpact?: $Enums.BusinessImpact
+    hasAttachments?: boolean
+    attachmentCount?: number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionCreateattachmentTypesInput | string[]
+    qualityScore?: number | null
+    readabilityScore?: number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: boolean
+    parentInteractionId?: string | null
+    relatedInteractionIds?: UserInteractionCreaterelatedInteractionIdsInput | string[]
+    isEscalated?: boolean
+    escalatedAt?: Date | string | null
+    escalatedTo?: string | null
+    escalationReason?: string | null
+    isResolved?: boolean
+    resolvedAt?: Date | string | null
+    resolution?: string | null
+    satisfactionScore?: number | null
+    customerEffort?: number | null
+    npsScore?: number | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: string | null
+    retentionDate?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionCreatetagsInput | string[]
+    keywords?: UserInteractionCreatekeywordsInput | string[]
+    timestamp?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserProfileCreateNestedOneWithoutInteractionsInput
+  }
+
+  export type UserInteractionUncheckedCreateWithoutSessionInput = {
+    id?: string
+    userId: string
+    interactionType: $Enums.InteractionType
+    channel: $Enums.CommunicationChannel
+    direction: $Enums.InteractionDirection
+    externalId?: string | null
+    subject?: string | null
+    content?: string | null
+    summary?: string | null
+    contentType?: string
+    fromUserId?: string | null
+    toUserIds?: UserInteractionCreatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionCreateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionCreatebccUserIdsInput | string[]
+    isAIGenerated?: boolean
+    aiPersonality?: string | null
+    aiConfidence?: number | null
+    aiIntent?: string | null
+    aiSentiment?: string | null
+    processedAt?: Date | string | null
+    processingStatus?: $Enums.ProcessingStatus
+    errorMessage?: string | null
+    requiresResponse?: boolean
+    responseDeadline?: Date | string | null
+    respondedAt?: Date | string | null
+    responseTime?: number | null
+    category?: string | null
+    subcategory?: string | null
+    priority?: $Enums.InteractionPriority
+    urgency?: $Enums.UrgencyLevel
+    businessImpact?: $Enums.BusinessImpact
+    hasAttachments?: boolean
+    attachmentCount?: number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionCreateattachmentTypesInput | string[]
+    qualityScore?: number | null
+    readabilityScore?: number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: boolean
+    parentInteractionId?: string | null
+    relatedInteractionIds?: UserInteractionCreaterelatedInteractionIdsInput | string[]
+    isEscalated?: boolean
+    escalatedAt?: Date | string | null
+    escalatedTo?: string | null
+    escalationReason?: string | null
+    isResolved?: boolean
+    resolvedAt?: Date | string | null
+    resolution?: string | null
+    satisfactionScore?: number | null
+    customerEffort?: number | null
+    npsScore?: number | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: string | null
+    retentionDate?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionCreatetagsInput | string[]
+    keywords?: UserInteractionCreatekeywordsInput | string[]
+    timestamp?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserInteractionCreateOrConnectWithoutSessionInput = {
+    where: UserInteractionWhereUniqueInput
+    create: XOR<UserInteractionCreateWithoutSessionInput, UserInteractionUncheckedCreateWithoutSessionInput>
+  }
+
+  export type UserInteractionCreateManySessionInputEnvelope = {
+    data: UserInteractionCreateManySessionInput | UserInteractionCreateManySessionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserProfileUpsertWithoutConversationSessionsInput = {
+    update: XOR<UserProfileUpdateWithoutConversationSessionsInput, UserProfileUncheckedUpdateWithoutConversationSessionsInput>
+    create: XOR<UserProfileCreateWithoutConversationSessionsInput, UserProfileUncheckedCreateWithoutConversationSessionsInput>
+    where?: UserProfileWhereInput
+  }
+
+  export type UserProfileUpdateToOneWithWhereWithoutConversationSessionsInput = {
+    where?: UserProfileWhereInput
+    data: XOR<UserProfileUpdateWithoutConversationSessionsInput, UserProfileUncheckedUpdateWithoutConversationSessionsInput>
+  }
+
+  export type UserProfileUpdateWithoutConversationSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    helixUid?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailCanonical?: StringFieldUpdateOperationsInput | string
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePicture?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isServiceAccount?: BoolFieldUpdateOperationsInput | boolean
+    securityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    riskLevel?: EnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    tenantId?: StringFieldUpdateOperationsInput | string
+    roles?: UserProfileUpdaterolesInput | string[]
+    permissions?: UserProfileUpdatepermissionsInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    lastUpdatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    dataVersion?: IntFieldUpdateOperationsInput | number
+    manager?: UserProfileUpdateOneWithoutDirectReportsNestedInput
+    directReports?: UserProfileUpdateManyWithoutManagerNestedInput
+    linkedAccounts?: LinkedAccountUpdateManyWithoutUserNestedInput
+    assets?: AssetAssignmentUpdateManyWithoutUserNestedInput
+    tickets?: UserTicketUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
+    securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
+    trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserProfileUncheckedUpdateWithoutConversationSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    helixUid?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailCanonical?: StringFieldUpdateOperationsInput | string
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePicture?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isServiceAccount?: BoolFieldUpdateOperationsInput | boolean
+    securityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    riskLevel?: EnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    tenantId?: StringFieldUpdateOperationsInput | string
+    roles?: UserProfileUpdaterolesInput | string[]
+    permissions?: UserProfileUpdatepermissionsInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    lastUpdatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    dataVersion?: IntFieldUpdateOperationsInput | number
+    directReports?: UserProfileUncheckedUpdateManyWithoutManagerNestedInput
+    linkedAccounts?: LinkedAccountUncheckedUpdateManyWithoutUserNestedInput
+    assets?: AssetAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    tickets?: UserTicketUncheckedUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
+    trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserInteractionUpsertWithWhereUniqueWithoutSessionInput = {
+    where: UserInteractionWhereUniqueInput
+    update: XOR<UserInteractionUpdateWithoutSessionInput, UserInteractionUncheckedUpdateWithoutSessionInput>
+    create: XOR<UserInteractionCreateWithoutSessionInput, UserInteractionUncheckedCreateWithoutSessionInput>
+  }
+
+  export type UserInteractionUpdateWithWhereUniqueWithoutSessionInput = {
+    where: UserInteractionWhereUniqueInput
+    data: XOR<UserInteractionUpdateWithoutSessionInput, UserInteractionUncheckedUpdateWithoutSessionInput>
+  }
+
+  export type UserInteractionUpdateManyWithWhereWithoutSessionInput = {
+    where: UserInteractionScalarWhereInput
+    data: XOR<UserInteractionUpdateManyMutationInput, UserInteractionUncheckedUpdateManyWithoutSessionInput>
+  }
+
+  export type UserProfileCreateWithoutInteractionsInput = {
+    id?: string
+    helixUid: string
+    email: string
+    emailCanonical: string
+    employeeId?: string | null
+    firstName: string
+    lastName: string
+    displayName?: string | null
+    preferredName?: string | null
+    profilePicture?: string | null
+    phoneNumber?: string | null
+    mobileNumber?: string | null
+    department?: string | null
+    jobTitle?: string | null
+    location?: string | null
+    timezone?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    lastActiveAt?: Date | string | null
+    isServiceAccount?: boolean
+    securityScore?: number | null
+    riskLevel?: $Enums.RiskLevel
+    mfaEnabled?: boolean
+    tenantId: string
+    roles?: UserProfileCreaterolesInput | string[]
+    permissions?: UserProfileCreatepermissionsInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy?: string | null
+    lastUpdatedBy?: string | null
+    dataVersion?: number
+    manager?: UserProfileCreateNestedOneWithoutDirectReportsInput
+    directReports?: UserProfileCreateNestedManyWithoutManagerInput
+    linkedAccounts?: LinkedAccountCreateNestedManyWithoutUserInput
+    assets?: AssetAssignmentCreateNestedManyWithoutUserInput
+    tickets?: UserTicketCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
+    securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
+    trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryCreateNestedManyWithoutUserInput
+  }
+
+  export type UserProfileUncheckedCreateWithoutInteractionsInput = {
+    id?: string
+    helixUid: string
+    email: string
+    emailCanonical: string
+    employeeId?: string | null
+    firstName: string
+    lastName: string
+    displayName?: string | null
+    preferredName?: string | null
+    profilePicture?: string | null
+    phoneNumber?: string | null
+    mobileNumber?: string | null
+    department?: string | null
+    jobTitle?: string | null
+    managerId?: string | null
+    location?: string | null
+    timezone?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    lastActiveAt?: Date | string | null
+    isServiceAccount?: boolean
+    securityScore?: number | null
+    riskLevel?: $Enums.RiskLevel
+    mfaEnabled?: boolean
+    tenantId: string
+    roles?: UserProfileCreaterolesInput | string[]
+    permissions?: UserProfileCreatepermissionsInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy?: string | null
+    lastUpdatedBy?: string | null
+    dataVersion?: number
+    directReports?: UserProfileUncheckedCreateNestedManyWithoutManagerInput
+    linkedAccounts?: LinkedAccountUncheckedCreateNestedManyWithoutUserInput
+    assets?: AssetAssignmentUncheckedCreateNestedManyWithoutUserInput
+    tickets?: UserTicketUncheckedCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
+    securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
+    trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    aiMemories?: AIConversationMemoryUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserProfileCreateOrConnectWithoutInteractionsInput = {
+    where: UserProfileWhereUniqueInput
+    create: XOR<UserProfileCreateWithoutInteractionsInput, UserProfileUncheckedCreateWithoutInteractionsInput>
+  }
+
+  export type ConversationSessionCreateWithoutInteractionsInput = {
+    id?: string
+    sessionType: $Enums.ConversationType
+    channel: $Enums.CommunicationChannel
+    externalId?: string | null
+    subject?: string | null
+    status?: $Enums.SessionStatus
+    priority?: $Enums.SessionPriority
+    participantIds?: ConversationSessionCreateparticipantIdsInput | string[]
+    assignedAgentId?: string | null
+    escalationLevel?: number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionCreatetagsInput | string[]
+    category?: string | null
+    subcategory?: string | null
+    totalInteractions?: number
+    avgResponseTime?: number | null
+    firstResponseTime?: number | null
+    resolutionTime?: number | null
+    startedAt?: Date | string
+    lastActivityAt?: Date | string
+    endedAt?: Date | string | null
+    satisfactionScore?: number | null
+    qualityScore?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserProfileCreateNestedOneWithoutConversationSessionsInput
+  }
+
+  export type ConversationSessionUncheckedCreateWithoutInteractionsInput = {
+    id?: string
+    userId: string
+    sessionType: $Enums.ConversationType
+    channel: $Enums.CommunicationChannel
+    externalId?: string | null
+    subject?: string | null
+    status?: $Enums.SessionStatus
+    priority?: $Enums.SessionPriority
+    participantIds?: ConversationSessionCreateparticipantIdsInput | string[]
+    assignedAgentId?: string | null
+    escalationLevel?: number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionCreatetagsInput | string[]
+    category?: string | null
+    subcategory?: string | null
+    totalInteractions?: number
+    avgResponseTime?: number | null
+    firstResponseTime?: number | null
+    resolutionTime?: number | null
+    startedAt?: Date | string
+    lastActivityAt?: Date | string
+    endedAt?: Date | string | null
+    satisfactionScore?: number | null
+    qualityScore?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ConversationSessionCreateOrConnectWithoutInteractionsInput = {
+    where: ConversationSessionWhereUniqueInput
+    create: XOR<ConversationSessionCreateWithoutInteractionsInput, ConversationSessionUncheckedCreateWithoutInteractionsInput>
+  }
+
+  export type UserProfileUpsertWithoutInteractionsInput = {
+    update: XOR<UserProfileUpdateWithoutInteractionsInput, UserProfileUncheckedUpdateWithoutInteractionsInput>
+    create: XOR<UserProfileCreateWithoutInteractionsInput, UserProfileUncheckedCreateWithoutInteractionsInput>
+    where?: UserProfileWhereInput
+  }
+
+  export type UserProfileUpdateToOneWithWhereWithoutInteractionsInput = {
+    where?: UserProfileWhereInput
+    data: XOR<UserProfileUpdateWithoutInteractionsInput, UserProfileUncheckedUpdateWithoutInteractionsInput>
+  }
+
+  export type UserProfileUpdateWithoutInteractionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    helixUid?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailCanonical?: StringFieldUpdateOperationsInput | string
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePicture?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isServiceAccount?: BoolFieldUpdateOperationsInput | boolean
+    securityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    riskLevel?: EnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    tenantId?: StringFieldUpdateOperationsInput | string
+    roles?: UserProfileUpdaterolesInput | string[]
+    permissions?: UserProfileUpdatepermissionsInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    lastUpdatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    dataVersion?: IntFieldUpdateOperationsInput | number
+    manager?: UserProfileUpdateOneWithoutDirectReportsNestedInput
+    directReports?: UserProfileUpdateManyWithoutManagerNestedInput
+    linkedAccounts?: LinkedAccountUpdateManyWithoutUserNestedInput
+    assets?: AssetAssignmentUpdateManyWithoutUserNestedInput
+    tickets?: UserTicketUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
+    securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
+    trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserProfileUncheckedUpdateWithoutInteractionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    helixUid?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailCanonical?: StringFieldUpdateOperationsInput | string
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePicture?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isServiceAccount?: BoolFieldUpdateOperationsInput | boolean
+    securityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    riskLevel?: EnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    tenantId?: StringFieldUpdateOperationsInput | string
+    roles?: UserProfileUpdaterolesInput | string[]
+    permissions?: UserProfileUpdatepermissionsInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    lastUpdatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    dataVersion?: IntFieldUpdateOperationsInput | number
+    directReports?: UserProfileUncheckedUpdateManyWithoutManagerNestedInput
+    linkedAccounts?: LinkedAccountUncheckedUpdateManyWithoutUserNestedInput
+    assets?: AssetAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    tickets?: UserTicketUncheckedUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
+    trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type ConversationSessionUpsertWithoutInteractionsInput = {
+    update: XOR<ConversationSessionUpdateWithoutInteractionsInput, ConversationSessionUncheckedUpdateWithoutInteractionsInput>
+    create: XOR<ConversationSessionCreateWithoutInteractionsInput, ConversationSessionUncheckedCreateWithoutInteractionsInput>
+    where?: ConversationSessionWhereInput
+  }
+
+  export type ConversationSessionUpdateToOneWithWhereWithoutInteractionsInput = {
+    where?: ConversationSessionWhereInput
+    data: XOR<ConversationSessionUpdateWithoutInteractionsInput, ConversationSessionUncheckedUpdateWithoutInteractionsInput>
+  }
+
+  export type ConversationSessionUpdateWithoutInteractionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionType?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFieldUpdateOperationsInput | $Enums.SessionPriority
+    participantIds?: ConversationSessionUpdateparticipantIdsInput | string[]
+    assignedAgentId?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationLevel?: IntFieldUpdateOperationsInput | number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionUpdatetagsInput | string[]
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    totalInteractions?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    firstResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    resolutionTime?: NullableIntFieldUpdateOperationsInput | number | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserProfileUpdateOneRequiredWithoutConversationSessionsNestedInput
+  }
+
+  export type ConversationSessionUncheckedUpdateWithoutInteractionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    sessionType?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFieldUpdateOperationsInput | $Enums.SessionPriority
+    participantIds?: ConversationSessionUpdateparticipantIdsInput | string[]
+    assignedAgentId?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationLevel?: IntFieldUpdateOperationsInput | number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionUpdatetagsInput | string[]
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    totalInteractions?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    firstResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    resolutionTime?: NullableIntFieldUpdateOperationsInput | number | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserProfileCreateWithoutAiMemoriesInput = {
+    id?: string
+    helixUid: string
+    email: string
+    emailCanonical: string
+    employeeId?: string | null
+    firstName: string
+    lastName: string
+    displayName?: string | null
+    preferredName?: string | null
+    profilePicture?: string | null
+    phoneNumber?: string | null
+    mobileNumber?: string | null
+    department?: string | null
+    jobTitle?: string | null
+    location?: string | null
+    timezone?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    lastActiveAt?: Date | string | null
+    isServiceAccount?: boolean
+    securityScore?: number | null
+    riskLevel?: $Enums.RiskLevel
+    mfaEnabled?: boolean
+    tenantId: string
+    roles?: UserProfileCreaterolesInput | string[]
+    permissions?: UserProfileCreatepermissionsInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy?: string | null
+    lastUpdatedBy?: string | null
+    dataVersion?: number
+    manager?: UserProfileCreateNestedOneWithoutDirectReportsInput
+    directReports?: UserProfileCreateNestedManyWithoutManagerInput
+    linkedAccounts?: LinkedAccountCreateNestedManyWithoutUserInput
+    assets?: AssetAssignmentCreateNestedManyWithoutUserInput
+    tickets?: UserTicketCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
+    securityEvents?: SecurityEventCreateNestedManyWithoutUserInput
+    trainingRecords?: TrainingRecordCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionCreateNestedManyWithoutUserInput
+  }
+
+  export type UserProfileUncheckedCreateWithoutAiMemoriesInput = {
+    id?: string
+    helixUid: string
+    email: string
+    emailCanonical: string
+    employeeId?: string | null
+    firstName: string
+    lastName: string
+    displayName?: string | null
+    preferredName?: string | null
+    profilePicture?: string | null
+    phoneNumber?: string | null
+    mobileNumber?: string | null
+    department?: string | null
+    jobTitle?: string | null
+    managerId?: string | null
+    location?: string | null
+    timezone?: string | null
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    lastActiveAt?: Date | string | null
+    isServiceAccount?: boolean
+    securityScore?: number | null
+    riskLevel?: $Enums.RiskLevel
+    mfaEnabled?: boolean
+    tenantId: string
+    roles?: UserProfileCreaterolesInput | string[]
+    permissions?: UserProfileCreatepermissionsInput | string[]
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy?: string | null
+    lastUpdatedBy?: string | null
+    dataVersion?: number
+    directReports?: UserProfileUncheckedCreateNestedManyWithoutManagerInput
+    linkedAccounts?: LinkedAccountUncheckedCreateNestedManyWithoutUserInput
+    assets?: AssetAssignmentUncheckedCreateNestedManyWithoutUserInput
+    tickets?: UserTicketUncheckedCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
+    securityEvents?: SecurityEventUncheckedCreateNestedManyWithoutUserInput
+    trainingRecords?: TrainingRecordUncheckedCreateNestedManyWithoutUserInput
+    conversationSessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    interactions?: UserInteractionUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserProfileCreateOrConnectWithoutAiMemoriesInput = {
+    where: UserProfileWhereUniqueInput
+    create: XOR<UserProfileCreateWithoutAiMemoriesInput, UserProfileUncheckedCreateWithoutAiMemoriesInput>
+  }
+
+  export type UserProfileUpsertWithoutAiMemoriesInput = {
+    update: XOR<UserProfileUpdateWithoutAiMemoriesInput, UserProfileUncheckedUpdateWithoutAiMemoriesInput>
+    create: XOR<UserProfileCreateWithoutAiMemoriesInput, UserProfileUncheckedCreateWithoutAiMemoriesInput>
+    where?: UserProfileWhereInput
+  }
+
+  export type UserProfileUpdateToOneWithWhereWithoutAiMemoriesInput = {
+    where?: UserProfileWhereInput
+    data: XOR<UserProfileUpdateWithoutAiMemoriesInput, UserProfileUncheckedUpdateWithoutAiMemoriesInput>
+  }
+
+  export type UserProfileUpdateWithoutAiMemoriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    helixUid?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailCanonical?: StringFieldUpdateOperationsInput | string
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePicture?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isServiceAccount?: BoolFieldUpdateOperationsInput | boolean
+    securityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    riskLevel?: EnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    tenantId?: StringFieldUpdateOperationsInput | string
+    roles?: UserProfileUpdaterolesInput | string[]
+    permissions?: UserProfileUpdatepermissionsInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    lastUpdatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    dataVersion?: IntFieldUpdateOperationsInput | number
+    manager?: UserProfileUpdateOneWithoutDirectReportsNestedInput
+    directReports?: UserProfileUpdateManyWithoutManagerNestedInput
+    linkedAccounts?: LinkedAccountUpdateManyWithoutUserNestedInput
+    assets?: AssetAssignmentUpdateManyWithoutUserNestedInput
+    tickets?: UserTicketUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
+    securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
+    trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserProfileUncheckedUpdateWithoutAiMemoriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    helixUid?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    emailCanonical?: StringFieldUpdateOperationsInput | string
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePicture?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    mobileNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    jobTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: NullableStringFieldUpdateOperationsInput | string | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isServiceAccount?: BoolFieldUpdateOperationsInput | boolean
+    securityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    riskLevel?: EnumRiskLevelFieldUpdateOperationsInput | $Enums.RiskLevel
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    tenantId?: StringFieldUpdateOperationsInput | string
+    roles?: UserProfileUpdaterolesInput | string[]
+    permissions?: UserProfileUpdatepermissionsInput | string[]
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    lastUpdatedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    dataVersion?: IntFieldUpdateOperationsInput | number
+    directReports?: UserProfileUncheckedUpdateManyWithoutManagerNestedInput
+    linkedAccounts?: LinkedAccountUncheckedUpdateManyWithoutUserNestedInput
+    assets?: AssetAssignmentUncheckedUpdateManyWithoutUserNestedInput
+    tickets?: UserTicketUncheckedUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
+    securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
+    trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileCreateManyManagerInput = {
@@ -16612,6 +26190,121 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type ConversationSessionCreateManyUserInput = {
+    id?: string
+    sessionType: $Enums.ConversationType
+    channel: $Enums.CommunicationChannel
+    externalId?: string | null
+    subject?: string | null
+    status?: $Enums.SessionStatus
+    priority?: $Enums.SessionPriority
+    participantIds?: ConversationSessionCreateparticipantIdsInput | string[]
+    assignedAgentId?: string | null
+    escalationLevel?: number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionCreatetagsInput | string[]
+    category?: string | null
+    subcategory?: string | null
+    totalInteractions?: number
+    avgResponseTime?: number | null
+    firstResponseTime?: number | null
+    resolutionTime?: number | null
+    startedAt?: Date | string
+    lastActivityAt?: Date | string
+    endedAt?: Date | string | null
+    satisfactionScore?: number | null
+    qualityScore?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserInteractionCreateManyUserInput = {
+    id?: string
+    sessionId?: string | null
+    interactionType: $Enums.InteractionType
+    channel: $Enums.CommunicationChannel
+    direction: $Enums.InteractionDirection
+    externalId?: string | null
+    subject?: string | null
+    content?: string | null
+    summary?: string | null
+    contentType?: string
+    fromUserId?: string | null
+    toUserIds?: UserInteractionCreatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionCreateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionCreatebccUserIdsInput | string[]
+    isAIGenerated?: boolean
+    aiPersonality?: string | null
+    aiConfidence?: number | null
+    aiIntent?: string | null
+    aiSentiment?: string | null
+    processedAt?: Date | string | null
+    processingStatus?: $Enums.ProcessingStatus
+    errorMessage?: string | null
+    requiresResponse?: boolean
+    responseDeadline?: Date | string | null
+    respondedAt?: Date | string | null
+    responseTime?: number | null
+    category?: string | null
+    subcategory?: string | null
+    priority?: $Enums.InteractionPriority
+    urgency?: $Enums.UrgencyLevel
+    businessImpact?: $Enums.BusinessImpact
+    hasAttachments?: boolean
+    attachmentCount?: number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionCreateattachmentTypesInput | string[]
+    qualityScore?: number | null
+    readabilityScore?: number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: boolean
+    parentInteractionId?: string | null
+    relatedInteractionIds?: UserInteractionCreaterelatedInteractionIdsInput | string[]
+    isEscalated?: boolean
+    escalatedAt?: Date | string | null
+    escalatedTo?: string | null
+    escalationReason?: string | null
+    isResolved?: boolean
+    resolvedAt?: Date | string | null
+    resolution?: string | null
+    satisfactionScore?: number | null
+    customerEffort?: number | null
+    npsScore?: number | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: string | null
+    retentionDate?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionCreatetagsInput | string[]
+    keywords?: UserInteractionCreatekeywordsInput | string[]
+    timestamp?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AIConversationMemoryCreateManyUserInput = {
+    id?: string
+    sessionId?: string | null
+    conversationId: string
+    aiPersonality: string
+    context: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: number
+    lastInteractionId?: string | null
+    memoryStrength?: number
+    lastAccessedAt?: Date | string
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserProfileUpdateWithoutManagerInput = {
     id?: StringFieldUpdateOperationsInput | string
     helixUid?: StringFieldUpdateOperationsInput | string
@@ -16653,6 +26346,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUncheckedUpdateWithoutManagerInput = {
@@ -16696,6 +26392,9 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
     securityEvents?: SecurityEventUncheckedUpdateManyWithoutUserNestedInput
     trainingRecords?: TrainingRecordUncheckedUpdateManyWithoutUserNestedInput
+    conversationSessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    interactions?: UserInteractionUncheckedUpdateManyWithoutUserNestedInput
+    aiMemories?: AIConversationMemoryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserProfileUncheckedUpdateManyWithoutManagerInput = {
@@ -17021,6 +26720,625 @@ export namespace Prisma {
     isRequired?: BoolFieldUpdateOperationsInput | boolean
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ConversationSessionUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionType?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFieldUpdateOperationsInput | $Enums.SessionPriority
+    participantIds?: ConversationSessionUpdateparticipantIdsInput | string[]
+    assignedAgentId?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationLevel?: IntFieldUpdateOperationsInput | number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionUpdatetagsInput | string[]
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    totalInteractions?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    firstResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    resolutionTime?: NullableIntFieldUpdateOperationsInput | number | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    interactions?: UserInteractionUpdateManyWithoutSessionNestedInput
+  }
+
+  export type ConversationSessionUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionType?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFieldUpdateOperationsInput | $Enums.SessionPriority
+    participantIds?: ConversationSessionUpdateparticipantIdsInput | string[]
+    assignedAgentId?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationLevel?: IntFieldUpdateOperationsInput | number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionUpdatetagsInput | string[]
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    totalInteractions?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    firstResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    resolutionTime?: NullableIntFieldUpdateOperationsInput | number | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    interactions?: UserInteractionUncheckedUpdateManyWithoutSessionNestedInput
+  }
+
+  export type ConversationSessionUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionType?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+    priority?: EnumSessionPriorityFieldUpdateOperationsInput | $Enums.SessionPriority
+    participantIds?: ConversationSessionUpdateparticipantIdsInput | string[]
+    assignedAgentId?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationLevel?: IntFieldUpdateOperationsInput | number
+    context?: NullableJsonNullValueInput | InputJsonValue
+    tags?: ConversationSessionUpdatetagsInput | string[]
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    totalInteractions?: IntFieldUpdateOperationsInput | number
+    avgResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    firstResponseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    resolutionTime?: NullableIntFieldUpdateOperationsInput | number | null
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActivityAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserInteractionUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    interactionType?: EnumInteractionTypeFieldUpdateOperationsInput | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFieldUpdateOperationsInput | $Enums.InteractionDirection
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    contentType?: StringFieldUpdateOperationsInput | string
+    fromUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    toUserIds?: UserInteractionUpdatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionUpdateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionUpdatebccUserIdsInput | string[]
+    isAIGenerated?: BoolFieldUpdateOperationsInput | boolean
+    aiPersonality?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSentiment?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStatus?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresResponse?: BoolFieldUpdateOperationsInput | boolean
+    responseDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    respondedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumInteractionPriorityFieldUpdateOperationsInput | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFieldUpdateOperationsInput | $Enums.BusinessImpact
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachmentCount?: IntFieldUpdateOperationsInput | number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionUpdateattachmentTypesInput | string[]
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    readabilityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    parentInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedInteractionIds?: UserInteractionUpdaterelatedInteractionIdsInput | string[]
+    isEscalated?: BoolFieldUpdateOperationsInput | boolean
+    escalatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    escalatedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    isResolved?: BoolFieldUpdateOperationsInput | boolean
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    customerEffort?: NullableIntFieldUpdateOperationsInput | number | null
+    npsScore?: NullableIntFieldUpdateOperationsInput | number | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: BoolFieldUpdateOperationsInput | boolean
+    isConfidential?: BoolFieldUpdateOperationsInput | boolean
+    dataClassification?: NullableStringFieldUpdateOperationsInput | string | null
+    retentionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionUpdatetagsInput | string[]
+    keywords?: UserInteractionUpdatekeywordsInput | string[]
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    session?: ConversationSessionUpdateOneWithoutInteractionsNestedInput
+  }
+
+  export type UserInteractionUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    interactionType?: EnumInteractionTypeFieldUpdateOperationsInput | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFieldUpdateOperationsInput | $Enums.InteractionDirection
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    contentType?: StringFieldUpdateOperationsInput | string
+    fromUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    toUserIds?: UserInteractionUpdatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionUpdateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionUpdatebccUserIdsInput | string[]
+    isAIGenerated?: BoolFieldUpdateOperationsInput | boolean
+    aiPersonality?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSentiment?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStatus?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresResponse?: BoolFieldUpdateOperationsInput | boolean
+    responseDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    respondedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumInteractionPriorityFieldUpdateOperationsInput | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFieldUpdateOperationsInput | $Enums.BusinessImpact
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachmentCount?: IntFieldUpdateOperationsInput | number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionUpdateattachmentTypesInput | string[]
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    readabilityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    parentInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedInteractionIds?: UserInteractionUpdaterelatedInteractionIdsInput | string[]
+    isEscalated?: BoolFieldUpdateOperationsInput | boolean
+    escalatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    escalatedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    isResolved?: BoolFieldUpdateOperationsInput | boolean
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    customerEffort?: NullableIntFieldUpdateOperationsInput | number | null
+    npsScore?: NullableIntFieldUpdateOperationsInput | number | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: BoolFieldUpdateOperationsInput | boolean
+    isConfidential?: BoolFieldUpdateOperationsInput | boolean
+    dataClassification?: NullableStringFieldUpdateOperationsInput | string | null
+    retentionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionUpdatetagsInput | string[]
+    keywords?: UserInteractionUpdatekeywordsInput | string[]
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserInteractionUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    interactionType?: EnumInteractionTypeFieldUpdateOperationsInput | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFieldUpdateOperationsInput | $Enums.InteractionDirection
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    contentType?: StringFieldUpdateOperationsInput | string
+    fromUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    toUserIds?: UserInteractionUpdatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionUpdateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionUpdatebccUserIdsInput | string[]
+    isAIGenerated?: BoolFieldUpdateOperationsInput | boolean
+    aiPersonality?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSentiment?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStatus?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresResponse?: BoolFieldUpdateOperationsInput | boolean
+    responseDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    respondedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumInteractionPriorityFieldUpdateOperationsInput | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFieldUpdateOperationsInput | $Enums.BusinessImpact
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachmentCount?: IntFieldUpdateOperationsInput | number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionUpdateattachmentTypesInput | string[]
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    readabilityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    parentInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedInteractionIds?: UserInteractionUpdaterelatedInteractionIdsInput | string[]
+    isEscalated?: BoolFieldUpdateOperationsInput | boolean
+    escalatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    escalatedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    isResolved?: BoolFieldUpdateOperationsInput | boolean
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    customerEffort?: NullableIntFieldUpdateOperationsInput | number | null
+    npsScore?: NullableIntFieldUpdateOperationsInput | number | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: BoolFieldUpdateOperationsInput | boolean
+    isConfidential?: BoolFieldUpdateOperationsInput | boolean
+    dataClassification?: NullableStringFieldUpdateOperationsInput | string | null
+    retentionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionUpdatetagsInput | string[]
+    keywords?: UserInteractionUpdatekeywordsInput | string[]
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIConversationMemoryUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: StringFieldUpdateOperationsInput | string
+    aiPersonality?: StringFieldUpdateOperationsInput | string
+    context?: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: IntFieldUpdateOperationsInput | number
+    lastInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memoryStrength?: FloatFieldUpdateOperationsInput | number
+    lastAccessedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIConversationMemoryUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: StringFieldUpdateOperationsInput | string
+    aiPersonality?: StringFieldUpdateOperationsInput | string
+    context?: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: IntFieldUpdateOperationsInput | number
+    lastInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memoryStrength?: FloatFieldUpdateOperationsInput | number
+    lastAccessedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIConversationMemoryUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: StringFieldUpdateOperationsInput | string
+    aiPersonality?: StringFieldUpdateOperationsInput | string
+    context?: JsonNullValueInput | InputJsonValue
+    userPreferences?: NullableJsonNullValueInput | InputJsonValue
+    conversationState?: NullableJsonNullValueInput | InputJsonValue
+    entityMemory?: NullableJsonNullValueInput | InputJsonValue
+    interactionCount?: IntFieldUpdateOperationsInput | number
+    lastInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    memoryStrength?: FloatFieldUpdateOperationsInput | number
+    lastAccessedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserInteractionCreateManySessionInput = {
+    id?: string
+    userId: string
+    interactionType: $Enums.InteractionType
+    channel: $Enums.CommunicationChannel
+    direction: $Enums.InteractionDirection
+    externalId?: string | null
+    subject?: string | null
+    content?: string | null
+    summary?: string | null
+    contentType?: string
+    fromUserId?: string | null
+    toUserIds?: UserInteractionCreatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionCreateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionCreatebccUserIdsInput | string[]
+    isAIGenerated?: boolean
+    aiPersonality?: string | null
+    aiConfidence?: number | null
+    aiIntent?: string | null
+    aiSentiment?: string | null
+    processedAt?: Date | string | null
+    processingStatus?: $Enums.ProcessingStatus
+    errorMessage?: string | null
+    requiresResponse?: boolean
+    responseDeadline?: Date | string | null
+    respondedAt?: Date | string | null
+    responseTime?: number | null
+    category?: string | null
+    subcategory?: string | null
+    priority?: $Enums.InteractionPriority
+    urgency?: $Enums.UrgencyLevel
+    businessImpact?: $Enums.BusinessImpact
+    hasAttachments?: boolean
+    attachmentCount?: number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionCreateattachmentTypesInput | string[]
+    qualityScore?: number | null
+    readabilityScore?: number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: boolean
+    parentInteractionId?: string | null
+    relatedInteractionIds?: UserInteractionCreaterelatedInteractionIdsInput | string[]
+    isEscalated?: boolean
+    escalatedAt?: Date | string | null
+    escalatedTo?: string | null
+    escalationReason?: string | null
+    isResolved?: boolean
+    resolvedAt?: Date | string | null
+    resolution?: string | null
+    satisfactionScore?: number | null
+    customerEffort?: number | null
+    npsScore?: number | null
+    ipAddress?: string | null
+    userAgent?: string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: boolean
+    isConfidential?: boolean
+    dataClassification?: string | null
+    retentionDate?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionCreatetagsInput | string[]
+    keywords?: UserInteractionCreatekeywordsInput | string[]
+    timestamp?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserInteractionUpdateWithoutSessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    interactionType?: EnumInteractionTypeFieldUpdateOperationsInput | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFieldUpdateOperationsInput | $Enums.InteractionDirection
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    contentType?: StringFieldUpdateOperationsInput | string
+    fromUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    toUserIds?: UserInteractionUpdatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionUpdateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionUpdatebccUserIdsInput | string[]
+    isAIGenerated?: BoolFieldUpdateOperationsInput | boolean
+    aiPersonality?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSentiment?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStatus?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresResponse?: BoolFieldUpdateOperationsInput | boolean
+    responseDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    respondedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumInteractionPriorityFieldUpdateOperationsInput | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFieldUpdateOperationsInput | $Enums.BusinessImpact
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachmentCount?: IntFieldUpdateOperationsInput | number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionUpdateattachmentTypesInput | string[]
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    readabilityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    parentInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedInteractionIds?: UserInteractionUpdaterelatedInteractionIdsInput | string[]
+    isEscalated?: BoolFieldUpdateOperationsInput | boolean
+    escalatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    escalatedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    isResolved?: BoolFieldUpdateOperationsInput | boolean
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    customerEffort?: NullableIntFieldUpdateOperationsInput | number | null
+    npsScore?: NullableIntFieldUpdateOperationsInput | number | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: BoolFieldUpdateOperationsInput | boolean
+    isConfidential?: BoolFieldUpdateOperationsInput | boolean
+    dataClassification?: NullableStringFieldUpdateOperationsInput | string | null
+    retentionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionUpdatetagsInput | string[]
+    keywords?: UserInteractionUpdatekeywordsInput | string[]
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserProfileUpdateOneRequiredWithoutInteractionsNestedInput
+  }
+
+  export type UserInteractionUncheckedUpdateWithoutSessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    interactionType?: EnumInteractionTypeFieldUpdateOperationsInput | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFieldUpdateOperationsInput | $Enums.InteractionDirection
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    contentType?: StringFieldUpdateOperationsInput | string
+    fromUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    toUserIds?: UserInteractionUpdatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionUpdateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionUpdatebccUserIdsInput | string[]
+    isAIGenerated?: BoolFieldUpdateOperationsInput | boolean
+    aiPersonality?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSentiment?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStatus?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresResponse?: BoolFieldUpdateOperationsInput | boolean
+    responseDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    respondedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumInteractionPriorityFieldUpdateOperationsInput | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFieldUpdateOperationsInput | $Enums.BusinessImpact
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachmentCount?: IntFieldUpdateOperationsInput | number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionUpdateattachmentTypesInput | string[]
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    readabilityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    parentInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedInteractionIds?: UserInteractionUpdaterelatedInteractionIdsInput | string[]
+    isEscalated?: BoolFieldUpdateOperationsInput | boolean
+    escalatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    escalatedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    isResolved?: BoolFieldUpdateOperationsInput | boolean
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    customerEffort?: NullableIntFieldUpdateOperationsInput | number | null
+    npsScore?: NullableIntFieldUpdateOperationsInput | number | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: BoolFieldUpdateOperationsInput | boolean
+    isConfidential?: BoolFieldUpdateOperationsInput | boolean
+    dataClassification?: NullableStringFieldUpdateOperationsInput | string | null
+    retentionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionUpdatetagsInput | string[]
+    keywords?: UserInteractionUpdatekeywordsInput | string[]
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserInteractionUncheckedUpdateManyWithoutSessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    interactionType?: EnumInteractionTypeFieldUpdateOperationsInput | $Enums.InteractionType
+    channel?: EnumCommunicationChannelFieldUpdateOperationsInput | $Enums.CommunicationChannel
+    direction?: EnumInteractionDirectionFieldUpdateOperationsInput | $Enums.InteractionDirection
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    contentType?: StringFieldUpdateOperationsInput | string
+    fromUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    toUserIds?: UserInteractionUpdatetoUserIdsInput | string[]
+    ccUserIds?: UserInteractionUpdateccUserIdsInput | string[]
+    bccUserIds?: UserInteractionUpdatebccUserIdsInput | string[]
+    isAIGenerated?: BoolFieldUpdateOperationsInput | boolean
+    aiPersonality?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConfidence?: NullableFloatFieldUpdateOperationsInput | number | null
+    aiIntent?: NullableStringFieldUpdateOperationsInput | string | null
+    aiSentiment?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStatus?: EnumProcessingStatusFieldUpdateOperationsInput | $Enums.ProcessingStatus
+    errorMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    requiresResponse?: BoolFieldUpdateOperationsInput | boolean
+    responseDeadline?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    respondedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    subcategory?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumInteractionPriorityFieldUpdateOperationsInput | $Enums.InteractionPriority
+    urgency?: EnumUrgencyLevelFieldUpdateOperationsInput | $Enums.UrgencyLevel
+    businessImpact?: EnumBusinessImpactFieldUpdateOperationsInput | $Enums.BusinessImpact
+    hasAttachments?: BoolFieldUpdateOperationsInput | boolean
+    attachmentCount?: IntFieldUpdateOperationsInput | number
+    attachmentSizes?: NullableJsonNullValueInput | InputJsonValue
+    attachmentTypes?: UserInteractionUpdateattachmentTypesInput | string[]
+    qualityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    readabilityScore?: NullableIntFieldUpdateOperationsInput | number | null
+    toneScore?: NullableJsonNullValueInput | InputJsonValue
+    isFollowUp?: BoolFieldUpdateOperationsInput | boolean
+    parentInteractionId?: NullableStringFieldUpdateOperationsInput | string | null
+    relatedInteractionIds?: UserInteractionUpdaterelatedInteractionIdsInput | string[]
+    isEscalated?: BoolFieldUpdateOperationsInput | boolean
+    escalatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    escalatedTo?: NullableStringFieldUpdateOperationsInput | string | null
+    escalationReason?: NullableStringFieldUpdateOperationsInput | string | null
+    isResolved?: BoolFieldUpdateOperationsInput | boolean
+    resolvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    resolution?: NullableStringFieldUpdateOperationsInput | string | null
+    satisfactionScore?: NullableIntFieldUpdateOperationsInput | number | null
+    customerEffort?: NullableIntFieldUpdateOperationsInput | number | null
+    npsScore?: NullableIntFieldUpdateOperationsInput | number | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceInfo?: NullableJsonNullValueInput | InputJsonValue
+    location?: NullableJsonNullValueInput | InputJsonValue
+    containsPII?: BoolFieldUpdateOperationsInput | boolean
+    isConfidential?: BoolFieldUpdateOperationsInput | boolean
+    dataClassification?: NullableStringFieldUpdateOperationsInput | string | null
+    retentionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    tags?: UserInteractionUpdatetagsInput | string[]
+    keywords?: UserInteractionUpdatekeywordsInput | string[]
+    timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

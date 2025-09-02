@@ -260,6 +260,124 @@ exports.Prisma.TrainingRecordScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ConversationSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sessionType: 'sessionType',
+  channel: 'channel',
+  externalId: 'externalId',
+  subject: 'subject',
+  status: 'status',
+  priority: 'priority',
+  participantIds: 'participantIds',
+  assignedAgentId: 'assignedAgentId',
+  escalationLevel: 'escalationLevel',
+  context: 'context',
+  tags: 'tags',
+  category: 'category',
+  subcategory: 'subcategory',
+  totalInteractions: 'totalInteractions',
+  avgResponseTime: 'avgResponseTime',
+  firstResponseTime: 'firstResponseTime',
+  resolutionTime: 'resolutionTime',
+  startedAt: 'startedAt',
+  lastActivityAt: 'lastActivityAt',
+  endedAt: 'endedAt',
+  satisfactionScore: 'satisfactionScore',
+  qualityScore: 'qualityScore',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserInteractionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sessionId: 'sessionId',
+  interactionType: 'interactionType',
+  channel: 'channel',
+  direction: 'direction',
+  externalId: 'externalId',
+  subject: 'subject',
+  content: 'content',
+  summary: 'summary',
+  contentType: 'contentType',
+  fromUserId: 'fromUserId',
+  toUserIds: 'toUserIds',
+  ccUserIds: 'ccUserIds',
+  bccUserIds: 'bccUserIds',
+  isAIGenerated: 'isAIGenerated',
+  aiPersonality: 'aiPersonality',
+  aiConfidence: 'aiConfidence',
+  aiIntent: 'aiIntent',
+  aiSentiment: 'aiSentiment',
+  processedAt: 'processedAt',
+  processingStatus: 'processingStatus',
+  errorMessage: 'errorMessage',
+  requiresResponse: 'requiresResponse',
+  responseDeadline: 'responseDeadline',
+  respondedAt: 'respondedAt',
+  responseTime: 'responseTime',
+  category: 'category',
+  subcategory: 'subcategory',
+  priority: 'priority',
+  urgency: 'urgency',
+  businessImpact: 'businessImpact',
+  hasAttachments: 'hasAttachments',
+  attachmentCount: 'attachmentCount',
+  attachmentSizes: 'attachmentSizes',
+  attachmentTypes: 'attachmentTypes',
+  qualityScore: 'qualityScore',
+  readabilityScore: 'readabilityScore',
+  toneScore: 'toneScore',
+  isFollowUp: 'isFollowUp',
+  parentInteractionId: 'parentInteractionId',
+  relatedInteractionIds: 'relatedInteractionIds',
+  isEscalated: 'isEscalated',
+  escalatedAt: 'escalatedAt',
+  escalatedTo: 'escalatedTo',
+  escalationReason: 'escalationReason',
+  isResolved: 'isResolved',
+  resolvedAt: 'resolvedAt',
+  resolution: 'resolution',
+  satisfactionScore: 'satisfactionScore',
+  customerEffort: 'customerEffort',
+  npsScore: 'npsScore',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  deviceInfo: 'deviceInfo',
+  location: 'location',
+  containsPII: 'containsPII',
+  isConfidential: 'isConfidential',
+  dataClassification: 'dataClassification',
+  retentionDate: 'retentionDate',
+  metadata: 'metadata',
+  tags: 'tags',
+  keywords: 'keywords',
+  timestamp: 'timestamp',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AIConversationMemoryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sessionId: 'sessionId',
+  conversationId: 'conversationId',
+  aiPersonality: 'aiPersonality',
+  context: 'context',
+  userPreferences: 'userPreferences',
+  conversationState: 'conversationState',
+  entityMemory: 'entityMemory',
+  interactionCount: 'interactionCount',
+  lastInteractionId: 'lastInteractionId',
+  memoryStrength: 'memoryStrength',
+  lastAccessedAt: 'lastAccessedAt',
+  expiresAt: 'expiresAt',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -267,6 +385,10 @@ exports.Prisma.SortOrder = {
 
 exports.Prisma.NullableJsonNullValueInput = {
   DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
@@ -369,6 +491,104 @@ exports.TrainingStatus = exports.$Enums.TrainingStatus = {
   WAIVED: 'WAIVED'
 };
 
+exports.ConversationType = exports.$Enums.ConversationType = {
+  EMAIL_THREAD: 'EMAIL_THREAD',
+  AI_CHAT: 'AI_CHAT',
+  VOICE_CALL: 'VOICE_CALL',
+  VIDEO_CALL: 'VIDEO_CALL',
+  TICKET_CONVERSATION: 'TICKET_CONVERSATION',
+  SUPPORT_SESSION: 'SUPPORT_SESSION',
+  SALES_INQUIRY: 'SALES_INQUIRY',
+  GENERAL_INQUIRY: 'GENERAL_INQUIRY'
+};
+
+exports.CommunicationChannel = exports.$Enums.CommunicationChannel = {
+  EMAIL: 'EMAIL',
+  WEB_CHAT: 'WEB_CHAT',
+  MOBILE_CHAT: 'MOBILE_CHAT',
+  PHONE: 'PHONE',
+  VIDEO: 'VIDEO',
+  SLACK: 'SLACK',
+  TEAMS: 'TEAMS',
+  WHATSAPP: 'WHATSAPP',
+  SMS: 'SMS',
+  API: 'API',
+  WEBHOOK: 'WEBHOOK',
+  FORM_SUBMISSION: 'FORM_SUBMISSION',
+  SOCIAL_MEDIA: 'SOCIAL_MEDIA'
+};
+
+exports.SessionStatus = exports.$Enums.SessionStatus = {
+  ACTIVE: 'ACTIVE',
+  WAITING_RESPONSE: 'WAITING_RESPONSE',
+  ESCALATED: 'ESCALATED',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED',
+  ABANDONED: 'ABANDONED',
+  TRANSFERRED: 'TRANSFERRED'
+};
+
+exports.SessionPriority = exports.$Enums.SessionPriority = {
+  LOW: 'LOW',
+  NORMAL: 'NORMAL',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT',
+  CRITICAL: 'CRITICAL'
+};
+
+exports.InteractionType = exports.$Enums.InteractionType = {
+  EMAIL_SENT: 'EMAIL_SENT',
+  EMAIL_RECEIVED: 'EMAIL_RECEIVED',
+  CHAT_MESSAGE: 'CHAT_MESSAGE',
+  VOICE_CALL: 'VOICE_CALL',
+  VIDEO_CALL: 'VIDEO_CALL',
+  FILE_ATTACHMENT: 'FILE_ATTACHMENT',
+  FORM_SUBMISSION: 'FORM_SUBMISSION',
+  AI_RESPONSE: 'AI_RESPONSE',
+  AUTO_REPLY: 'AUTO_REPLY',
+  ESCALATION: 'ESCALATION',
+  RESOLUTION: 'RESOLUTION',
+  NOTE: 'NOTE',
+  STATUS_UPDATE: 'STATUS_UPDATE'
+};
+
+exports.InteractionDirection = exports.$Enums.InteractionDirection = {
+  INBOUND: 'INBOUND',
+  OUTBOUND: 'OUTBOUND',
+  INTERNAL: 'INTERNAL',
+  SYSTEM_GENERATED: 'SYSTEM_GENERATED'
+};
+
+exports.ProcessingStatus = exports.$Enums.ProcessingStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED',
+  REQUIRES_ATTENTION: 'REQUIRES_ATTENTION'
+};
+
+exports.InteractionPriority = exports.$Enums.InteractionPriority = {
+  LOW: 'LOW',
+  NORMAL: 'NORMAL',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT',
+  CRITICAL: 'CRITICAL'
+};
+
+exports.UrgencyLevel = exports.$Enums.UrgencyLevel = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL'
+};
+
+exports.BusinessImpact = exports.$Enums.BusinessImpact = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL'
+};
+
 exports.Prisma.ModelName = {
   UserProfile: 'UserProfile',
   LinkedAccount: 'LinkedAccount',
@@ -376,7 +596,10 @@ exports.Prisma.ModelName = {
   UserTicket: 'UserTicket',
   ActivityLog: 'ActivityLog',
   SecurityEvent: 'SecurityEvent',
-  TrainingRecord: 'TrainingRecord'
+  TrainingRecord: 'TrainingRecord',
+  ConversationSession: 'ConversationSession',
+  UserInteraction: 'UserInteraction',
+  AIConversationMemory: 'AIConversationMemory'
 };
 
 /**

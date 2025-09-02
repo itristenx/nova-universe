@@ -76,6 +76,11 @@ model UserProfile {
   securityEvents  SecurityEvent[]
   trainingRecords TrainingRecord[]
 
+  // New Interaction Relationships
+  conversationSessions ConversationSession[]
+  interactions         UserInteraction[]
+  aiMemories           AIConversationMemory[]
+
   @@map("user_profiles")
 }
 
@@ -261,6 +266,214 @@ model TrainingRecord {
 }
 
 // ============================================================================
+// USER INTERACTION TRACKING MODELS
+// ============================================================================
+
+// Conversation sessions for grouping related interactions
+model ConversationSession {
+  id     String      @id @default(uuid())
+  userId String      @map("user_id")
+  user   UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Session Identification
+  sessionType ConversationType     @map("session_type")
+  channel     CommunicationChannel
+  externalId  String?              @map("external_id") // Email thread ID, ticket ID, etc.
+
+  // Session Details
+  subject  String? // Email subject, chat topic, etc.
+  status   SessionStatus   @default(ACTIVE)
+  priority SessionPriority @default(NORMAL)
+
+  // Participants
+  participantIds  String[] @default([]) @map("participant_ids") // User IDs
+  assignedAgentId String?  @map("assigned_agent_id")
+  escalationLevel Int      @default(0) @map("escalation_level")
+
+  // Session Context
+  context     Json? // Session-specific context
+  tags        String[] @default([])
+  category    String? // Support, Sales, General, etc.
+  subcategory String?
+
+  // Session Metrics
+  totalInteractions Int  @default(0) @map("total_interactions")
+  avgResponseTime   Int? @map("avg_response_time") // minutes
+  firstResponseTime Int? @map("first_response_time") // minutes
+  resolutionTime    Int? @map("resolution_time") // minutes
+
+  // Session Timing
+  startedAt      DateTime  @default(now()) @map("started_at")
+  lastActivityAt DateTime  @default(now()) @map("last_activity_at")
+  endedAt        DateTime? @map("ended_at")
+
+  // Quality and Satisfaction
+  satisfactionScore Int? @map("satisfaction_score") // 1-5
+  qualityScore      Int? @map("quality_score") // 1-100
+
+  // Audit
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  interactions UserInteraction[]
+
+  @@index([userId, sessionType])
+  @@index([channel, status])
+  @@index([startedAt])
+  @@map("conversation_sessions")
+}
+
+// Individual user interactions (emails, chats, calls, etc.)
+model UserInteraction {
+  id        String               @id @default(uuid())
+  userId    String               @map("user_id")
+  user      UserProfile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?              @map("session_id")
+  session   ConversationSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  // Interaction Identification
+  interactionType InteractionType      @map("interaction_type")
+  channel         CommunicationChannel
+  direction       InteractionDirection
+  externalId      String?              @map("external_id") // Email message ID, chat message ID
+
+  // Interaction Content
+  subject     String? // Email subject, chat topic
+  content     String? @user360_db.Text // Full content
+  summary     String? // AI-generated summary
+  contentType String  @default("text/plain") @map("content_type")
+
+  // Participants
+  fromUserId String?  @map("from_user_id")
+  toUserIds  String[] @default([]) @map("to_user_ids")
+  ccUserIds  String[] @default([]) @map("cc_user_ids")
+  bccUserIds String[] @default([]) @map("bcc_user_ids")
+
+  // AI and Automation
+  isAIGenerated Boolean @default(false) @map("is_ai_generated")
+  aiPersonality String? @map("ai_personality") // Cosmo personality used
+  aiConfidence  Float?  @map("ai_confidence") // AI confidence score
+  aiIntent      String? @map("ai_intent") // Detected intent
+  aiSentiment   String? @map("ai_sentiment") // Positive, Negative, Neutral
+
+  // Processing Status
+  processedAt      DateTime?        @map("processed_at")
+  processingStatus ProcessingStatus @default(PENDING) @map("processing_status")
+  errorMessage     String?          @map("error_message")
+
+  // Response Information
+  requiresResponse Boolean   @default(false) @map("requires_response")
+  responseDeadline DateTime? @map("response_deadline")
+  respondedAt      DateTime? @map("responded_at")
+  responseTime     Int?      @map("response_time") // minutes
+
+  // Classification and Routing
+  category       String? // Support, Sales, General
+  subcategory    String?
+  priority       InteractionPriority @default(NORMAL)
+  urgency        UrgencyLevel        @default(LOW)
+  businessImpact BusinessImpact      @default(LOW) @map("business_impact")
+
+  // Attachments and Media
+  hasAttachments  Boolean  @default(false) @map("has_attachments")
+  attachmentCount Int      @default(0) @map("attachment_count")
+  attachmentSizes Json?    @map("attachment_sizes") // Array of sizes
+  attachmentTypes String[] @default([]) @map("attachment_types")
+
+  // Quality Metrics
+  qualityScore     Int?  @map("quality_score") // 1-100
+  readabilityScore Int?  @map("readability_score") // 1-100
+  toneScore        Json? @map("tone_score") // Tone analysis results
+
+  // Context and History
+  isFollowUp            Boolean  @default(false) @map("is_follow_up")
+  parentInteractionId   String?  @map("parent_interaction_id")
+  relatedInteractionIds String[] @default([]) @map("related_interaction_ids")
+
+  // Escalation and Resolution
+  isEscalated      Boolean   @default(false) @map("is_escalated")
+  escalatedAt      DateTime? @map("escalated_at")
+  escalatedTo      String?   @map("escalated_to")
+  escalationReason String?   @map("escalation_reason")
+  isResolved       Boolean   @default(false) @map("is_resolved")
+  resolvedAt       DateTime? @map("resolved_at")
+  resolution       String? // Resolution details
+
+  // Customer Experience
+  satisfactionScore Int? @map("satisfaction_score") // 1-5
+  customerEffort    Int? @map("customer_effort") // 1-5 (Customer Effort Score)
+  npsScore          Int? @map("nps_score") // Net Promoter Score
+
+  // Technical Details
+  ipAddress  String? @map("ip_address")
+  userAgent  String? @map("user_agent")
+  deviceInfo Json?   @map("device_info")
+  location   Json? // Geolocation data
+
+  // Privacy and Compliance
+  containsPII        Boolean   @default(false) @map("contains_pii")
+  isConfidential     Boolean   @default(false) @map("is_confidential")
+  dataClassification String?   @map("data_classification")
+  retentionDate      DateTime? @map("retention_date")
+
+  // Metadata and Tags
+  metadata Json? // Channel-specific metadata
+  tags     String[] @default([])
+  keywords String[] @default([]) // Extracted keywords
+
+  // Audit
+  timestamp DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, interactionType, timestamp])
+  @@index([sessionId, timestamp])
+  @@index([channel, direction, timestamp])
+  @@index([isAIGenerated, aiPersonality])
+  @@index([requiresResponse, responseDeadline])
+  @@index([category, priority])
+  @@map("user_interactions")
+}
+
+// AI conversation memory for contextual responses
+model AIConversationMemory {
+  id        String      @id @default(uuid())
+  userId    String      @map("user_id")
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?     @map("session_id")
+
+  // Memory Context
+  conversationId String @map("conversation_id") // AI conversation identifier
+  aiPersonality  String @map("ai_personality") // Cosmo personality
+
+  // Memory Content
+  context           Json // Conversation context and history
+  userPreferences   Json? @map("user_preferences") // Learned preferences
+  conversationState Json? @map("conversation_state") // Current state
+  entityMemory      Json? @map("entity_memory") // Extracted entities
+
+  // Memory Metrics
+  interactionCount  Int     @default(0) @map("interaction_count")
+  lastInteractionId String? @map("last_interaction_id")
+  memoryStrength    Float   @default(1.0) @map("memory_strength") // Relevance weight
+
+  // Memory Lifecycle
+  lastAccessedAt DateTime  @default(now()) @map("last_accessed_at")
+  expiresAt      DateTime? @map("expires_at")
+  isActive       Boolean   @default(true) @map("is_active")
+
+  // Audit
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, conversationId, aiPersonality])
+  @@index([userId, aiPersonality])
+  @@index([lastAccessedAt])
+  @@map("ai_conversation_memory")
+}
+
+// ============================================================================
 // ENUMS
 // ============================================================================
 
@@ -346,4 +559,106 @@ enum TrainingStatus {
   FAILED
   EXPIRED
   WAIVED
+}
+
+// ============================================================================
+// INTERACTION TRACKING ENUMS
+// ============================================================================
+
+enum ConversationType {
+  EMAIL_THREAD
+  AI_CHAT
+  VOICE_CALL
+  VIDEO_CALL
+  TICKET_CONVERSATION
+  SUPPORT_SESSION
+  SALES_INQUIRY
+  GENERAL_INQUIRY
+}
+
+enum CommunicationChannel {
+  EMAIL
+  WEB_CHAT
+  MOBILE_CHAT
+  PHONE
+  VIDEO
+  SLACK
+  TEAMS
+  WHATSAPP
+  SMS
+  API
+  WEBHOOK
+  FORM_SUBMISSION
+  SOCIAL_MEDIA
+}
+
+enum SessionStatus {
+  ACTIVE
+  WAITING_RESPONSE
+  ESCALATED
+  RESOLVED
+  CLOSED
+  ABANDONED
+  TRANSFERRED
+}
+
+enum SessionPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+  CRITICAL
+}
+
+enum InteractionType {
+  EMAIL_SENT
+  EMAIL_RECEIVED
+  CHAT_MESSAGE
+  VOICE_CALL
+  VIDEO_CALL
+  FILE_ATTACHMENT
+  FORM_SUBMISSION
+  AI_RESPONSE
+  AUTO_REPLY
+  ESCALATION
+  RESOLUTION
+  NOTE
+  STATUS_UPDATE
+}
+
+enum InteractionDirection {
+  INBOUND
+  OUTBOUND
+  INTERNAL
+  SYSTEM_GENERATED
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+  REQUIRES_ATTENTION
+}
+
+enum InteractionPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+  CRITICAL
+}
+
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum BusinessImpact {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
