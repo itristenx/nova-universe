@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cosmoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3F82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="glowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#A78BFA;stop-opacity:0.3" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Glow effect -->
+  <circle cx="32" cy="32" r="30" fill="url(#glowGradient)" opacity="0.4">
+    <animate attributeName="r" values="28;32;28" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Main body -->
+  <circle cx="32" cy="32" r="24" fill="url(#cosmoGradient)" stroke="#FFFFFF" stroke-width="2">
+    <animateTransform 
+      attributeName="transform" 
+      type="translate" 
+      values="0,-2;0,2;0,-2" 
+      dur="4s" 
+      repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Sparkle icon inside -->
+  <g transform="translate(32,32)">
+    <animateTransform 
+      attributeName="transform" 
+      type="rotate" 
+      values="0 0 0;360 0 0" 
+      dur="8s" 
+      repeatCount="indefinite"/>
+    
+    <!-- Main sparkle -->
+    <path d="M0,-12 L3,-3 L12,0 L3,3 L0,12 L-3,3 L-12,0 L-3,-3 Z" 
+          fill="#FFFFFF" opacity="0.9">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Small sparkles -->
+    <circle cx="8" cy="-8" r="1.5" fill="#FFFFFF" opacity="0.8">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+    </circle>
+    <circle cx="-8" cy="8" r="1" fill="#FFFFFF" opacity="0.7">
+      <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.8s" repeatCount="indefinite" begin="0.6s"/>
+    </circle>
+    <circle cx="10" cy="6" r="0.8" fill="#FFFFFF" opacity="0.6">
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.2s" repeatCount="indefinite" begin="0.9s"/>
+    </circle>
+  </g>
+  
+  <!-- AI indicator badge -->
+  <circle cx="50" cy="14" r="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+  <g transform="translate(50,14)">
+    <path d="M0,-4 L1,-1 L4,0 L1,1 L0,4 L-1,1 L-4,0 L-1,-1 Z" 
+          fill="#3F82F6" opacity="0.8">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Thinking indicator (optional, can be toggled) -->
+  <g id="thinkingIndicator" opacity="0">
+    <circle cx="54" cy="10" r="4" fill="#FCD34D">
+      <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="thinking.begin"/>
+    </circle>
+    <path transform="translate(54,10)" d="M-1.5,-1.5 L1.5,1.5 M1.5,-1.5 L-1.5,1.5" 
+          stroke="#F59E0B" stroke-width="1" stroke-linecap="round">
+      <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="thinking.begin"/>
+    </path>
+  </g>
+  
+  <!-- Speaking indicators (optional, can be toggled) -->
+  <g id="speakingIndicator" opacity="0">
+    <circle cx="48" cy="48" r="1.5" fill="#10B981">
+      <animate attributeName="opacity" values="0;1;0" dur="0.6s" repeatCount="indefinite" begin="speaking.begin"/>
+    </circle>
+    <circle cx="52" cy="48" r="1.5" fill="#10B981">
+      <animate attributeName="opacity" values="0;1;0" dur="0.6s" repeatCount="indefinite" begin="speaking.begin+0.2s"/>
+    </circle>
+    <circle cx="56" cy="48" r="1.5" fill="#10B981">
+      <animate attributeName="opacity" values="0;1;0" dur="0.6s" repeatCount="indefinite" begin="speaking.begin+0.4s"/>
+    </circle>
+  </g>
+</svg>

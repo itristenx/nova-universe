@@ -307,6 +307,9 @@ export const appIconSets = {
     'attachment',
     'calendar',
     'notifications',
+    'cosmo',
+    'ai_assistant',
+    'ai_powered',
   ],
 
   pulse: [
@@ -318,6 +321,9 @@ export const appIconSets = {
     'location',
     'add',
     'edit',
+    'ai',
+    'automation',
+    'intelligence',
     'refresh',
     'search',
     'filter',
