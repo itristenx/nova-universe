@@ -1,5 +1,5 @@
 import React from 'react';
-import { PageContext, usePageContextProvider } from '../hooks/usePageContext';
+import { PageContext, usePageContextProvider } from '../../hooks/usePageContext';
 
 interface PageContextProviderProps {
   children: React.ReactNode;
