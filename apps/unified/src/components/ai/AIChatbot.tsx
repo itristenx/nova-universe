@@ -21,6 +21,7 @@ import {
   MicrophoneIcon,
   StopIcon,
 } from '@heroicons/react/24/outline';
+import { CosmoAvatar, AIIndicator } from './index';
 
 interface ChatSuggestion {
   id: string;
@@ -227,11 +228,12 @@ export function AIChatbot() {
     <div className="flex h-full max-h-[600px] flex-col rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-gray-200 p-4 dark:border-gray-700">
-        <div className="rounded-lg bg-purple-100 p-2 dark:bg-purple-900/30">
-          <ChatBubbleLeftRightIcon className="h-6 w-6 text-purple-600" />
-        </div>
+        <CosmoAvatar size="md" animate={true} />
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900 dark:text-white">{t('chatbot:title')}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-gray-900 dark:text-white">{t('chatbot:title')}</h3>
+            <AIIndicator type="cosmo" size="sm" />
+          </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">{t('chatbot:subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
