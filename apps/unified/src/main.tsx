@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import App from './App';
+import { PageContextProvider } from '@components/providers/PageContextProvider';
 import '@styles/globals.css';
 import './i18n/config'; // Initialize i18n
 
@@ -45,32 +46,34 @@ root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <App />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: 'white',
-              color: 'black',
-              boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
-              borderRadius: '12px',
-              border: '1px solid rgba(0, 0, 0, 0.05)',
-            },
-            success: {
-              iconTheme: {
-                primary: '#22c55e',
-                secondary: 'white',
+        <PageContextProvider>
+          <App />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: 'white',
+                color: 'black',
+                boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
+                borderRadius: '12px',
+                border: '1px solid rgba(0, 0, 0, 0.05)',
               },
-            },
-            error: {
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: 'white',
+              success: {
+                iconTheme: {
+                  primary: '#22c55e',
+                  secondary: 'white',
+                },
               },
-            },
-          }}
-        />
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: 'white',
+                },
+              },
+            }}
+          />
+        </PageContextProvider>
       </BrowserRouter>
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>

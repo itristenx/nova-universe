@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePageContext } from '@hooks/usePageContext';
 import {
   PaperAirplaneIcon,
   SparklesIcon,
@@ -14,6 +15,7 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClipboardDocumentIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
 
@@ -58,6 +60,7 @@ interface ConversationHistory {
 
 export default function CosmoAIPage() {
   const { t } = useTranslation(['cosmoAI', 'common']);
+  const { pageContext } = usePageContext();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -204,6 +207,13 @@ export default function CosmoAIPage() {
           context: {
             userRole: 'admin',
             recentActivity: messages.slice(-5),
+            // Include webpage context
+            pageContext: pageContext ? {
+              type: pageContext.type,
+              title: pageContext.title,
+              content: pageContext.content ? pageContext.content.substring(0, 2000) : undefined, // Limit content size
+              metadata: pageContext.metadata
+            } : null
           },
         }),
       });
@@ -258,6 +268,35 @@ export default function CosmoAIPage() {
   const generateFallbackResponse = (input: string): string => {
     const lowerInput = input.toLowerCase();
 
+    // Use page context to provide more relevant responses
+    if (pageContext) {
+      if (pageContext.type === 'knowledge') {
+        if (lowerInput.includes('explain') || lowerInput.includes('understand') || lowerInput.includes('help')) {
+          return `I can see you're viewing the article "${pageContext.title}". I'd be happy to help explain any part of this content! This article covers ${pageContext.metadata?.category || 'important information'} and was last updated on ${pageContext.metadata?.lastUpdated ? new Date(pageContext.metadata.lastUpdated).toLocaleDateString() : 'recently'}. What specific part would you like me to clarify?`;
+        }
+        
+        if (lowerInput.includes('related') || lowerInput.includes('similar') || lowerInput.includes('more')) {
+          return `Based on the article "${pageContext.title}" you're currently reading, I can suggest related topics in ${pageContext.metadata?.category || 'this category'}. Would you like me to help you find similar articles or explain related concepts?`;
+        }
+        
+        if (lowerInput.includes('issue') || lowerInput.includes('problem') || lowerInput.includes('trouble')) {
+          return `I notice you're having trouble with "${pageContext.title}". Let me help you troubleshoot! Could you describe the specific issue you're encountering with the steps in this article?`;
+        }
+        
+        // Default knowledge-based response
+        return `I can see you're viewing "${pageContext.title}" in our knowledge base. This article is about ${pageContext.metadata?.category || 'important procedures'}. How can I help you with this content? I can explain concepts, suggest related articles, or help troubleshoot any issues.`;
+      }
+      
+      if (pageContext.type === 'ticket') {
+        return `I notice you're working on ticket ${pageContext.metadata?.id}. I can help with ticket analysis, suggest solutions, or provide related knowledge base articles. What would you like assistance with regarding this ticket?`;
+      }
+      
+      if (pageContext.type === 'dashboard') {
+        return `I can see you're on the dashboard. I can help analyze system metrics, provide insights about recent activity, or assist with any specific areas you'd like to explore. What would you like to know more about?`;
+      }
+    }
+
+    // General fallback responses
     if (lowerInput.includes('performance') || lowerInput.includes('slow')) {
       return "I'd be happy to help with performance analysis! Based on current metrics, I recommend checking database query optimization and reviewing recent traffic patterns. Would you like me to run a comprehensive performance audit?";
     }
@@ -392,6 +431,16 @@ export default function CosmoAIPage() {
             </div>
 
             <div className="flex items-center space-x-3">
+              {/* Page Context Indicator */}
+              {pageContext && (
+                <div className="flex items-center rounded-lg bg-blue-50 px-3 py-2 text-sm dark:bg-blue-900/20">
+                  <InformationCircleIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 mr-2" />
+                  <span className="text-blue-900 dark:text-blue-100">
+                    Viewing: {pageContext.title}
+                  </span>
+                </div>
+              )}
+              
               <button
                 onClick={() => setShowHistory(!showHistory)}
                 className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"

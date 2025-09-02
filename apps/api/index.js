@@ -26,6 +26,7 @@ import coreRouter from './routes/core.js';
 import statusSummaryRouter from './routes/status.js';
 import announcementsRouter from './routes/announcements.js';
 import cosmoRouter from './routes/cosmo.js';
+import knowledgeRouter from './routes/knowledge.js';
 import beaconRouter from './routes/beacon.js';
 import goalertProxyRouter from './routes/goalert-proxy.js';
 import uptimeKumaProxyRouter from './routes/uptime-kuma-proxy.js';
@@ -2439,6 +2440,7 @@ v1Router.use('/core', coreRouter);
 v1Router.use('/status', statusSummaryRouter);
 v1Router.use('/announcements', announcementsRouter);
 v1Router.use('/cosmo', cosmoRouter);
+v1Router.use('/knowledge', knowledgeRouter);
 
 // Nova module routes (v1)
 v1Router.use('/helix', helixRouter); // Nova Helix - Identity Engine

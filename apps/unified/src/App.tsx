@@ -94,6 +94,7 @@ const DeviceManagementPage = lazy(() => import('@pages/admin/DeviceManagementPag
 // Knowledge Base pages
 const KnowledgeBasePage = lazy(() => import('@pages/knowledge/KnowledgeBasePage'));
 const KnowledgeCommunityPage = lazy(() => import('@pages/knowledge/KnowledgeCommunityPage'));
+const KnowledgeDetailPage = lazy(() => import('@pages/knowledge/KnowledgeDetailPage'));
 
 // Profile pages
 const UserProfilePage = lazy(() => import('@pages/profile/UserProfilePage'));
@@ -277,6 +278,7 @@ function App() {
                       {/* Knowledge Base routes */}
                       <Route path="/knowledge" element={<KnowledgeBasePage />} />
                       <Route path="/knowledge/community" element={<KnowledgeCommunityPage />} />
+                      <Route path="/knowledge/:slug" element={<KnowledgeDetailPage />} />
 
                       {/* Service Catalog routes */}
                       <Route path="/services" element={<ServiceCatalogPage />} />

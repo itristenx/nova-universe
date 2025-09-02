@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   MagnifyingGlassIcon,
   BookOpenIcon,
@@ -9,6 +10,7 @@ import {
 
 export default function KnowledgeBasePage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   const categories = [
     { name: 'Getting Started', count: 24, color: 'bg-blue-500' },
@@ -28,6 +30,7 @@ export default function KnowledgeBasePage() {
       views: 1234,
       helpful: 45,
       updated: '2 days ago',
+      slug: 'vpn-setup',
     },
     {
       id: 2,
@@ -37,6 +40,7 @@ export default function KnowledgeBasePage() {
       views: 987,
       helpful: 38,
       updated: '1 week ago',
+      slug: 'password-reset',
     },
     {
       id: 3,
@@ -46,6 +50,7 @@ export default function KnowledgeBasePage() {
       views: 756,
       helpful: 29,
       updated: '3 days ago',
+      slug: 'office-installation',
     },
   ];
 
@@ -136,6 +141,7 @@ export default function KnowledgeBasePage() {
           {featuredArticles.map((article) => (
             <div
               key={article.id}
+              onClick={() => navigate(`/knowledge/${article.slug}`)}
               className="cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
             >
               <div className="flex items-start justify-between">
