@@ -48,7 +48,7 @@
     "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
     "listr2": "^9.0.1",
-    "mongodb": "^6.18.0",
+    "mongodb": "^6.19.0",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.5",

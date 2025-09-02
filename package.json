@@ -96,7 +96,7 @@
     "express-rate-limit": "^8.0.1",
     "graphql": "^16.11.0",
     "ioredis": "^5.4.1",
-    "mongodb": "^6.10.0",
+    "mongodb": "^6.19.0",
     "pg": "^8.14.0",
     "pm2": "^6.0.8",
     "postcss": "^8.5.6",
