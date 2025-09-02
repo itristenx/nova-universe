@@ -3,7 +3,7 @@
  * Adds AI indicators to existing components
  */
 import React from 'react';
-import { AIIndicator } from '@components/ai';
+import AIIndicator from './AIIndicator';
 
 interface WithAIIndicatorProps {
   showAI?: boolean;
