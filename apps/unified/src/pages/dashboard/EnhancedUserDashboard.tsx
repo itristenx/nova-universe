@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { Link } from 'react-router-dom';
 import {
   PlusIcon,
@@ -150,7 +151,7 @@ export default function EnhancedUserDashboard() {
       setLoading(true);
       try {
         // Fetch dashboard data from API
-        const response = await fetch('/api/dashboard/enhanced');
+        const response = await apiFetch('/api/dashboard/enhanced');
         if (response.ok) {
           const data = await response.json();
           setStats(data.stats);

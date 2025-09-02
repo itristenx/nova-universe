@@ -210,12 +210,14 @@ const uiConfigSchema = {
 
 for (const [sectionKey, section] of Object.entries(uiConfigSchema)) {
   if (section.fields.length > 0) {
-    console.log(`📁 ${section.name}`);
+    console.log(`📁 ${section.name} (${sectionKey})`);
     console.log(`   ${section.description}`);
     section.fields.forEach((field) => {
       console.log(`   • ${field.key} = ${field.value}`);
     });
     console.log('');
+  } else {
+    console.log(`📁 ${section.name} (${sectionKey}) - No configuration fields found`);
   }
 }
 

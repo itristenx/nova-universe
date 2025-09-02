@@ -302,7 +302,7 @@ class TicketService {
    * Export tickets to various formats
    */
   async exportTickets(format: 'csv' | 'excel' | 'pdf'): Promise<void> {
-    await apiClient.downloadFile(`/v1/v1/tickets/export?format=${format}`, `tickets.${format}`);
+    await apiClient.downloadFile(`/v1/tickets/export?format=${format}`, `tickets.${format}`);
   }
 
   /**
@@ -348,7 +348,7 @@ class TicketService {
     const params = { query, page, perPage };
     return await apiClient.getPaginated<
       Ticket & { score: number; highlights: Record<string, string[]> }
-    >('/tickets/search', params);
+    >('/v1/tickets/search', params);
   }
 
   /**
@@ -360,7 +360,7 @@ class TicketService {
     limit = 5,
   ): Promise<Array<Ticket & { similarity: number; reason: string }>> {
     const response = await apiClient.post<Array<Ticket & { similarity: number; reason: string }>>(
-      '/tickets/suggestions',
+      '/v1/tickets/suggestions',
       {
         title,
         description,
@@ -390,7 +390,7 @@ class TicketService {
         type: string;
         fields: Record<string, unknown>;
       }>
-    >('/tickets/templates');
+    >('/v1/tickets/templates');
     return response.data!;
   }
 
@@ -402,8 +402,8 @@ class TicketService {
     overrides?: Partial<CreateTicketData>,
   ): Promise<Ticket> {
     const response = await apiClient.post<Ticket>(
-      `/v1/tickets/templates/${templateId}/create`,
-      overrides,
+      `/v1/tickets/templates/${templateId}/apply`,
+      { overrides },
     );
     return response.data!;
   }

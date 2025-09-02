@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { apiFetch } from '@/utils/api';
 import { useTranslation } from 'react-i18next';
 import {
   PaperAirplaneIcon,
@@ -135,7 +136,7 @@ export default function CosmoAIPage() {
 
   const loadConversationHistory = async () => {
     try {
-      const response = await fetch('/api/cosmo/conversations');
+      const response = await apiFetch('/api/cosmo/conversations');
       if (response.ok) {
         const data = await response.json();
         setConversationHistory(data.conversations || []);
@@ -193,7 +194,7 @@ export default function CosmoAIPage() {
 
     try {
       // Try to call the actual API
-      const response = await fetch('/api/cosmo/chat', {
+      const response = await apiFetch('/api/cosmo/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

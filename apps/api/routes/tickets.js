@@ -6,6 +6,7 @@ import { createRateLimit } from '../middleware/rateLimiter.js';
 import { TicketService } from '../services/enhanced-ticket.service.js';
 import { NotificationService } from '../services/notification-simple.service.js';
 import { AuditService } from '../services/audit-simple.service.js';
+import { prisma } from '../db.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
@@ -473,6 +474,409 @@ router.get(
         error: 'Failed to fetch ticket statistics',
         errorCode: 'STATS_FETCH_ERROR',
       });
+    }
+  },
+);
+
+/**
+ * @route GET /api/v1/tickets/:id/comments
+ * @description Get comments for a ticket
+ * @access Protected
+ */
+router.get(
+  '/:id/comments',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 120),
+  [param('id').isString()],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
+      }
+      const ticketId = req.params.id;
+      const comments = await prisma.ticketComment.findMany({
+        where: { ticketId },
+        include: { user: { select: { id: true, name: true, email: true } } },
+        orderBy: { createdAt: 'asc' },
+      });
+      res.json({ success: true, data: comments });
+    } catch (error) {
+      logger.error('Error fetching ticket comments:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch comments' });
+    }
+  },
+);
+
+/**
+ * @route PATCH /api/v1/tickets/:id/comments/:commentId
+ */
+router.patch(
+  '/:id/comments/:commentId',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 60),
+  [param('id').isString(), param('commentId').isString(), body('content').isString().trim().isLength({ min: 1 })],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
+      }
+      const { id: ticketId, commentId } = req.params;
+      const { content } = req.body;
+      const updated = await prisma.ticketComment.update({ where: { id: commentId }, data: { content } });
+      // simple audit
+      await AuditService.logTicketUpdated({ id: ticketId }, [{ field: 'comment', oldValue: 'updated', newValue: 'updated' }], req.user);
+      res.json({ success: true, data: updated, message: 'Comment updated' });
+    } catch (error) {
+      logger.error('Error updating comment:', error);
+      res.status(500).json({ success: false, error: 'Failed to update comment' });
+    }
+  },
+);
+
+/**
+ * @route DELETE /api/v1/tickets/:id/comments/:commentId
+ */
+router.delete(
+  '/:id/comments/:commentId',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 60),
+  [param('id').isString(), param('commentId').isString()],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
+      }
+      const { commentId } = req.params;
+      await prisma.ticketComment.delete({ where: { id: commentId } });
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Error deleting comment:', error);
+      res.status(500).json({ success: false, error: 'Failed to delete comment' });
+    }
+  },
+);
+
+/**
+ * @route GET /api/v1/tickets/:id/attachments
+ */
+router.get(
+  '/:id/attachments',
+  authenticateJWT,
+  createRateLimit(60 * 1000, 60),
+  [param('id').isString()],
+  async (req, res) => {
+    try {
+      const attachments = await prisma.ticketAttachment.findMany({
+        where: { ticketId: req.params.id },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json({ success: true, data: attachments });
+    } catch (error) {
+      logger.error('Error fetching attachments:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch attachments' });
+    }
+  },
+);
+
+/**
+ * @route POST /api/v1/tickets/:id/attachments
+ */
+router.post(
+  '/:id/attachments',
+  authenticateJWT,
+  upload.single('file'),
+  [param('id').isString()],
+  async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded' });
+      const file = req.file;
+      const record = await prisma.ticketAttachment.create({
+        data: {
+          ticketId: req.params.id,
+          uploadedBy: req.user.id,
+          filename: file.filename,
+          originalName: file.originalname,
+          mimeType: file.mimetype,
+          fileSize: file.size,
+          fileKey: file.path,
+          isPublic: false,
+        },
+      });
+      res.status(201).json({ success: true, data: record });
+    } catch (error) {
+      logger.error('Error uploading attachment:', error);
+      res.status(500).json({ success: false, error: 'Failed to upload attachment' });
+    }
+  },
+);
+
+/**
+ * @route DELETE /api/v1/tickets/:id/attachments/:attachmentId
+ */
+router.delete(
+  '/:id/attachments/:attachmentId',
+  authenticateJWT,
+  [param('id').isString(), param('attachmentId').isString()],
+  async (req, res) => {
+    try {
+      const attachment = await prisma.ticketAttachment.delete({ where: { id: req.params.attachmentId } });
+      // Best-effort file removal
+      try { await fs.unlink(attachment.fileKey).catch(() => {}); } catch {}
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Error deleting attachment:', error);
+      res.status(500).json({ success: false, error: 'Failed to delete attachment' });
+    }
+  },
+);
+
+/**
+ * @route GET /api/v1/tickets/:id/history
+ */
+router.get(
+  '/:id/history',
+  authenticateJWT,
+  [param('id').isString()],
+  async (req, res) => {
+    try {
+      const history = await prisma.ticketHistory.findMany({
+        where: { ticketId: req.params.id },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json({ success: true, data: history });
+    } catch (error) {
+      logger.error('Error fetching history:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch history' });
+    }
+  },
+);
+
+/**
+ * @route DELETE /api/v1/tickets/:id
+ * @description Soft-delete a ticket by marking as CANCELLED
+ */
+router.delete(
+  '/:id',
+  authenticateJWT,
+  [param('id').isString()],
+  async (req, res) => {
+    try {
+      await TicketService.updateTicket(req.params.id, { state: 'CANCELLED', closeNotes: 'Deleted via API' }, req.user);
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Error deleting ticket:', error);
+      res.status(500).json({ success: false, error: 'Failed to delete ticket' });
+    }
+  },
+);
+
+/**
+ * @route POST /api/v1/tickets/bulk-update
+ */
+router.post(
+  '/bulk-update',
+  authenticateJWT,
+  [body('ticketIds').isArray({ min: 1 }), body('updates').isObject()],
+  async (req, res) => {
+    try {
+      const { ticketIds, updates } = req.body;
+      const result = await TicketService.bulkOperation({ ticketIds, operation: 'update', data: updates, performedBy: req.user.id });
+      res.json({ success: true, data: { updated: result.successful.length, failed: result.failed.length }, details: result });
+    } catch (error) {
+      logger.error('Error bulk updating tickets:', error);
+      res.status(500).json({ success: false, error: 'Bulk update failed' });
+    }
+  },
+);
+
+/**
+ * @route POST /api/v1/tickets/bulk-delete
+ */
+router.post(
+  '/bulk-delete',
+  authenticateJWT,
+  [body('ticketIds').isArray({ min: 1 })],
+  async (req, res) => {
+    try {
+      const { ticketIds } = req.body;
+      let updated = 0;
+      let failed = 0;
+      for (const id of ticketIds) {
+        try {
+          await TicketService.updateTicket(id, { state: 'CANCELLED', closeNotes: 'Deleted via bulk-delete' }, req.user);
+          updated++;
+        } catch {
+          failed++;
+        }
+      }
+      res.json({ success: true, data: { deleted: updated, failed } });
+    } catch (error) {
+      logger.error('Error bulk deleting tickets:', error);
+      res.status(500).json({ success: false, error: 'Bulk delete failed' });
+    }
+  },
+);
+
+/**
+ * @route GET /api/v1/tickets/export
+ */
+router.get(
+  '/export',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { format = 'csv', filters, fields } = req.query;
+      const exportData = await TicketService.exportTickets({
+        format,
+        filters: filters ? JSON.parse(String(filters)) : {},
+        fields: fields ? String(fields).split(',') : undefined,
+        user: req.user,
+      });
+      res.setHeader('Content-Type', exportData.mimeType);
+      res.setHeader('Content-Disposition', `attachment; filename="${exportData.filename}"`);
+      res.send(exportData.buffer);
+    } catch (error) {
+      logger.error('Error exporting tickets:', error);
+      res.status(500).json({ success: false, error: 'Export failed' });
+    }
+  },
+);
+
+/**
+ * @route GET /api/v1/tickets/templates
+ */
+router.get('/templates', authenticateJWT, async (req, res) => {
+  try {
+    const templates = await TicketService.getTicketTemplates(req.user);
+    res.json({ success: true, data: templates });
+  } catch (error) {
+    logger.error('Error fetching templates:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch templates' });
+  }
+});
+
+/**
+ * @route POST /api/v1/tickets/templates/:id/apply
+ */
+router.post('/templates/:id/apply', authenticateJWT, [param('id').isString()], async (req, res) => {
+  try {
+    const ticket = await TicketService.createFromTemplate(req.params.id, req.body?.overrides || {}, req.user);
+    res.status(201).json({ success: true, data: ticket });
+  } catch (error) {
+    logger.error('Error creating ticket from template:', error);
+    res.status(500).json({ success: false, error: 'Failed to create from template' });
+  }
+});
+
+/**
+ * @route POST /api/v1/tickets/:id/assign
+ */
+router.post(
+  '/:id/assign',
+  authenticateJWT,
+  [param('id').isString(), body('assigneeId').isString()],
+  async (req, res) => {
+    try {
+      const updated = await TicketService.assignTicket(req.params.id, { assignedToUserId: req.body.assigneeId, assignedBy: req.user.id });
+      res.json({ success: true, data: updated });
+    } catch (error) {
+      logger.error('Error assigning ticket:', error);
+      res.status(500).json({ success: false, error: 'Failed to assign ticket' });
+    }
+  },
+);
+
+/**
+ * @route POST /api/v1/tickets/:id/assign-group
+ */
+router.post(
+  '/:id/assign-group',
+  authenticateJWT,
+  [param('id').isString(), body('groupId').isString()],
+  async (req, res) => {
+    try {
+      const updated = await TicketService.assignTicket(req.params.id, { assignedToGroupId: req.body.groupId, assignedBy: req.user.id });
+      res.json({ success: true, data: updated });
+    } catch (error) {
+      logger.error('Error assigning group:', error);
+      res.status(500).json({ success: false, error: 'Failed to assign group' });
+    }
+  },
+);
+
+/**
+ * @route POST /api/v1/tickets/:id/watchers
+ */
+router.post(
+  '/:id/watchers',
+  authenticateJWT,
+  [param('id').isString(), body('userId').isString()],
+  async (req, res) => {
+    try {
+      await TicketService.addWatcher(req.params.id, req.body.userId, 'manual', req.user.id);
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Error adding watcher:', error);
+      res.status(500).json({ success: false, error: 'Failed to add watcher' });
+    }
+  },
+);
+
+/**
+ * @route DELETE /api/v1/tickets/:id/watchers/:userId
+ */
+router.delete(
+  '/:id/watchers/:userId',
+  authenticateJWT,
+  [param('id').isString(), param('userId').isString()],
+  async (req, res) => {
+    try {
+      await prisma.ticketWatcher.delete({ where: { ticketId_userId: { ticketId: req.params.id, userId: req.params.userId } } });
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Error removing watcher:', error);
+      res.status(500).json({ success: false, error: 'Failed to remove watcher' });
+    }
+  },
+);
+
+/**
+ * @route POST /api/v1/tickets/search
+ */
+router.get(
+  '/search',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { query: q, page = 1, perPage = 25 } = req.query;
+      const results = await TicketService.searchTickets({ query: q, page: Number(page), limit: Number(perPage) });
+      res.json({ success: true, ...results });
+    } catch (error) {
+      logger.error('Error searching tickets:', error);
+      res.status(500).json({ success: false, error: 'Search failed' });
+    }
+  },
+);
+
+/**
+ * @route POST /api/v1/tickets/suggestions
+ */
+router.post(
+  '/suggestions',
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { title = '', description = '', limit = 5 } = req.body || {};
+      const q = `${title} ${description}`.trim();
+      const results = q ? await TicketService.searchTickets({ query: q, limit }) : { tickets: [] };
+      const suggestions = (results.tickets || []).slice(0, limit).map((t) => ({ ...t, similarity: 0.5, reason: 'Similar content' }));
+      res.json({ success: true, data: suggestions });
+    } catch (error) {
+      logger.error('Error getting suggestions:', error);
+      res.status(500).json({ success: false, error: 'Failed to get suggestions' });
     }
   },
 );

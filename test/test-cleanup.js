@@ -121,6 +121,7 @@ export async function performCleanup() {
         try {
           worker.postMessage({ type: 'shutdown' });
         } catch (error) {
+          console.warn('Failed to send shutdown message to worker, terminating:', error.message);
           worker.terminate();
           clearTimeout(timeout);
           resolve();

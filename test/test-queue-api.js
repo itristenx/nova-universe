@@ -29,6 +29,7 @@ async function makeRequest(endpoint, options = {}) {
     try {
       data = await response.json();
     } catch (e) {
+      console.warn('Failed to parse JSON response:', e.message);
       data = { message: 'No JSON response' };
     }
 

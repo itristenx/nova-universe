@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { useTranslation } from 'react-i18next';
 import {
   EnvelopeIcon,
@@ -92,7 +93,7 @@ export default function MailroomIntegrationPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/mailroom');
+      const response = await apiFetch('/api/mailroom');
       if (response.ok) {
         const data = await response.json();
         setEmails(data.emails || []);

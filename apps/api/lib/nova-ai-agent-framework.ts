@@ -342,6 +342,26 @@ export class NovaAIAgentFramework extends EventEmitter {
               estimatedDuration: 2
             },
             {
+              id: 'apply_rbac',
+              name: 'Apply Access Controls',
+              type: 'process',
+              description: 'Filter results based on user permissions using RAG RBAC',
+              requiredSlots: ['search_results', 'user_context'],
+              automationScript: 'applyRAGRBAC',
+              humanRequired: false,
+              estimatedDuration: 1
+            },
+            {
+              id: 'enhance_with_synth',
+              name: 'Enhance with Synthetic RAG',
+              type: 'process',
+              description: 'Augment results with synthesized knowledge using Nova Synth RAG',
+              requiredSlots: ['filtered_results'],
+              automationScript: 'enhanceWithSynthRAG',
+              humanRequired: false,
+              estimatedDuration: 2
+            },
+            {
               id: 'rank_results',
               name: 'Rank and Filter Results',
               type: 'process',
@@ -524,8 +544,23 @@ export class NovaAIAgentFramework extends EventEmitter {
     
     const automatedSteps = workflow.steps.filter(step => !step.humanRequired).length;
     const totalSteps = workflow.steps.length;
+    let baseAutomationLevel = automatedSteps / totalSteps;
     
-    return automatedSteps / totalSteps;
+    // Adjust automation level based on conversation complexity and history
+    const conversationLength = conversation.messages.length;
+    const hasEscalations = conversation.metadata.escalationCount > 0;
+    const userTier = conversation.metadata.userTier || 'standard';
+    
+    // Reduce automation for complex conversations or premium users
+    if (conversationLength > 10 || hasEscalations) {
+      baseAutomationLevel *= 0.8; // 20% reduction for complex cases
+    }
+    
+    if (userTier === 'premium' || userTier === 'enterprise') {
+      baseAutomationLevel *= 0.9; // 10% reduction for premium users (more human touch)
+    }
+    
+    return Math.max(0, Math.min(1, baseAutomationLevel));
   }
 
   /**
@@ -834,6 +869,52 @@ export class NovaAIAgentFramework extends EventEmitter {
       return 'Neutral';
     }
   }
+
+  /**
+   * RAG Automation Scripts - Knowledge Management Workflow Implementation
+   */
+
+  private async searchKnowledgeBase(slots: Record<string, any>): Promise<any[]> {
+    try {
+      const query = slots.parsed_query || slots.query;
+      const ragQuery: RAGQuery = {
+        query: query,
+        maxResults: 10,
+        includeMetadata: true,
+        filters: slots.filters || {}
+      };
+      
+      const results = await ragEngine.search(ragQuery);
+      return results;
+    } catch (error) {
+      logger.error('Error in searchKnowledgeBase automation:', error);
+      return [];
+    }
+  }
+
+  private async applyRAGRBAC(slots: Record<string, any>): Promise<any[]> {
+    try {
+      const searchResults = slots.search_results || [];
+      const userContext = slots.user_context || {};
+      
+      const filteredResults = await ragRBAC.filterResults(searchResults, userContext);
+      return filteredResults;
+    } catch (error) {
+      logger.error('Error in applyRAGRBAC automation:', error);
+      return slots.search_results || [];
+    }
+  }
+
+  private async enhanceWithSynthRAG(slots: Record<string, any>): Promise<any[]> {
+    try {
+      const filteredResults = slots.filtered_results || [];
+      const enhancedResults = await novaSynthRAG.enhance(filteredResults);
+      return enhancedResults;
+    } catch (error) {
+      logger.error('Error in enhanceWithSynthRAG automation:', error);
+      return slots.filtered_results || [];
+    }
+  }
 }
 
 // Supporting Classes
@@ -854,24 +935,45 @@ class IntentClassifier {
       isComplete: false
     };
     
-    // Simple keyword-based classification
+    // Simple keyword-based classification with conversation context
     const lowerMessage = message.toLowerCase();
+    
+    // Use conversation history to improve intent classification accuracy
+    const previousMessages = conversation.messages || [];
+    const recentContext = previousMessages.slice(-3).map(msg => msg.content).join(' ').toLowerCase();
     
     if (lowerMessage.includes('incident') || lowerMessage.includes('outage') || lowerMessage.includes('down')) {
       intent.name = 'report_incident';
       intent.category = 'incident';
       intent.confidence = 0.9;
       intent.requiredSlots = ['description', 'urgency', 'impact'];
+      
+      // Boost confidence if recent context indicates incident discussion
+      if (recentContext.includes('incident') || recentContext.includes('problem')) {
+        intent.confidence = Math.min(0.95, intent.confidence + 0.05);
+      }
     } else if (lowerMessage.includes('request') || lowerMessage.includes('need') || lowerMessage.includes('access')) {
       intent.name = 'request_service';
       intent.category = 'service_request';
       intent.confidence = 0.85;
       intent.requiredSlots = ['service_type', 'justification'];
+      
+      // Boost confidence if recent context indicates service requests
+      if (recentContext.includes('request') || recentContext.includes('service')) {
+        intent.confidence = Math.min(0.95, intent.confidence + 0.05);
+      }
     } else if (lowerMessage.includes('how') || lowerMessage.includes('help') || lowerMessage.includes('guide')) {
       intent.name = 'search_knowledge';
       intent.category = 'knowledge';
       intent.confidence = 0.95;
       intent.requiredSlots = ['query'];
+      
+      // Use conversation history to understand the knowledge domain
+      if (recentContext.includes('technical') || recentContext.includes('system')) {
+        intent.entities.domain = 'technical';
+      } else if (recentContext.includes('process') || recentContext.includes('procedure')) {
+        intent.entities.domain = 'process';
+      }
     }
     
     return intent;

@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import './ConfigurationManagement.css';
 
 interface ConfigCategory {
@@ -143,7 +144,7 @@ const ConfigurationManagement = () => {
   const loadAllConfiguration = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/config/categories/all', {
+      const response = await apiFetch('/api/v1/config/categories/all', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -198,7 +199,7 @@ const ConfigurationManagement = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const response = await fetch(`/api/v1/config/categories/${selectedCategory}`, {
+      const response = await apiFetch(`/api/v1/config/categories/${selectedCategory}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,

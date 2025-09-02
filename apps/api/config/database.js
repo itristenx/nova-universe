@@ -44,15 +44,18 @@ export const databaseConfig = {
     })(),
 
     // SSL/TLS configuration
-    ssl:
-      process.env.NODE_ENV === 'production'
+    // SSL/TLS configuration (allow explicit override via POSTGRES_SSL=false for internal networks)
+    ssl: (() => {
+      if (String(process.env.POSTGRES_SSL).toLowerCase() === 'false') return false;
+      return process.env.NODE_ENV === 'production'
         ? {
             rejectUnauthorized: process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false',
             ca: process.env.POSTGRES_SSL_CA,
             cert: process.env.POSTGRES_SSL_CERT,
             key: process.env.POSTGRES_SSL_KEY,
           }
-        : false,
+        : false;
+    })(),
 
     // Connection pool settings for scalability
     pool: {
@@ -91,15 +94,17 @@ export const databaseConfig = {
       }
       return password;
     })(),
-    ssl:
-      process.env.NODE_ENV === 'production'
+    ssl: (() => {
+      if (String(process.env.POSTGRES_SSL).toLowerCase() === 'false') return false;
+      return process.env.NODE_ENV === 'production'
         ? {
             rejectUnauthorized: process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false',
             ca: process.env.POSTGRES_SSL_CA,
             cert: process.env.POSTGRES_SSL_CERT,
             key: process.env.POSTGRES_SSL_KEY,
           }
-        : false,
+        : false;
+    })(),
     pool: {
       min: parseInt(process.env.POSTGRES_POOL_MIN || '2'),
       max: parseInt(process.env.POSTGRES_POOL_MAX || '20'),

@@ -1,9 +1,9 @@
-import { PrismaClient as User360Client } from '../../../prisma/generated/user360/index.js';
+import { getUser360Client } from '../lib/database-clients.js';
 import { logger } from '../logger.js';
 import { EventEmitter } from 'events';
 import crypto from 'crypto';
 
-const user360Prisma = new User360Client();
+const user360PrismaPromise = getUser360Client();
 
 /**
  * User Interaction Service
@@ -66,6 +66,7 @@ class UserInteractionService extends EventEmitter {
       // Try to find existing session by external ID or recent session
       let session = null;
       
+      const user360Prisma = await user360PrismaPromise;
       if (externalId) {
         session = await user360Prisma.conversationSession.findFirst({
           where: {
@@ -196,6 +197,7 @@ class UserInteractionService extends EventEmitter {
       const containsPII = this.detectPII(content || '');
       const isConfidential = this.detectConfidentialContent(content || '');
       
+      const user360Prisma = await user360PrismaPromise;
       const interaction = await user360Prisma.userInteraction.create({
         data: {
           userId,
@@ -321,6 +323,7 @@ class UserInteractionService extends EventEmitter {
    */
   async getConversationSession(sessionId, includeFullHistory = false) {
     try {
+      const user360Prisma = await user360PrismaPromise;
       const session = await user360Prisma.conversationSession.findUnique({
         where: { id: sessionId },
         include: {

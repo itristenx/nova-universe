@@ -404,6 +404,15 @@ test.describe('Security Testing Suite', () => {
       const response = await page.goto('/');
       const url = page.url();
       
+      // Verify response was successful
+      expect(response?.status()).toBeLessThan(400);
+      
+      // Check for security headers in response
+      const headers = response?.headers() || {};
+      if (process.env.NODE_ENV === 'production') {
+        expect(headers['strict-transport-security']).toBeDefined();
+      }
+      
       // In production, should use HTTPS
       if (process.env.NODE_ENV === 'production') {
         expect(url).toMatch(/^https:/);

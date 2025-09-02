@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+const MotionDiv = (motion as any).div as React.FC<any>;
+const AP = (AnimatePresence as any) as React.FC<any>;
 import {
   CpuChipIcon,
   ChartBarIcon,
@@ -504,9 +506,9 @@ export const MLDashboard: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      <AnimatePresence mode="wait">
+      <AP mode="wait">
         {selectedTab === 'insights' && (
-          <motion.div
+          <MotionDiv
             key="insights"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -561,7 +563,7 @@ export const MLDashboard: React.FC = () => {
               {insights
                 .filter((i) => !i.is_dismissed)
                 .map((insight) => (
-                  <motion.div
+                  <MotionDiv
                     key={insight.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -631,14 +633,14 @@ export const MLDashboard: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  </motion.div>
+                  </MotionDiv>
                 ))}
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
 
         {selectedTab === 'models' && (
-          <motion.div
+          <MotionDiv
             key="models"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -685,11 +687,11 @@ export const MLDashboard: React.FC = () => {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
 
         {selectedTab === 'recommendations' && (
-          <motion.div
+          <MotionDiv
             key="recommendations"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -743,11 +745,11 @@ export const MLDashboard: React.FC = () => {
                 </div>
               )}
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
 
         {selectedTab === 'anomalies' && (
-          <motion.div
+          <MotionDiv
             key="anomalies"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -808,9 +810,9 @@ export const MLDashboard: React.FC = () => {
                 </div>
               )}
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
-      </AnimatePresence>
+      </AP>
     </div>
   );
 };

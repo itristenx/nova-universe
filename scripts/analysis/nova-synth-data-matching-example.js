@@ -98,6 +98,23 @@ console.log('   • Lower confidence (65%): Hostname similarity only');
 console.log('\n📋 Example Integration Layer Usage:');
 console.log('===================================');
 
+// Initialize the Nova Integration Layer for demo
+const integrationLayer = new NovaIntegrationLayer({
+  synthEnabled: true,
+  dataIntelligence: true,
+  confidenceThreshold: 0.65
+});
+
+console.log('✅ Nova Integration Layer initialized with Synth Data Intelligence');
+console.log(`✅ Integration layer status: ${integrationLayer.status || 'ready'}`);
+console.log('✅ Confidence threshold set to 65% for matching operations');
+
+// Example usage (would be actual implementation in production)
+console.log('\n🔄 Example operations with Nova Integration Layer:');
+console.log('• User profile merging with AI confidence scoring');
+console.log('• Device correlation across security platforms');
+console.log('• Automated duplicate detection and resolution');
+
 const exampleCode = `
 // In getUserProfile method - Nova Synth integration:
 

@@ -19,10 +19,18 @@ interface TestEnvironment {
     password: string;
     token?: string;
   };
+  browser?: {
+    viewport: { width: number; height: number };
+    screenshot: boolean;
+    headless: boolean;
+  };
 }
 
 async function globalSetup(config: FullConfig): Promise<void> {
   console.log('🚀 Starting global test setup...');
+
+  // Validate test configuration and browser settings
+  const browserConfig = await setupBrowserEnvironment(config);
 
   const testEnv: TestEnvironment = {
     apiBaseUrl: process.env.TEST_API_URL || 'http://localhost:3000',
@@ -37,6 +45,7 @@ async function globalSetup(config: FullConfig): Promise<void> {
       email: process.env.TEST_ADMIN_EMAIL || 'admin@nova.com',
       password: process.env.TEST_ADMIN_PASSWORD || 'Admin123!',
     },
+    browser: browserConfig,
   };
 
   try {
@@ -66,6 +75,40 @@ async function globalSetup(config: FullConfig): Promise<void> {
     console.error('❌ Global test setup failed:', error);
     throw error;
   }
+}
+
+async function setupBrowserEnvironment(
+  config: FullConfig,
+): Promise<{ viewport: { width: number; height: number }; screenshot: boolean; headless: boolean }> {
+  console.log('🌐 Setting up browser environment...');
+
+  // Setup browser for screenshot capability on test failures
+  const browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext();
+
+  // Test browser functionality
+  const page = await context.newPage();
+  await page.goto('data:text/html,<h1>Browser Test</h1>');
+  
+  // Validate browser can take screenshots
+  const screenshotBuffer = await page.screenshot();
+  if (screenshotBuffer.length === 0) {
+    throw new Error('Browser screenshot capability test failed');
+  }
+
+  await browser.close();
+
+  const browserConfig = {
+    viewport: { 
+      width: config.projects?.[0]?.use?.viewport?.width || 1280, 
+      height: config.projects?.[0]?.use?.viewport?.height || 720 
+    },
+    screenshot: config.projects?.[0]?.use?.screenshot !== 'off',
+    headless: config.projects?.[0]?.use?.headless !== false,
+  };
+
+  console.log('✅ Browser environment setup completed:', browserConfig);
+  return browserConfig;
 }
 
 async function verifyDatabaseConnection(databaseUrl: string): Promise<void> {

@@ -97,6 +97,22 @@ const RBACTestingPanel = ({
   const [isTestingRBAC, setIsTestingRBAC] = useState(false);
   const [isTestingPersonalities, setIsTestingPersonalities] = useState(false);
   const [selectedPersonalities, setSelectedPersonalities] = useState(['default', 'technical-expert', 'crisis-management']);
+  
+  // Dialog states
+  const [createUserDialogOpen, setCreateUserDialogOpen] = useState(false);
+  const [createPolicyDialogOpen, setCreatePolicyDialogOpen] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    email: '',
+    tenantId: '',
+    roles: [],
+    securityClearance: 'standard'
+  });
+  const [newPolicyData, setNewPolicyData] = useState({
+    name: '',
+    description: '',
+    rules: [],
+    severity: 'medium'
+  });
 
   const handleRunRBACTests = async () => {
     setIsTestingRBAC(true);
@@ -143,6 +159,49 @@ const RBACTestingPanel = ({
       default:
         return 'default';
     }
+  };
+
+  // Dialog handlers
+  const handleCreateUser = () => {
+    setCreateUserDialogOpen(true);
+  };
+
+  const handleCreatePolicy = () => {
+    setCreatePolicyDialogOpen(true);
+  };
+
+  const handleUserDialogClose = () => {
+    setCreateUserDialogOpen(false);
+    setNewUserData({
+      email: '',
+      tenantId: '',
+      roles: [],
+      securityClearance: 'standard'
+    });
+  };
+
+  const handlePolicyDialogClose = () => {
+    setCreatePolicyDialogOpen(false);
+    setNewPolicyData({
+      name: '',
+      description: '',
+      rules: [],
+      severity: 'medium'
+    });
+  };
+
+  const handleSaveUser = () => {
+    if (onCreateRBACUser) {
+      onCreateRBACUser(newUserData);
+    }
+    handleUserDialogClose();
+  };
+
+  const handleSavePolicy = () => {
+    if (onCreateRBACPolicy) {
+      onCreateRBACPolicy(newPolicyData);
+    }
+    handlePolicyDialogClose();
   };
 
   return (
@@ -214,6 +273,13 @@ const RBACTestingPanel = ({
                             {rbacTestResults.testsPassed}
                           </Typography>
                         </CardContent>
+                        <CardActions>
+                          <Tooltip title="View passed tests details">
+                            <IconButton size="small" color="success">
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </CardActions>
                       </TestCard>
                     </Grid>
                     <Grid item xs={12} sm={4}>
@@ -226,6 +292,13 @@ const RBACTestingPanel = ({
                             {rbacTestResults.testsFailed}
                           </Typography>
                         </CardContent>
+                        <CardActions>
+                          <Tooltip title="View failed tests details">
+                            <IconButton size="small" color="error">
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </CardActions>
                       </TestCard>
                     </Grid>
                     <Grid item xs={12} sm={4}>
@@ -238,6 +311,18 @@ const RBACTestingPanel = ({
                             {rbacTestResults.tests?.length || 0}
                           </Typography>
                         </CardContent>
+                        <CardActions>
+                          <Tooltip title="Assign tests to reviewers">
+                            <IconButton size="small" color="primary">
+                              <AssignmentIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="View all test details">
+                            <IconButton size="small" color="primary">
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </CardActions>
                       </TestCard>
                     </Grid>
                   </Grid>
@@ -421,7 +506,7 @@ const RBACTestingPanel = ({
                     <Button
                       variant="outlined"
                       startIcon={<AddIcon />}
-                      onClick={onCreateRBACUser}
+                      onClick={handleCreateUser}
                       sx={{ mb: 2 }}
                     >
                       Create User
@@ -471,7 +556,7 @@ const RBACTestingPanel = ({
                     <Button
                       variant="outlined"
                       startIcon={<AddIcon />}
-                      onClick={onCreateRBACPolicy}
+                      onClick={handleCreatePolicy}
                       sx={{ mb: 2 }}
                     >
                       Create Policy
@@ -496,11 +581,27 @@ const RBACTestingPanel = ({
                               secondary={`Effect: ${policy.effect} | Priority: ${policy.priority}`}
                             />
                             <ListItemSecondaryAction>
-                              <Chip
-                                size="small"
-                                label={policy.isActive ? 'Active' : 'Inactive'}
-                                color={policy.isActive ? 'success' : 'default'}
-                              />
+                              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                {policy.severity && (
+                                  <Tooltip title={`Severity: ${policy.severity}`}>
+                                    <Chip
+                                      size="small"
+                                      label={policy.severity}
+                                      color={getSeverityColor(policy.severity)}
+                                    />
+                                  </Tooltip>
+                                )}
+                                <Chip
+                                  size="small"
+                                  label={policy.isActive ? 'Active' : 'Inactive'}
+                                  color={policy.isActive ? 'success' : 'default'}
+                                />
+                                <Tooltip title="View policy details">
+                                  <IconButton size="small">
+                                    <VisibilityIcon />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
                             </ListItemSecondaryAction>
                           </ListItem>
                         ))
@@ -578,6 +679,137 @@ const RBACTestingPanel = ({
           </Box>
         )}
       </Box>
+
+      {/* Create User Dialog */}
+      <Dialog 
+        open={createUserDialogOpen} 
+        onClose={handleUserDialogClose}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Create RBAC User</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label="Email"
+              value={newUserData.email}
+              onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Tenant ID"
+              value={newUserData.tenantId}
+              onChange={(e) => setNewUserData({ ...newUserData, tenantId: e.target.value })}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Roles (comma-separated)"
+              value={newUserData.roles.join(', ')}
+              onChange={(e) => setNewUserData({ 
+                ...newUserData, 
+                roles: e.target.value.split(',').map(r => r.trim()).filter(r => r) 
+              })}
+              fullWidth
+              placeholder="admin, user, viewer"
+            />
+            <FormControl fullWidth>
+              <InputLabel>Security Clearance</InputLabel>
+              <Select
+                value={newUserData.securityClearance}
+                onChange={(e) => setNewUserData({ ...newUserData, securityClearance: e.target.value })}
+              >
+                <MenuItem value="standard">Standard</MenuItem>
+                <MenuItem value="elevated">Elevated</MenuItem>
+                <MenuItem value="high">High</MenuItem>
+                <MenuItem value="critical">Critical</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleUserDialogClose}>Cancel</Button>
+          <Button 
+            onClick={handleSaveUser} 
+            variant="contained"
+            disabled={!newUserData.email || !newUserData.tenantId}
+          >
+            Create User
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Policy Dialog */}
+      <Dialog 
+        open={createPolicyDialogOpen} 
+        onClose={handlePolicyDialogClose}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Create RBAC Policy</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label="Policy Name"
+              value={newPolicyData.name}
+              onChange={(e) => setNewPolicyData({ ...newPolicyData, name: e.target.value })}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Description"
+              value={newPolicyData.description}
+              onChange={(e) => setNewPolicyData({ ...newPolicyData, description: e.target.value })}
+              fullWidth
+              multiline
+              rows={3}
+            />
+            <FormControl fullWidth>
+              <InputLabel>Severity</InputLabel>
+              <Select
+                value={newPolicyData.severity}
+                onChange={(e) => setNewPolicyData({ ...newPolicyData, severity: e.target.value })}
+              >
+                <MenuItem value="low">
+                  <Chip size="small" label="Low" color={getSeverityColor('low')} />
+                </MenuItem>
+                <MenuItem value="medium">
+                  <Chip size="small" label="Medium" color={getSeverityColor('medium')} />
+                </MenuItem>
+                <MenuItem value="high">
+                  <Chip size="small" label="High" color={getSeverityColor('high')} />
+                </MenuItem>
+                <MenuItem value="critical">
+                  <Chip size="small" label="Critical" color={getSeverityColor('critical')} />
+                </MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Rules (comma-separated)"
+              value={newPolicyData.rules.join(', ')}
+              onChange={(e) => setNewPolicyData({ 
+                ...newPolicyData, 
+                rules: e.target.value.split(',').map(r => r.trim()).filter(r => r) 
+              })}
+              fullWidth
+              placeholder="allow:read, deny:write, allow:admin"
+              multiline
+              rows={2}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handlePolicyDialogClose}>Cancel</Button>
+          <Button 
+            onClick={handleSavePolicy} 
+            variant="contained"
+            disabled={!newPolicyData.name}
+          >
+            Create Policy
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -13,7 +13,8 @@
  */
 
 import { Command } from 'commander';
-import inquirer from 'inquirer';
+// Note: inquirer available for future interactive prompts
+// import inquirer from 'inquirer';
 import figlet from 'figlet';
 import ora from 'ora';
 
@@ -46,6 +47,7 @@ program
       
       spinner.succeed(`✅ ML project "${projectName}" initialized successfully!`);
       console.log(`\n📁 Project created at: ./ml-projects/${projectName}`);
+      console.log(`🤖 Model type: ${modelType}`);
       console.log(`\n🎯 Next steps:`);
       console.log(`   cd ml-projects/${projectName}`);
       console.log(`   nova-ml data prepare`);
@@ -92,12 +94,23 @@ trainCmd
   .option('-a, --all', 'Show all experiments')
   .action(async (options) => {
     try {
-      console.log('\n📊 All Experiments:');
-      console.table([
+      // Filter experiments based on options
+      let experiments = [
         { id: 'exp_001', model: 'classifier-v1', status: 'completed', accuracy: '0.856' },
         { id: 'exp_002', model: 'classifier-v2', status: 'running', accuracy: '-' },
         { id: 'exp_003', model: 'regressor-v1', status: 'failed', accuracy: '-' }
-      ]);
+      ];
+
+      if (options.experiment) {
+        experiments = experiments.filter(exp => exp.id === options.experiment);
+        console.log(`\n📊 Experiment ${options.experiment}:`);
+      } else if (options.all) {
+        console.log('\n📊 All Experiments:');
+      } else {
+        console.log('\n📊 Recent Experiments:');
+      }
+      
+      console.table(experiments);
     } catch (error) {
       console.error(`❌ Failed to get status: ${error.message}`);
     }
@@ -121,6 +134,17 @@ evalCmd
     const spinner = ora('Running model evaluation...').start();
     
     try {
+      // Use options to configure evaluation
+      const experiment = options.experiment || 'exp_001';
+      const modelPath = options.model || './models/default';
+      const datasetPath = options.dataset || './data/test.csv';
+      const metrics = options.metrics ? options.metrics.split(',') : ['accuracy', 'precision', 'recall', 'f1_score'];
+      
+      console.log(`Evaluating experiment: ${experiment}`);
+      console.log(`Model path: ${modelPath}`);
+      console.log(`Dataset: ${datasetPath}`);
+      console.log(`Metrics: ${metrics.join(', ')}`);
+      
       const results = {
         accuracy: 0.856,
         precision: 0.834,
@@ -152,6 +176,12 @@ monitorCmd
   .option('--time-range <range>', 'Time range (1h, 24h, 7d, 30d)', '24h')
   .action(async (options) => {
     try {
+      // Use options to filter metrics
+      const deploymentId = options.deployment || 'default';
+      const timeRange = options.timeRange || '24h';
+      
+      console.log(`\n📊 Performance Metrics (${timeRange}) for ${deploymentId}:`);
+      
       const metrics = {
         requests_per_minute: 1250,
         average_latency: 85,
@@ -159,7 +189,6 @@ monitorCmd
         accuracy: 0.856
       };
       
-      console.log('\n📊 Performance Metrics:');
       console.log(`📈 Requests/min: ${metrics.requests_per_minute.toLocaleString()}`);
       console.log(`⏱️ Avg Latency: ${metrics.average_latency}ms`);
       console.log(`❌ Error Rate: ${(metrics.error_rate * 100).toFixed(3)}%`);

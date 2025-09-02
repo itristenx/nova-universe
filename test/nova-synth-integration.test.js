@@ -34,6 +34,13 @@ describe('Nova Synth Integration Tests', () => {
     try {
       mcpServer = await initializeMCPServer();
       console.log('MCP Server initialized for testing');
+      
+      // Validate MCP server connection
+      if (mcpServer && mcpServer.status !== 'disconnected') {
+        console.log(`📡 MCP Server status: ${mcpServer.status || 'connected'}`);
+      } else {
+        console.warn('⚠️ MCP Server not fully initialized - some tests may be limited');
+      }
     } catch (error) {
       console.warn('MCP Server initialization failed, some tests may be limited:', error.message);
     }
@@ -422,6 +429,13 @@ describe('Nova Synth Integration Tests', () => {
             context: { emergency: true, evacuation: true },
             userId: testUser.id,
           }).catch((error) => ({ error: error.message }));
+          
+          // Validate escalation creation
+          if (escalationResult && !escalationResult.error) {
+            console.log('✅ Emergency escalation created successfully');
+          } else {
+            console.warn('⚠️ Escalation creation failed:', escalationResult?.error || 'Unknown error');
+          }
         }
 
         // 4. End conversation

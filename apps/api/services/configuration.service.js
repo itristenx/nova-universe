@@ -6,11 +6,11 @@
  * 3. Built-in defaults (fallback)
  */
 
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+import { getCoreClient } from '../lib/database-clients.js';
 import { logger } from '../logger.js';
 
 // Initialize Prisma client
-const prisma = new PrismaClient();
+const prismaPromise = getCoreClient();
 
 class ConfigurationService {
   // Cache for configuration values to avoid repeated database queries
@@ -169,6 +169,7 @@ class ConfigurationService {
 
       // 1. Try database first (highest priority - admin configurable)
       try {
+        const prisma = await prismaPromise;
         const config = await prisma.config.findUnique({
           where: { key },
         });
@@ -221,6 +222,7 @@ class ConfigurationService {
 
     try {
       // Batch database query for efficiency
+      const prisma = await prismaPromise;
       const dbConfigs = await prisma.config.findMany({
         where: { key: { in: keys } },
       });
@@ -372,6 +374,7 @@ class ConfigurationService {
    */
   static async getConfigWithMetadata(key) {
     try {
+      const prisma = await prismaPromise;
       const config = await prisma.config.findUnique({
         where: { key },
       });
@@ -409,6 +412,7 @@ class ConfigurationService {
   static async setValue(key, value, userId, reason = null) {
     try {
       // Update database
+      const prisma = await prismaPromise;
       await prisma.config.update({
         where: { key },
         data: {
@@ -567,6 +571,7 @@ class ConfigurationService {
    */
   static async getPublicConfig() {
     try {
+      const prisma = await prismaPromise;
       const configs = await prisma.config.findMany({
         where: { is_public: true },
         orderBy: [{ category: 'asc' }, { key: 'asc' }],

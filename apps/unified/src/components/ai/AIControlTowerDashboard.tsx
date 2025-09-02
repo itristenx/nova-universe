@@ -764,7 +764,8 @@ export const AIControlTowerDashboard = () => {
                 await loadRAGData();
                 showSnackbar('Data sources sync initiated', 'success');
               } catch (error) {
-                showSnackbar('Failed to sync data sources', 'error');
+                console.error('Data source sync error:', error);
+                showSnackbar(`Failed to sync data sources: ${error.message || error}`, 'error');
               }
             }}
             onToggleConnector={async (connectorId, enabled) => {
@@ -773,7 +774,8 @@ export const AIControlTowerDashboard = () => {
                 await loadRAGData();
                 showSnackbar(`Connector ${enabled ? 'enabled' : 'disabled'}`, 'success');
               } catch (error) {
-                showSnackbar('Failed to toggle connector', 'error');
+                console.error('Connector toggle error:', error);
+                showSnackbar(`Failed to toggle connector: ${error.message || error}`, 'error');
               }
             }}
           />
@@ -792,7 +794,8 @@ export const AIControlTowerDashboard = () => {
                 setRbacTestResults(response.data);
                 showSnackbar('RBAC tests completed', 'success');
               } catch (error) {
-                showSnackbar('Failed to run RBAC tests', 'error');
+                console.error('RBAC test error:', error);
+                showSnackbar(`Failed to run RBAC tests: ${error.message || error}`, 'error');
               }
             }}
             onTestPersonalities={async (query) => {
@@ -801,7 +804,8 @@ export const AIControlTowerDashboard = () => {
                 setPersonalityTestResults(response.data);
                 showSnackbar('Personality tests completed', 'success');
               } catch (error) {
-                showSnackbar('Failed to test personalities', 'error');
+                console.error('Personality test error:', error);
+                showSnackbar(`Failed to test personalities: ${error.message || error}`, 'error');
               }
             }}
             onCreateRBACUser={() => setRbacUserDialog(true)}
@@ -927,6 +931,189 @@ export const AIControlTowerDashboard = () => {
         onSubmit={updateModelSettings}
         experiment={selectedExperiment}
       />
+
+      {/* RAG Query Dialog */}
+      <Dialog
+        open={ragQueryDialog}
+        onClose={() => setRagQueryDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>RAG Query Test</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            label="Enter RAG Query"
+            margin="normal"
+            placeholder="Ask a question about your indexed documents..."
+          />
+          <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+            Test your RAG system with custom queries to validate document retrieval and responses.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRagQueryDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={() => {
+              setRagQueryResults([...ragQueryResults, { 
+                query: "Sample query", 
+                timestamp: Date.now(),
+                sources: ["doc1", "doc2"]
+              }]);
+              setRagQueryDialog(false);
+            }}
+          >
+            Execute Query
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Synth Query Dialog */}
+      <Dialog
+        open={synthQueryDialog}
+        onClose={() => setSynthQueryDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>AI Synthesis Query</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            label="Enter Synthesis Query"
+            margin="normal"
+            placeholder="Generate AI-powered insights and synthesis..."
+          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Personality Mode</InputLabel>
+            <Select defaultValue="professional">
+              <MenuItem value="professional">Professional</MenuItem>
+              <MenuItem value="creative">Creative</MenuItem>
+              <MenuItem value="technical">Technical</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSynthQueryDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={() => {
+              setSynthQueryResults([...synthQueryResults, { 
+                query: "Sample synthesis", 
+                timestamp: Date.now(),
+                response: "AI-generated response"
+              }]);
+              setSynthQueryDialog(false);
+            }}
+          >
+            Generate Synthesis
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* RBAC User Dialog */}
+      <Dialog
+        open={rbacUserDialog}
+        onClose={() => setRbacUserDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Manage RBAC Users</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Username"
+            margin="normal"
+            placeholder="Enter username"
+          />
+          <TextField
+            fullWidth
+            label="Email"
+            margin="normal"
+            placeholder="user@example.com"
+          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Role</InputLabel>
+            <Select defaultValue="user">
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="operator">Operator</MenuItem>
+              <MenuItem value="user">User</MenuItem>
+              <MenuItem value="viewer">Viewer</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRbacUserDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={() => {
+              setRbacUsers([...rbacUsers, { 
+                id: Date.now(),
+                username: "newuser", 
+                role: "user"
+              }]);
+              setRbacUserDialog(false);
+            }}
+          >
+            Add User
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* RBAC Policy Dialog */}
+      <Dialog
+        open={rbacPolicyDialog}
+        onClose={() => setRbacPolicyDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Manage RBAC Policies</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Policy Name"
+            margin="normal"
+            placeholder="Enter policy name"
+          />
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Policy Description"
+            margin="normal"
+            placeholder="Describe the policy purpose and scope"
+          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Access Level</InputLabel>
+            <Select defaultValue="read">
+              <MenuItem value="full">Full Access</MenuItem>
+              <MenuItem value="write">Read/Write</MenuItem>
+              <MenuItem value="read">Read Only</MenuItem>
+              <MenuItem value="deny">Deny</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRbacPolicyDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={() => {
+              setRbacPolicies([...rbacPolicies, { 
+                id: Date.now(),
+                name: "New Policy", 
+                access: "read"
+              }]);
+              setRbacPolicyDialog(false);
+            }}
+          >
+            Create Policy
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Snackbar */}
       <Snackbar
@@ -1752,6 +1939,21 @@ const MLPipelinePanel = ({
 
   return (
     <Box>
+      {/* Pipeline Status Banner */}
+      {pipelineStatus && (
+        <Paper sx={{ p: 2, mb: 3, bgcolor: pipelineStatus === 'healthy' ? 'success.light' : 'warning.light' }}>
+          <Box display="flex" alignItems="center" gap={2}>
+            {getStatusIcon(pipelineStatus)}
+            <Typography variant="h6">
+              Pipeline Status: {pipelineStatus.charAt(0).toUpperCase() + pipelineStatus.slice(1)}
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              Overall system health and processing status
+            </Typography>
+          </Box>
+        </Paper>
+      )}
+
       {/* Pipeline Status Overview */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>

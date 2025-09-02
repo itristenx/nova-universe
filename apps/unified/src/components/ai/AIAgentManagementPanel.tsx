@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import {
   Card,
   CardContent,
@@ -89,10 +90,10 @@ const AIAgentManagementPanel: React.FC = () => {
       setLoading(true);
       
       const [capabilitiesRes, channelsRes, analyticsRes, sessionsRes] = await Promise.all([
-        fetch('/api/ai-agent/capabilities'),
-        fetch('/api/ai-agent/channels'),
-        fetch('/api/ai-agent/analytics/summary'),
-        fetch('/api/ai-agent/sessions')
+        apiFetch('/api/ai-agent/capabilities'),
+        apiFetch('/api/ai-agent/channels'),
+        apiFetch('/api/ai-agent/analytics/summary'),
+        apiFetch('/api/ai-agent/sessions')
       ]);
 
       if (capabilitiesRes.ok) {
@@ -126,7 +127,7 @@ const AIAgentManagementPanel: React.FC = () => {
 
     try {
       setTesting(true);
-      const response = await fetch('/api/ai-agent/chat', {
+      const response = await apiFetch('/api/ai-agent/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +152,7 @@ const AIAgentManagementPanel: React.FC = () => {
 
   const toggleCapability = async (capabilityName: string, isActive: boolean) => {
     try {
-      const response = await fetch(`/api/ai-agent/capabilities/${capabilityName}`, {
+      const response = await apiFetch(`/api/ai-agent/capabilities/${capabilityName}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +170,7 @@ const AIAgentManagementPanel: React.FC = () => {
 
   const closeSession = async (sessionId: string) => {
     try {
-      const response = await fetch(`/api/ai-agent/sessions/${sessionId}/close`, {
+      const response = await apiFetch(`/api/ai-agent/sessions/${sessionId}/close`, {
         method: 'POST'
       });
 

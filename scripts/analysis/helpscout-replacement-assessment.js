@@ -263,6 +263,10 @@ async function assessHelpScoutParity() {
 
   helpscoutFeatures.forEach(({ feature, check, critical }) => {
     const passed = check();
+    
+    // Log feature assessment result
+    console.log(`${passed ? '✅' : '❌'} ${feature}${critical ? ' (CRITICAL)' : ''}`);
+    
     if (passed) totalPassed++;
     if (critical) {
       criticalTotal++;

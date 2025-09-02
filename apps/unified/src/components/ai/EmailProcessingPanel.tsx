@@ -98,6 +98,12 @@ const EmailProcessingPanel: React.FC<EmailProcessingPanelProps> = ({ onClose }) 
   const [stats, setStats] = useState<any>(null);
   const [emailAccounts, setEmailAccounts] = useState<any[]>([]);
   const [testDialogOpen, setTestDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [analyticsDialogOpen, setAnalyticsDialogOpen] = useState(false);
+  const [processingFilter, setProcessingFilter] = useState('all');
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(30000);
+  const [viewMode, setViewMode] = useState('grid');
   const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
   const [testEmail, setTestEmail] = useState({
     subject: '',
@@ -226,6 +232,182 @@ const EmailProcessingPanel: React.FC<EmailProcessingPanelProps> = ({ onClose }) 
   const showSnackbar = (message: string, severity: 'success' | 'error' | 'warning' | 'info') => {
     setSnackbar({ open: true, message, severity });
   };
+
+  const handleSettingsOpen = () => {
+    setSettingsDialogOpen(true);
+  };
+
+  const handleAnalyticsOpen = () => {
+    setAnalyticsDialogOpen(true);
+  };
+
+  const handleViewModeChange = (mode: string) => {
+    setViewMode(mode);
+    showSnackbar(`View mode changed to ${mode}`, 'info');
+  };
+
+  const renderSettingsDialog = () => (
+    <Dialog
+      open={settingsDialogOpen}
+      onClose={() => setSettingsDialogOpen(false)}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle>
+        <Box display="flex" alignItems="center">
+          <SettingsIcon sx={{ mr: 1 }} />
+          Email Processing Settings
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ mt: 2 }}>
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <InputLabel>Processing Filter</InputLabel>
+            <Select
+              value={processingFilter}
+              label="Processing Filter"
+              onChange={(e) => setProcessingFilter(e.target.value)}
+            >
+              <MenuItem value="all">All Emails</MenuItem>
+              <MenuItem value="processed">Processed Only</MenuItem>
+              <MenuItem value="pending">Pending Only</MenuItem>
+              <MenuItem value="errors">Errors Only</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={autoRefreshEnabled}
+                onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Enable Auto Refresh"
+            sx={{ mb: 2 }}
+          />
+
+          {autoRefreshEnabled && (
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <InputLabel>Refresh Interval</InputLabel>
+              <Select
+                value={refreshInterval}
+                label="Refresh Interval"
+                onChange={(e) => setRefreshInterval(Number(e.target.value))}
+              >
+                <MenuItem value={10000}>10 seconds</MenuItem>
+                <MenuItem value={30000}>30 seconds</MenuItem>
+                <MenuItem value={60000}>1 minute</MenuItem>
+                <MenuItem value={300000}>5 minutes</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setSettingsDialogOpen(false)}>Cancel</Button>
+        <Button onClick={() => setSettingsDialogOpen(false)} color="primary">
+          Save Settings
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renderAnalyticsDialog = () => (
+    <Dialog
+      open={analyticsDialogOpen}
+      onClose={() => setAnalyticsDialogOpen(false)}
+      maxWidth="lg"
+      fullWidth
+    >
+      <DialogTitle>
+        <Box display="flex" alignItems="center">
+          <AnalyticsIcon sx={{ mr: 1 }} />
+          Email Processing Analytics
+          <Badge badgeContent="Live" color="success" sx={{ ml: 2 }}>
+            <TrendingUpIcon />
+          </Badge>
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <SpeedIcon sx={{ fontSize: 40, color: theme.palette.primary.main, mb: 1 }} />
+              <Typography variant="h4" color="primary">
+                {stats?.stats?.averageProcessingTime || '2.3s'}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                Average Processing Time
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <ScheduleIcon sx={{ fontSize: 40, color: theme.palette.success.main, mb: 1 }} />
+              <Typography variant="h4" color="success.main">
+                {stats?.stats?.dailyProcessedCount || '142'}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                Emails Processed Today
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <TrendingUpIcon sx={{ fontSize: 40, color: theme.palette.warning.main, mb: 1 }} />
+              <Typography variant="h4" color="warning.main">
+                {stats?.stats?.accuracyRate || '94.2%'}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                Processing Accuracy
+              </Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setAnalyticsDialogOpen(false)}>Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renderToolbar = () => (
+    <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Tooltip title="View Settings">
+        <IconButton onClick={handleSettingsOpen} size="small">
+          <SettingsIcon />
+        </IconButton>
+      </Tooltip>
+      
+      <Tooltip title="View Analytics">
+        <IconButton onClick={handleAnalyticsOpen} size="small">
+          <AnalyticsIcon />
+        </IconButton>
+      </Tooltip>
+
+      <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+
+      <Tooltip title="Grid View">
+        <IconButton 
+          onClick={() => handleViewModeChange('grid')} 
+          size="small"
+          color={viewMode === 'grid' ? 'primary' : 'default'}
+        >
+          <ViewIcon />
+        </IconButton>
+      </Tooltip>
+
+      {onClose && (
+        <>
+          <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+          <Button onClick={onClose} size="small">
+            Close Panel
+          </Button>
+        </>
+      )}
+    </Box>
+  );
 
   const renderSystemStatus = () => (
     <EmailProcessingCard>
@@ -614,6 +796,8 @@ const EmailProcessingPanel: React.FC<EmailProcessingPanelProps> = ({ onClose }) 
 
   return (
     <Box>
+      {renderToolbar()}
+      
       {loading && <LinearProgress sx={{ mb: 2 }} />}
       
       <Grid container spacing={3}>
@@ -629,7 +813,14 @@ const EmailProcessingPanel: React.FC<EmailProcessingPanelProps> = ({ onClose }) 
       {emailAnalysis && (
         <Paper sx={{ mt: 3, p: 2 }}>
           <Typography variant="h5" gutterBottom>
-            Email Analysis Results
+            <Box display="flex" alignItems="center">
+              Email Analysis Results
+              <Badge badgeContent="New" color="primary" sx={{ ml: 2 }}>
+                <ListItemIcon>
+                  <AnalyticsIcon />
+                </ListItemIcon>
+              </Badge>
+            </Box>
           </Typography>
           {renderAnalysisResults()}
         </Paper>
@@ -768,6 +959,12 @@ const EmailProcessingPanel: React.FC<EmailProcessingPanelProps> = ({ onClose }) 
           <Button onClick={() => setAnalysisDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Settings Dialog */}
+      {renderSettingsDialog()}
+
+      {/* Analytics Dialog */}
+      {renderAnalyticsDialog()}
 
       {/* Snackbar */}
       <Snackbar

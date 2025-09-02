@@ -13,6 +13,7 @@ import {
   DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { apiFetch } from '@/utils/api';
 
 // Types
 interface AccessibilityRule {
@@ -72,7 +73,7 @@ export default function AccessibilityAuditPage() {
 
   const loadAccessibilitySettings = async () => {
     try {
-      const response = await fetch('/api/accessibility/settings');
+      const response = await apiFetch('/api/accessibility/settings');
       if (response.ok) {
         const data = await response.json();
         setSettings(data.settings);
@@ -87,7 +88,7 @@ export default function AccessibilityAuditPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/accessibility/audit', { method: 'POST' });
+      const response = await apiFetch('/api/accessibility/audit', { method: 'POST' });
       if (response.ok) {
         const data = await response.json();
         setAuditResults(data.results || []);

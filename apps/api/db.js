@@ -10,7 +10,14 @@ import { DatabaseFactory } from './database/factory.js';
 import bcrypt from 'bcryptjs';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
-import { PrismaClient } from '../../prisma/generated/core/index.js';
+// Attempt to load Prisma client if available inside the container
+let PrismaClient;
+try {
+  ({ PrismaClient } = await import('../../prisma/generated/core/index.js'));
+} catch (e) {
+  // In minimal/demo containers the generated client may not be present
+  logger?.warn?.('Prisma client not found; continuing without Prisma. Some features may be unavailable.');
+}
 
 // Keep filename for potential future use
 const __filename = fileURLToPath(import.meta.url);
@@ -26,7 +33,7 @@ let db = null;
 let isInitialized = false;
 
 // Initialize Prisma client
-const prisma = new PrismaClient();
+const prisma = PrismaClient ? new PrismaClient() : null;
 
 /**
  * Initialize the database factory and set up schemas
@@ -144,6 +151,7 @@ async function setupSchemas() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (user_id, role_id)
       );
+      ALTER TABLE user_roles ADD COLUMN IF NOT EXISTS assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
     `);
 
     // Config key-value store

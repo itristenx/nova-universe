@@ -711,6 +711,13 @@ test('Capacity Planning Analysis', async (t) => {
 
     clearInterval(memoryMonitor);
 
+    // Log load test report details
+    console.log('\n📊 Load Test Report Summary:');
+    console.log(`   Test Duration: ${report.duration || 'N/A'}`);
+    console.log(`   Total Requests: ${report.totalRequests || 'N/A'}`);
+    console.log(`   Success Rate: ${report.successRate || 'N/A'}%`);
+    console.log(`   Average Response Time: ${report.avgResponseTime || 'N/A'}ms`);
+
     const peakMemory = Math.max(...memoryReadings.map((r) => r.memory));
     const memoryIncrease = peakMemory - baselineMemory;
 

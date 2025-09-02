@@ -19,14 +19,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
-COPY package*.json ./
+COPY apps/api/package*.json ./
 # Removed: root package files are outside the Docker build context
 
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci --include=dev
 
 # Copy source code
-COPY . .
+COPY apps/api/ .
+
+# Copy Prisma schemas into the build context and generate clients for required schemas
+COPY prisma /app/prisma
+# Generate Prisma clients (pin CLI for reproducibility)
+RUN npx -y prisma@6.12.0 generate --schema=/app/prisma/core/schema.prisma \
+ && npx -y prisma@6.12.0 generate --schema=/app/prisma/auth/schema.prisma \
+ && npx -y prisma@6.12.0 generate --schema=/app/prisma/cmdb/schema.prisma \
+ && npx -y prisma@6.12.0 generate --schema=/app/prisma/integration/schema.prisma \
+ && npx -y prisma@6.12.0 generate --schema=/app/prisma/notification/schema.prisma \
+ && npx -y prisma@6.12.0 generate --schema=/app/prisma/user360/schema.prisma \
+ || true
 
 # Build the application (if needed)
 RUN npm run build || echo "No build script found (skipped)"
@@ -55,6 +66,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
 COPY --from=builder --chown=nextjs:nodejs /app .
+
+# Ensure Prisma generated clients are present at runtime
+RUN mkdir -p /prisma/generated && \
+    cp -r /app/prisma/generated/* /prisma/generated/ || true
+
+# Ensure runtime-only deps missing from prod build are installed
+RUN npm install --omit=dev handlebars@^4 || true
 
 # Create necessary directories with proper permissions
 RUN mkdir -p /app/logs /app/uploads /app/temp && \

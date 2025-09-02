@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { helixAuthService } from '@services/helixAuth';
+import { apiClient, TokenManager } from '@services/api';
+import { userService } from '@services/users';
 import type { User } from '@/types';
 
 interface AuthState {
@@ -100,7 +102,7 @@ export const useAuthStore = create<AuthState>()(
         isLoading: false,
         error: null,
 
-        // Legacy login action for backward compatibility
+        // Legacy login action for backward compatibility, with fallback to basic auth
         login: async (email: string, password: string, rememberMe = false) => {
         set({ isLoading: true, error: null });
 
@@ -128,17 +130,59 @@ export const useAuthStore = create<AuthState>()(
             throw new Error('No user data returned');
           }
         } catch (_error) {
-          set({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: _error instanceof Error ? _error.message : 'Login failed',
-          });
-          throw _error;
+          // Fallback to legacy auth (/api/auth/login)
+          try {
+            const legacy = await apiClient.post<{ token: string }>('/auth/login', {
+              email,
+              password,
+            });
+
+            const token = (legacy as any)?.data?.token;
+            if (!token) throw new Error('Legacy login did not return a token');
+
+            TokenManager.setTokens(token);
+
+            // Minimal user bootstrap when profile endpoint is unavailable
+            const bootstrapUser: User = {
+              id: 'legacy-user',
+              email,
+              firstName: email.split('@')[0],
+              lastName: '',
+              displayName: email,
+              roles: [
+                { id: 'admin', name: 'admin', description: 'Administrator', permissions: [] },
+              ],
+              permissions: [],
+              isActive: true,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              preferences: {
+                theme: 'system',
+                language: 'en',
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                notifications: { email: true, push: true, desktop: false },
+              },
+            } as User;
+
+            set({ user: bootstrapUser, isAuthenticated: true, isLoading: false, error: null });
+          } catch (fallbackErr) {
+            set({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error:
+                fallbackErr instanceof Error
+                  ? fallbackErr.message
+                  : _error instanceof Error
+                  ? _error.message
+                  : 'Login failed',
+            });
+            throw fallbackErr;
+          }
         }
       },
 
-      // Helix-specific login action
+      // Helix-specific login action with legacy fallback
       loginWithHelix: async (data: HelixAuthData) => {
         set({ isLoading: true, error: null });
 
@@ -162,13 +206,55 @@ export const useAuthStore = create<AuthState>()(
             throw new Error('No user data returned');
           }
         } catch (_error) {
-          set({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: _error instanceof Error ? _error.message : 'Login failed',
-          });
-          throw _error;
+          // Fallback to legacy auth (/api/auth/login) to support non-Helix environments
+          try {
+            const legacy = await apiClient.post<{ token: string }>('/auth/login', {
+              email: data.email,
+              password: data.password,
+            });
+
+            const token = (legacy as any)?.data?.token;
+            if (!token) throw new Error('Legacy login did not return a token');
+
+            // Store access token for axios interceptor
+            TokenManager.setTokens(token);
+
+            const bootstrapUser: User = {
+              id: 'legacy-user',
+              email: data.email,
+              firstName: data.email.split('@')[0],
+              lastName: '',
+              displayName: data.email,
+              roles: [
+                { id: 'admin', name: 'admin', description: 'Administrator', permissions: [] },
+              ],
+              permissions: [],
+              isActive: true,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              preferences: {
+                theme: 'system',
+                language: 'en',
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                notifications: { email: true, push: true, desktop: false },
+              },
+            } as User;
+
+            set({ user: bootstrapUser, isAuthenticated: true, isLoading: false, error: null });
+          } catch (fallbackErr) {
+            set({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error:
+                fallbackErr instanceof Error
+                  ? fallbackErr.message
+                  : _error instanceof Error
+                  ? _error.message
+                  : 'Login failed',
+            });
+            throw fallbackErr;
+          }
         }
       },
 

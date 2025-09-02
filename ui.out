@@ -1,0 +1,84 @@
+/Users/tneibarger/.rvm/scripts/rvm: line 29: /bin/ps: Operation not permitted
+/Users/tneibarger/.rvm/scripts/rvm: line 29: /bin/ps: Operation not permitted
+
+> @nova/unified-ui@1.0.0 dev
+> vite
+
+▲ [WARNING] Duplicate key "test:ui:auth" in object literal [duplicate-object-key]
+
+    package.json:33:4:
+      33 │     "test:ui:auth": "node ui-test-runner.cjs --suites authenticati...
+         ╵     ~~~~~~~~~~~~~~
+
+  The original key "test:ui:auth" is here:
+
+    package.json:19:4:
+      19 │     "test:ui:auth": "playwright test tests/auth/",
+         ╵     ~~~~~~~~~~~~~~
+
+▲ [WARNING] Duplicate key "test:ui:database" in object literal [duplicate-object-key]
+
+    package.json:34:4:
+      34 │     "test:ui:database": "node ui-test-runner.cjs --suites database",
+         ╵     ~~~~~~~~~~~~~~~~~~
+
+  The original key "test:ui:database" is here:
+
+    package.json:23:4:
+      23 │     "test:ui:database": "playwright test tests/database/",
+         ╵     ~~~~~~~~~~~~~~~~~~
+
+▲ [WARNING] Duplicate key "test:ui:security" in object literal [duplicate-object-key]
+
+    package.json:39:4:
+      39 │     "test:ui:security": "node ui-test-runner.cjs --tags security",
+         ╵     ~~~~~~~~~~~~~~~~~~
+
+  The original key "test:ui:security" is here:
+
+    package.json:26:4:
+      26 │     "test:ui:security": "playwright test tests/security/",
+         ╵     ~~~~~~~~~~~~~~~~~~
+
+▲ [WARNING] Duplicate key "test:ui:performance" in object literal [duplicate-object-key]
+
+    package.json:40:4:
+      40 │     "test:ui:performance": "node ui-test-runner.cjs --tags perform...
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+  The original key "test:ui:performance" is here:
+
+    package.json:25:4:
+      25 │     "test:ui:performance": "playwright test tests/performance/",
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+▲ [WARNING] Duplicate key "test:ui:accessibility" in object literal [duplicate-object-key]
+
+    package.json:41:4:
+      41 │     "test:ui:accessibility": "node ui-test-runner.cjs --tags acces...
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~
+
+  The original key "test:ui:accessibility" is here:
+
+    package.json:24:4:
+      24 │     "test:ui:accessibility": "playwright test tests/accessibility/",
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~
+
+▲ [WARNING] Duplicate key "test:ui:mobile" in object literal [duplicate-object-key]
+
+    package.json:42:4:
+      42 │     "test:ui:mobile": "node ui-test-runner.cjs --tags mobile",
+         ╵     ~~~~~~~~~~~~~~~~
+
+  The original key "test:ui:mobile" is here:
+
+    package.json:27:4:
+      27 │     "test:ui:mobile": "playwright test tests/mobile/",
+         ╵     ~~~~~~~~~~~~~~~~
+
+error when starting dev server:
+Error: listen EPERM: operation not permitted 0.0.0.0:3002
+    at Server.setupListenHandle [as _listen2] (node:net:1918:21)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at httpServer.listen (file:///Users/tneibarger/nova-universe/apps/unified/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:63403:14)

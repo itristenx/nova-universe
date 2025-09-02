@@ -392,10 +392,10 @@ export function Progress({
 
 // Dots loader component
 export function DotsLoader({ variant = 'primary', className = '' }) {
-  const dotClasses = `nova-dots__dot`;
+  const dotClasses = `nova-dots__dot nova-dots__dot--${variant}`;
 
   return (
-    <div className={`nova-dots ${className}`} role="status" aria-label="Loading">
+    <div className={`nova-dots nova-dots--${variant} ${className}`} role="status" aria-label="Loading">
       <div className={dotClasses} />
       <div className={dotClasses} />
       <div className={dotClasses} />

@@ -71,6 +71,8 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
     includeSystem: false,
     timeRange: '7d'
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
 
   useEffect(() => {
     if (userId) {
@@ -97,11 +99,21 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
         });
         const interactionStatsData = await user360Service.getInteractionStats(userId, interactionFilters.timeRange);
 
+        // Load additional user data
+        const ticketsData = await user360Service.getUserTickets(userId);
+        const activityLogsData = await user360Service.getActivityLogs(userId);
+        const trainingRecordsData = await user360Service.getTrainingRecords(userId);
+        const conversationSessionsData = await user360Service.getConversationSessions(userId);
+
         setProfile(profileData);
         setAssets(assetsData);
         setSecurityAlerts(alertsData);
         setInteractions(interactionTimelineData.interactions);
         setInteractionStats(interactionStatsData);
+        setTickets(ticketsData);
+        setActivityLogs(activityLogsData);
+        setTrainingRecords(trainingRecordsData);
+        setConversationSessions(conversationSessionsData);
       } catch (apiError) {
         console.warn('API unavailable, using mock data:', apiError);
 
@@ -267,12 +279,12 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
         ];
 
         const mockInteractionStats: InteractionStats = {
-          totalInteractions: 25,
-          byChannel: {
-            email: 15,
-            chat: 8,
-            ai: 12,
-          },
+          totalInteractions: 42,
+          inboundInteractions: 28,
+          outboundInteractions: 14,
+          aiGeneratedInteractions: 8,
+          systemInteractions: 6,
+          avgResponseTime: 32,
           pendingResponses: 3,
           escalatedSessions: 1,
           avgResponseTime: 45,
@@ -282,6 +294,236 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
           },
           timeframe: '7d',
         };
+
+        // Mock tickets data
+        const mockTickets: TicketSummary[] = [
+          {
+            id: 'T-001',
+            number: 'T-001',
+            title: 'VPN Connection Issues',
+            description: 'Unable to connect to VPN from home network',
+            status: 'Open',
+            priority: 'Medium',
+            type: 'Incident',
+            category: 'Network',
+            subcategory: 'VPN',
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+            updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+            assignedTo: 'Network Team',
+            reporter: userId,
+            tags: ['vpn', 'remote-work', 'network'],
+          },
+          {
+            id: 'T-002',
+            number: 'T-002',
+            title: 'Password Reset Request',
+            description: 'Need to reset password for domain account',
+            status: 'Resolved',
+            priority: 'Low',
+            type: 'Service Request',
+            category: 'Access Management',
+            subcategory: 'Password',
+            createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            updatedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+            assignedTo: 'IT Support',
+            reporter: userId,
+            tags: ['password', 'access', 'resolved'],
+          },
+          {
+            id: 'T-003',
+            number: 'T-003',
+            title: 'Software License Request',
+            description: 'Need license for Adobe Creative Suite',
+            status: 'In Progress',
+            priority: 'Medium',
+            type: 'Service Request',
+            category: 'Software',
+            subcategory: 'Licensing',
+            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+            updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+            assignedTo: 'Software Management',
+            reporter: userId,
+            tags: ['software', 'license', 'adobe'],
+          },
+        ];
+
+        // Mock activity logs data
+        const mockActivityLogs: ActivityLogEntry[] = [
+          {
+            id: 'log1',
+            timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
+            action: 'Login',
+            description: 'User logged in via SSO',
+            source: 'Web Portal',
+            ipAddress: '192.168.1.100',
+            userAgent: 'Chrome/119.0.0.0',
+            result: 'Success',
+            sessionId: 'sess123',
+            details: { method: 'SSO', provider: 'Azure AD' },
+          },
+          {
+            id: 'log2',
+            timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
+            action: 'Password Change',
+            description: 'User changed password',
+            source: 'Self Service Portal',
+            ipAddress: '192.168.1.100',
+            userAgent: 'Chrome/119.0.0.0',
+            result: 'Success',
+            sessionId: 'sess124',
+            details: { strength: 'Strong', policy: 'Compliant' },
+          },
+          {
+            id: 'log3',
+            timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
+            action: 'File Access',
+            description: 'Accessed sensitive document',
+            source: 'SharePoint',
+            ipAddress: '192.168.1.100',
+            userAgent: 'Chrome/119.0.0.0',
+            result: 'Success',
+            sessionId: 'sess125',
+            details: { fileName: 'Financial_Report_Q4.xlsx', classification: 'Confidential' },
+          },
+          {
+            id: 'log4',
+            timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000),
+            action: 'VPN Connect',
+            description: 'Connected to corporate VPN',
+            source: 'VPN Client',
+            ipAddress: '10.0.0.50',
+            userAgent: 'FortiClient/7.0',
+            result: 'Success',
+            sessionId: 'sess126',
+            details: { endpoint: 'vpn.company.com', duration: '8h 32m' },
+          },
+        ];
+
+        // Mock training records data
+        const mockTrainingRecords: TrainingRecord[] = [
+          {
+            id: 'train1',
+            userId,
+            courseId: 'SEC-001',
+            courseName: 'Security Awareness Training',
+            category: 'Security',
+            description: 'Annual mandatory security awareness training covering phishing, social engineering, and data protection',
+            provider: 'Security Training Corp',
+            status: 'Completed',
+            progress: 100,
+            score: 95,
+            passingScore: 80,
+            startedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            completedAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000),
+            expiresAt: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000),
+            certificateUrl: '/certificates/SEC-001-cert.pdf',
+            isRequired: true,
+            tags: ['security', 'mandatory', 'annual'],
+          },
+          {
+            id: 'train2',
+            userId,
+            courseId: 'COMP-001',
+            courseName: 'GDPR Compliance Training',
+            category: 'Compliance',
+            description: 'Data privacy and GDPR compliance training for EU operations',
+            provider: 'Compliance Institute',
+            status: 'Completed',
+            progress: 100,
+            score: 88,
+            passingScore: 75,
+            startedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+            completedAt: new Date(Date.now() - 58 * 24 * 60 * 60 * 1000),
+            expiresAt: new Date(Date.now() + 305 * 24 * 60 * 60 * 1000),
+            certificateUrl: '/certificates/COMP-001-cert.pdf',
+            isRequired: true,
+            tags: ['compliance', 'gdpr', 'privacy'],
+          },
+          {
+            id: 'train3',
+            userId,
+            courseId: 'TECH-001',
+            courseName: 'Advanced React Development',
+            category: 'Technical',
+            description: 'Advanced React concepts including hooks, context, and performance optimization',
+            provider: 'Tech Academy',
+            status: 'In Progress',
+            progress: 65,
+            score: null,
+            passingScore: 70,
+            startedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+            completedAt: null,
+            expiresAt: null,
+            certificateUrl: null,
+            isRequired: false,
+            tags: ['technical', 'react', 'development'],
+          },
+        ];
+
+        // Mock conversation sessions data
+        const mockConversationSessions: ConversationSession[] = [
+          {
+            id: 'conv1',
+            userId,
+            sessionType: 'AI_CHAT',
+            channelType: 'WEB_CHAT',
+            startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+            endedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+            duration: 3600,
+            messageCount: 12,
+            aiPersonality: 'cosmo',
+            topic: 'Password Reset Help',
+            sentiment: 'Positive',
+            resolution: 'Resolved',
+            satisfaction: 4,
+            tags: ['password', 'help', 'resolved'],
+            summary: 'User successfully reset password with AI assistance',
+          },
+          {
+            id: 'conv2',
+            userId,
+            sessionType: 'SUPPORT_CHAT',
+            channelType: 'WEB_CHAT',
+            startedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+            endedAt: new Date(Date.now() - 23 * 60 * 60 * 1000),
+            duration: 1800,
+            messageCount: 8,
+            aiPersonality: null,
+            topic: 'VPN Configuration',
+            sentiment: 'Neutral',
+            resolution: 'Escalated',
+            satisfaction: 3,
+            tags: ['vpn', 'network', 'escalated'],
+            summary: 'VPN issue escalated to network team for resolution',
+          },
+          {
+            id: 'conv3',
+            userId,
+            sessionType: 'AI_CHAT',
+            channelType: 'TEAMS',
+            startedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            endedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000 + 900000),
+            duration: 900,
+            messageCount: 5,
+            aiPersonality: 'echo',
+            topic: 'Software License Query',
+            sentiment: 'Positive',
+            resolution: 'Resolved',
+            satisfaction: 5,
+            tags: ['software', 'license', 'query'],
+            summary: 'User received information about available software licenses',
+          },
+        ];
+
+        setProfile(mockProfile);
+        setAssets(mockAssets);
+        setSecurityAlerts(mockSecurityAlerts);
+        setInteractions(mockInteractions);
+        setInteractionStats(mockInteractionStats);
+        setTickets(mockTickets);
+        setActivityLogs(mockActivityLogs);
+        setTrainingRecords(mockTrainingRecords);
+        setConversationSessions(mockConversationSessions);
 
         setProfile(mockProfile);
         setAssets(mockAssets);
@@ -333,6 +575,47 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
 
     return Math.max(0, score);
   }, [profile, securityAlerts]);
+
+  // Filter interactions based on search and date
+  const filteredInteractions = useMemo(() => {
+    let filtered = interactions;
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter((interaction) =>
+        interaction.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        interaction.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        interaction.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        interaction.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Apply date filter
+    if (selectedDate) {
+      const filterDate = new Date(selectedDate);
+      filtered = filtered.filter((interaction) => {
+        const interactionDate = new Date(interaction.timestamp);
+        return interactionDate.toDateString() === filterDate.toDateString();
+      });
+    }
+
+    return filtered;
+  }, [interactions, searchTerm, selectedDate]);
+
+  // Filter conversation sessions based on search
+  const filteredConversationSessions = useMemo(() => {
+    let filtered = conversationSessions;
+
+    if (searchTerm) {
+      filtered = filtered.filter((session) =>
+        session.topic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        session.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        session.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    return filtered;
+  }, [conversationSessions, searchTerm]);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: UserIcon },
@@ -723,6 +1006,40 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                 </div>
               )}
 
+              {/* Search and Date Filters */}
+              <div className="flex flex-wrap items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                <div className="flex items-center space-x-2">
+                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search interactions..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 min-w-0 w-48"
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <CalendarIcon className="h-5 w-5 text-gray-400" />
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedDate('');
+                  }}
+                  className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                >
+                  Clear
+                </button>
+              </div>
+
               {/* Interaction Filters */}
               <div className="flex flex-wrap items-center gap-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
                 <div className="flex items-center space-x-2">
@@ -794,9 +1111,9 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                   Interaction Timeline
                 </h3>
                 
-                {interactions.length > 0 ? (
+                {filteredInteractions.length > 0 ? (
                   <div className="space-y-4">
-                    {interactions.map((interaction) => (
+                    {filteredInteractions.map((interaction) => (
                       <div
                         key={interaction.id}
                         className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
@@ -934,6 +1251,89 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
                     <p className="text-gray-500 dark:text-gray-400">No interactions found</p>
                   </div>
                 )}
+
+                {/* Conversation Sessions */}
+                <div className="mt-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Conversation Sessions
+                    </h4>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {filteredConversationSessions.length} sessions
+                    </span>
+                  </div>
+                  
+                  {filteredConversationSessions.length > 0 ? (
+                    <div className="space-y-3">
+                      {filteredConversationSessions.map((session) => (
+                        <div
+                          key={session.id}
+                          className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-500" />
+                                <span className="font-medium text-gray-900 dark:text-white">
+                                  {session.topic}
+                                </span>
+                                <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(session.resolution?.toLowerCase() || 'unknown')}`}>
+                                  {session.resolution}
+                                </span>
+                                <span className="inline-flex rounded-full px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                                  {session.sessionType.replace('_', ' ')}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                {session.summary}
+                              </p>
+                              <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                                <span>Channel: {session.channelType.replace('_', ' ')}</span>
+                                <span>Messages: {session.messageCount}</span>
+                                <span>Duration: {Math.floor(session.duration / 60)}m {session.duration % 60}s</span>
+                                <span>Started: {session.startedAt.toLocaleString()}</span>
+                                {session.satisfaction && (
+                                  <span className="flex items-center gap-1">
+                                    Satisfaction: 
+                                    <span className={`font-medium ${
+                                      session.satisfaction >= 4 ? 'text-green-600' :
+                                      session.satisfaction >= 3 ? 'text-yellow-600' :
+                                      'text-red-600'
+                                    }`}>
+                                      {session.satisfaction}/5
+                                    </span>
+                                  </span>
+                                )}
+                              </div>
+                              {session.aiPersonality && (
+                                <div className="mt-2 text-xs text-purple-600 dark:text-purple-400">
+                                  AI Personality: {session.aiPersonality}
+                                </div>
+                              )}
+                              {session.tags && session.tags.length > 0 && (
+                                <div className="flex items-center gap-1 mt-2">
+                                  {session.tags.map((tag) => (
+                                    <span
+                                      key={tag}
+                                      className="inline-flex rounded px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-6 text-center">
+                      <ChatBubbleLeftRightIcon className="mx-auto mb-2 h-8 w-8 text-gray-400" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400">No conversation sessions found</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -1024,35 +1424,280 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
 
           {activeTab === 'tickets' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Recent Tickets
-              </h3>
-              <div className="py-8 text-center">
-                <DocumentIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                <p className="text-gray-500 dark:text-gray-400">No recent tickets</p>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Recent Tickets
+                </h3>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {tickets.length} total tickets
+                </span>
               </div>
+              
+              {tickets.length > 0 ? (
+                <div className="space-y-4">
+                  {tickets.map((ticket) => (
+                    <div
+                      key={ticket.id}
+                      className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <TicketIcon className="h-5 w-5 text-blue-500" />
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {ticket.number}
+                            </span>
+                            <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(ticket.status.toLowerCase())}`}>
+                              {ticket.status}
+                            </span>
+                            <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                              ticket.priority === 'High' ? 'text-red-600 bg-red-100' :
+                              ticket.priority === 'Medium' ? 'text-yellow-600 bg-yellow-100' :
+                              'text-green-600 bg-green-100'
+                            }`}>
+                              {ticket.priority}
+                            </span>
+                          </div>
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-1">
+                            {ticket.title}
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            {ticket.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                            <span>{ticket.category} • {ticket.subcategory}</span>
+                            <span>Assigned to: {ticket.assignedTo}</span>
+                            <span>Created: {ticket.createdAt.toLocaleDateString()}</span>
+                            <span>Updated: {ticket.updatedAt.toLocaleDateString()}</span>
+                          </div>
+                          {ticket.tags && ticket.tags.length > 0 && (
+                            <div className="flex items-center gap-1 mt-2">
+                              {ticket.tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="inline-flex rounded px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <DocumentIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                  <p className="text-gray-500 dark:text-gray-400">No recent tickets</p>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === 'activity' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Activity Log</h3>
-              <div className="py-8 text-center">
-                <ClockIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                <p className="text-gray-500 dark:text-gray-400">No recent activity</p>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Activity Log</h3>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {activityLogs.length} recent activities
+                </span>
               </div>
+              
+              {activityLogs.length > 0 ? (
+                <div className="space-y-3">
+                  {activityLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`flex-shrink-0 rounded-full p-1 ${
+                          log.result === 'Success' ? 'text-green-600 bg-green-100' :
+                          log.result === 'Failed' ? 'text-red-600 bg-red-100' :
+                          'text-yellow-600 bg-yellow-100'
+                        }`}>
+                          {log.action === 'Login' ? (
+                            <LockClosedIcon className="h-4 w-4" />
+                          ) : log.action === 'Password Change' ? (
+                            <KeyIcon className="h-4 w-4" />
+                          ) : log.action === 'File Access' ? (
+                            <DocumentIcon className="h-4 w-4" />
+                          ) : log.action === 'VPN Connect' ? (
+                            <WifiIcon className="h-4 w-4" />
+                          ) : (
+                            <ClockIcon className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-gray-900 dark:text-white">
+                              {log.action}
+                            </h4>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {log.timestamp.toLocaleString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {log.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            <span>Source: {log.source}</span>
+                            <span>IP: {log.ipAddress}</span>
+                            <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                              log.result === 'Success' ? 'text-green-600 bg-green-100' :
+                              log.result === 'Failed' ? 'text-red-600 bg-red-100' :
+                              'text-yellow-600 bg-yellow-100'
+                            }`}>
+                              {log.result}
+                            </span>
+                          </div>
+                          {log.details && Object.keys(log.details).length > 0 && (
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                              {Object.entries(log.details).map(([key, value]) => (
+                                <span key={key} className="mr-3">
+                                  {key}: {String(value)}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <ClockIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                  <p className="text-gray-500 dark:text-gray-400">No recent activity</p>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === 'training' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Training & Compliance
-              </h3>
-              <div className="py-8 text-center">
-                <AcademicCapIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                <p className="text-gray-500 dark:text-gray-400">No training records</p>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Training & Compliance
+                </h3>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {trainingRecords.length} courses
+                </span>
               </div>
+              
+              {trainingRecords.length > 0 ? (
+                <div className="space-y-4">
+                  {trainingRecords.map((record) => (
+                    <div
+                      key={record.id}
+                      className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <AcademicCapIcon className="h-5 w-5 text-blue-500" />
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {record.courseName}
+                            </span>
+                            <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(record.status.toLowerCase())}`}>
+                              {record.status}
+                            </span>
+                            {record.isRequired && (
+                              <span className="inline-flex rounded-full px-2 py-1 text-xs font-medium text-orange-600 bg-orange-100">
+                                Required
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            {record.description}
+                          </p>
+                          <div className="grid grid-cols-2 gap-4 mb-3">
+                            <div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Progress</div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                  <div
+                                    className={`h-2 rounded-full ${
+                                      record.progress === 100 ? 'bg-green-600' :
+                                      record.progress >= 50 ? 'bg-blue-600' :
+                                      'bg-yellow-600'
+                                    }`}
+                                    style={{ width: `${record.progress}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  {record.progress}%
+                                </span>
+                              </div>
+                            </div>
+                            {record.score !== null && (
+                              <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Score</div>
+                                <div className="flex items-center gap-1">
+                                  <span className={`text-sm font-medium ${
+                                    record.score >= record.passingScore ? 'text-green-600' : 'text-red-600'
+                                  }`}>
+                                    {record.score}
+                                  </span>
+                                  <span className="text-xs text-gray-500">/ {record.passingScore}</span>
+                                  {record.score >= record.passingScore && (
+                                    <CheckCircleIcon className="h-4 w-4 text-green-600" />
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                            <span>Category: {record.category}</span>
+                            <span>Provider: {record.provider}</span>
+                            {record.startedAt && (
+                              <span>Started: {record.startedAt.toLocaleDateString()}</span>
+                            )}
+                            {record.completedAt && (
+                              <span>Completed: {record.completedAt.toLocaleDateString()}</span>
+                            )}
+                            {record.expiresAt && (
+                              <span>Expires: {record.expiresAt.toLocaleDateString()}</span>
+                            )}
+                          </div>
+                          {record.tags && record.tags.length > 0 && (
+                            <div className="flex items-center gap-1 mt-2">
+                              {record.tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="inline-flex rounded px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {record.certificateUrl && record.status === 'Completed' && (
+                            <div className="mt-3">
+                              <a
+                                href={record.certificateUrl}
+                                className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-500"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <DocumentIcon className="h-4 w-4" />
+                                View Certificate
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <AcademicCapIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                  <p className="text-gray-500 dark:text-gray-400">No training records</p>
+                </div>
+              )}
             </div>
           )}
 

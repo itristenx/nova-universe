@@ -35,12 +35,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.14.0
- * Query Engine version: 717184b7b35ea05dfa71a3236b7af656013e1e49
+ * Prisma Client JS version: 6.12.0
+ * Query Engine version: 8047c96bbd92db98a2abc7c9323ce77c02c89dbc
  */
 Prisma.prismaVersion = {
-  client: "6.14.0",
-  engine: "717184b7b35ea05dfa71a3236b7af656013e1e49"
+  client: "6.12.0",
+  engine: "8047c96bbd92db98a2abc7c9323ce77c02c89dbc"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -230,7 +230,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/runner/work/nova-universe/nova-universe/prisma/generated/auth",
+      "value": "/Users/tneibarger/nova-universe/prisma/generated/auth",
       "fromEnvVar": null
     },
     "config": {
@@ -239,7 +239,7 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "darwin-arm64",
         "native": true
       },
       {
@@ -249,24 +249,28 @@ const config = {
       {
         "fromEnvVar": null,
         "value": "darwin"
+      },
+      {
+        "fromEnvVar": null,
+        "value": "linux-arm64-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/runner/work/nova-universe/nova-universe/prisma/auth/schema.prisma",
+    "sourceFilePath": "/Users/tneibarger/nova-universe/prisma/auth/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../auth",
-  "clientVersion": "6.14.0",
-  "engineVersion": "717184b7b35ea05dfa71a3236b7af656013e1e49",
+  "clientVersion": "6.12.0",
+  "engineVersion": "8047c96bbd92db98a2abc7c9323ce77c02c89dbc",
   "datasourceNames": [
     "auth_db"
   ],
   "activeProvider": "postgresql",
   "postinstall": false,
-  "ciName": "GitHub Actions",
   "inlineDatasources": {
     "auth_db": {
       "url": {
@@ -275,8 +279,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "datasource auth_db {\n  provider = \"postgresql\"\n  url      = env(\"AUTH_DATABASE_URL\")\n}\n\ngenerator authClient {\n  provider      = \"prisma-client-js\"\n  output        = \"../generated/auth\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\", \"darwin\"]\n}\n\n// ============================================================================\n// AUTHENTICATION & SESSION MODELS\n// ============================================================================\n\nmodel Session {\n  id           String   @id @default(uuid())\n  userId       String   @map(\"user_id\")\n  sessionToken String   @unique @map(\"session_token\")\n  expires      DateTime\n  ipAddress    String?  @map(\"ip_address\")\n  userAgent    String?  @map(\"user_agent\")\n  createdAt    DateTime @default(now()) @map(\"created_at\")\n  updatedAt    DateTime @updatedAt @map(\"updated_at\")\n\n  @@index([userId])\n  @@index([sessionToken])\n  @@index([expires])\n  @@map(\"sessions\")\n}\n\nmodel AuthProvider {\n  id            String   @id @default(uuid())\n  provider      String // \"saml\", \"oauth\", \"local\", \"ldap\"\n  name          String\n  isEnabled     Boolean  @default(true) @map(\"is_enabled\")\n  configuration Json?\n  createdAt     DateTime @default(now()) @map(\"created_at\")\n  updatedAt     DateTime @updatedAt @map(\"updated_at\")\n\n  userProviders UserProvider[]\n\n  @@unique([provider, name])\n  @@map(\"auth_providers\")\n}\n\nmodel UserProvider {\n  id               String    @id @default(uuid())\n  userId           String    @map(\"user_id\")\n  providerId       String    @map(\"provider_id\")\n  providerUserId   String    @map(\"provider_user_id\")\n  providerUsername String?   @map(\"provider_username\")\n  metadata         Json?\n  isActive         Boolean   @default(true) @map(\"is_active\")\n  lastLoginAt      DateTime? @map(\"last_login_at\")\n  createdAt        DateTime  @default(now()) @map(\"created_at\")\n  updatedAt        DateTime  @updatedAt @map(\"updated_at\")\n\n  provider AuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)\n\n  @@unique([providerId, providerUserId])\n  @@index([userId])\n  @@map(\"user_providers\")\n}\n\nmodel PasswordReset {\n  id        String   @id @default(uuid())\n  userId    String   @map(\"user_id\")\n  token     String   @unique\n  expires   DateTime\n  used      Boolean  @default(false)\n  ipAddress String?  @map(\"ip_address\")\n  createdAt DateTime @default(now()) @map(\"created_at\")\n\n  @@index([userId])\n  @@index([token])\n  @@index([expires])\n  @@map(\"password_resets\")\n}\n\nmodel LoginAttempt {\n  id         String   @id @default(uuid())\n  email      String\n  ipAddress  String   @map(\"ip_address\")\n  userAgent  String?  @map(\"user_agent\")\n  success    Boolean  @default(false)\n  failReason String?  @map(\"fail_reason\")\n  timestamp  DateTime @default(now())\n\n  @@index([email, timestamp])\n  @@index([ipAddress, timestamp])\n  @@map(\"login_attempts\")\n}\n\nmodel AccountLockout {\n  id            String    @id @default(uuid())\n  email         String    @unique\n  attemptCount  Int       @default(0) @map(\"attempt_count\")\n  lockedUntil   DateTime? @map(\"locked_until\")\n  lastAttemptAt DateTime? @map(\"last_attempt_at\")\n  createdAt     DateTime  @default(now()) @map(\"created_at\")\n  updatedAt     DateTime  @updatedAt @map(\"updated_at\")\n\n  @@map(\"account_lockouts\")\n}\n\nmodel MfaDevice {\n  id          String    @id @default(uuid())\n  userId      String    @map(\"user_id\")\n  deviceType  String    @map(\"device_type\") // \"totp\", \"sms\", \"email\", \"passkey\"\n  deviceName  String    @map(\"device_name\")\n  secret      String? // For TOTP devices\n  phoneNumber String?   @map(\"phone_number\") // For SMS devices\n  isVerified  Boolean   @default(false) @map(\"is_verified\")\n  isActive    Boolean   @default(true) @map(\"is_active\")\n  lastUsedAt  DateTime? @map(\"last_used_at\")\n  createdAt   DateTime  @default(now()) @map(\"created_at\")\n\n  @@index([userId])\n  @@map(\"mfa_devices\")\n}\n\nmodel ApiKey {\n  id          String    @id @default(uuid())\n  userId      String    @map(\"user_id\")\n  name        String\n  keyHash     String    @unique @map(\"key_hash\")\n  permissions String[]  @default([])\n  lastUsedAt  DateTime? @map(\"last_used_at\")\n  expiresAt   DateTime? @map(\"expires_at\")\n  isActive    Boolean   @default(true) @map(\"is_active\")\n  createdAt   DateTime  @default(now()) @map(\"created_at\")\n\n  @@index([userId])\n  @@index([keyHash])\n  @@map(\"api_keys\")\n}\n",
-  "inlineSchemaHash": "0d20aa6e5da889ff68e482a00163554be0b17d90b372b96bc536d960ca64d307",
+  "inlineSchema": "datasource auth_db {\n  provider = \"postgresql\"\n  url      = env(\"AUTH_DATABASE_URL\")\n}\n\ngenerator authClient {\n  provider      = \"prisma-client-js\"\n  output        = \"../generated/auth\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\", \"darwin\", \"linux-arm64-openssl-3.0.x\"]\n}\n\n// ============================================================================\n// AUTHENTICATION & SESSION MODELS\n// ============================================================================\n\nmodel Session {\n  id           String   @id @default(uuid())\n  userId       String   @map(\"user_id\")\n  sessionToken String   @unique @map(\"session_token\")\n  expires      DateTime\n  ipAddress    String?  @map(\"ip_address\")\n  userAgent    String?  @map(\"user_agent\")\n  createdAt    DateTime @default(now()) @map(\"created_at\")\n  updatedAt    DateTime @updatedAt @map(\"updated_at\")\n\n  @@index([userId])\n  @@index([sessionToken])\n  @@index([expires])\n  @@map(\"sessions\")\n}\n\nmodel AuthProvider {\n  id            String   @id @default(uuid())\n  provider      String // \"saml\", \"oauth\", \"local\", \"ldap\"\n  name          String\n  isEnabled     Boolean  @default(true) @map(\"is_enabled\")\n  configuration Json?\n  createdAt     DateTime @default(now()) @map(\"created_at\")\n  updatedAt     DateTime @updatedAt @map(\"updated_at\")\n\n  userProviders UserProvider[]\n\n  @@unique([provider, name])\n  @@map(\"auth_providers\")\n}\n\nmodel UserProvider {\n  id               String    @id @default(uuid())\n  userId           String    @map(\"user_id\")\n  providerId       String    @map(\"provider_id\")\n  providerUserId   String    @map(\"provider_user_id\")\n  providerUsername String?   @map(\"provider_username\")\n  metadata         Json?\n  isActive         Boolean   @default(true) @map(\"is_active\")\n  lastLoginAt      DateTime? @map(\"last_login_at\")\n  createdAt        DateTime  @default(now()) @map(\"created_at\")\n  updatedAt        DateTime  @updatedAt @map(\"updated_at\")\n\n  provider AuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)\n\n  @@unique([providerId, providerUserId])\n  @@index([userId])\n  @@map(\"user_providers\")\n}\n\nmodel PasswordReset {\n  id        String   @id @default(uuid())\n  userId    String   @map(\"user_id\")\n  token     String   @unique\n  expires   DateTime\n  used      Boolean  @default(false)\n  ipAddress String?  @map(\"ip_address\")\n  createdAt DateTime @default(now()) @map(\"created_at\")\n\n  @@index([userId])\n  @@index([token])\n  @@index([expires])\n  @@map(\"password_resets\")\n}\n\nmodel LoginAttempt {\n  id         String   @id @default(uuid())\n  email      String\n  ipAddress  String   @map(\"ip_address\")\n  userAgent  String?  @map(\"user_agent\")\n  success    Boolean  @default(false)\n  failReason String?  @map(\"fail_reason\")\n  timestamp  DateTime @default(now())\n\n  @@index([email, timestamp])\n  @@index([ipAddress, timestamp])\n  @@map(\"login_attempts\")\n}\n\nmodel AccountLockout {\n  id            String    @id @default(uuid())\n  email         String    @unique\n  attemptCount  Int       @default(0) @map(\"attempt_count\")\n  lockedUntil   DateTime? @map(\"locked_until\")\n  lastAttemptAt DateTime? @map(\"last_attempt_at\")\n  createdAt     DateTime  @default(now()) @map(\"created_at\")\n  updatedAt     DateTime  @updatedAt @map(\"updated_at\")\n\n  @@map(\"account_lockouts\")\n}\n\nmodel MfaDevice {\n  id          String    @id @default(uuid())\n  userId      String    @map(\"user_id\")\n  deviceType  String    @map(\"device_type\") // \"totp\", \"sms\", \"email\", \"passkey\"\n  deviceName  String    @map(\"device_name\")\n  secret      String? // For TOTP devices\n  phoneNumber String?   @map(\"phone_number\") // For SMS devices\n  isVerified  Boolean   @default(false) @map(\"is_verified\")\n  isActive    Boolean   @default(true) @map(\"is_active\")\n  lastUsedAt  DateTime? @map(\"last_used_at\")\n  createdAt   DateTime  @default(now()) @map(\"created_at\")\n\n  @@index([userId])\n  @@map(\"mfa_devices\")\n}\n\nmodel ApiKey {\n  id          String    @id @default(uuid())\n  userId      String    @map(\"user_id\")\n  name        String\n  keyHash     String    @unique @map(\"key_hash\")\n  permissions String[]  @default([])\n  lastUsedAt  DateTime? @map(\"last_used_at\")\n  expiresAt   DateTime? @map(\"expires_at\")\n  isActive    Boolean   @default(true) @map(\"is_active\")\n  createdAt   DateTime  @default(now()) @map(\"created_at\")\n\n  @@index([userId])\n  @@index([keyHash])\n  @@map(\"api_keys\")\n}\n",
+  "inlineSchemaHash": "76eede27939b1b75320217e53babe0639e6c6a049cd54d2f5a413e8a34781d87",
   "copyEngine": true
 }
 
@@ -315,12 +319,20 @@ exports.PrismaClient = PrismaClient
 Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
+path.join(__dirname, "libquery_engine-darwin-arm64.dylib.node");
+path.join(process.cwd(), "prisma/generated/auth/libquery_engine-darwin-arm64.dylib.node")
+
+// file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-debian-openssl-3.0.x.so.node");
 path.join(process.cwd(), "prisma/generated/auth/libquery_engine-debian-openssl-3.0.x.so.node")
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-darwin.dylib.node");
 path.join(process.cwd(), "prisma/generated/auth/libquery_engine-darwin.dylib.node")
+
+// file annotations for bundling tools to include these files
+path.join(__dirname, "libquery_engine-linux-arm64-openssl-3.0.x.so.node");
+path.join(process.cwd(), "prisma/generated/auth/libquery_engine-linux-arm64-openssl-3.0.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
 path.join(process.cwd(), "prisma/generated/auth/schema.prisma")

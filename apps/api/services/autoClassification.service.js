@@ -1,7 +1,7 @@
 import { logger } from '../logger.js';
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+import { getCoreClient } from '../lib/database-clients.js';
 
-const prisma = new PrismaClient();
+const prismaPromise = getCoreClient();
 
 /**
  * Auto Classification Service - Uses AI/ML to classify tickets automatically

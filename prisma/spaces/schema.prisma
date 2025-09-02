@@ -6,7 +6,7 @@ datasource spaces_db {
 generator spacesClient {
   provider = "prisma-client-js"
   output   = "../generated/spaces"
-  binaryTargets = ["native", "debian-openssl-3.0.x", "darwin"]
+  binaryTargets = ["native", "debian-openssl-3.0.x", "darwin", "linux-arm64-openssl-3.0.x"]
 }
 
 // ==============================

@@ -1,6 +1,6 @@
 // Simple validation test for SCIM Monitor endpoints
 import express from 'express';
-import { PrismaClient } from '../../prisma/generated/core/index.js';
+import { getCoreClient } from './lib/database-clients.js';
 
 // Simple test to validate the router loads correctly
 async function validateScimMonitorRouter() {
@@ -28,7 +28,7 @@ async function validateScimMonitorRouter() {
 
     // Test 3: Verify database connection
     console.log('3. Testing database connection...');
-    const prisma = new PrismaClient();
+const prismaPromise = getCoreClient();
     await prisma.$connect();
     console.log('✅ Database connection successful');
 

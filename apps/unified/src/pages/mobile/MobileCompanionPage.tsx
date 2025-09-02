@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { useTranslation } from 'react-i18next';
 import {
   DevicePhoneMobileIcon,
@@ -80,7 +81,7 @@ export default function MobileCompanionPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/mobile');
+      const response = await apiFetch('/api/mobile');
       if (response.ok) {
         const data = await response.json();
         setDevices(data.devices || []);

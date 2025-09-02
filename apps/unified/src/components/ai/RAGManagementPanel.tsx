@@ -80,6 +80,9 @@ const RAGManagementPanel = ({
 }) => {
   const [selectedConnector, setSelectedConnector] = useState(null);
   const [syncingConnectors, setSyncingConnectors] = useState(new Set());
+  const [showDetailedView, setShowDetailedView] = useState(false);
+  const [connectorActions, setConnectorActions] = useState({});
+  const [showSystemAlerts, setShowSystemAlerts] = useState(true);
 
   const handleConnectorSync = async (connectorId) => {
     setSyncingConnectors(prev => new Set([...prev, connectorId]));
@@ -115,15 +118,183 @@ const RAGManagementPanel = ({
     }
   };
 
+  const handleConnectorSelect = (connector) => {
+    setSelectedConnector(connector);
+    setShowDetailedView(true);
+  };
+
+  const handleConnectorAction = (connectorId, action) => {
+    setConnectorActions(prev => ({
+      ...prev,
+      [connectorId]: action
+    }));
+  };
+
+  const getSystemAlerts = () => {
+    const alerts = [];
+    
+    if (ragStats?.ragEngine?.totalChunks === 0) {
+      alerts.push({
+        severity: 'warning',
+        message: 'No documents indexed. Add data sources to enable RAG functionality.'
+      });
+    }
+    
+    const disconnectedConnectors = dataSourceConnectors?.filter(c => !c.isConnected).length || 0;
+    if (disconnectedConnectors > 0) {
+      alerts.push({
+        severity: 'error',
+        message: `${disconnectedConnectors} data source connector(s) are disconnected.`
+      });
+    }
+    
+    return alerts;
+  };
+
+  const renderSystemAlerts = () => {
+    if (!showSystemAlerts) return null;
+    
+    const alerts = getSystemAlerts();
+    if (alerts.length === 0) return null;
+
+    return (
+      <Box sx={{ mb: 3 }}>
+        {alerts.map((alert, index) => (
+          <Alert
+            key={index}
+            severity={alert.severity}
+            onClose={() => setShowSystemAlerts(false)}
+            sx={{ mb: 1 }}
+          >
+            {alert.message}
+          </Alert>
+        ))}
+      </Box>
+    );
+  };
+
+  const renderDataSourceTable = () => (
+    <Paper sx={{ mb: 4 }}>
+      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Typography variant="h6">Data Source Connectors</Typography>
+      </Box>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Type</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Documents</TableCell>
+              <TableCell>Last Sync</TableCell>
+              <TableCell>Actions</TableCell>
+              <TableCell>Settings</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {dataSourceConnectors?.map((connector) => (
+              <TableRow key={connector.id}>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {getConnectorIcon(connector.type)}
+                    {connector.type}
+                  </Box>
+                </TableCell>
+                <TableCell>{connector.name}</TableCell>
+                <TableCell>
+                  <Chip
+                    size="small"
+                    label={connector.isConnected ? 'Connected' : 'Disconnected'}
+                    color={getConnectorStatusColor(connector)}
+                    icon={connector.isConnected ? <CheckCircleIcon /> : <ErrorIcon />}
+                  />
+                  {syncingConnectors.has(connector.id) && (
+                    <Box sx={{ width: '100%', mt: 1 }}>
+                      <LinearProgress />
+                    </Box>
+                  )}
+                </TableCell>
+                <TableCell>{connector.totalDocuments?.toLocaleString() || 0}</TableCell>
+                <TableCell>
+                  {connector.lastSync ? new Date(connector.lastSync).toLocaleString() : 'Never'}
+                </TableCell>
+                <TableCell>
+                  <CardActions>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleConnectorSelect(connector)}
+                      disabled={!connector.isConnected}
+                    >
+                      <PlayIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleConnectorSync(connector.id)}
+                      disabled={syncingConnectors.has(connector.id)}
+                    >
+                      <SyncIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleConnectorAction(connector.id, 'stop')}
+                      disabled={!connector.isConnected}
+                    >
+                      <StopIcon />
+                    </IconButton>
+                  </CardActions>
+                </TableCell>
+                <TableCell>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={connector.config?.enabled || false}
+                        onChange={(e) => onToggleConnector(connector.id, e.target.checked)}
+                        size="small"
+                      />
+                    }
+                    label="Auto-sync"
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
+
   return (
-    <Box>
-      {/* RAG System Overview */}
-      <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+    <Box sx={{ p: 3 }}>
+      {/* Header */}
+      <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <SearchIcon sx={{ mr: 2, color: 'primary.main' }} />
         RAG System Management
       </Typography>
 
-      {/* Statistics Cards */}
+      {/* System Alerts */}
+      {renderSystemAlerts()}
+
+      {/* Toggle Controls */}
+      <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Button
+          variant={showDetailedView ? "contained" : "outlined"}
+          onClick={() => setShowDetailedView(!showDetailedView)}
+          startIcon={<InfoIcon />}
+        >
+          {showDetailedView ? 'Hide' : 'Show'} Detailed View
+        </Button>
+        <Button
+          variant={showSystemAlerts ? "contained" : "outlined"}
+          onClick={() => setShowSystemAlerts(!showSystemAlerts)}
+          startIcon={<WarningIcon />}
+        >
+          {showSystemAlerts ? 'Hide' : 'Show'} System Alerts
+        </Button>
+      </Box>
+
+      <Divider sx={{ mb: 3 }} />
+
+      {/* RAG Statistics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatsCard>
@@ -190,122 +361,105 @@ const RAGManagementPanel = ({
         </Grid>
       </Grid>
 
-      {/* Quick Actions */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Quick Actions
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <Button
-              variant="contained"
-              startIcon={<SearchIcon />}
-              onClick={onTestRAGQuery}
-            >
-              Test RAG Query
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<PsychologyIcon />}
-              onClick={onTestSynthQuery}
-              color="secondary"
-            >
-              Test Synth Query
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<SyncIcon />}
-              onClick={() => onSyncDataSources()}
-            >
-              Sync All Sources
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={() => window.location.reload()}
-            >
-              Refresh Dashboard
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
+      <Divider sx={{ my: 4 }} />
 
-      {/* Data Source Connectors */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Data Source Connectors
-          </Typography>
-          
-          <Grid container spacing={2}>
-            {dataSourceConnectors?.map((connector) => (
-              <Grid item xs={12} md={6} key={connector.id}>
-                <ConnectorCard connected={connector.isConnected}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      {getConnectorIcon(connector.type)}
-                      <Typography variant="h6" sx={{ ml: 1, flexGrow: 1 }}>
-                        {connector.name}
-                      </Typography>
-                      <Chip
-                        size="small"
-                        label={connector.isConnected ? 'Connected' : 'Disconnected'}
-                        color={getConnectorStatusColor(connector)}
-                      />
-                    </Box>
-                    
-                    <Typography variant="body2" color="textSecondary" gutterBottom>
-                      Type: {connector.type}
-                    </Typography>
-                    
-                    <Typography variant="body2" gutterBottom>
-                      Documents: {connector.totalDocuments?.toLocaleString() || 0}
-                    </Typography>
-                    
-                    {connector.lastSync && (
-                      <Typography variant="body2" color="textSecondary">
-                        Last sync: {new Date(connector.lastSync).toLocaleString()}
-                      </Typography>
-                    )}
-                    
-                    {connector.nextSync && (
-                      <Typography variant="body2" color="textSecondary">
-                        Next sync: {new Date(connector.nextSync).toLocaleString()}
-                      </Typography>
-                    )}
-                  </CardContent>
-                  
-                  <CardActions>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={connector.config.enabled}
-                          onChange={(e) => onToggleConnector(connector.id, e.target.checked)}
-                          size="small"
-                        />
-                      }
-                      label="Enabled"
-                    />
-                    
-                    <Button
-                      size="small"
-                      startIcon={syncingConnectors.has(connector.id) ? <SyncIcon /> : <RefreshIcon />}
-                      onClick={() => handleConnectorSync(connector.id)}
-                      disabled={syncingConnectors.has(connector.id) || !connector.config.enabled}
-                    >
-                      {syncingConnectors.has(connector.id) ? 'Syncing...' : 'Sync Now'}
-                    </Button>
-                  </CardActions>
-                  
-                  {syncingConnectors.has(connector.id) && (
-                    <LinearProgress />
-                  )}
-                </ConnectorCard>
+      {/* Data Source Connectors Table */}
+      {renderDataSourceTable()}
+
+      {/* System Status Info */}
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          System Status
+        </Typography>
+        <List>
+          <ListItem>
+            <ListItemIcon>
+              <CheckCircleIcon color="success" />
+            </ListItemIcon>
+            <ListItemText
+              primary="RAG Engine"
+              secondary="Operational and processing queries"
+            />
+            <ListItemSecondaryAction>
+              <Chip size="small" label="Active" color="success" />
+            </ListItemSecondaryAction>
+          </ListItem>
+        </List>
+      </Paper>
+
+      {/* Quick Actions */}
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Quick Actions
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <Button
+            variant="contained"
+            startIcon={<SearchIcon />}
+            onClick={onTestRAGQuery}
+          >
+            Test RAG Query
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<PsychologyIcon />}
+            onClick={onTestSynthQuery}
+            color="secondary"
+          >
+            Test Synth Query
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<SyncIcon />}
+            onClick={() => onSyncDataSources()}
+          >
+            Sync All Sources
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={() => window.location.reload()}
+          >
+            Refresh Dashboard
+          </Button>
+        </Box>
+      </Paper>
+
+      {/* Selected Connector Details (when detailed view is enabled) */}
+      {showDetailedView && selectedConnector && (
+        <ConnectorCard connected={selectedConnector.isConnected}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Connector Details: {selectedConnector.name}
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="body2" color="textSecondary">
+                  Type: {selectedConnector.type}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Status: {selectedConnector.isConnected ? 'Connected' : 'Disconnected'}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Documents: {selectedConnector.totalDocuments?.toLocaleString() || 0}
+                </Typography>
               </Grid>
-            ))}
-          </Grid>
-        </CardContent>
-      </Card>
+              <Grid item xs={12} md={6}>
+                <Typography variant="body2" color="textSecondary">
+                  Last Sync: {selectedConnector.lastSync ? 
+                    new Date(selectedConnector.lastSync).toLocaleString() : 'Never'}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Sync Frequency: {selectedConnector.syncFrequency || 'Manual'}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Actions: {connectorActions[selectedConnector.id] || 'None'}
+                </Typography>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </ConnectorCard>
+      )}
 
       {/* Recent Query Results */}
       {(ragQueryResults.length > 0 || synthQueryResults.length > 0) && (
@@ -324,20 +478,10 @@ const RAGManagementPanel = ({
                   <List>
                     {ragQueryResults.slice(0, 5).map((result, index) => (
                       <ListItem key={index}>
-                        <ListItemIcon>
-                          <SearchIcon />
-                        </ListItemIcon>
                         <ListItemText
-                          primary={`Query: ${result.query}`}
-                          secondary={`Confidence: ${(result.confidence * 100).toFixed(1)}% | Chunks: ${result.chunks} | Time: ${result.retrievalTime}ms`}
+                          primary={result.query}
+                          secondary={`${result.sources.length} sources • ${new Date(result.timestamp).toLocaleString()}`}
                         />
-                        <ListItemSecondaryAction>
-                          <Chip
-                            size="small"
-                            label={result.rbacEnforced ? 'RBAC' : 'Open'}
-                            color={result.rbacEnforced ? 'success' : 'default'}
-                          />
-                        </ListItemSecondaryAction>
                       </ListItem>
                     ))}
                   </List>
@@ -354,20 +498,10 @@ const RAGManagementPanel = ({
                   <List>
                     {synthQueryResults.slice(0, 5).map((result, index) => (
                       <ListItem key={index}>
-                        <ListItemIcon>
-                          <PsychologyIcon />
-                        </ListItemIcon>
                         <ListItemText
-                          primary={`Query: ${result.query}`}
-                          secondary={`Personality: ${result.personality} | Confidence: ${(result.confidence * 100).toFixed(1)}% | RAG Chunks: ${result.ragChunks}`}
+                          primary={result.query}
+                          secondary={`Response: ${result.response.substring(0, 100)}... • ${new Date(result.timestamp).toLocaleString()}`}
                         />
-                        <ListItemSecondaryAction>
-                          <Chip
-                            size="small"
-                            label={result.responseType}
-                            color="primary"
-                          />
-                        </ListItemSecondaryAction>
                       </ListItem>
                     ))}
                   </List>
@@ -377,68 +511,53 @@ const RAGManagementPanel = ({
           </CardContent>
         </Card>
       )}
-
-      {/* System Status */}
-      {ragStats && (
-        <Card sx={{ mt: 4 }}>
+      {/* Recent Query Results */}
+      {(ragQueryResults.length > 0 || synthQueryResults.length > 0) && (
+        <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              System Status
+              Recent Query Results
             </Typography>
             
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" gutterBottom>
-                  RAG Engine
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemIcon>
-                      <CheckCircleIcon color={ragStats.ragEngine?.isInitialized ? 'success' : 'error'} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Initialized"
-                      secondary={ragStats.ragEngine?.isInitialized ? 'Running' : 'Not running'}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <StorageIcon />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Vector Stores"
-                      secondary={`${ragStats.ragEngine?.embeddingModels?.length || 0} models, ${ragStats.ragEngine?.vectorStores?.length || 0} stores`}
-                    />
-                  </ListItem>
-                </List>
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" gutterBottom>
-                  RBAC System
-                </Typography>
-                <List dense>
-                  <ListItem>
-                    <ListItemIcon>
-                      <CheckCircleIcon color={ragStats.rbac?.isInitialized ? 'success' : 'error'} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="RBAC Enabled"
-                      secondary={ragStats.rbac?.isInitialized ? 'Active' : 'Inactive'}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <InfoIcon />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Policies"
-                      secondary={`${ragStats.rbac?.policies || 0} policies, ${ragStats.rbac?.roles || 0} roles`}
-                    />
-                  </ListItem>
-                </List>
-              </Grid>
-            </Grid>
+            {ragQueryResults.length > 0 && (
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography>RAG Query Results ({ragQueryResults.length})</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <List>
+                    {ragQueryResults.slice(0, 5).map((result, index) => (
+                      <ListItem key={index}>
+                        <ListItemText
+                          primary={result.query}
+                          secondary={`${result.sources.length} sources • ${new Date(result.timestamp).toLocaleString()}`}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </AccordionDetails>
+              </Accordion>
+            )}
+            
+            {synthQueryResults.length > 0 && (
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography>Synth Query Results ({synthQueryResults.length})</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <List>
+                    {synthQueryResults.slice(0, 5).map((result, index) => (
+                      <ListItem key={index}>
+                        <ListItemText
+                          primary={result.query}
+                          secondary={`Response: ${result.response.substring(0, 100)}... • ${new Date(result.timestamp).toLocaleString()}`}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </AccordionDetails>
+              </Accordion>
+            )}
           </CardContent>
         </Card>
       )}

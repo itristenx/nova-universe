@@ -7,6 +7,8 @@ services:
     image: nginx:alpine
     container_name: nova-nginx
     restart: unless-stopped
+    profiles:
+      - production
     ports:
       - '80:80'
       - '443:443'
@@ -28,40 +30,53 @@ services:
   # Nova API (Backend)
   nova-api:
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile.prod
+      context: .
+      dockerfile: apps/api/Dockerfile.prod
     image: nova-universe/api:latest
     # container_name: nova-api  # Removed for scaling compatibility
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+      - POSTGRES_SSL=false
       - API_PORT=3000
       - DATABASE_URL=${DATABASE_URL}
       - CORE_DATABASE_URL=${CORE_DATABASE_URL:-${DATABASE_URL}}
+      - CORE_DB_PASSWORD=${CORE_DB_PASSWORD}
       - CMDB_DATABASE_URL=${CMDB_DATABASE_URL:-${DATABASE_URL}}
       - INTEGRATION_DATABASE_URL=${INTEGRATION_DATABASE_URL:-${DATABASE_URL}}
       - NOTIFICATION_DATABASE_URL=${NOTIFICATION_DATABASE_URL:-${DATABASE_URL}}
       - USER360_DATABASE_URL=${USER360_DATABASE_URL:-${DATABASE_URL}}
       - AUTH_DATABASE_URL=${AUTH_DATABASE_URL:-${DATABASE_URL}}
+      - AUTH_DB_PASSWORD=${AUTH_DB_PASSWORD}
       - AUDIT_DATABASE_URL=${AUDIT_DATABASE_URL}
+      - AUDIT_DB_PASSWORD=${AUDIT_DB_PASSWORD}
       - MONGODB_URI=${MONGODB_URI}
       - REDIS_URL=${REDIS_URL}
       - ELASTICSEARCH_URL=${ELASTICSEARCH_URL}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
       - SESSION_SECRET=${SESSION_SECRET}
+      # Monitoring integrations
+      - ENABLE_UPTIME_KUMA=${ENABLE_UPTIME_KUMA:-true}
+      - UPTIME_KUMA_API_URL=${UPTIME_KUMA_API_URL:-http://nova-uptime-kuma:3001}
+      - UPTIME_KUMA_API_KEY=${UPTIME_KUMA_API_KEY:-}
+      - GOALERT_PROXY_ENABLED=${GOALERT_PROXY_ENABLED:-true}
+      - GOALERT_API_BASE=${GOALERT_API_BASE:-http://nova-goalert:8081}
+      - GOALERT_API_KEY=${GOALERT_API_KEY:-}
+      - KIOSK_TOKEN=${KIOSK_TOKEN:-demo_kiosk_token}
+      - SCIM_TOKEN=${SCIM_TOKEN:-demo_scim_token}
+      - SMTP_HOST=${SMTP_HOST:-localhost}
+      - SMTP_USER=${SMTP_USER:-demo}
+      - SMTP_PASS=${SMTP_PASS:-demo}
       - SAML_CERT=${SAML_CERT}
       - SAML_PRIVATE_KEY=${SAML_PRIVATE_KEY}
-      - SMTP_HOST=${SMTP_HOST}
-      - SMTP_PORT=${SMTP_PORT}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_PORT=${SMTP_PORT:-587}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    ports:
-      - '3000:3000'
+    # No host port needed; accessed via nginx
     volumes:
       - ./logs/api:/app/logs
       - ./uploads:/app/uploads
@@ -78,7 +93,6 @@ services:
       timeout: 10s
       retries: 3
     deploy:
-      replicas: 2
       resources:
         limits:
           memory: 1G
@@ -116,14 +130,53 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - VITE_API_URL=https://api.novauniverse.com
-      - VITE_WS_URL=wss://api.novauniverse.com
+      # Leave VITE_API_URL unset to use same-origin /api via nginx-demo
     ports:
       - '3001:3000'
     networks:
       - nova-network
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:3000']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Static Unified UI for demo (serve existing dist)
+  nova-unified-static:
+    image: nginx:alpine
+    container_name: nova-unified-static
+    restart: unless-stopped
+    profiles:
+      - demo
+    volumes:
+      - ./apps/unified/dist:/usr/share/nginx/html:ro
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Lightweight HTTP nginx for local demo (no TLS)
+  nginx-demo:
+    image: nginx:alpine
+    container_name: nova-nginx-demo
+    restart: unless-stopped
+    profiles:
+      - demo
+    ports:
+      - '8080:80'
+    volumes:
+      - ./nginx/nginx.demo.conf:/etc/nginx/nginx.conf:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - nova-api
+      - nova-unified-static
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD', 'nginx', '-t']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -276,7 +329,7 @@ services:
     container_name: nova-grafana
     restart: unless-stopped
     ports:
-      - '3003:3000'
+      - '3004:3000'
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
     volumes:
@@ -284,6 +337,69 @@ services:
       - ./monitoring/grafana:/etc/grafana/provisioning
     networks:
       - nova-network
+
+  # Uptime Kuma (Nova Sentinel Backend)
+  nova-uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: nova-uptime-kuma
+    restart: unless-stopped
+    environment:
+      - UPTIME_KUMA_IS_CONTAINER=1
+    ports:
+      - '3003:3001'
+    volumes:
+      - uptime_kuma_data:/app/data
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # GoAlert (Nova Alert)
+  nova-goalert:
+    image: goalert/goalert:latest
+    container_name: nova-goalert
+    restart: unless-stopped
+    environment:
+      # Connect to dedicated GoAlert Postgres
+      - GOALERT_DB_URL=${GOALERT_DB_URL:-postgres://goalert:${GOALERT_DB_PASSWORD:-goalert_pass}@nova-goalert-postgres:5432/goalert?sslmode=disable}
+      - GOALERT_PUBLIC_URL=${GOALERT_PUBLIC_URL:-}
+      - GOALERT_DATA_ENCRYPTION_KEY=${GOALERT_DATA_ENCRYPTION_KEY:-insecure-demo-key-change}
+      - TZ=${TZ:-UTC}
+    ports:
+      - '8081:8081'
+    depends_on:
+      nova-goalert-postgres:
+        condition: service_healthy
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8081']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # GoAlert Database (Dedicated)
+  nova-goalert-postgres:
+    image: postgres:15-alpine
+    container_name: nova-goalert-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=goalert
+      - POSTGRES_USER=goalert
+      - POSTGRES_PASSWORD=${GOALERT_DB_PASSWORD:-goalert_pass}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - goalert_postgres_data:/var/lib/postgresql/data
+    networks:
+      - nova-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U goalert -d goalert']
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   postgres_data:
@@ -297,6 +413,10 @@ volumes:
   prometheus_data:
     driver: local
   grafana_data:
+    driver: local
+  uptime_kuma_data:
+    driver: local
+  goalert_postgres_data:
     driver: local
 
 networks:

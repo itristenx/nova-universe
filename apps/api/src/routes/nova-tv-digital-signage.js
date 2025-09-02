@@ -8,8 +8,8 @@ import { promises as fs } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 
 // Import database client
-import { PrismaClient as CorePrismaClient } from '../../../prisma/generated/core/index.js';
-const prisma = new CorePrismaClient();
+import { getCoreClient } from '../../lib/database-clients.js';
+const prismaPromise = getCoreClient();
 
 const router = express.Router();
 
@@ -186,6 +186,7 @@ router.post('/upload', upload.array('mediaFiles', 10), async (req, res) => {
 
         // Save to database using Prisma
         try {
+          const prisma = await prismaPromise;
           const savedFile = await prisma.novaTVMediaFile.create({
             data: {
               id: mediaFile.id,
@@ -270,6 +271,7 @@ router.get('/media', async (req, res) => {
 
     // Implement with Prisma
     try {
+      const prisma = await prismaPromise;
       // Build filter conditions
       const filters = {};
 
@@ -410,6 +412,7 @@ router.post('/playlists', async (req, res) => {
     };
 
     // Save playlist to database
+    const prisma = await prismaPromise;
     const savedPlaylist = await prisma.novaTVPlaylist.create({
       data: {
         name: playlist.name,
@@ -476,6 +479,7 @@ router.get('/playlists', async (req, res) => {
       if (dashboardId) filters.dashboardId = dashboardId;
       if (_isActive !== undefined) filters.isActive = _isActive === 'true';
 
+      const prisma = await prismaPromise;
       const playlists = await prisma.novaTVPlaylist.findMany({
         where: filters,
         include: {
@@ -585,6 +589,7 @@ router.post('/channels', async (req, res) => {
     };
 
     // Save to database using NovaTVDashboard model
+    const prisma = await prismaPromise;
     const savedChannel = await prisma.novaTVDashboard.create({
       data: {
         name: channel.name,

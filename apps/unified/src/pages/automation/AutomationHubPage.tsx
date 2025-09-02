@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { useTranslation } from 'react-i18next';
 import {
   CogIcon,
@@ -68,7 +69,7 @@ export default function AutomationHubPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/automation');
+      const response = await apiFetch('/api/automation');
       if (response.ok) {
         const data = await response.json();
         setRules(data.rules || []);

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { apiFetch } from '@/utils/api';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
 import { cn, formatNumber } from '@utils/index';
 import toast from 'react-hot-toast';
@@ -192,7 +193,7 @@ export default function IntegrationsPage() {
       setIsLoading(true);
 
       // Fetch integrations from API
-      const response = await fetch('/api/integrations');
+      const response = await apiFetch('/api/integrations');
       if (response.ok) {
         const data = await response.json();
         setIntegrations(data.integrations || []);

@@ -124,7 +124,7 @@ export default function PWAInstaller({ showDelay = 5000, className = '' }: PWAIn
         handleDismiss();
       }
     } catch (_error) {
-      console.error('PWA: Install prompt failed:', error);
+      console.error('PWA: Install prompt failed:', _error);
     } finally {
       setIsInstalling(false);
       setShowBanner(false);

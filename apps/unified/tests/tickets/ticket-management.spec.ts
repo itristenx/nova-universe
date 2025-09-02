@@ -5,6 +5,16 @@ test.describe('Ticket Management System', () => {
   let testTicketData: any;
 
   test.beforeEach(async ({ page }) => {
+    // Initialize test ticket data
+    testTicketData = {
+      title: `Test Ticket ${Date.now()}`,
+      description: 'This is a test ticket for UI testing',
+      priority: 'Medium',
+      category: 'Test Category',
+      status: 'Open',
+      assignee: 'testuser@nova.com'
+    };
+
     // Login before each test
     await page.goto('/');
     await page.click('[data-testid="login-button"]');
@@ -133,12 +143,11 @@ test.describe('Ticket Management System', () => {
       await page.click('[data-testid="new-ticket-button"]');
 
       // Fill form with test data
-      const testTitle = `Test Ticket ${Date.now()}`;
       await testHelper.fillFormFields(page, {
-        '[data-testid="ticket-title-input"]': testTitle,
-        '[data-testid="ticket-description-input"]': 'This is a test ticket for UI testing',
-        '[data-testid="ticket-priority-select"]': 'Medium',
-        '[data-testid="ticket-category-select"]': 'Test Category',
+        '[data-testid="ticket-title-input"]': testTicketData.title,
+        '[data-testid="ticket-description-input"]': testTicketData.description,
+        '[data-testid="ticket-priority-select"]': testTicketData.priority,
+        '[data-testid="ticket-category-select"]': testTicketData.category,
       });
 
       // Submit form
@@ -153,8 +162,8 @@ test.describe('Ticket Management System', () => {
       // Verify redirect to tickets list
       await expect(page).toHaveURL(/.*tickets/);
 
-      // Verify ticket appears in list
-      await expect(page.locator(`text=${testTitle}`)).toBeVisible();
+      // Verify ticket appears in list using test data
+      await expect(page.locator(`text=${testTicketData.title}`)).toBeVisible();
     });
 
     test('should handle file attachments', async ({ page }) => {

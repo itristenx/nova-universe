@@ -33,8 +33,10 @@ import type {
 } from '../../types/app-switcher';
 
 // Enhanced App Switcher Service
+import { resolveApiUrl } from '@/utils/api';
+
 class AppSwitcherService {
-  private baseUrl = '/api/v1/app-switcher';
+  private baseUrl = resolveApiUrl('/api/v1/app-switcher');
 
   async getDashboard(options: Record<string, any> = {}): Promise<ApiResponse<DashboardData>> {
     const params = new URLSearchParams(options);

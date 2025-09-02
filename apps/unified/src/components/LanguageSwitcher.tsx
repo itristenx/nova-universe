@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon, LanguageIcon } from '@heroicons/react/24/outline';
-import { applyRTLToDocument, useRTL } from '../utils/rtl';
+import { applyRTLToDocument, useRTL as useRTLUtil } from '../utils/rtl';
 
 interface Language {
   code: string;
@@ -37,7 +37,7 @@ export default function LanguageSwitcher({
 }: LanguageSwitcherProps) {
   const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const rtl = useRTL(i18n.language);
+  const rtl = useRTLUtil(i18n.language);
 
   const currentLanguage = (languages.find((lang) => lang.code === i18n.language) ??
     languages[0]) as Language;
@@ -241,21 +241,5 @@ export default function LanguageSwitcher({
 }
 
 // Hook for RTL support
-export function useRTL() {
-  const { i18n } = useTranslation();
-  const currentLanguage = (languages.find((lang) => lang.code === i18n.language) ??
-    languages[0]) as Language;
-
-  return {
-    isRTL: currentLanguage.dir === 'rtl',
-    direction: currentLanguage.dir,
-    language: currentLanguage,
-  };
-}
-
-// Utility function for conditional RTL classes
-export function rtlClass(ltrClass: string, rtlClass: string, isRTL?: boolean) {
-  const { isRTL: contextIsRTL } = useRTL();
-  const shouldUseRTL = isRTL !== undefined ? isRTL : contextIsRTL;
-  return shouldUseRTL ? rtlClass : ltrClass;
-}
+// Re-export the canonical RTL hook from utils for consumers that import from this module
+export { useRTLUtil as useRTL };

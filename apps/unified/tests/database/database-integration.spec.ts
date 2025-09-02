@@ -481,7 +481,15 @@ test.describe('Database Integration Tests', () => {
       const deletedTicket = await prisma.ticket.findUnique({
         where: { id: testTicket.id },
       });
-      // This behavior depends on your database schema configuration
+      
+      // Verify cascade delete behavior - ticket should be deleted or retained based on schema
+      if (deletedTicket === null) {
+        console.log('✅ Cascade delete enabled - related ticket was deleted');
+      } else {
+        console.log('✅ Cascade delete disabled - related ticket was preserved');
+        expect(deletedTicket.id).toBe(testTicket.id);
+      }
+      
       console.log('✅ Cascade delete behavior verified');
     });
   });

@@ -397,6 +397,60 @@ export class NovaAIAgentAnalytics extends EventEmitter {
   }
 
   /**
+   * Generate Agent Performance Metrics
+   */
+  async generatePerformanceMetrics(
+    tenantId: string,
+    agentId?: string,
+    timeframe?: { start: Date; end: Date }
+  ): Promise<AgentPerformanceMetrics> {
+    try {
+      // Filter events for the specified criteria
+      let relevantEvents = this.learningEvents.filter(event => 
+        event.tenantId === tenantId
+      );
+
+      if (timeframe) {
+        relevantEvents = relevantEvents.filter(event =>
+          event.timestamp >= timeframe.start && event.timestamp <= timeframe.end
+        );
+      }
+
+      if (agentId) {
+        relevantEvents = relevantEvents.filter(event => 
+          event.agentId === agentId
+        );
+      }
+
+      // Calculate performance metrics
+      const totalInteractions = relevantEvents.length;
+      const resolvedInteractions = relevantEvents.filter(e => e.outcome === 'resolved').length;
+      const escalatedInteractions = relevantEvents.filter(e => e.outcome === 'escalated').length;
+
+      const performanceMetrics: AgentPerformanceMetrics = {
+        totalConversations: totalInteractions,
+        averageIntentAccuracy: this.calculateIntentAccuracy(relevantEvents),
+        averageResolutionRate: totalInteractions > 0 ? resolvedInteractions / totalInteractions : 0,
+        averageEscalationRate: totalInteractions > 0 ? escalatedInteractions / totalInteractions : 0,
+        averageResponseTime: this.calculateAverageResponseTime(relevantEvents),
+        averageSatisfactionScore: this.calculateUserSatisfactionScore(
+          this.feedback.filter(f => f.tenantId === tenantId)
+        )
+      };
+
+      return performanceMetrics;
+
+    } catch (error) {
+      logger.error('Error generating performance metrics', {
+        error: error.message,
+        tenantId,
+        agentId
+      });
+      throw error;
+    }
+  }
+
+  /**
    * Create A/B test experiment
    */
   async createABTest(experiment: Omit<ABTestExperiment, 'id' | 'status' | 'results' | 'confidence' | 'statisticalSignificance'>): Promise<ABTestExperiment> {
@@ -555,8 +609,26 @@ export class NovaAIAgentAnalytics extends EventEmitter {
    * Calculate various metrics
    */
   private calculateAverageSessionDuration(events: LearningEvent[]): number {
-    // Implementation would calculate from conversation start/end times
-    return 180; // 3 minutes average
+    // Calculate average session duration from conversation timestamps
+    const conversationDurations = new Map<string, { start: Date; end: Date }>();
+    
+    events.forEach(event => {
+      const convId = event.conversationId;
+      if (!conversationDurations.has(convId)) {
+        conversationDurations.set(convId, { start: event.timestamp, end: event.timestamp });
+      } else {
+        const conv = conversationDurations.get(convId)!;
+        if (event.timestamp < conv.start) conv.start = event.timestamp;
+        if (event.timestamp > conv.end) conv.end = event.timestamp;
+      }
+    });
+    
+    if (conversationDurations.size === 0) return 0;
+    
+    const totalDuration = Array.from(conversationDurations.values())
+      .reduce((sum, conv) => sum + (conv.end.getTime() - conv.start.getTime()), 0);
+    
+    return totalDuration / conversationDurations.size / 1000; // Convert to seconds
   }
 
   private calculateAverageMessagesPerSession(events: LearningEvent[]): number {
@@ -586,75 +658,152 @@ export class NovaAIAgentAnalytics extends EventEmitter {
   }
 
   private calculateFirstContactResolution(events: LearningEvent[]): number {
-    // Implementation would check if issues were resolved without escalation
-    return 0.75; // 75% first contact resolution
+    // Calculate FCR based on conversations that resolved without escalation
+    const conversationOutcomes = new Map<string, { escalated: boolean; resolved: boolean }>();
+    
+    events.forEach(event => {
+      const convId = event.conversationId;
+      if (!conversationOutcomes.has(convId)) {
+        conversationOutcomes.set(convId, { escalated: false, resolved: false });
+      }
+      
+      const outcome = conversationOutcomes.get(convId)!;
+      
+      // Check for escalation events
+      if (event.type === 'escalation_analysis') {
+        outcome.escalated = true;
+      }
+      
+      // Check for resolution events
+      if (event.data.outcomeRating && event.data.outcomeRating >= 4) {
+        outcome.resolved = true;
+      }
+    });
+    
+    const totalConversations = conversationOutcomes.size;
+    if (totalConversations === 0) return 0;
+    
+    const fcrConversations = Array.from(conversationOutcomes.values())
+      .filter(outcome => outcome.resolved && !outcome.escalated).length;
+    
+    return fcrConversations / totalConversations;
   }
 
   private calculateAverageResponseTime(events: LearningEvent[]): number {
-    // Implementation would calculate from message timestamps
-    return 2.5; // 2.5 seconds average
+    // Calculate average response time from event timestamps within conversations
+    const conversationResponseTimes: number[] = [];
+    
+    const conversationEvents = new Map<string, LearningEvent[]>();
+    events.forEach(event => {
+      if (!conversationEvents.has(event.conversationId)) {
+        conversationEvents.set(event.conversationId, []);
+      }
+      conversationEvents.get(event.conversationId)!.push(event);
+    });
+    
+    conversationEvents.forEach(convEvents => {
+      convEvents.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      
+      for (let i = 1; i < convEvents.length; i++) {
+        const responseTime = convEvents[i].timestamp.getTime() - convEvents[i-1].timestamp.getTime();
+        conversationResponseTimes.push(responseTime / 1000); // Convert to seconds
+      }
+    });
+    
+    if (conversationResponseTimes.length === 0) return 0;
+    
+    return conversationResponseTimes.reduce((sum, time) => sum + time, 0) / conversationResponseTimes.length;
   }
 
   // Additional helper methods for breakdown analytics
   private async generateCategoryBreakdown(events: LearningEvent[]): Promise<Record<string, CategoryMetrics>> {
-    // Implementation would analyze events by intent category
-    return {
-      incident: {
-        category: 'incident',
-        conversationCount: 45,
-        successRate: 0.82,
-        averageConfidence: 0.89,
-        escalationRate: 0.15,
-        userSatisfaction: 4.2,
-        commonIssues: ['server_down', 'login_issues', 'email_problems'],
-        resolutionTime: 8.5
-      },
-      service_request: {
-        category: 'service_request',
-        conversationCount: 32,
-        successRate: 0.94,
-        averageConfidence: 0.91,
-        escalationRate: 0.06,
-        userSatisfaction: 4.5,
-        commonIssues: ['software_access', 'hardware_request', 'account_setup'],
-        resolutionTime: 12.3
+    // Analyze events by intent category
+    const categoryGroups = events.reduce((acc, event) => {
+      const category = event.data.originalIntent?.category || 'general';
+      if (!acc[category]) {
+        acc[category] = [];
       }
-    };
+      acc[category].push(event);
+      return acc;
+    }, {} as Record<string, LearningEvent[]>);
+
+    const breakdown: Record<string, CategoryMetrics> = {};
+
+    for (const [category, categoryEvents] of Object.entries(categoryGroups)) {
+      const successfulEvents = categoryEvents.filter(e => e.type === 'intent_correction' && e.confidence > 0.8);
+      const escalatedEvents = categoryEvents.filter(e => e.type === 'escalation_analysis');
+      
+      breakdown[category] = {
+        category,
+        conversationCount: categoryEvents.length,
+        successRate: categoryEvents.length > 0 ? successfulEvents.length / categoryEvents.length : 0,
+        averageConfidence: categoryEvents.reduce((sum, e) => sum + e.confidence, 0) / categoryEvents.length || 0,
+        escalationRate: categoryEvents.length > 0 ? escalatedEvents.length / categoryEvents.length : 0,
+        userSatisfaction: 4.2, // Would be calculated from feedback data
+        commonIssues: [], // Would be extracted from event data
+        resolutionTime: 8.5 // Would be calculated from timestamp analysis
+      };
+    }
+
+    return breakdown;
   }
 
   private async generateChannelBreakdown(events: LearningEvent[]): Promise<Record<string, ChannelMetrics>> {
-    return {
-      web: {
-        channel: 'web',
-        conversationCount: 67,
-        engagementRate: 0.87,
-        completionRate: 0.92,
-        averageSessionDuration: 185,
-        userPreference: 0.65,
-        technicalIssues: 2
-      },
-      slack: {
-        channel: 'slack',
-        conversationCount: 23,
-        engagementRate: 0.91,
-        completionRate: 0.85,
-        averageSessionDuration: 145,
-        userPreference: 0.78,
-        technicalIssues: 1
+    // Group events by channel (extracted from conversation metadata)
+    const channelGroups = events.reduce((acc, event) => {
+      // Extract channel from conversation ID or default to 'web'
+      const channel = event.conversationId?.includes('slack') ? 'slack' : 
+                     event.conversationId?.includes('teams') ? 'teams' : 'web';
+      if (!acc[channel]) {
+        acc[channel] = [];
       }
-    };
+      acc[channel].push(event);
+      return acc;
+    }, {} as Record<string, LearningEvent[]>);
+
+    const breakdown: Record<string, ChannelMetrics> = {};
+
+    for (const [channel, channelEvents] of Object.entries(channelGroups)) {
+      const completedSessions = channelEvents.filter(e => e.type === 'response_feedback' && e.confidence > 0.8);
+      
+      breakdown[channel] = {
+        channel,
+        conversationCount: channelEvents.length,
+        engagementRate: channelEvents.length > 0 ? completedSessions.length / channelEvents.length : 0,
+        completionRate: channelEvents.length > 0 ? completedSessions.length / channelEvents.length : 0,
+        averageSessionDuration: 150, // Would calculate from timestamp data
+        userPreference: 0.7, // Would be calculated from usage patterns
+        technicalIssues: 0 // Would be extracted from error events
+      };
+    }
+
+    return breakdown;
   }
 
   private async generateHourlyBreakdown(events: LearningEvent[]): Promise<Record<string, HourlyMetrics>> {
     const breakdown: Record<string, HourlyMetrics> = {};
     
+    // Group events by hour of day
+    const hourlyGroups = events.reduce((acc, event) => {
+      const hour = new Date(event.timestamp).getHours();
+      if (!acc[hour]) {
+        acc[hour] = [];
+      }
+      acc[hour].push(event);
+      return acc;
+    }, {} as Record<number, LearningEvent[]>);
+    
+    // Calculate metrics for each hour
     for (let hour = 0; hour < 24; hour++) {
+      const hourEvents = hourlyGroups[hour] || [];
+      const successfulEvents = hourEvents.filter(e => e.confidence > 0.8);
+      
       breakdown[hour.toString()] = {
         hour,
-        volume: Math.floor(Math.random() * 20) + 5,
-        responseTime: 2.0 + Math.random() * 3.0,
-        successRate: 0.8 + Math.random() * 0.15,
-        satisfaction: 3.5 + Math.random() * 1.5
+        volume: hourEvents.length,
+        responseTime: 2.0 + Math.random() * 3.0, // Would calculate from actual response times
+        successRate: hourEvents.length > 0 ? successfulEvents.length / hourEvents.length : 0,
+        satisfaction: 4.0 // Would be calculated from feedback data
       };
     }
     
@@ -662,49 +811,229 @@ export class NovaAIAgentAnalytics extends EventEmitter {
   }
 
   private async generateSegmentBreakdown(events: LearningEvent[]): Promise<Record<string, SegmentMetrics>> {
-    return {
-      new_users: {
-        segment: 'new_users',
-        userCount: 45,
-        engagementLevel: 'medium',
-        preferredChannels: ['web', 'mobile'],
-        commonIntents: ['search_knowledge', 'request_service'],
-        satisfactionTrend: 'improving'
-      },
-      power_users: {
-        segment: 'power_users',
-        userCount: 23,
-        engagementLevel: 'high',
-        preferredChannels: ['slack', 'api'],
-        commonIntents: ['report_incident', 'check_status'],
-        satisfactionTrend: 'stable'
+    const segmentGroups = events.reduce((acc, event) => {
+      // Classify users based on event patterns and user activity
+      const segment = events.filter(e => e.userId === event.userId).length > 10 ? 'power_users' : 'new_users';
+      if (!acc[segment]) {
+        acc[segment] = [];
       }
+      acc[segment].push(event);
+      return acc;
+    }, {} as Record<string, LearningEvent[]>);
+
+    const breakdown: Record<string, SegmentMetrics> = {};
+    
+    Object.entries(segmentGroups).forEach(([segment, segmentEvents]) => {
+      const uniqueUsers = new Set(segmentEvents.map(e => e.userId));
+      const intentTypes = new Set(segmentEvents.map(e => e.data.originalIntent?.category || 'unknown').filter(Boolean));
+      const highConfidenceEvents = segmentEvents.filter(e => e.confidence > 0.8);
+      
+      breakdown[segment] = {
+        segment,
+        userCount: uniqueUsers.size,
+        engagementLevel: segmentEvents.length > 20 ? 'high' : segmentEvents.length > 5 ? 'medium' : 'low',
+        preferredChannels: ['web', 'mobile'], // Would be derived from conversation metadata
+        commonIntents: Array.from(intentTypes).slice(0, 3),
+        satisfactionTrend: highConfidenceEvents.length > segmentEvents.length * 0.8 ? 'improving' : 'stable'
+      };
+    });
+
+    return breakdown;
+  }
+
+  private async calculateTrends(tenantId: string, timeframe: { start: Date; end: Date; interval: 'hour' | 'day' | 'week' | 'month' }): Promise<{ direction: 'up' | 'down' | 'stable'; percentage: number; significance: 'low' | 'medium' | 'high' }> {
+    // Analyze trends for the specific tenant within the timeframe
+    const currentMetrics = await this.getMetricsForPeriod(tenantId, timeframe.start, timeframe.end);
+    const previousPeriod = this.calculatePreviousPeriod(timeframe);
+    const previousMetrics = await this.getMetricsForPeriod(tenantId, previousPeriod.start, previousPeriod.end);
+    
+    // Calculate trend direction and magnitude
+    const changePercent = previousMetrics.total > 0 ? 
+      ((currentMetrics.total - previousMetrics.total) / previousMetrics.total) * 100 : 0;
+    
+    const direction = changePercent > 5 ? 'up' : changePercent < -5 ? 'down' : 'stable';
+    const significance = Math.abs(changePercent) > 20 ? 'high' : 
+                        Math.abs(changePercent) > 10 ? 'medium' : 'low';
+    
+    return {
+      direction,
+      percentage: Math.abs(changePercent),
+      significance
     };
   }
 
-  private async calculateTrends(tenantId: string, timeframe: any): Promise<any> {
-    // Compare with previous period
+  private calculatePreviousPeriod(timeframe: { start: Date; end: Date; interval: 'hour' | 'day' | 'week' | 'month' }): { start: Date; end: Date } {
+    const duration = timeframe.end.getTime() - timeframe.start.getTime();
+    const start = new Date(timeframe.start.getTime() - duration);
+    const end = new Date(timeframe.end.getTime() - duration);
+    return { start, end };
+  }
+
+  private async getMetricsForPeriod(tenantId: string, start: Date, end: Date): Promise<{ total: number; success: number; errors: number }> {
+    // In a real implementation, this would query the database for metrics
+    // For now, return mock data based on tenantId and timeframe
+    const hash = this.hashString(`${tenantId}-${start.getTime()}-${end.getTime()}`);
     return {
-      direction: 'up' as const,
-      percentage: 8.5,
-      significance: 'medium' as const
+      total: Math.abs(hash % 1000) + 100,
+      success: Math.abs(hash % 800) + 80,
+      errors: Math.abs(hash % 50) + 5
     };
+  }
+
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash;
   }
 
   // Bias detection methods
   private async detectDemographicBias(tenantId: string): Promise<BiasDetectionResult | null> {
-    // Implementation would analyze outcomes by user demographics
-    return null; // No bias detected in this example
+    // Analyze AI agent outcomes by user demographics for the specific tenant
+    const tenantEvents = this.learningEvents.filter(e => e.tenantId === tenantId);
+    const demographicGroups = this.groupEventsByDemographics(tenantEvents);
+    
+    // Check for significant performance differences between demographic groups
+    const performanceVariance = this.calculatePerformanceVariance(demographicGroups);
+    
+    if (performanceVariance > 0.15) { // 15% variance threshold
+      return {
+        id: crypto.randomUUID(),
+        type: 'demographic',
+        severity: performanceVariance > 0.3 ? 'high' : 'medium',
+        description: `Detected ${(performanceVariance * 100).toFixed(1)}% performance variance across demographic groups`,
+        affectedGroups: Object.keys(demographicGroups),
+        examples: [],
+        mitigation: { 
+          strategy: 'Review and rebalance training data',
+          actions: ['Audit training datasets', 'Adjust model weights', 'Implement fairness constraints'],
+          timeline: '4 weeks',
+          responsible: 'AI Ethics Team',
+          success: false,
+          metrics: { variance_reduction: 0.8 }
+        },
+        detectionDate: new Date(),
+        resolved: false
+      };
+    }
+    
+    return null; // No significant bias detected
   }
 
   private async detectLinguisticBias(tenantId: string): Promise<BiasDetectionResult | null> {
-    // Implementation would analyze responses to different language patterns
+    // Analyze AI responses to different language patterns for the specific tenant
+    const tenantEvents = this.learningEvents.filter(e => e.tenantId === tenantId);
+    const languageGroups = this.groupEventsByLanguagePatterns(tenantEvents);
+    
+    // Check for response quality differences based on language complexity
+    const qualityVariance = this.calculateLanguageQualityVariance(languageGroups);
+    
+    if (qualityVariance > 0.2) { // 20% quality variance threshold
+      return {
+        id: crypto.randomUUID(),
+        type: 'linguistic',
+        severity: qualityVariance > 0.4 ? 'high' : 'medium',
+        description: `Detected ${(qualityVariance * 100).toFixed(1)}% quality variance across language patterns`,
+        affectedGroups: Object.keys(languageGroups),
+        examples: [],
+        mitigation: { 
+          strategy: 'Expand language training and implement bias detection',
+          actions: ['Diversify training data', 'Implement linguistic bias monitoring', 'Add context-aware processing'],
+          timeline: '6 weeks',
+          responsible: 'NLP Team',
+          success: false,
+          metrics: { quality_improvement: 0.9 }
+        },
+        detectionDate: new Date(),
+        resolved: false
+      };
+    }
+    
     return null;
   }
 
   private async detectTemporalBias(tenantId: string): Promise<BiasDetectionResult | null> {
-    // Implementation would analyze response quality by time of day
+    // Analyze AI response quality by time of day for the specific tenant
+    const tenantEvents = this.learningEvents.filter(e => e.tenantId === tenantId);
+    const timeGroups = this.groupEventsByTimeOfDay(tenantEvents);
+    
+    // Check for performance degradation during specific hours
+    const temporalVariance = this.calculateTemporalVariance(timeGroups);
+    
+    if (temporalVariance > 0.25) { // 25% temporal variance threshold
+      return {
+        id: crypto.randomUUID(),
+        type: 'temporal',
+        severity: temporalVariance > 0.5 ? 'high' : 'medium',
+        description: `Detected ${(temporalVariance * 100).toFixed(1)}% performance variance across time periods`,
+        affectedGroups: Object.keys(timeGroups),
+        examples: [],
+        mitigation: { 
+          strategy: 'Monitor time-based patterns and adjust resource allocation',
+          actions: ['Implement time-aware monitoring', 'Adjust server capacity', 'Optimize response scheduling'],
+          timeline: '2 weeks',
+          responsible: 'Operations Team',
+          success: false,
+          metrics: { temporal_variance_reduction: 0.7 }
+        },
+        detectionDate: new Date(),
+        resolved: false
+      };
+    }
+    
     return null;
+  }
+
+  // Helper methods for bias detection
+  private groupEventsByDemographics(events: LearningEvent[]): Record<string, LearningEvent[]> {
+    return events.reduce((groups, event) => {
+      // Use userId as a proxy for demographic analysis since userDemographic doesn't exist in the data model
+      const demographic = this.hashString(event.userId) % 3 === 0 ? 'group_a' : 
+                         this.hashString(event.userId) % 3 === 1 ? 'group_b' : 'group_c';
+      if (!groups[demographic]) groups[demographic] = [];
+      groups[demographic].push(event);
+      return groups;
+    }, {} as Record<string, LearningEvent[]>);
+  }
+
+  private groupEventsByLanguagePatterns(events: LearningEvent[]): Record<string, LearningEvent[]> {
+    return events.reduce((groups, event) => {
+      // Analyze complexity based on user feedback or event type
+      const pattern = (event.data.userFeedback?.comment?.length || 0) > 100 ? 'complex' : 'simple';
+      if (!groups[pattern]) groups[pattern] = [];
+      groups[pattern].push(event);
+      return groups;
+    }, {} as Record<string, LearningEvent[]>);
+  }
+
+  private groupEventsByTimeOfDay(events: LearningEvent[]): Record<string, LearningEvent[]> {
+    return events.reduce((groups, event) => {
+      const hour = new Date(event.timestamp).getHours();
+      const timeGroup = hour < 6 ? 'overnight' : hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+      if (!groups[timeGroup]) groups[timeGroup] = [];
+      groups[timeGroup].push(event);
+      return groups;
+    }, {} as Record<string, LearningEvent[]>);
+  }
+
+  private calculatePerformanceVariance(groups: Record<string, LearningEvent[]>): number {
+    const performances = Object.values(groups).map(events => 
+      events.reduce((sum, e) => sum + e.confidence, 0) / events.length
+    );
+    const mean = performances.reduce((sum, p) => sum + p, 0) / performances.length;
+    const variance = performances.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / performances.length;
+    return Math.sqrt(variance) / mean; // Coefficient of variation
+  }
+
+  private calculateLanguageQualityVariance(groups: Record<string, LearningEvent[]>): number {
+    return this.calculatePerformanceVariance(groups); // Same calculation for now
+  }
+
+  private calculateTemporalVariance(groups: Record<string, LearningEvent[]>): number {
+    return this.calculatePerformanceVariance(groups); // Same calculation for now
   }
 
   // Learning processing methods
@@ -743,16 +1072,70 @@ export class NovaAIAgentAnalytics extends EventEmitter {
     intent: AIAgentIntent | undefined,
     response: ConversationMessage
   ): Promise<void> {
-    // Check if conversation participates in any running A/B tests
+    // Check if conversation participates in any running A/B tests based on intent and response
     const runningTests = Array.from(this.abTests.values()).filter(t => t.status === 'running');
     
     for (const test of runningTests) {
-      // Implementation would assign users to variants and track results
-      logger.debug('Checking A/B test participation', {
-        testId: test.id,
-        conversationId: conversation.id
-      });
+      // Determine if this intent/response combination qualifies for the test
+      const qualifiesForTest = this.evaluateTestEligibility(test, intent, response);
+      
+      if (qualifiesForTest) {
+        // Assign user to test variant based on consistent hashing
+        const variant = this.assignTestVariant(conversation.userId, test);
+        
+        // Track the test participation
+        await this.recordTestParticipation({
+          testId: test.id,
+          conversationId: conversation.id,
+          userId: conversation.userId,
+          variant,
+          intent: intent?.category || 'unknown',
+          responseLength: response.content?.length || 0,
+          timestamp: new Date()
+        });
+        
+        logger.debug(`User ${conversation.userId} assigned to test ${test.id} variant ${variant}`);
+      }
     }
+  }
+
+  private evaluateTestEligibility(test: ABTestExperiment, intent: AIAgentIntent | undefined, response: ConversationMessage): boolean {
+    // Check if intent category matches test type
+    if (test.type === 'intent_threshold' && !intent) {
+      return false;
+    }
+    
+    // Check if response variations are being tested
+    if (test.type === 'response_variation' && !response.content) {
+      return false;
+    }
+    
+    return true;
+  }
+
+  private assignTestVariant(userId: string, test: ABTestExperiment): string {
+    const hash = this.hashString(`${userId}-${test.id}`);
+    const variants = test.variants || [];
+    
+    if (variants.length === 0) {
+      return 'control';
+    }
+    
+    const selectedVariant = variants[Math.abs(hash) % variants.length];
+    return selectedVariant.name;
+  }
+
+  private async recordTestParticipation(participation: {
+    testId: string;
+    conversationId: string;
+    userId: string;
+    variant: string;
+    intent: string;
+    responseLength: number;
+    timestamp: Date;
+  }): Promise<void> {
+    // In a real implementation, this would save to database
+    logger.info(`A/B test participation recorded: ${participation.testId} - ${participation.variant} for user ${participation.userId}`);
   }
 
   // Start background processes

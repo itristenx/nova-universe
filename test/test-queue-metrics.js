@@ -143,14 +143,20 @@ async function runTests() {
   console.log('🚀 Starting Queue Metrics API Tests\n');
 
   try {
-    // Step 1: Authenticate directly
+    // Step 1: Discover tenant (optional but good for testing)
+    const discoveryToken = await discoverTenant();
+    if (discoveryToken) {
+      console.log('✅ Tenant discovery completed with token:', discoveryToken.substring(0, 10) + '...');
+    }
+
+    // Step 2: Authenticate directly
     const authSuccess = await authenticate();
     if (!authSuccess) {
       console.log('❌ Cannot proceed without authentication');
       return;
     }
 
-    // Step 2: Test queue metrics endpoints
+    // Step 3: Test queue metrics endpoints
     await testQueueMetrics();
 
     console.log('\n🎉 Test run completed!');

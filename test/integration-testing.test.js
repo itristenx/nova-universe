@@ -56,6 +56,26 @@ process.on('exit', gracefulCleanup);
 
 // Test Utilities
 class TestHelper {
+  static async startTestService(command, args = [], options = {}) {
+    return new Promise((resolve, reject) => {
+      const process = spawn(command, args, {
+        stdio: 'pipe',
+        detached: true,
+        ...options
+      });
+      
+      process.on('spawn', () => {
+        console.log(`✅ Test service started: ${command} ${args.join(' ')}`);
+        resolve(process);
+      });
+      
+      process.on('error', (error) => {
+        console.error(`❌ Failed to start test service: ${error.message}`);
+        reject(error);
+      });
+    });
+  }
+
   static async waitForService(url, timeout = 30000) {
     const start = Date.now();
     while (Date.now() - start < timeout) {
@@ -63,7 +83,8 @@ class TestHelper {
         const response = await fetch(url);
         if (response.ok) return true;
       } catch (error) {
-        // Service not ready yet
+        // Service not ready yet - log connection attempt
+        console.log(`⏳ Waiting for service at ${url} (${error.message})`);
       }
       const timeoutId = setTimeout(() => {}, 1000);
       activeTimeouts.add(timeoutId);

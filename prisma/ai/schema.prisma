@@ -9,7 +9,7 @@ datasource ai_db {
 generator aiClient {
   provider = "prisma-client-js"
   output   = "../generated/ai"
-  binaryTargets = ["native", "debian-openssl-3.0.x", "darwin"]
+  binaryTargets = ["native", "debian-openssl-3.0.x", "darwin", "linux-arm64-openssl-3.0.x"]
 }
 
 // ==============================================================================

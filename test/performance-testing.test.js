@@ -4,7 +4,8 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { performance } from 'perf_hooks';
-import { spawn } from 'child_process';
+// Note: spawn available for future process-based testing
+// import { spawn } from 'child_process';
 import fetch from 'node-fetch';
 import { registerCleanupHandlers, performCleanup } from './test-cleanup.js';
 
@@ -171,7 +172,8 @@ class LoadTester {
         // Simulate user think time
         await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
       } catch (error) {
-        // Continue testing even if individual requests fail
+        // Log but continue testing even if individual requests fail
+        console.warn(`Request failed during load test: ${error.message}`);
       }
     }
   }
@@ -250,6 +252,7 @@ test('Performance Testing Suite', async (t) => {
     const stats = monitor.getStatistics();
 
     console.log('📊 Load Test Results:');
+    console.log(`  Total Test Duration: ${(totalDuration / 1000).toFixed(2)}s`);
     console.log(`  Total Requests: ${stats.totalRequests}`);
     console.log(`  Average Response Time: ${stats.averageResponseTime.toFixed(2)}ms`);
     console.log(`  95th Percentile: ${stats.p95ResponseTime.toFixed(2)}ms`);
@@ -357,6 +360,7 @@ test('Performance Testing Suite', async (t) => {
 
       const startTime = performance.now();
       await testLoadTester.runConcurrentUsers(userCount, 10000); // 10 second bursts
+      const testDuration = performance.now() - startTime;
 
       const stats = testMonitor.getStatistics();
       results.push({
@@ -364,10 +368,11 @@ test('Performance Testing Suite', async (t) => {
         averageResponseTime: stats.averageResponseTime,
         errorRate: stats.errorRate,
         throughput: stats.throughput,
+        testDuration: testDuration / 1000, // Convert to seconds
       });
 
       console.log(
-        `    Avg Response: ${stats.averageResponseTime.toFixed(2)}ms, Error Rate: ${(stats.errorRate * 100).toFixed(2)}%, Throughput: ${stats.throughput.toFixed(2)} req/s`,
+        `    Avg Response: ${stats.averageResponseTime.toFixed(2)}ms, Error Rate: ${(stats.errorRate * 100).toFixed(2)}%, Throughput: ${stats.throughput.toFixed(2)} req/s, Duration: ${(testDuration / 1000).toFixed(1)}s`,
       );
 
       // Stop testing if error rate becomes too high

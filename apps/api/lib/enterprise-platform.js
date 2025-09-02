@@ -1,14 +1,8 @@
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+import { getCoreClient } from '../lib/database-clients.js';
 import winston from 'winston';
 
 // Initialize Prisma client for enterprise database
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.ENTERPRISE_DATABASE_URL || process.env.DATABASE_URL,
-    },
-  },
-});
+const prismaPromise = getCoreClient();
 
 // Logger configuration
 const logger = winston.createLogger({
@@ -40,7 +34,7 @@ const logger = winston.createLogger({
  */
 class NovaEnterprisePlatform {
   constructor() {
-    this.prisma = prisma;
+    this.prismaPromise = prismaPromise;
     this.logger = logger;
   }
 
@@ -61,6 +55,7 @@ class NovaEnterprisePlatform {
         assetData.asset_tag = await this.generateAssetTag(assetData.category_id);
       }
 
+      const prisma = await this.prismaPromise;
       const asset = await prisma.asset.create({
         data: {
           ...assetData,
@@ -94,6 +89,7 @@ class NovaEnterprisePlatform {
 
   async updateAssetLifecycle(assetId, newStage, notes) {
     try {
+      const prisma = await this.prismaPromise;
       const asset = await prisma.asset.update({
         where: { id: assetId },
         data: {
@@ -128,6 +124,7 @@ class NovaEnterprisePlatform {
 
   async getAssetDashboard(filters = {}) {
     try {
+      const prisma = await this.prismaPromise;
       const [totalAssets, assetsByCategory, assetsByLifecycle, assetsByStatus, riskDistribution] =
         await Promise.all([
           // Total assets count
@@ -193,6 +190,7 @@ class NovaEnterprisePlatform {
 
   async calculateAssetRiskScore(assetId) {
     try {
+      const prisma = await this.prismaPromise;
       const asset = await prisma.asset.findUnique({
         where: { id: assetId },
         include: {

@@ -3,8 +3,8 @@
  * Validates Helix API integration, error handling, retries, and organizational assignments
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
-import { PrismaClient } from '../prisma/generated/core/index.js';
+import { describe, it, expect, beforeAll, beforeEach } from '@jest/globals';
+// Note: PrismaClient available for future database testing if needed
 import { InventoryService } from '../apps/api/services/inventory.js';
 import { HelixKioskIntegrationService } from '../apps/api/services/helixKioskIntegration.js';
 
@@ -65,6 +65,13 @@ describe('Enhanced Helix Integration Tests', () => {
   beforeEach(() => {
     // Reset all mocks
     jest.clearAllMocks();
+    
+    // Configure mock responses for different test scenarios
+    console.log('Mock Helix responses configured:', {
+      success: mockHelixResponses.success.success,
+      failure: mockHelixResponses.failure.success,
+      skipped: mockHelixResponses.skipped.status
+    });
   });
 
   describe('Helix API Integration', () => {

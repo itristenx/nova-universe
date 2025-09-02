@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+import { getCoreClient } from '../lib/database-clients.js';
 import { logger } from '../logger.js';
 import { NotificationService } from './notification.service.js';
 import { TicketService as EnhancedTicketService } from './enhanced-ticket.service.js';
@@ -10,7 +10,7 @@ import * as msal from '@azure/msal-node';
 import { novaSynthEmailProcessor } from '../lib/nova-synth-email-processor.ts';
 import { EventEmitter } from 'events';
 
-const prisma = new PrismaClient();
+const prismaPromise = getCoreClient();
 
 /**
  * Email Integration Service for ITSM
@@ -63,6 +63,7 @@ class EmailIntegrationService extends EventEmitter {
    */
   async loadEmailAccounts() {
     try {
+      const prisma = await prismaPromise;
       const accounts = await prisma.emailAccount.findMany({
         where: { isActive: true },
       });

@@ -78,8 +78,8 @@ async function testConfiguration() {
     console.log(
       `   ✅ Configuration update test: ${testValue === 'test_value' ? 'PASSED' : 'FAILED'}`,
     );
-  } catch (_error) {
-    console.log(`   ⚠️  Configuration update test: SKIPPED (database not available)`);
+  } catch (error) {
+    console.log(`   ⚠️  Configuration update test: SKIPPED (${error.message || 'database not available'})`);
   }
 
   console.log('\n4. Summary of Changes...');

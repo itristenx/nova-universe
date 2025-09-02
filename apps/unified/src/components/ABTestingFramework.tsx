@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
+const MotionDiv = (motion as any).div as React.FC<any>;
+const AP = (AnimatePresence as any) as React.FC<any>;
 import {
   ChartBarIcon,
   BeakerIcon,
@@ -143,7 +146,7 @@ export const ABTestList: React.FC<ABTestListProps> = ({
     try {
       setLoading(true);
       // Replace with actual API call
-      const response = await fetch('/api/ab-tests');
+      const response = await apiFetch('/api/ab-tests');
       const data = await response.json();
       const testsData = data.tests || [];
 
@@ -328,9 +331,9 @@ export const ABTestList: React.FC<ABTestListProps> = ({
 
       {/* Test List */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <AnimatePresence>
+        <AP>
           {filteredTests.map((test) => (
-            <motion.div
+            <MotionDiv
               key={test.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -420,9 +423,9 @@ export const ABTestList: React.FC<ABTestListProps> = ({
                     )}
                 </div>
               </div>
-            </motion.div>
+            </MotionDiv>
           ))}
-        </AnimatePresence>
+        </AP>
       </div>
 
       {filteredTests.length === 0 && (

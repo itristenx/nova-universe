@@ -67,7 +67,7 @@ const NotificationMenu: React.FC = () => {
 
         wsRef.current = cleanup;
       } catch (_error) {
-        console.error('Failed to set up notification WebSocket:', error);
+        console.error('Failed to set up notification WebSocket:', _error);
       }
     };
 

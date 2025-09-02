@@ -535,11 +535,34 @@ export class NovaSynthEmailProcessor extends EventEmitter {
     context?: EmailProcessingContext
   ): Promise<EmailTicketAnalysis['analysis']['priority']> {
     try {
+      // Build contextual information for priority analysis
+      let contextualInfo = '';
+      if (context) {
+        if (context.organizationContext) {
+          contextualInfo += `\nOrganization: ${context.organizationContext.name || 'Unknown'} (${context.organizationContext.industry || 'N/A'})`;
+          contextualInfo += `\nOrganization size: ${context.organizationContext.size || 'Unknown'}`;
+        }
+        
+        if (context.historicalContext?.senderPreviousTickets?.length > 0) {
+          contextualInfo += `\nSender history: ${context.historicalContext.senderPreviousTickets.length} previous tickets`;
+        }
+        
+        if (context.systemContext?.serviceStatus) {
+          const criticalServices = Object.entries(context.systemContext.serviceStatus)
+            .filter(([_, status]) => status === 'critical' || status === 'down')
+            .map(([service, _]) => service);
+          if (criticalServices.length > 0) {
+            contextualInfo += `\nCritical/Down services: ${criticalServices.join(', ')}`;
+          }
+        }
+      }
+
       const priorityQuery = `
         Analyze the priority and urgency of this IT support request:
         
         Subject: ${emailContent.subject}
         Description: ${emailContent.body}
+        ${contextualInfo}
         
         Consider:
         1. Language indicators (urgent, critical, emergency, asap)
@@ -547,6 +570,8 @@ export class NovaSynthEmailProcessor extends EventEmitter {
         3. Number of users affected
         4. Time sensitivity
         5. Escalation requirements
+        6. Organization context and service status
+        7. Sender's historical escalation patterns
       `;
 
       const synthQuery = {
@@ -606,18 +631,32 @@ export class NovaSynthEmailProcessor extends EventEmitter {
       // Sentiment analysis
       const sentimentAnalysis = await this.analyzeSentiment(emailContent);
       
-      // Extract keywords using RAG context
-      const keywordQuery = `Extract key technical terms and concepts from: ${emailContent.subject} ${emailContent.body}`;
+      // Enhanced keyword extraction with organizational context
+      let keywordQuery = `Extract key technical terms and concepts from: ${emailContent.subject} ${emailContent.body}`;
+      
+      // Enrich query with organizational context when available
+      if (context) {
+        const organizationInfo = context.organizationContext?.name ? 
+          ` Organization: ${context.organizationContext.name}` : '';
+        const industryInfo = context.organizationContext?.industry ? 
+          ` Industry: ${context.organizationContext.industry}` : '';
+        const systemsInfo = context.systemContext?.knownSystems?.length ? 
+          ` Known systems: ${context.systemContext.knownSystems.join(', ')}` : '';
+        const historyInfo = context.historicalContext?.senderPreviousTickets?.length ? 
+          ` Previous tickets: ${context.historicalContext.senderPreviousTickets.length} tickets` : '';
+        
+        keywordQuery += `${organizationInfo}${industryInfo}${systemsInfo}${historyInfo}`;
+      }
       
       const synthQuery = {
         id: crypto.randomUUID(),
         query: keywordQuery,
         context: {
           userId: 'system',
-          tenantId: 'default',
+          tenantId: context?.organizationContext?.name || 'default',
           module: 'content_analysis',
           intent: 'extraction',
-          requestType: 'analysis' as const,
+          requestType: 'information' as const,
         },
         personalityConfig: {
           profile: 'technical-expert' as const,
@@ -668,7 +707,8 @@ export class NovaSynthEmailProcessor extends EventEmitter {
     context?: EmailProcessingContext
   ): Promise<EmailTicketAnalysis['analysis']['automation']> {
     try {
-      const automationQuery = `
+      // Enhanced automation query with organizational context
+      let automationQuery = `
         Identify automation opportunities for this IT support request:
         
         Subject: ${emailContent.subject}
@@ -681,12 +721,40 @@ export class NovaSynthEmailProcessor extends EventEmitter {
         4. Similar resolved incidents
       `;
 
+      // Add contextual information for better automation analysis
+      if (context) {
+        if (context.organizationContext) {
+          automationQuery += `\n\nOrganization Context:`;
+          if (context.organizationContext.name) {
+            automationQuery += `\n- Organization: ${context.organizationContext.name}`;
+          }
+          if (context.organizationContext.industry) {
+            automationQuery += `\n- Industry: ${context.organizationContext.industry}`;
+          }
+          if (context.organizationContext.size) {
+            automationQuery += `\n- Organization Size: ${context.organizationContext.size}`;
+          }
+        }
+
+        if (context.systemContext?.knownSystems?.length) {
+          automationQuery += `\n\nKnown Systems: ${context.systemContext.knownSystems.join(', ')}`;
+        }
+
+        if (context.systemContext?.commonIssues?.length) {
+          automationQuery += `\n\nCommon Issues: ${context.systemContext.commonIssues.map((issue: any) => issue.description || issue).join(', ')}`;
+        }
+
+        if (context.historicalContext?.recentSimilarIncidents?.length) {
+          automationQuery += `\n\nRecent Similar Incidents: ${context.historicalContext.recentSimilarIncidents.length} found`;
+        }
+      }
+
       const synthQuery = {
         id: crypto.randomUUID(),
         query: automationQuery,
         context: {
           userId: 'system',
-          tenantId: 'default',
+          tenantId: context?.organizationContext?.name || 'default',
           module: 'automation_analysis',
           intent: 'automation',
           requestType: 'guidance' as const,
@@ -739,7 +807,8 @@ export class NovaSynthEmailProcessor extends EventEmitter {
     context?: EmailProcessingContext
   ): Promise<EmailTicketAnalysis['analysis']['assignment']> {
     try {
-      const assignmentQuery = `
+      // Enhanced assignment query with organizational context
+      let assignmentQuery = `
         Recommend assignment for this incident:
         
         Category: ${incidentAnalysis.category}
@@ -750,12 +819,45 @@ export class NovaSynthEmailProcessor extends EventEmitter {
         Consider skills required and team expertise.
       `;
 
+      // Add contextual information for better assignment analysis
+      if (context) {
+        if (context.organizationContext) {
+          assignmentQuery += `\n\nOrganization Context:`;
+          if (context.organizationContext.name) {
+            assignmentQuery += `\n- Organization: ${context.organizationContext.name}`;
+          }
+          if (context.organizationContext.industry) {
+            assignmentQuery += `\n- Industry: ${context.organizationContext.industry}`;
+          }
+          if (context.organizationContext.size) {
+            assignmentQuery += `\n- Size: ${context.organizationContext.size}`;
+          }
+        }
+
+        if (context.historicalContext?.senderPreviousTickets?.length) {
+          assignmentQuery += `\n\nSender History: ${context.historicalContext.senderPreviousTickets.length} previous tickets`;
+        }
+
+        if (context.systemContext?.serviceStatus) {
+          const activeServices = Object.entries(context.systemContext.serviceStatus)
+            .filter(([_key, status]) => status === 'active' || status === 'operational')
+            .map(([service, _status]) => service);
+          if (activeServices.length > 0) {
+            assignmentQuery += `\n\nActive Services: ${activeServices.join(', ')}`;
+          }
+        }
+
+        if (context.systemContext?.maintenanceSchedule?.length) {
+          assignmentQuery += `\n\nMaintenance Activities: ${context.systemContext.maintenanceSchedule.length} scheduled`;
+        }
+      }
+
       const synthQuery = {
         id: crypto.randomUUID(),
         query: assignmentQuery,
         context: {
           userId: 'system',
-          tenantId: 'default',
+          tenantId: context?.organizationContext?.name || 'default',
           module: 'assignment_analysis',
           intent: 'assignment',
           requestType: 'guidance' as const,
@@ -959,15 +1061,34 @@ export class NovaSynthEmailProcessor extends EventEmitter {
     // Extract keywords from RAG response and content
     const keywords = [];
     
-    // Basic keyword extraction
+    // Extract keywords from RAG response if available
+    if (ragResponse.response && typeof ragResponse.response === 'string') {
+      const ragKeywords = ragResponse.response.toLowerCase().match(/\b\w{4,}\b/g) || [];
+      keywords.push(...ragKeywords.slice(0, 5)); // Add up to 5 RAG-derived keywords
+    }
+
+    // Add keywords from RAG context sources
+    if (ragResponse.ragContext?.sources) {
+      ragResponse.ragContext.sources.forEach((source: any) => {
+        if (source.title) {
+          const sourceKeywords = source.title.toLowerCase().match(/\b\w{4,}\b/g) || [];
+          keywords.push(...sourceKeywords.slice(0, 2)); // Add up to 2 keywords per source
+        }
+      });
+    }
+    
+    // Basic keyword extraction from email content
     const text = emailContent.subject + ' ' + emailContent.body;
     const words = text.toLowerCase().match(/\b\w{4,}\b/g) || [];
     const commonWords = new Set(['this', 'that', 'with', 'have', 'will', 'been', 'from', 'they', 'know', 'want', 'been', 'good', 'much', 'some', 'time', 'very', 'when', 'come', 'may', 'say']);
     
-    return words
-      .filter(word => !commonWords.has(word))
-      .filter((word, index, arr) => arr.indexOf(word) === index)
-      .slice(0, 10);
+    // Combine all keywords and filter
+    const emailKeywords = words.filter(word => !commonWords.has(word));
+    keywords.push(...emailKeywords);
+    
+    return keywords
+      .filter((word, index, arr) => arr.indexOf(word) === index) // Remove duplicates
+      .slice(0, 10); // Return top 10 keywords
   }
 
   private extractAutomationInfoFromRAG(ragResponse: any): any {
@@ -993,22 +1114,34 @@ export class NovaSynthEmailProcessor extends EventEmitter {
   private async fallbackBasicProcessing(email: any, emailAccount: any): Promise<EmailTicketAnalysis> {
     const emailContent = this.extractEmailContent(email);
     
+    // Extract account-specific context for fallback processing
+    const accountInfo = emailAccount ? {
+      accountName: emailAccount.name || 'Unknown',
+      accountType: emailAccount.type || 'standard',
+      priority: emailAccount.priority || 'normal',
+      organization: emailAccount.organization || null,
+    } : null;
+    
     return {
       id: crypto.randomUUID(),
       emailId: email.id || crypto.randomUUID(),
       analysis: {
         customer: {
-          identified: false,
-          confidence: 0.5,
-          reasoning: 'Fallback processing - basic customer identification',
+          identified: !!accountInfo,
+          confidence: accountInfo ? 0.7 : 0.5,
+          reasoning: accountInfo ? 
+            `Fallback processing - identified from email account: ${accountInfo.accountName}` :
+            'Fallback processing - basic customer identification',
         },
         incident: this.fallbackIncidentAnalysis(emailContent),
         priority: this.fallbackPriorityAnalysis(emailContent),
         assignment: {
-          specialistRequired: false,
-          skillsRequired: [],
+          specialistRequired: accountInfo?.priority === 'high' || false,
+          skillsRequired: accountInfo?.organization ? [accountInfo.organization] : [],
           confidence: 0.5,
-          reasoning: 'Fallback processing - default assignment',
+          reasoning: accountInfo ? 
+            `Fallback processing - assignment based on account type: ${accountInfo.accountType}` :
+            'Fallback processing - default assignment',
         },
         content: this.fallbackContentAnalysis(emailContent),
         automation: {
@@ -1016,7 +1149,7 @@ export class NovaSynthEmailProcessor extends EventEmitter {
           suggestedSolutions: [],
           automatedActions: [],
           selfServiceOptions: [],
-          escalationTriggers: [],
+          escalationTriggers: accountInfo?.priority === 'high' ? ['high_priority_account'] : [],
         },
       },
       recommendations: {
@@ -1024,27 +1157,27 @@ export class NovaSynthEmailProcessor extends EventEmitter {
           title: emailContent.subject,
           description: emailContent.body,
           type: 'INCIDENT',
-          priority: 'MEDIUM',
-          urgency: 'MEDIUM',
-          category: 'General',
-          tags: ['email'],
-          customFields: {},
+          priority: accountInfo?.priority === 'high' ? 'HIGH' : 'MEDIUM',
+          urgency: accountInfo?.priority === 'high' ? 'HIGH' : 'MEDIUM',
+          category: accountInfo?.organization || 'General',
+          tags: ['email', ...(accountInfo ? [accountInfo.accountType] : [])],
+          customFields: accountInfo ? { accountName: accountInfo.accountName, accountType: accountInfo.accountType } : {},
         },
         assignment: {},
         communications: {
           autoReplyNeeded: true,
           additionalRecipients: [],
-          escalationNotifications: [],
+          escalationNotifications: accountInfo?.priority === 'high' ? ['manager'] : [],
         },
         sla: {
-          responseTime: '4 hours',
-          resolutionTime: '24 hours',
-          businessJustification: 'Standard SLA',
+          responseTime: accountInfo?.priority === 'high' ? '2 hours' : '4 hours',
+          resolutionTime: accountInfo?.priority === 'high' ? '12 hours' : '24 hours',
+          businessJustification: accountInfo?.priority === 'high' ? 'High priority account SLA' : 'Standard SLA',
         },
       },
       metadata: {
         processingTime: 100,
-        aiConfidence: 0.5,
+        aiConfidence: accountInfo ? 0.7 : 0.5,
         modelsUsed: ['fallback'],
         timestamp: new Date(),
         version: '1.0.0',
@@ -1053,28 +1186,104 @@ export class NovaSynthEmailProcessor extends EventEmitter {
   }
 
   private fallbackIncidentAnalysis(emailContent: any): any {
+    // Basic analysis using email content patterns
+    const subject = (emailContent.subject || '').toLowerCase();
+    const body = (emailContent.body || '').toLowerCase();
+    const fullText = subject + ' ' + body;
+    
+    // Categorize based on keywords
+    let category = 'General';
+    let type: 'incident' | 'service_request' | 'change_request' | 'problem' = 'incident';
+    let severity: 'low' | 'medium' | 'high' | 'critical' = 'medium';
+    
+    if (fullText.includes('urgent') || fullText.includes('critical') || fullText.includes('down')) {
+      severity = 'high';
+      category = 'System Outage';
+    } else if (fullText.includes('password') || fullText.includes('login') || fullText.includes('access')) {
+      category = 'Access Management';
+    } else if (fullText.includes('software') || fullText.includes('application') || fullText.includes('app')) {
+      category = 'Software';
+    } else if (fullText.includes('hardware') || fullText.includes('device') || fullText.includes('computer')) {
+      category = 'Hardware';
+    } else if (fullText.includes('network') || fullText.includes('internet') || fullText.includes('wifi')) {
+      category = 'Network';
+    } else if (fullText.includes('email') || fullText.includes('mailbox')) {
+      category = 'Email';
+    }
+
+    // Detect request type
+    if (fullText.includes('request') || fullText.includes('need') || fullText.includes('setup')) {
+      type = 'service_request';
+    }
+
     return {
-      category: 'General',
-      type: 'incident' as const,
-      confidence: 0.5,
-      affectedSystems: [],
+      category,
+      type,
+      confidence: 0.6,
+      affectedSystems: this.extractSystemsFromContent(fullText),
       impactAssessment: {
-        scope: 'individual' as const,
-        severity: 'medium' as const,
-        businessImpact: 'User productivity impact',
+        scope: severity === 'high' ? 'multiple' as const : 'individual' as const,
+        severity,
+        businessImpact: `Identified from content analysis: ${category.toLowerCase()} issue`,
       },
-      reasoning: 'Fallback classification',
+      reasoning: `Fallback classification based on keyword analysis: ${category}`,
     };
   }
 
   private fallbackPriorityAnalysis(emailContent: any): any {
+    // Analyze priority based on email content
+    const subject = (emailContent.subject || '').toLowerCase();
+    const body = (emailContent.body || '').toLowerCase();
+    const fullText = subject + ' ' + body;
+    
+    let level: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' = 'MEDIUM';
+    let urgency: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' = 'MEDIUM';
+    const factors: string[] = [];
+    let escalationNeeded = false;
+
+    // High priority indicators
+    if (fullText.includes('urgent') || fullText.includes('asap') || fullText.includes('immediately')) {
+      level = 'HIGH';
+      urgency = 'HIGH';
+      factors.push('urgent language detected');
+    }
+
+    // Critical priority indicators
+    if (fullText.includes('critical') || fullText.includes('down') || fullText.includes('outage') || 
+        fullText.includes('not working') || fullText.includes('broken')) {
+      level = 'CRITICAL';
+      urgency = 'CRITICAL';
+      escalationNeeded = true;
+      factors.push('critical system issue detected');
+    }
+
+    // Business impact indicators
+    if (fullText.includes('business') || fullText.includes('production') || fullText.includes('revenue')) {
+      if (level === 'MEDIUM') level = 'HIGH';
+      if (urgency === 'MEDIUM') urgency = 'HIGH';
+      factors.push('business impact mentioned');
+    }
+
+    // Low priority indicators
+    if (fullText.includes('question') || fullText.includes('when convenient') || 
+        fullText.includes('not urgent') || fullText.includes('low priority')) {
+      level = 'LOW';
+      urgency = 'LOW';
+      factors.push('low priority language detected');
+    }
+
+    // Default fallback factors
+    if (factors.length === 0) {
+      factors.push('fallback analysis', 'no priority indicators found');
+    }
+
     return {
-      level: 'MEDIUM' as const,
-      urgency: 'MEDIUM' as const,
-      confidence: 0.5,
-      factors: ['fallback analysis'],
-      reasoning: 'Fallback priority assignment',
-      escalationNeeded: false,
+      level,
+      urgency,
+      confidence: factors.length > 1 ? 0.7 : 0.5,
+      factors,
+      reasoning: `Fallback priority assignment based on content analysis: ${factors.join(', ')}`,
+      escalationNeeded,
     };
   }
 
@@ -1177,10 +1386,54 @@ export class NovaSynthEmailProcessor extends EventEmitter {
   }
 
   private extractBusinessContext(emailContent: any): any {
+    const subject = (emailContent.subject || '').toLowerCase();
+    const body = (emailContent.body || '').toLowerCase();
+    const fullText = subject + ' ' + body;
+
+    const affectedProcesses: string[] = [];
+    const timeConstraints: string[] = [];
+    const compliance: string[] = [];
+
+    // Detect business processes
+    if (fullText.includes('payroll') || fullText.includes('hr')) {
+      affectedProcesses.push('Human Resources');
+    }
+    if (fullText.includes('finance') || fullText.includes('accounting') || fullText.includes('invoice')) {
+      affectedProcesses.push('Finance');
+    }
+    if (fullText.includes('sales') || fullText.includes('crm') || fullText.includes('customer')) {
+      affectedProcesses.push('Sales');
+    }
+    if (fullText.includes('inventory') || fullText.includes('supply')) {
+      affectedProcesses.push('Supply Chain');
+    }
+
+    // Detect time constraints
+    if (fullText.includes('deadline') || fullText.includes('due date')) {
+      timeConstraints.push('deadline-sensitive');
+    }
+    if (fullText.includes('end of day') || fullText.includes('eod')) {
+      timeConstraints.push('end-of-day');
+    }
+    if (fullText.includes('urgent') || fullText.includes('asap')) {
+      timeConstraints.push('urgent');
+    }
+
+    // Detect compliance requirements
+    if (fullText.includes('audit') || fullText.includes('compliance')) {
+      compliance.push('audit-related');
+    }
+    if (fullText.includes('gdpr') || fullText.includes('privacy')) {
+      compliance.push('data-privacy');
+    }
+    if (fullText.includes('security') || fullText.includes('confidential')) {
+      compliance.push('security-sensitive');
+    }
+
     return {
-      affectedProcesses: [],
-      timeConstraints: [],
-      compliance: [],
+      affectedProcesses,
+      timeConstraints,
+      compliance,
     };
   }
 
@@ -1244,7 +1497,35 @@ export class NovaSynthEmailProcessor extends EventEmitter {
   }
 
   private shouldSendAutoReply(priorityAnalysis: any, customerAnalysis: any): boolean {
-    return true; // Always send auto-reply for now
+    // Determine if auto-reply should be sent based on priority and customer context
+    
+    // Always send auto-reply for critical issues
+    if (priorityAnalysis.level === 'CRITICAL') {
+      return true;
+    }
+
+    // Send auto-reply for high priority issues
+    if (priorityAnalysis.level === 'HIGH') {
+      return true;
+    }
+
+    // For VIP customers, always send auto-reply
+    if (customerAnalysis.customerInfo?.vipStatus || customerAnalysis.customerInfo?.priority === 'high') {
+      return true;
+    }
+
+    // For identified customers, send auto-reply
+    if (customerAnalysis.identified && customerAnalysis.confidence > 0.7) {
+      return true;
+    }
+
+    // For escalation needed cases, send auto-reply
+    if (priorityAnalysis.escalationNeeded) {
+      return true;
+    }
+
+    // Default: send auto-reply for medium and low priority
+    return priorityAnalysis.level !== 'LOW';
   }
 
   private recommendEmailTemplate(incidentAnalysis: any, priorityAnalysis: any): string {
@@ -1270,11 +1551,36 @@ export class NovaSynthEmailProcessor extends EventEmitter {
   private getEscalationNotifications(priorityAnalysis: any, assignmentAnalysis: any): string[] {
     const notifications = [];
     
+    // Escalate based on priority analysis
     if (priorityAnalysis.escalationNeeded) {
       notifications.push('manager@company.com');
     }
     
-    return notifications;
+    // Escalate based on assignment analysis
+    if (assignmentAnalysis.specialistRequired) {
+      notifications.push('specialist-team@company.com');
+    }
+
+    // Escalate if confidence is low for assignment
+    if (assignmentAnalysis.confidence < 0.5) {
+      notifications.push('assignment-review@company.com');
+    }
+
+    // Add skill-specific escalations
+    if (assignmentAnalysis.skillsRequired?.length > 0) {
+      assignmentAnalysis.skillsRequired.forEach((skill: string) => {
+        if (skill.toLowerCase().includes('security')) {
+          notifications.push('security-team@company.com');
+        } else if (skill.toLowerCase().includes('network')) {
+          notifications.push('network-team@company.com');
+        } else if (skill.toLowerCase().includes('database')) {
+          notifications.push('dba-team@company.com');
+        }
+      });
+    }
+
+    // Remove duplicates
+    return [...new Set(notifications)];
   }
 
   private calculateSLARequirements(priorityAnalysis: any, customerAnalysis: any, incidentAnalysis: any): any {

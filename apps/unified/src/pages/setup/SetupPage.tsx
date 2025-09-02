@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { useNavigate } from 'react-router-dom';
 import { SetupWizard } from '@components/setup-wizard/SetupWizard';
 import { useAuthStore } from '@stores/auth';
@@ -15,7 +16,7 @@ export const SetupPage: React.FC = () => {
     const checkSetupStatus = async () => {
       try {
         // Check if organization exists and is configured
-        const response = await fetch('/api/organization/status');
+        const response = await apiFetch('/api/organization/status');
         if (response.ok) {
           const data = await response.json();
           if (data.isConfigured) {

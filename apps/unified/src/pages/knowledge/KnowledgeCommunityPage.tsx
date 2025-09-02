@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { Link } from 'react-router-dom';
 import {
   UsersIcon,
@@ -88,7 +89,7 @@ export default function KnowledgeCommunityPage() {
 
       try {
         // Fetch from API
-        const response = await fetch('/api/knowledge/community');
+        const response = await apiFetch('/api/knowledge/community');
         if (response.ok) {
           const data = await response.json();
           setArticles(data.articles || []);

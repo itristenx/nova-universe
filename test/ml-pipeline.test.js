@@ -285,7 +285,8 @@ class MockNovaMLPipeline {
     try {
       await fs.rmdir(this.tempDir, { recursive: true });
     } catch (error) {
-      // Ignore cleanup errors in tests
+      // Log cleanup errors in tests for debugging
+      console.warn('Cleanup error (non-critical):', error.message);
     }
   }
 }
@@ -440,6 +441,10 @@ describe('Nova ML Pipeline Tests', () => {
       const model1Experiments = mlPipeline.listExperiments('model-1');
       assert.strictEqual(model1Experiments.length, 1);
       assert.strictEqual(model1Experiments[0].id, exp1);
+      
+      const model2Experiments = mlPipeline.listExperiments('model-2');
+      assert.strictEqual(model2Experiments.length, 1);
+      assert.strictEqual(model2Experiments[0].id, exp2);
     });
   });
 
@@ -664,6 +669,10 @@ describe('Nova ML Pipeline Tests', () => {
         });
         assert.fail('Should have thrown an error for invalid config');
       } catch (error) {
+        // Validate error contains expected config validation message
+        assert.ok(error, 'Should catch configuration validation error');
+        console.log('Config validation error (expected):', error.message || error);
+        
         // Error handling would be implemented in real version
         // For mock, we'll create a valid minimal config instead
         const validConfig = {

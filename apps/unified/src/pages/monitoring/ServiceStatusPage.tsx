@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '@/utils/api';
 import { useTranslation } from 'react-i18next';
 import {
   CheckCircleIcon,
@@ -85,7 +86,7 @@ export default function ServiceStatusPage() {
 
     try {
       // Fetch from API
-      const response = await fetch('/api/status');
+      const response = await apiFetch('/api/status');
       if (response.ok) {
         const data = await response.json();
         setServices(data.services || []);

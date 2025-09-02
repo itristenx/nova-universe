@@ -4,7 +4,7 @@
  * Tests for the complete Synth v2 API specification compliance
  */
 
-import { describe, test, before, after } from 'node:test';
+import { describe, test, before } from 'node:test';
 import assert from 'node:assert';
 
 // Mock API client for testing
@@ -16,6 +16,9 @@ class SynthV2Client {
 
   async request(method, endpoint, body = null) {
     const url = `${this.baseUrl}${endpoint}`;
+
+    // Log the request for testing purposes
+    console.log(`Mock request: ${method} ${url}`);
 
     // Mock response - in real tests this would make actual HTTP requests
     const response = await this.mockRequest(method, endpoint, body);
@@ -490,6 +493,7 @@ describe('Nova Synth v2 API Specification Compliance', () => {
       } catch (error) {
         // Expected - validation should catch this
         // In real implementation, this would return 400 status
+        console.log('Expected validation error:', error.message);
       }
     });
   });

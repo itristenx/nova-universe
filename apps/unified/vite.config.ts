@@ -3,6 +3,11 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
 // https://vitejs.dev/config/
+const apiTarget = (() => {
+  const raw = process.env.VITE_API_URL || process.env.VITE_API_BASE_URL || process.env.API_URL || 'http://localhost:3000';
+  return raw.endsWith('/') ? raw.slice(0, -1) : raw;
+})();
+
 export default defineConfig({
   plugins: [
     react({
@@ -32,12 +37,19 @@ export default defineConfig({
     cors: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: apiTarget,
         changeOrigin: true,
         secure: false,
       },
+      // Proxy socket.io to API for real-time features
+      '/socket.io': {
+        target: apiTarget,
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
       '/ws': {
-        target: 'http://localhost:3000',
+        target: apiTarget,
         changeOrigin: true,
         secure: false,
         ws: true,

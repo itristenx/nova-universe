@@ -1,9 +1,9 @@
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+import { getCoreClient } from '../lib/database-clients.js';
 import { logger } from '../logger.js';
 
 export class CustomerLinkingService {
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prismaPromise = getCoreClient();
   }
 
   /**
@@ -14,7 +14,8 @@ export class CustomerLinkingService {
       const email = emailAddress.toLowerCase().trim();
 
       // First, check if there's an existing customer record
-      let customer = await this.prisma.customer.findFirst({
+      const prisma = await this.prismaPromise;
+      let customer = await prisma.customer.findFirst({
         where: {
           OR: [{ email: email }, { alternateEmails: { has: email } }],
         },
@@ -26,7 +27,7 @@ export class CustomerLinkingService {
 
       if (customer) {
         // Update last seen
-        await this.prisma.customer.update({
+        await prisma.customer.update({
           where: { id: customer.id },
           data: { lastSeenAt: new Date() },
         });
@@ -35,7 +36,7 @@ export class CustomerLinkingService {
       }
 
       // Check if this email belongs to a Nova user
-      const novaUser = await this.prisma.user.findFirst({
+      const novaUser = await prisma.user.findFirst({
         where: {
           OR: [{ email: email }, { alternateEmails: { has: email } }],
         },
@@ -72,7 +73,7 @@ export class CustomerLinkingService {
         lastSeenAt: new Date(),
       };
 
-      customer = await this.prisma.customer.create({
+      customer = await prisma.customer.create({
         data: customerData,
         include: {
           linkedNovaUser: true,
@@ -82,7 +83,7 @@ export class CustomerLinkingService {
 
       // If linked to Nova user, create reverse link
       if (novaUser) {
-        await this.prisma.user.update({
+        await prisma.user.update({
           where: { id: novaUser.id },
           data: {
             linkedCustomerId: customer.id,
@@ -107,11 +108,12 @@ export class CustomerLinkingService {
    */
   async linkCustomerToNovaUser(customerId, novaUserId) {
     try {
-      const customer = await this.prisma.customer.findUnique({
+      const prisma = await this.prismaPromise;
+      const customer = await prisma.customer.findUnique({
         where: { id: customerId },
       });
 
-      const novaUser = await this.prisma.user.findUnique({
+      const novaUser = await prisma.user.findUnique({
         where: { id: novaUserId },
         include: { roles: true },
       });

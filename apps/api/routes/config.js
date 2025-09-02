@@ -4,14 +4,14 @@
  */
 
 import { Router } from 'express';
-import { PrismaClient } from '../../../prisma/generated/core/index.js';
+import { getCoreClient } from '../lib/database-clients.js';
 import { logger } from '../logger.js';
 import { ensureAuth } from '../middleware/auth.js';
 import { validateConfigValue, getConfigValidationSchema } from '../utils/configValidation.js';
 import ConfigurationService from '../services/configuration.service.js';
 
 const router = Router();
-const prisma = new PrismaClient();
+const prismaPromise = getCoreClient();
 
 /**
  * Hierarchical configuration resolution:
@@ -77,7 +77,8 @@ class ConfigurationManager {
       }
 
       // 2. Check database configuration
-      const dbConfig = await prisma.config.findUnique({
+      const prisma = await prismaPromise;
+      const dbConfig = await prisma?.config.findUnique({
         where: { key },
       });
 
@@ -117,7 +118,8 @@ class ConfigurationManager {
         whereClause.isAdvanced = false;
       }
 
-      const configs = await prisma.config.findMany({
+      const prisma = await prismaPromise;
+      const configs = await prisma?.config.findMany({
         where: whereClause,
         orderBy: [{ displayOrder: 'asc' }, { key: 'asc' }],
       });

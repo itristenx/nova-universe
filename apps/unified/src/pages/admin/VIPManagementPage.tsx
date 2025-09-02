@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { apiFetch } from '@/utils/api';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
 import { cn, formatNumber } from '@utils/index';
 import { useUserStore } from '@stores/users';
@@ -181,7 +182,7 @@ export default function VIPManagementPage() {
       setIsUpdating(userId);
 
       // Simulate API call - replace with actual service call
-      const response = await fetch(`/api/users/${userId}/vip`, {
+      const response = await apiFetch(`/api/users/${userId}/vip`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
