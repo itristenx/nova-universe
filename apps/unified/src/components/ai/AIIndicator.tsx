@@ -3,7 +3,7 @@
  * Shows when AI functionality is present in UI elements
  */
 import React from 'react';
-import { SparklesIcon, BoltIcon, BrainIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, BoltIcon, CpuChipIcon } from '@heroicons/react/24/outline';
 
 interface AIIndicatorProps {
   type?: 'cosmo' | 'ai' | 'smart' | 'powered';
@@ -28,7 +28,7 @@ export function AIIndicator({
 
   const iconComponents = {
     cosmo: SparklesIcon,
-    ai: BrainIcon,
+    ai: CpuChipIcon,
     smart: BoltIcon,
     powered: SparklesIcon
   };

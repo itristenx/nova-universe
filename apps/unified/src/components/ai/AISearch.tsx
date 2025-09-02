@@ -2,7 +2,7 @@
  * AI-Enhanced Search Component
  * Smart search with Cosmo AI assistance
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { MagnifyingGlassIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { AIIndicator, CosmoAvatar } from './index';
 
@@ -46,14 +46,18 @@ export function AISearch({
     
     // Trigger AI mode for natural language queries
     setIsAIMode(value.includes('?') || value.includes('how') || value.includes('what') || value.includes('why'));
-    
-    // Debounced search
+  };
+
+  // Debounced search with proper cleanup
+  useEffect(() => {
     const timeoutId = setTimeout(() => {
-      handleSearch(value);
+      if (query.trim()) {
+        handleSearch(query);
+      }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  };
+  }, [query, handleSearch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
