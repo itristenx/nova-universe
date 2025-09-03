@@ -182,17 +182,25 @@ class ConnectionService {
    * Get API base URL
    */
   private getAPIBaseURL(): string {
+    // Always check for explicit API URL configuration first
+    const configuredApiUrl = import.meta.env.VITE_API_URL;
+    
+    if (configuredApiUrl) {
+      console.log('🔍 Connection Service: Using configured VITE_API_URL:', configuredApiUrl);
+      return configuredApiUrl;
+    }
+    
     // In browser environment, use relative URLs to take advantage of Vite proxy
-    // This avoids CORS issues and uses the proxy configuration
+    // This is only used when VITE_API_URL is not explicitly configured
     if (typeof window !== 'undefined') {
-      console.log('🔍 Connection Service: Using proxy via current origin for browser environment');
+      console.log('🔍 Connection Service: Using proxy via current origin (no VITE_API_URL configured)');
       return window.location.origin;
     }
     
     // Fallback for server-side rendering or non-browser environments
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    console.log('🔍 Connection Service: Using API URL:', apiUrl);
-    return apiUrl;
+    const fallbackUrl = 'http://localhost:3000';
+    console.log('🔍 Connection Service: Using fallback URL:', fallbackUrl);
+    return fallbackUrl;
   }
 
   /**
