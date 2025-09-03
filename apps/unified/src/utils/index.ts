@@ -641,7 +641,6 @@ export const env = {
   apiUrl: getEnvVar('VITE_API_URL', 'http://localhost:8080'),
   wsUrl: getEnvVar('VITE_WS_URL', 'ws://localhost:8080'),
   devTools: getEnvVar('VITE_DEV_TOOLS') === 'true',
-  useMockData: getEnvVar('VITE_USE_MOCK_DATA') === 'true',
   profileUpdatesEnabled: getEnvVar('VITE_PROFILE_UPDATES_ENABLED') === 'true',
   enabledFeatures: getEnvVar('VITE_ENABLED_FEATURES')?.split(',') || [],
 };
@@ -651,28 +650,4 @@ export const env = {
  */
 export const isFeatureEnabled = (feature: string): boolean => {
   return env.enabledFeatures.includes(feature);
-};
-
-/**
- * Handle API operations with graceful fallback to mock data
- */
-export const withMockFallback = async <T>(
-  apiCall: () => Promise<T>,
-  mockData: T,
-  fallbackMessage?: string,
-): Promise<T> => {
-  if (env.useMockData) {
-    console.info(fallbackMessage || 'Using mock data (development mode)');
-    return Promise.resolve(mockData);
-  }
-
-  try {
-    return await apiCall();
-  } catch (_error) {
-    console.warn('API call failed, falling back to mock data:', {
-      error: _error instanceof Error ? _error.message : String(_error),
-      timestamp: new Date().toISOString()
-    });
-    return mockData;
-  }
 };
