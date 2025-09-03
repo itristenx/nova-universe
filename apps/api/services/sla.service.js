@@ -1,12 +1,15 @@
 import db from '../db.js';
 import { logger } from '../logger.js';
+import { SLAMatrixService } from './sla-matrix.service.js';
 
 /**
- * SLA Service - Manages Service Level Agreements and compliance
+ * Enhanced SLA Service - Manages Service Level Agreements and compliance
+ * Now includes industry-standard Impact vs Urgency matrix calculations
  */
 export class SLAService {
   /**
-   * Determine the appropriate SLA for a ticket based on priority, category, and user type
+   * Enhanced SLA determination using Impact vs Urgency matrix
+   * Following ServiceNow and ITIL best practices
    */
   static async determineSLA(ticketData) {
     try {
@@ -14,37 +17,121 @@ export class SLAService {
 
       // Check if user is VIP
       const isVip = await this.isVipUser(userId);
+      const vipLevel = isVip ? await this.getVipLevel(userId) : null;
 
-      // Find matching SLA
-      const sla = await db.slaDefinition.findFirst({
-        where: {
-          isActive: true,
-          OR: [
-            // Exact match criteria
-            {
-              AND: [
-                { priority: { in: [priority, null] } },
-                { category: { in: [category, null] } },
-                { subcategory: { in: [subcategory, null] } },
-                { isVipOnly: isVip ? true : { not: true } },
-              ],
-            },
-            // Fallback to default SLA
-            {
-              isDefault: true,
-            },
-          ],
-        },
-        orderBy: [{ isVipOnly: 'desc' }, { priority: 'asc' }, { isDefault: 'asc' }],
-      });
+      // Enhanced ticket data for matrix calculation
+      const enhancedTicketData = {
+        ...ticketData,
+        isVip,
+        vipLevel,
+        businessHours: this.isBusinessHours()
+      };
 
-      return sla;
+      // Calculate SLA using Impact vs Urgency matrix
+      const slaCalculation = SLAMatrixService.calculateTicketSLA(enhancedTicketData);
+
+      // Find or create matching SLA definition
+      const sla = await this.findOrCreateSLADefinition(slaCalculation);
+
+      return {
+        ...sla,
+        calculation: slaCalculation
+      };
     } catch (error) {
       logger.error('Error determining SLA:', error);
       return null;
     }
   }
 
+  /**
+   * Find or create SLA definition based on calculation
+   */
+  static async findOrCreateSLADefinition(slaCalculation) {
+    try {
+      const { 
+        priority, 
+        priorityLabel, 
+        userType, 
+        slaPolicy,
+        impact,
+        urgency
+      } = slaCalculation;
+
+      // Try to find existing SLA definition
+      let sla = await db.slaDefinition.findFirst({
+        where: {
+          priority: priorityLabel.toUpperCase(),
+          isVipOnly: userType !== 'standard',
+          responseTime: slaPolicy.responseTime,
+          resolutionTime: slaPolicy.resolutionTime,
+          isActive: true
+        }
+      });
+
+      // Create new SLA definition if not found
+      if (!sla) {
+        sla = await db.slaDefinition.create({
+          data: {
+            name: `${slaPolicy.templateName} - ${priorityLabel}`,
+            description: `Auto-generated SLA for ${priorityLabel} priority ${userType} tickets (Impact: ${slaCalculation.impactLabel}, Urgency: ${slaCalculation.urgencyLabel})`,
+            priority: priorityLabel.toUpperCase(),
+            responseTime: slaPolicy.responseTime,
+            resolutionTime: slaPolicy.resolutionTime,
+            escalationTime: slaPolicy.escalationTime,
+            isVipOnly: userType !== 'standard',
+            isActive: true,
+            isDefault: false,
+            metadata: {
+              impact: impact,
+              urgency: urgency,
+              userType: userType,
+              escalationLevel: slaPolicy.escalationLevel,
+              templateName: slaPolicy.templateName,
+              calculationMatrix: 'impact_urgency_v1'
+            }
+          }
+        });
+
+        logger.info(`Created new SLA definition: ${sla.name} (ID: ${sla.id})`);
+      }
+
+      return sla;
+    } catch (error) {
+      logger.error('Error finding/creating SLA definition:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get VIP level for user
+   */
+  static async getVipLevel(userId) {
+    if (!userId) return null;
+
+    try {
+      const userExtended = await db.userExtended.findUnique({
+        where: { userId },
+        select: { vipLevel: true },
+      });
+
+      return userExtended?.vipLevel;
+    } catch (error) {
+      logger.error('Error getting VIP level:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if current time is within business hours
+   */
+  static isBusinessHours() {
+    const now = new Date();
+    const hour = now.getHours();
+    const day = now.getDay(); // 0 = Sunday, 6 = Saturday
+    
+    // Business hours: Monday-Friday, 8 AM - 6 PM
+    return day >= 1 && day <= 5 && hour >= 8 && hour < 18;
+  }
   /**
    * Check if a user is VIP
    */
@@ -65,22 +152,44 @@ export class SLAService {
   }
 
   /**
-   * Calculate priority score based on priority, urgency, and impact
+   * Enhanced priority calculation using Impact vs Urgency matrix
+   * Replaces the basic weighted calculation with industry standard approach
    */
   static calculatePriorityScore(priority, urgency, impact) {
-    const scoreMap = {
-      CRITICAL: 4,
-      HIGH: 3,
-      MEDIUM: 2,
-      LOW: 1,
-    };
+    // Normalize inputs for matrix calculation
+    const normalizedUrgency = SLAMatrixService.normalizeLevel(urgency);
+    const normalizedImpact = SLAMatrixService.normalizeLevel(impact);
+    
+    // Calculate priority using matrix
+    const matrixPriority = SLAMatrixService.calculatePriority(normalizedImpact, normalizedUrgency);
+    
+    // Return the matrix result (1-4 scale)
+    return matrixPriority;
+  }
 
-    const priorityScore = scoreMap[priority] || 2;
-    const urgencyScore = scoreMap[urgency] || 2;
-    const impactScore = scoreMap[impact] || 2;
+  /**
+   * Get enhanced ticket SLA calculation
+   */
+  static async getTicketSLACalculation(ticketData) {
+    try {
+      // Check if user is VIP
+      const isVip = await this.isVipUser(ticketData.userId);
+      const vipLevel = isVip ? await this.getVipLevel(ticketData.userId) : null;
 
-    // Weighted calculation: urgency and impact are primary factors
-    return Math.round(urgencyScore * 0.4 + impactScore * 0.4 + priorityScore * 0.2);
+      // Enhanced ticket data for matrix calculation
+      const enhancedTicketData = {
+        ...ticketData,
+        isVip,
+        vipLevel,
+        businessHours: this.isBusinessHours()
+      };
+
+      // Calculate SLA using Impact vs Urgency matrix
+      return SLAMatrixService.calculateTicketSLA(enhancedTicketData);
+    } catch (error) {
+      logger.error('Error getting ticket SLA calculation:', error);
+      throw error;
+    }
   }
 
   /**
@@ -434,6 +543,164 @@ export class SLAService {
       };
     } catch (error) {
       logger.error('Error in SLA monitoring job:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create standard SLA policies from templates
+   */
+  static async createStandardSLAPolicies() {
+    try {
+      logger.info('Creating standard SLA policies...');
+
+      const templates = SLAMatrixService.DEFAULT_SLA_TEMPLATES;
+      const createdPolicies = [];
+
+      for (const [templateKey, template] of Object.entries(templates)) {
+        for (const [priority, policy] of Object.entries(template.policies)) {
+          const priorityLabel = SLAMatrixService.getPriorityLabel(parseInt(priority));
+          
+          // Check if policy already exists
+          const existing = await db.slaDefinition.findFirst({
+            where: {
+              name: `${template.name} - ${priorityLabel}`,
+              isActive: true
+            }
+          });
+
+          if (!existing) {
+            const slaPolicy = await db.slaDefinition.create({
+              data: {
+                name: `${template.name} - ${priorityLabel}`,
+                description: `${template.description} - ${priorityLabel} priority`,
+                priority: priorityLabel.toUpperCase(),
+                responseTime: policy.responseTime,
+                resolutionTime: policy.resolutionTime,
+                escalationTime: policy.escalationTime,
+                isVipOnly: templateKey !== 'standard',
+                isActive: true,
+                isDefault: templateKey === 'standard' && priority === '4', // Low priority standard is default
+                metadata: {
+                  templateKey,
+                  escalationLevel: policy.escalationLevel,
+                  templateName: template.name,
+                  calculationMatrix: 'impact_urgency_v1'
+                }
+              }
+            });
+
+            createdPolicies.push(slaPolicy);
+            logger.info(`Created SLA policy: ${slaPolicy.name}`);
+          }
+        }
+      }
+
+      logger.info(`Created ${createdPolicies.length} new SLA policies`);
+      return createdPolicies;
+    } catch (error) {
+      logger.error('Error creating standard SLA policies:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get SLA policy recommendations for a ticket
+   */
+  static async getSLARecommendations(ticketData) {
+    try {
+      const slaCalculation = await this.getTicketSLACalculation(ticketData);
+      
+      return {
+        calculation: slaCalculation,
+        recommendations: {
+          priority: slaCalculation.priorityLabel,
+          impact: slaCalculation.impactLabel,
+          urgency: slaCalculation.urgencyLabel,
+          responseTime: `${slaCalculation.slaPolicy.responseTime} minutes`,
+          resolutionTime: `${slaCalculation.slaPolicy.resolutionTime} minutes`,
+          escalationTime: `${slaCalculation.slaPolicy.escalationTime} minutes`,
+          escalationLevel: slaCalculation.slaPolicy.escalationLevel,
+          userType: slaCalculation.userType
+        },
+        matrix: {
+          impactLevel: slaCalculation.impact,
+          urgencyLevel: slaCalculation.urgency,
+          priorityLevel: slaCalculation.priority,
+          matrixKey: `${slaCalculation.impact},${slaCalculation.urgency}`
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting SLA recommendations:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Validate and update custom SLA matrix
+   */
+  static async updateCustomSLAMatrix(matrixConfig, tenantId = 'default') {
+    try {
+      // Validate matrix configuration
+      if (!SLAMatrixService.validateMatrix(matrixConfig)) {
+        throw new Error('Invalid matrix configuration');
+      }
+
+      // Store custom matrix (this would typically go to a configuration table)
+      // For now, we'll log it as this would require schema changes
+      logger.info(`Custom SLA matrix validated for tenant ${tenantId}:`, matrixConfig);
+      
+      return {
+        success: true,
+        message: 'Custom SLA matrix configuration is valid',
+        matrix: matrixConfig
+      };
+    } catch (error) {
+      logger.error('Error updating custom SLA matrix:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get SLA compliance dashboard data
+   */
+  static async getSLADashboardData(filters = {}) {
+    try {
+      const metrics = await this.getSLAMetrics(filters);
+      const upcomingBreaches = await this.getUpcomingSLABreaches(24);
+      
+      // Get priority distribution
+      const priorityDistribution = await db.enhancedSupportTicket.groupBy({
+        by: ['priority'],
+        _count: true,
+        where: {
+          createdAt: {
+            gte: filters.startDate ? new Date(filters.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+          }
+        }
+      });
+
+      // Get SLA template usage
+      const slaUsage = await db.enhancedSupportTicket.groupBy({
+        by: ['slaId'],
+        _count: true,
+        where: {
+          slaId: { not: null },
+          createdAt: {
+            gte: filters.startDate ? new Date(filters.startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+          }
+        }
+      });
+
+      return {
+        compliance: metrics,
+        upcomingBreaches: upcomingBreaches.length,
+        priorityDistribution,
+        slaUsage,
+        dashboardGeneratedAt: new Date()
+      };
+    } catch (error) {
+      logger.error('Error getting SLA dashboard data:', error);
       throw error;
     }
   }

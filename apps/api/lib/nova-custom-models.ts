@@ -1,4 +1,6 @@
 import { EventEmitter } from 'events';
+import { SLAMatrixService } from './sla-matrix.service.js';
+import { logger } from '../logger.js';
 import * as tf from '@tensorflow/tfjs-node';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -1235,7 +1237,8 @@ export class NovaCustomModels extends EventEmitter {
   }
 
   /**
-   * Process priority scoring
+   * Enhanced priority scoring using Impact vs Urgency matrix
+   * Follows ServiceNow and ITIL industry standards
    */
   private async processPriorityScoring(
     request: NovaModelRequest,
@@ -1257,63 +1260,168 @@ export class NovaCustomModels extends EventEmitter {
 
     const ticket = request.input;
 
-    // Calculate priority factors with model-specific weightings
-    const businessImpact = this.calculateBusinessImpact(ticket) * priorityPrecision;
-    const urgency = this.calculateUrgency(ticket);
-    const userPriority = this.calculateUserPriority(ticket);
-    const technicalComplexity = this.calculateTechnicalComplexity(ticket);
+    try {
+      // Use the new SLA Matrix Service for industry-standard calculation
+      const slaCalculation = SLAMatrixService.calculateTicketSLA(ticket);
 
-    const priorityScore =
-      businessImpact * 0.4 + urgency * 0.3 + userPriority * 0.2 + technicalComplexity * 0.1;
+      // Legacy factor calculations for comparison and explanation
+      const businessImpact = this.calculateBusinessImpact(ticket) * priorityPrecision;
+      const urgency = this.calculateUrgency(ticket);
+      const userPriority = this.calculateUserPriority(ticket);
+      const technicalComplexity = this.calculateTechnicalComplexity(ticket);
 
-    let priority = 'low';
-    if (priorityScore > 0.8) priority = 'critical';
-    else if (priorityScore > 0.6) priority = 'high';
-    else if (priorityScore > 0.4) priority = 'medium';
+      // Use matrix-calculated priority as primary result
+      const priority = slaCalculation.priorityLabel.toLowerCase();
+      const priorityScore = (5 - slaCalculation.priority) / 4; // Convert 1-4 scale to 0-1 scale
 
-    const prediction = {
-      priority,
-      priority_score: priorityScore,
-      factors: {
-        business_impact: businessImpact,
-        urgency,
-        user_priority: userPriority,
-        technical_complexity: technicalComplexity,
-      },
-      sla_target: this.getSLATarget(priority),
-      recommended_assignment: this.getRecommendedAssignment(priority, ticket.category),
-      escalation_path: this.getEscalationPath(priority),
-    };
-
-    const explanation = {
-      reasoning: `Priority calculated as ${priority} based on weighted factor analysis`,
-      key_factors: [
-        {
-          factor: 'business_impact',
-          weight: 0.4,
-          impact: businessImpact > 0.5 ? 'positive' : 'neutral',
+      const prediction = {
+        priority,
+        priority_score: priorityScore,
+        matrix_priority: slaCalculation.priority,
+        impact: slaCalculation.impactLabel.toLowerCase(),
+        urgency: slaCalculation.urgencyLabel.toLowerCase(),
+        factors: {
+          business_impact: businessImpact,
+          urgency,
+          user_priority: userPriority,
+          technical_complexity: technicalComplexity,
+          // New matrix-based factors
+          analyzed_impact: slaCalculation.impact,
+          analyzed_urgency: slaCalculation.urgency,
+          matrix_key: `${slaCalculation.impact},${slaCalculation.urgency}`
         },
-        { factor: 'urgency', weight: 0.3, impact: urgency > 0.5 ? 'positive' : 'neutral' },
-        {
-          factor: 'user_priority',
-          weight: 0.2,
-          impact: userPriority > 0.5 ? 'positive' : 'neutral',
-        },
-        {
-          factor: 'technical_complexity',
-          weight: 0.1,
-          impact: technicalComplexity > 0.5 ? 'negative' : 'neutral',
-        },
-      ],
-      decision_path: [
-        'Factor assessment',
-        'Weighted scoring',
-        'Priority classification',
-        'SLA assignment',
-      ],
-    };
+        sla_target: this.getSLATarget(priority),
+        sla_policy: slaCalculation.slaPolicy,
+        recommended_assignment: this.getRecommendedAssignment(priority, ticket.category),
+        escalation_path: this.getEscalationPath(priority),
+        // Enhanced SLA information
+        enhanced_sla: {
+          response_time_minutes: slaCalculation.slaPolicy.responseTime,
+          resolution_time_minutes: slaCalculation.slaPolicy.resolutionTime,
+          escalation_time_minutes: slaCalculation.slaPolicy.escalationTime,
+          escalation_level: slaCalculation.slaPolicy.escalationLevel,
+          user_type: slaCalculation.userType,
+          targets: slaCalculation.targets
+        }
+      };
 
-    return { prediction, confidence: 0.9, explanation };
+      const explanation = {
+        reasoning: `Priority calculated as ${priority} using industry-standard Impact vs Urgency matrix (Impact: ${slaCalculation.impactLabel}, Urgency: ${slaCalculation.urgencyLabel})`,
+        matrix_calculation: {
+          impact_level: slaCalculation.impact,
+          impact_label: slaCalculation.impactLabel,
+          urgency_level: slaCalculation.urgency,
+          urgency_label: slaCalculation.urgencyLabel,
+          priority_level: slaCalculation.priority,
+          priority_label: slaCalculation.priorityLabel,
+          matrix_position: `${slaCalculation.impact},${slaCalculation.urgency}`
+        },
+        legacy_factors: [
+          {
+            factor: 'business_impact',
+            weight: 0.4,
+            value: businessImpact,
+            impact: businessImpact > 0.5 ? 'positive' : 'neutral',
+          },
+          { 
+            factor: 'urgency', 
+            weight: 0.3, 
+            value: urgency,
+            impact: urgency > 0.5 ? 'positive' : 'neutral' 
+          },
+          {
+            factor: 'user_priority',
+            weight: 0.2,
+            value: userPriority,
+            impact: userPriority > 0.5 ? 'positive' : 'neutral',
+          },
+          {
+            factor: 'technical_complexity',
+            weight: 0.1,
+            value: technicalComplexity,
+            impact: technicalComplexity > 0.5 ? 'negative' : 'neutral',
+          },
+        ],
+        decision_path: [
+          'Content analysis for impact assessment',
+          'Context analysis for urgency assessment', 
+          'Impact vs Urgency matrix lookup',
+          'Priority classification',
+          'SLA policy assignment',
+          'Escalation path determination'
+        ],
+        sla_rationale: `${slaCalculation.userType} user type selected SLA template with ${slaCalculation.slaPolicy.responseTime}min response, ${slaCalculation.slaPolicy.resolutionTime}min resolution targets`
+      };
+
+      // Higher confidence for matrix-based calculation
+      const confidence = Math.min(0.95, scoringAccuracy + 0.1);
+
+      return { prediction, confidence, explanation };
+
+    } catch (error) {
+      logger.error('Error in enhanced priority scoring, falling back to legacy method:', error);
+
+      // Fallback to legacy calculation if matrix calculation fails
+      const businessImpact = this.calculateBusinessImpact(ticket) * priorityPrecision;
+      const urgency = this.calculateUrgency(ticket);
+      const userPriority = this.calculateUserPriority(ticket);
+      const technicalComplexity = this.calculateTechnicalComplexity(ticket);
+
+      const priorityScore =
+        businessImpact * 0.4 + urgency * 0.3 + userPriority * 0.2 + technicalComplexity * 0.1;
+
+      let priority = 'low';
+      if (priorityScore > 0.8) priority = 'critical';
+      else if (priorityScore > 0.6) priority = 'high';
+      else if (priorityScore > 0.4) priority = 'medium';
+
+      const prediction = {
+        priority,
+        priority_score: priorityScore,
+        factors: {
+          business_impact: businessImpact,
+          urgency,
+          user_priority: userPriority,
+          technical_complexity: technicalComplexity,
+        },
+        sla_target: this.getSLATarget(priority),
+        recommended_assignment: this.getRecommendedAssignment(priority, ticket.category),
+        escalation_path: this.getEscalationPath(priority),
+        fallback_mode: true,
+        fallback_reason: error.message
+      };
+
+      const explanation = {
+        reasoning: `Priority calculated as ${priority} using legacy weighted factor analysis (fallback mode)`,
+        key_factors: [
+          {
+            factor: 'business_impact',
+            weight: 0.4,
+            impact: businessImpact > 0.5 ? 'positive' : 'neutral',
+          },
+          { factor: 'urgency', weight: 0.3, impact: urgency > 0.5 ? 'positive' : 'neutral' },
+          {
+            factor: 'user_priority',
+            weight: 0.2,
+            impact: userPriority > 0.5 ? 'positive' : 'neutral',
+          },
+          {
+            factor: 'technical_complexity',
+            weight: 0.1,
+            impact: technicalComplexity > 0.5 ? 'negative' : 'neutral',
+          },
+        ],
+        decision_path: [
+          'Factor assessment',
+          'Weighted scoring',
+          'Priority classification',
+          'SLA assignment',
+        ],
+        fallback_mode: true
+      };
+
+      return { prediction, confidence: 0.85, explanation };
+    }
   }
 
   /**
