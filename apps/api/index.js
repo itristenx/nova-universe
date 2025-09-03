@@ -1566,14 +1566,12 @@ v1Router.post(
 
 // Health check endpoint for debugging frontend connectivity
 app.get('/api/health', (req, res) => {
-  if (!db || !db.query) {
-    return res.status(503).json({ status: 'starting' });
-  }
   const uptime = Math.floor(process.uptime());
   const hours = Math.floor(uptime / 3600);
   const minutes = Math.floor((uptime % 3600) / 60);
   const seconds = uptime % 60;
-  res.json({
+  
+  const response = {
     status: 'ok',
     timestamp: new Date().toISOString(),
     cors: req.headers.origin || 'no-origin',
@@ -1582,7 +1580,17 @@ app.get('/api/health', (req, res) => {
     cliVersion: getCliVersion(),
     uptime: `${hours}h ${minutes}m ${seconds}s`,
     uptimeSeconds: uptime,
-  });
+  };
+
+  // If database is not ready, indicate it but still return 200 for API health
+  if (!db || !db.query) {
+    response.database = 'starting';
+    response.note = 'API is running, database initializing';
+  } else {
+    response.database = 'ready';
+  }
+
+  res.json(response);
 });
 
 // Root health endpoint with performance monitoring
@@ -2582,10 +2590,10 @@ if (
 
       // Initialize Nova RAG systems
       try {
-        const { ragRBAC } = await import('./lib/nova-rag-rbac.js');
-        const { ragEngine } = await import('./lib/rag-engine.js');
-        const { ragDataConnectors } = await import('./lib/nova-rag-data-connectors.js');
-        const { novaSynthRAG } = await import('./lib/nova-synth-rag-integration.js');
+        const { ragRBAC } = await import('./lib/nova-rag-rbac.ts');
+        const { ragEngine } = await import('./lib/rag-engine.ts');
+        const { ragDataConnectors } = await import('./lib/nova-rag-data-connectors.ts');
+        const { novaSynthRAG } = await import('./lib/nova-synth-rag-integration.ts');
 
         logger.info('🧠 Initializing Nova RAG systems...');
         
