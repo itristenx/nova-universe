@@ -121,7 +121,7 @@ class ConnectionService {
     }
 
     // Check if we're using mock data mode for demo screenshots
-    const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
+    const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true' && import.meta.env.NODE_ENV !== 'production';
     if (useMockData) {
       // Simulate a successful connection for demo mode
       this.status.isAPIConnected = true;

@@ -937,22 +937,82 @@ export class NovaRAGEngine extends EventEmitter {
   }
 
   private async generateOpenAIEmbedding(text: string, model: EmbeddingModel): Promise<number[]> {
-    // OpenAI API call for embeddings
-    // This would make actual API call
-    return new Array(model.dimensions).fill(0).map(() => Math.random() - 0.5);
+    if (!model.config.apiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    try {
+      const response = await fetch(model.config.endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${model.config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input: text,
+          model: model.model,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.data[0].embedding;
+    } catch (error) {
+      logger.error('Failed to generate OpenAI embedding:', error);
+      throw new Error(`OpenAI embedding generation failed: ${error.message}`);
+    }
   }
 
   private async generateHuggingFaceEmbedding(
     text: string,
     model: EmbeddingModel,
   ): Promise<number[]> {
-    // HuggingFace API call for embeddings
-    return new Array(model.dimensions).fill(0).map(() => Math.random() - 0.5);
+    if (!model.config.apiKey) {
+      throw new Error('HuggingFace API key not configured');
+    }
+
+    try {
+      const response = await fetch(model.config.endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${model.config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: text,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HuggingFace API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : data.embeddings || data;
+    } catch (error) {
+      logger.error('Failed to generate HuggingFace embedding:', error);
+      throw new Error(`HuggingFace embedding generation failed: ${error.message}`);
+    }
   }
 
   private async generateLocalEmbedding(text: string, model: EmbeddingModel): Promise<number[]> {
-    // Local embedding model inference
-    return new Array(model.dimensions).fill(0).map(() => Math.random() - 0.5);
+    try {
+      // For local models, we would use TensorFlow.js or ONNX runtime
+      // This is a placeholder for the actual local inference
+      if (!model.config.modelPath) {
+        throw new Error('Local model path not configured');
+      }
+
+      // In production, this would load and run a local model
+      // For now, throw an error to indicate not implemented
+      throw new Error('Local embedding model not yet implemented. Please use OpenAI or HuggingFace models.');
+    } catch (error) {
+      logger.error('Failed to generate local embedding:', error);
+      throw new Error(`Local embedding generation failed: ${error.message}`);
+    }
   }
 
   private async addToVectorStore(chunk: DocumentChunk): Promise<void> {
