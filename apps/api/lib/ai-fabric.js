@@ -9,6 +9,7 @@ import crypto from 'crypto';
 /**
  * AI Fabric Core System - Enterprise Implementation
  * Orchestrates multiple AI providers with full compliance and governance
+ * Nova models are always enabled, external providers are admin-controlled
  *
  * Standards Compliance:
  * - NIST AI Risk Management Framework (AI RMF 1.0)
@@ -31,6 +32,15 @@ class AIFabric extends EventEmitter {
     this.circuitBreakers = new Map();
     this.rateLimits = new Map();
     this.complianceFlags = new Set();
+
+    // External provider configuration - admin controlled
+    this.externalProviderConfig = {
+      enabled: false, // External providers disabled by default
+      allowedProviders: new Set(), // Which external providers are allowed
+      adminOverride: false, // Admin can override settings
+      lastModified: new Date(),
+      modifiedBy: null
+    };
 
     // Initialize subsystems with enterprise compliance
     this.externalProviders = new ExternalAIProviders();
@@ -444,8 +454,74 @@ class AIFabric extends EventEmitter {
     // Notify governance framework
     await this.governanceFramework.handleHighRiskRequest(request);
   }
+  /**
+   * Register default providers with Nova models always enabled
+   */
   async registerDefaultProviders() {
-    const defaultProviders = [
+    // Nova providers are ALWAYS enabled and registered first
+    const novaProviders = [
+      {
+        id: 'nova-local-classifier',
+        name: 'Nova Local Classifier',
+        type: 'internal',
+        capabilities: ['classification', 'intent_detection'],
+        config: {
+          modelPath: '/models/nova-classifier',
+          threshold: 0.7,
+        },
+        isActive: true, // Always active
+        isNova: true, // Identifies as Nova provider
+        canDisable: false, // Cannot be disabled
+        healthStatus: 'healthy',
+        lastHealthCheck: new Date(),
+      },
+      {
+        id: 'nova-custom-models',
+        name: 'Nova Custom Models',
+        type: 'nova_custom',
+        capabilities: ['ticket_classification', 'incident_prediction', 'workflow_optimization'],
+        config: {
+          modelPath: '/models/nova-custom',
+        },
+        isActive: true, // Always active
+        isNova: true, // Identifies as Nova provider
+        canDisable: false, // Cannot be disabled
+        healthStatus: 'healthy',
+        lastHealthCheck: new Date(),
+      },
+      {
+        id: 'nova-local-ai',
+        name: 'Nova Local AI',
+        type: 'nova_local',
+        capabilities: ['text_generation', 'classification', 'sentiment', 'prediction'],
+        config: {
+          modelPath: '/models/nova-local-ai',
+        },
+        isActive: true, // Always active
+        isNova: true, // Identifies as Nova provider
+        canDisable: false, // Cannot be disabled
+        healthStatus: 'healthy',
+        lastHealthCheck: new Date(),
+      },
+      {
+        id: 'nova-rag-engine',
+        name: 'Nova RAG Engine',
+        type: 'rag',
+        capabilities: ['knowledge_retrieval', 'document_search', 'context_generation'],
+        config: {
+          dataSource: 'nova_knowledge_base',
+          embeddingModel: 'nova-local-embeddings',
+        },
+        isActive: true, // Always active
+        isNova: true, // Identifies as Nova provider
+        canDisable: false, // Cannot be disabled
+        healthStatus: 'healthy',
+        lastHealthCheck: new Date(),
+      }
+    ];
+
+    // External providers - only register if enabled by admin
+    const externalProviders = [
       {
         id: 'openai-gpt4',
         name: 'OpenAI GPT-4',
@@ -456,29 +532,46 @@ class AIFabric extends EventEmitter {
           model: 'gpt-4-turbo',
           endpoint: 'https://api.openai.com/v1/chat/completions',
         },
-        isActive: !!process.env.OPENAI_API_KEY,
+        isActive: !!process.env.OPENAI_API_KEY && this.externalProviderConfig.enabled,
+        isNova: false, // External provider
+        canDisable: true, // Can be disabled by admin
         healthStatus: 'healthy',
         lastHealthCheck: new Date(),
       },
       {
-        id: 'nova-local-classifier',
-        name: 'Nova Local Classifier',
-        type: 'internal',
-        capabilities: ['classification', 'intent_detection'],
+        id: 'anthropic-claude',
+        name: 'Anthropic Claude',
+        type: 'external',
+        capabilities: ['text_generation', 'analysis', 'reasoning'],
         config: {
-          modelPath: '/models/nova-classifier',
-          threshold: 0.7,
+          apiKey: process.env.ANTHROPIC_API_KEY,
+          model: 'claude-3-sonnet',
+          endpoint: 'https://api.anthropic.com/v1/messages',
         },
-        isActive: true,
+        isActive: !!process.env.ANTHROPIC_API_KEY && this.externalProviderConfig.enabled,
+        isNova: false, // External provider
+        canDisable: true, // Can be disabled by admin
         healthStatus: 'healthy',
         lastHealthCheck: new Date(),
-      },
+      }
     ];
 
-    for (const provider of defaultProviders) {
-      if (provider.isActive) {
-        await this.registerProvider(provider);
+    // Always register Nova providers first
+    for (const provider of novaProviders) {
+      await this.registerProvider(provider);
+      logger.info(`Nova provider ${provider.id} registered and enabled (cannot be disabled)`);
+    }
+
+    // Only register external providers if enabled by admin
+    if (this.externalProviderConfig.enabled) {
+      for (const provider of externalProviders) {
+        if (provider.isActive && this.isExternalProviderAllowed(provider.id)) {
+          await this.registerProvider(provider);
+          logger.info(`External provider ${provider.id} registered (admin-controlled)`);
+        }
       }
+    } else {
+      logger.info('External providers disabled by admin configuration');
     }
   }
 
@@ -491,9 +584,9 @@ class AIFabric extends EventEmitter {
       throw new Error(`No available providers for request type: ${request.type}`);
     }
 
-    // NOVA DATA PRIORITIZATION: Prioritize Nova's own AI models and data sources
+    // NOVA DATA PRIORITIZATION: Nova models are ALWAYS prioritized and cannot be disabled
     
-    // First priority: Nova Custom Models (highest priority)
+    // First priority: Nova Custom Models (highest priority, always available)
     const novaCustomModels = candidates.filter(p => 
       p.type === 'nova_custom' || p.id.includes('nova-custom')
     );
@@ -502,7 +595,7 @@ class AIFabric extends EventEmitter {
       return novaCustomModels[0].id;
     }
 
-    // Second priority: Nova Local AI models
+    // Second priority: Nova Local AI models (always available)
     const novaLocalModels = candidates.filter(p => 
       p.type === 'nova_local' || p.id.includes('nova-local')
     );
@@ -511,7 +604,7 @@ class AIFabric extends EventEmitter {
       return novaLocalModels[0].id;
     }
 
-    // Third priority: Nova RAG with Nova data sources
+    // Third priority: Nova RAG with Nova data sources (always available)
     const novaRAGProviders = candidates.filter(p => 
       p.type === 'rag' && p.config?.dataSource?.startsWith('nova_')
     );
@@ -520,38 +613,45 @@ class AIFabric extends EventEmitter {
       return novaRAGProviders[0].id;
     }
 
-    // Fourth priority: Internal Nova providers
+    // Fourth priority: Internal Nova providers (always available)
     const internalProviders = candidates.filter(p => 
-      p.type === 'internal' || p.provider === 'nova' || p.id.includes('nova')
+      (p.type === 'internal' || p.provider === 'nova' || p.id.includes('nova')) && p.isNova !== false
     );
     if (internalProviders.length > 0) {
       logger.info(`Routing to Nova Internal Provider: ${internalProviders[0].id}`);
       return internalProviders[0].id;
     }
 
-    // If preferences specified for external providers, apply them as fallback
-    if (request.preferences?.preferredProviders?.length) {
-      const preferred = candidates.find((p) =>
-        request.preferences.preferredProviders.includes(p.id),
-      );
-      if (preferred) {
-        logger.warn(`Falling back to external provider: ${preferred.id}`);
-        return preferred.id;
-      }
+    // External providers are only available if enabled by admin
+    if (!this.externalProviderConfig.enabled) {
+      logger.warn('All Nova providers exhausted and external providers are disabled by admin');
+      throw new Error('No available providers - external providers disabled by administrator');
     }
 
-    // Last resort: external providers (with reduced priority)
+    // Fifth priority: External providers (only if enabled by admin)
     const externalProviders = candidates.filter(p => 
-      !p.id.includes('nova') && !p.provider === 'nova'
+      !p.isNova && p.type === 'external' && this.isExternalProviderAllowed(p.id)
     );
+    
     if (externalProviders.length > 0) {
-      logger.warn(`Using external provider as last resort: ${externalProviders[0].id}`);
+      // Check if preferences specified for external providers
+      if (request.preferences?.preferredProviders?.length) {
+        const preferred = externalProviders.find((p) =>
+          request.preferences.preferredProviders.includes(p.id),
+        );
+        if (preferred) {
+          logger.warn(`Using admin-approved external provider: ${preferred.id}`);
+          return preferred.id;
+        }
+      }
+
+      logger.warn(`Using admin-approved external provider: ${externalProviders[0].id}`);
       return externalProviders[0].id;
     }
 
-    // Fallback to first available provider
-    logger.warn(`Using fallback provider: ${candidates[0].id}`);
-    return candidates[0].id;
+    // No providers available
+    logger.error('No providers available - all Nova providers exhausted and external providers unavailable');
+    throw new Error('No available providers for request processing');
   }
 
   async execute(providerId, request) {
@@ -807,6 +907,164 @@ class AIFabric extends EventEmitter {
     if (healthyCount === totalCount) return 'healthy';
     if (healthyCount > totalCount * 0.7) return 'degraded';
     return 'unhealthy';
+  }
+
+  /**
+   * Check if external provider is allowed by admin configuration
+   */
+  isExternalProviderAllowed(providerId) {
+    if (!this.externalProviderConfig.enabled) {
+      return false;
+    }
+    
+    // If no specific providers are configured, allow all
+    if (this.externalProviderConfig.allowedProviders.size === 0) {
+      return true;
+    }
+    
+    return this.externalProviderConfig.allowedProviders.has(providerId);
+  }
+
+  /**
+   * Enable external providers (admin only)
+   */
+  async enableExternalProviders(adminUserId, allowedProviders = []) {
+    const previousConfig = { ...this.externalProviderConfig };
+    
+    this.externalProviderConfig.enabled = true;
+    this.externalProviderConfig.allowedProviders = new Set(allowedProviders);
+    this.externalProviderConfig.lastModified = new Date();
+    this.externalProviderConfig.modifiedBy = adminUserId;
+
+    // Re-register providers with new configuration
+    await this.registerDefaultProviders();
+
+    // Log configuration change
+    await this.auditConfigurationChange('external_providers_enabled', previousConfig, this.externalProviderConfig, adminUserId);
+
+    logger.info(`External providers enabled by admin ${adminUserId}`, {
+      allowedProviders: Array.from(this.externalProviderConfig.allowedProviders),
+      timestamp: this.externalProviderConfig.lastModified
+    });
+
+    this.emit('externalProvidersEnabled', {
+      adminUserId,
+      allowedProviders: Array.from(this.externalProviderConfig.allowedProviders)
+    });
+  }
+
+  /**
+   * Disable external providers (admin only)
+   */
+  async disableExternalProviders(adminUserId) {
+    const previousConfig = { ...this.externalProviderConfig };
+    
+    this.externalProviderConfig.enabled = false;
+    this.externalProviderConfig.allowedProviders.clear();
+    this.externalProviderConfig.lastModified = new Date();
+    this.externalProviderConfig.modifiedBy = adminUserId;
+
+    // Remove external providers from active providers
+    for (const [id, provider] of this.providers) {
+      if (!provider.isNova && provider.type === 'external') {
+        provider.isActive = false;
+        this.providers.set(id, provider);
+        logger.info(`Deactivated external provider: ${id}`);
+      }
+    }
+
+    // Log configuration change
+    await this.auditConfigurationChange('external_providers_disabled', previousConfig, this.externalProviderConfig, adminUserId);
+
+    logger.info(`External providers disabled by admin ${adminUserId}`);
+
+    this.emit('externalProvidersDisabled', { adminUserId });
+  }
+
+  /**
+   * Update allowed external providers (admin only)
+   */
+  async updateAllowedExternalProviders(adminUserId, allowedProviders) {
+    const previousConfig = { ...this.externalProviderConfig };
+    
+    this.externalProviderConfig.allowedProviders = new Set(allowedProviders);
+    this.externalProviderConfig.lastModified = new Date();
+    this.externalProviderConfig.modifiedBy = adminUserId;
+
+    // Update provider active status based on new configuration
+    for (const [id, provider] of this.providers) {
+      if (!provider.isNova && provider.type === 'external') {
+        const shouldBeActive = this.isExternalProviderAllowed(id) && !!provider.config.apiKey;
+        provider.isActive = shouldBeActive;
+        this.providers.set(id, provider);
+        logger.info(`External provider ${id} ${shouldBeActive ? 'activated' : 'deactivated'} per admin configuration`);
+      }
+    }
+
+    // Log configuration change
+    await this.auditConfigurationChange('external_providers_updated', previousConfig, this.externalProviderConfig, adminUserId);
+
+    logger.info(`External providers configuration updated by admin ${adminUserId}`, {
+      allowedProviders: Array.from(this.externalProviderConfig.allowedProviders)
+    });
+
+    this.emit('externalProvidersUpdated', {
+      adminUserId,
+      allowedProviders: Array.from(this.externalProviderConfig.allowedProviders)
+    });
+  }
+
+  /**
+   * Get external provider configuration
+   */
+  getExternalProviderConfig() {
+    return {
+      enabled: this.externalProviderConfig.enabled,
+      allowedProviders: Array.from(this.externalProviderConfig.allowedProviders),
+      lastModified: this.externalProviderConfig.lastModified,
+      modifiedBy: this.externalProviderConfig.modifiedBy,
+      totalExternalProviders: Array.from(this.providers.values()).filter(p => !p.isNova && p.type === 'external').length,
+      activeExternalProviders: Array.from(this.providers.values()).filter(p => !p.isNova && p.type === 'external' && p.isActive).length
+    };
+  }
+
+  /**
+   * Audit configuration changes
+   */
+  async auditConfigurationChange(action, previousConfig, newConfig, adminUserId) {
+    const auditEntry = {
+      id: crypto.randomUUID(),
+      timestamp: new Date(),
+      action,
+      adminUserId,
+      previousConfig: JSON.stringify(previousConfig),
+      newConfig: JSON.stringify(newConfig),
+      severity: 'medium',
+      impact: 'provider_configuration_changed'
+    };
+
+    this.auditLog.push(auditEntry);
+
+    // Record in monitoring system
+    try {
+      await this.monitoringSystem.recordAuditEvent({
+        eventType: 'admin_configuration_change',
+        severity: 'medium',
+        userId: adminUserId,
+        metadata: {
+          action,
+          previousState: previousConfig.enabled,
+          newState: newConfig.enabled,
+          affectedProviders: Array.from(newConfig.allowedProviders || [])
+        },
+        complianceFlags: ['configuration_change', 'admin_action'],
+        riskScore: 0.3
+      });
+    } catch (monitoringError) {
+      logger.warn('Failed to record audit event in monitoring system:', monitoringError);
+    }
+
+    logger.info('Provider configuration change audited', auditEntry);
   }
 
   setupEventListeners() {
