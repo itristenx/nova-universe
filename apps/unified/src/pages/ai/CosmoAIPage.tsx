@@ -17,6 +17,7 @@ import {
   ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { CosmoAvatar, AIIndicator, CosmoGreeting } from '@components/ai';
 
 // Types
 interface Message {
@@ -379,13 +380,14 @@ export default function CosmoAIPage() {
         <div className="border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 p-2">
-                <SparklesIcon className="h-6 w-6 text-white" />
-              </div>
+              <CosmoAvatar size="lg" animate={true} />
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Cosmo AI Assistant
-                </h1>
+                <div className="flex items-center space-x-2">
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                    Cosmo AI Assistant
+                  </h1>
+                  <AIIndicator type="cosmo" size="md" />
+                </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Your intelligent IT operations companion
                 </p>
@@ -415,15 +417,10 @@ export default function CosmoAIPage() {
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
           {messages.length === 0 ? (
             <div className="py-12 text-center">
-              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-blue-500 p-4">
-                <SparklesIcon className="h-8 w-8 text-white" />
+              {/* Cosmo Greeting */}
+              <div className="mx-auto mb-8 max-w-2xl">
+                <CosmoGreeting context="orbit" className="mb-6" />
               </div>
-              <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                {t('cosmoAI:welcome')}
-              </h2>
-              <p className="mx-auto mb-8 max-w-2xl text-gray-600 dark:text-gray-400">
-                {t('cosmoAI:description')}
-              </p>
 
               {/* Quick Actions */}
               <div className="mx-auto mb-8 grid max-w-4xl grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -433,15 +430,18 @@ export default function CosmoAIPage() {
                     onClick={() => handleQuickAction(action)}
                     className="group rounded-lg border border-gray-200 p-4 text-left transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-gray-700 dark:hover:border-blue-600 dark:hover:bg-blue-900/20"
                   >
-                    <div className="mb-2 flex items-center space-x-3">
-                      <div className="rounded-lg bg-gray-100 p-2 transition-colors group-hover:bg-blue-100 dark:bg-gray-700 dark:group-hover:bg-blue-900/30">
-                        {action.icon}
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="rounded-lg bg-gray-100 p-2 transition-colors group-hover:bg-blue-100 dark:bg-gray-700 dark:group-hover:bg-blue-900/30">
+                          {action.icon}
+                        </div>
+                        <span className="text-xs tracking-wide text-gray-500 uppercase">
+                          {action.category}
+                        </span>
                       </div>
-                      <span className="text-xs tracking-wide text-gray-500 uppercase">
-                        {action.category}
-                      </span>
+                      <AIIndicator type="ai" size="xs" />
                     </div>
-                    <h3 className="mb-1 font-medium text-gray-900 dark:text-white">
+                    <h3 className="mb-1 flex items-center font-medium text-gray-900 dark:text-white">
                       {action.title}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
@@ -500,8 +500,8 @@ export default function CosmoAIPage() {
                   >
                     <div className="flex items-start space-x-3">
                       {message.type === 'assistant' && (
-                        <div className="flex-shrink-0 rounded-full bg-purple-100 p-1 dark:bg-purple-900/20">
-                          <SparklesIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        <div className="flex-shrink-0">
+                          <CosmoAvatar size="sm" speaking={true} />
                         </div>
                       )}
                       <div className="flex-1">
@@ -541,9 +541,7 @@ export default function CosmoAIPage() {
                 <div className="flex justify-start">
                   <div className="max-w-3xl rounded-lg bg-gray-100 p-4 dark:bg-gray-700">
                     <div className="flex items-center space-x-3">
-                      <div className="rounded-full bg-purple-100 p-1 dark:bg-purple-900/20">
-                        <SparklesIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                      </div>
+                      <CosmoAvatar size="sm" thinking={true} />
                       <LoadingSpinner size="sm" />
                       <span className="text-gray-600 dark:text-gray-400">
                         {t('cosmoAI:thinking')}

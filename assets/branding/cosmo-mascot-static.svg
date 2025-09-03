@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cosmoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3F82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="glowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#A78BFA;stop-opacity:0.3" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Glow effect -->
+  <circle cx="32" cy="32" r="30" fill="url(#glowGradient)" opacity="0.4"/>
+  
+  <!-- Main body -->
+  <circle cx="32" cy="32" r="24" fill="url(#cosmoGradient)" stroke="#FFFFFF" stroke-width="2"/>
+  
+  <!-- Sparkle icon inside -->
+  <g transform="translate(32,32)">
+    <!-- Main sparkle -->
+    <path d="M0,-12 L3,-3 L12,0 L3,3 L0,12 L-3,3 L-12,0 L-3,-3 Z" 
+          fill="#FFFFFF" opacity="0.9"/>
+    
+    <!-- Small sparkles -->
+    <circle cx="8" cy="-8" r="1.5" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="-8" cy="8" r="1" fill="#FFFFFF" opacity="0.7"/>
+    <circle cx="10" cy="6" r="0.8" fill="#FFFFFF" opacity="0.6"/>
+  </g>
+  
+  <!-- AI indicator badge -->
+  <circle cx="50" cy="14" r="8" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>
+  <g transform="translate(50,14)">
+    <path d="M0,-4 L1,-1 L4,0 L1,1 L0,4 L-1,1 L-4,0 L-1,-1 Z" 
+          fill="#3F82F6" opacity="0.8"/>
+  </g>
+</svg>

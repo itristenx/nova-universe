@@ -112,6 +112,28 @@ export const iconMappings = {
   bookmark: 'bookmark',
   tag: 'tag',
   location: 'map-pin',
+  
+  // AI and Cosmo specific icons
+  ai: 'brain',
+  ai_assistant: 'bot',
+  cosmo: 'sparkles',
+  cosmo_chat: 'message-circle',
+  ai_powered: 'zap',
+  ai_thinking: 'loader',
+  ai_magic: 'wand-2',
+  robot: 'bot',
+  automation: 'settings-2',
+  intelligence: 'brain',
+  neural_network: 'git-branch-plus',
+  machine_learning: 'trending-up',
+  ai_insights: 'lightbulb',
+  ai_recommendations: 'target',
+  voice_input: 'mic',
+  voice_output: 'volume-2',
+  smart_search: 'search-check',
+  ai_processing: 'cpu',
+  predictive: 'crystal-ball',
+  classification: 'tags'
 } as const;
 
 // Icon size presets
@@ -146,6 +168,15 @@ export const iconColorClasses = {
   muted: 'text-gray-400 dark:text-gray-600',
   white: 'text-white',
   black: 'text-black dark:text-white',
+  
+  // AI and Cosmo specific colors
+  ai: 'text-blue-500 dark:text-blue-400',
+  cosmo: 'text-purple-500 dark:text-purple-400',
+  ai_magic: 'text-indigo-500 dark:text-indigo-400',
+  ai_success: 'text-green-500 dark:text-green-400',
+  ai_warning: 'text-amber-500 dark:text-amber-400',
+  nova_blue: 'text-[#3F57FF] dark:text-[#7C88FF]',
+  nova_pink: 'text-[#FF5C8A] dark:text-[#FF85A1]',
 } as const;
 
 // Icon variant definitions for different contexts
@@ -184,6 +215,32 @@ export const iconVariants = {
   notification: {
     size: 'md' as const,
     className: 'mr-3 flex-shrink-0',
+  },
+  
+  // AI and Cosmo specific variants
+  cosmo_avatar: {
+    size: 'lg' as const,
+    className: 'animate-pulse',
+  },
+  
+  ai_indicator: {
+    size: 'sm' as const,
+    className: 'ml-1 inline-block',
+  },
+  
+  ai_processing: {
+    size: 'md' as const,
+    className: 'animate-spin',
+  },
+  
+  cosmo_thinking: {
+    size: 'md' as const,
+    className: 'animate-bounce',
+  },
+  
+  ai_powered_badge: {
+    size: 'xs' as const,
+    className: 'inline-block ml-1',
   },
 } as const;
 
@@ -250,6 +307,9 @@ export const appIconSets = {
     'attachment',
     'calendar',
     'notifications',
+    'cosmo',
+    'ai_assistant',
+    'ai_powered',
   ],
 
   pulse: [
@@ -261,6 +321,9 @@ export const appIconSets = {
     'location',
     'add',
     'edit',
+    'ai',
+    'automation',
+    'intelligence',
     'refresh',
     'search',
     'filter',
