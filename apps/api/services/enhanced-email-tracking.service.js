@@ -135,6 +135,7 @@ export class EnhancedEmailTrackingService extends EmailCommunicationService {
         templateData = {},
         ticketId,
         workflowId,
+        instanceId,
         originalMessageId,
         actions = [],
         priority = 'normal',
@@ -148,7 +149,7 @@ export class EnhancedEmailTrackingService extends EmailCommunicationService {
       // Generate action URLs if actions are requested
       let actionUrls = {};
       if (actions.length > 0) {
-        actionUrls = this.generateActionUrls(ticketId, workflowId);
+        actionUrls = this.generateActionUrls(ticketId, workflowId, instanceId);
       }
 
       // Enhanced template data with actions
@@ -322,7 +323,7 @@ export class EnhancedEmailTrackingService extends EmailCommunicationService {
    */
   async renderTemplate(templateName, data) {
     const templateService = await import('./email-template.service.js');
-    return templateService.default.renderTemplate(templateName, data);
+    return templateService.default.render(templateName, data);
   }
 
   /**

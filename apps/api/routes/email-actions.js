@@ -5,6 +5,7 @@
  */
 
 import express from 'express';
+import crypto from 'crypto';
 import { logger } from '../logger.js';
 import enhancedEmailTrackingService from '../services/enhanced-email-tracking.service.js';
 import { audit } from '../middleware/audit.js';
@@ -190,23 +191,58 @@ router.post('/webhook/reply', audit('email_reply_webhook'), async (req, res) => 
 });
 
 /**
- * Execute approval/denial action on ticket or workflow
+ * Execute approval/denial action on ticket or workflow with proper error handling
  */
 async function executeApprovalAction(ticketId, workflowId, instanceId, decision, req) {
   try {
     let result = {};
 
     if (workflowId && instanceId) {
-      // Handle workflow approval
-      const workflowService = await import('../services/workflow.service.js');
-      result = await workflowService.processApprovalDecision(instanceId, decision, {
-        approvedBy: 'email_action',
-        metadata: {
-          userAgent: req.get('User-Agent'),
-          ip: req.ip,
-          timestamp: new Date()
+      // Handle workflow approval with proper error handling
+      try {
+        const workflowService = await import('../services/workflow.service.js');
+        
+        // Check if the service has the expected method
+        if (workflowService.default && typeof workflowService.default.processApprovalDecision === 'function') {
+          result = await workflowService.default.processApprovalDecision(instanceId, decision, {
+            approvedBy: 'email_action',
+            metadata: {
+              userAgent: req.get('User-Agent'),
+              ip: req.ip,
+              timestamp: new Date()
+            }
+          });
+        } else if (workflowService.processApprovalDecision && typeof workflowService.processApprovalDecision === 'function') {
+          result = await workflowService.processApprovalDecision(instanceId, decision, {
+            approvedBy: 'email_action',
+            metadata: {
+              userAgent: req.get('User-Agent'),
+              ip: req.ip,
+              timestamp: new Date()
+            }
+          });
+        } else {
+          logger.warn('Workflow service does not have processApprovalDecision method, falling back to ticket update');
+          throw new Error('Workflow approval method not available');
         }
-      });
+      } catch (workflowError) {
+        logger.error('Error processing workflow approval, falling back to ticket update:', workflowError);
+        // Fall back to ticket update if workflow processing fails
+        if (ticketId) {
+          const ticketService = await import('../services/enhanced-ticket.service.js');
+          result = await ticketService.TicketService.updateTicketStatus(ticketId, {
+            status: decision === 'approved' ? 'approved' : 'rejected',
+            updatedBy: 'email_action',
+            comment: `${decision.charAt(0).toUpperCase() + decision.slice(1)} via email action (workflow fallback)`,
+            metadata: {
+              approvalMethod: 'email',
+              userAgent: req.get('User-Agent'),
+              ip: req.ip,
+              workflowFallback: true
+            }
+          });
+        }
+      }
     } else if (ticketId) {
       // Handle ticket approval (e.g., for service requests)
       const ticketService = await import('../services/enhanced-ticket.service.js');
@@ -222,13 +258,20 @@ async function executeApprovalAction(ticketId, workflowId, instanceId, decision,
       });
     }
 
-    // Send notification about the action
-    const notificationService = await import('../services/notification.service.js');
-    await notificationService.NotificationService.sendApprovalNotification(
-      ticketId, 
-      decision, 
-      'email_action'
-    );
+    // Send notification about the action (with error handling)
+    try {
+      const notificationService = await import('../services/notification.service.js');
+      if (notificationService.NotificationService && typeof notificationService.NotificationService.sendApprovalNotification === 'function') {
+        await notificationService.NotificationService.sendApprovalNotification(
+          ticketId, 
+          decision, 
+          'email_action'
+        );
+      }
+    } catch (notificationError) {
+      logger.error('Error sending approval notification:', notificationError);
+      // Don't fail the approval if notification fails
+    }
 
     return result;
   } catch (error) {
@@ -412,7 +455,6 @@ function validateWebhookSignature(signature, payload) {
     return false;
   }
 
-  const crypto = require('crypto');
   const expectedSignature = crypto
     .createHmac('sha256', process.env.EMAIL_WEBHOOK_SECRET)
     .update(JSON.stringify(payload))

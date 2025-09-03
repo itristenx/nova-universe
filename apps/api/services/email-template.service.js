@@ -1037,8 +1037,11 @@ class EmailTemplateService {
       // Get configuration from database/environment with proper fallbacks
       const emailConfig = await ConfigurationService.getEmailConfig();
 
+      // Create single timestamp for consistency across the entire email
+      const currentTime = new Date();
+
       // Process template data with proper name parsing and enhanced data
-      const processedData = processTemplateData(data);
+      const processedData = processTemplateData(data, currentTime);
 
       // Add default data with dynamic configuration
       const templateData = {
@@ -1047,8 +1050,8 @@ class EmailTemplateService {
         companyName: emailConfig.companyName,
         supportEmail: emailConfig.support_email || 'support@example.com',
         responseTime: this.getResponseTime(data.ticket?.priority),
-        // Add current timestamp for %CURRENTDATE% and %CURRENTTIME%
-        now: new Date(),
+        // Use the same timestamp that was used in processTemplateData
+        now: currentTime,
       };
 
       logger.debug(`Rendering template ${templateName} from ${source}`);
@@ -1093,13 +1096,16 @@ class EmailTemplateService {
       // Get configuration from database/environment with proper fallbacks
       const emailConfig = await ConfigurationService.getEmailConfig();
 
+      // Create single timestamp for consistency across subject and body
+      const currentTime = new Date();
+
       // Process template data with proper name parsing
-      const processedData = processTemplateData(data);
+      const processedData = processTemplateData(data, currentTime);
 
       const templateData = {
         ...processedData,
         companyName: emailConfig.companyName,
-        now: new Date(),
+        now: currentTime,
       };
 
       logger.debug(`Rendering subject for ${templateName} from ${source}`);

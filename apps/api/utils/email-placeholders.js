@@ -183,10 +183,14 @@ export function reverseTransformPlaceholders(template) {
 /**
  * Extract data for template processing with proper name parsing
  * @param {Object} data - Raw data object
+ * @param {Date} currentTime - Optional timestamp to use for consistency
  * @returns {Object} Processed data with proper name parsing
  */
-export function processTemplateData(data) {
+export function processTemplateData(data, currentTime = null) {
   const processedData = { ...data };
+
+  // Use provided timestamp or create new one (but only once)
+  const timestamp = currentTime || new Date();
 
   // Process user name parsing
   if (data.user && data.user.name) {
@@ -238,8 +242,8 @@ export function processTemplateData(data) {
     };
   }
 
-  // Add current timestamp for date placeholders
-  processedData.now = new Date();
+  // Add current timestamp for date placeholders (use consistent timestamp)
+  processedData.now = timestamp;
 
   return processedData;
 }
@@ -384,11 +388,12 @@ export function validateTemplate(template) {
 }
 
 /**
- * Escape special regex characters
+ * Escape special regex characters using standard implementation
  * @param {string} string - String to escape
  * @returns {string} Escaped string
  */
 function escapeRegExp(string) {
+  // Standard ECMAScript implementation
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
