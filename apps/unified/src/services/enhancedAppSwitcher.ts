@@ -150,10 +150,10 @@ class EnhancedAppSwitcherService {
       color: appData.color,
       assignments: [],
       external_config: {
-        open_in_new_window: appData.newWindow ?? true, // Default to true for new window
+        open_in_new_window: appData.newWindow ?? true,
         sso_enabled: appData.ssoEnabled ?? false,
       },
-      created_by: 'current_user', // Will be set by backend
+      created_by: 'system',
       is_active: true,
       order: 0,
     };
@@ -197,8 +197,8 @@ class EnhancedAppSwitcherService {
       iconUrl: appData.iconUrl,
       color: appData.color,
       external_config: {
-        open_in_new_window: appData.newWindow || true,
-        sso_enabled: appData.ssoEnabled || false,
+        open_in_new_window: appData.newWindow ?? true,
+        sso_enabled: appData.ssoEnabled ?? false,
       },
     };
 
