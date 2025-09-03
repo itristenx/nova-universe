@@ -1,26 +1,61 @@
 // nova-api/lib/rag-engine.js
-// RAG (Retrieval Augmented Generation) Engine
+// RAG (Retrieval Augmented Generation) Engine with Nova RBAC Integration
 
 import { logger } from '../logger.js';
+// Import will be conditional to avoid circular dependencies
+let ragRBAC = null;
+
+// Dynamic import to handle RBAC
+async function getRagRBAC() {
+  if (!ragRBAC) {
+    try {
+      const rbacModule = await import('./nova-rag-rbac.js');
+      ragRBAC = rbacModule.ragRBAC;
+    } catch (error) {
+      console.warn('RBAC module not available, using basic access control');
+      // Fallback RBAC implementation
+      ragRBAC = {
+        isInitialized: true,
+        initialize: async () => {},
+        filterDocuments: async (docs, userId, tenantId) => {
+          // Basic tenant filtering
+          return docs.filter(doc => 
+            !doc.metadata?.tenantId || doc.metadata.tenantId === tenantId
+          );
+        }
+      };
+    }
+  }
+  return ragRBAC;
+}
 
 /**
  * RAG Engine for document retrieval and context generation
+ * Enhanced with Nova RBAC for strong access control
  */
 class RAGEngine {
   constructor() {
     this.initialized = false;
     this.documents = new Map();
     this.embeddings = new Map();
+    this.rbacEnabled = true; // Force RBAC enforcement
   }
 
   /**
-   * Initialize RAG Engine
+   * Initialize RAG Engine with RBAC
    */
   async initialize() {
     try {
-      logger.info('Initializing RAG Engine...');
+      logger.info('Initializing RAG Engine with Nova RBAC...');
+      
+      // Initialize RBAC system
+      const rbacSystem = await getRagRBAC();
+      if (!rbacSystem.isInitialized) {
+        await rbacSystem.initialize();
+      }
+      
       this.initialized = true;
-      logger.info('RAG Engine initialized successfully');
+      logger.info('RAG Engine initialized successfully with RBAC enforcement');
     } catch (error) {
       logger.error('Failed to initialize RAG Engine', { error: error.message });
       throw error;
@@ -30,88 +65,140 @@ class RAGEngine {
   /**
    * Check if RAG Engine is ready
    */
-  isReady() {
-    return this.initialized;
+  async isReady() {
+    const rbacSystem = await getRagRBAC();
+    return this.initialized && rbacSystem.isInitialized;
   }
 
   /**
-   * Add document to knowledge base
+   * Add document to knowledge base with RBAC metadata
    */
-  async addDocument(doc) {
+  async addDocument(doc, rbacContext = null) {
     if (!this.initialized) {
       throw new Error('RAG Engine not initialized');
     }
 
-    this.documents.set(doc.id, doc);
-    logger.info('Document added to RAG Engine', { docId: doc.id });
+    // Ensure document has proper RBAC metadata
+    if (!rbacContext) {
+      throw new Error('RBAC context required for Nova data policy compliance');
+    }
 
-    return { success: true, docId: doc.id };
+    // Validate Nova-only data source
+    if (doc.metadata?.source && !doc.metadata.source.startsWith('nova-')) {
+      throw new Error(`Nova-only policy violation: External data source detected (${doc.metadata.source})`);
+    }
+
+    // Enhanced document with RBAC context and Nova validation
+    const enhancedDoc = {
+      ...doc,
+      metadata: {
+        ...doc.metadata,
+        tenantId: rbacContext.tenantId,
+        userId: rbacContext.userId,
+        securityClassification: rbacContext.securityClassification || 'internal',
+        dataSource: 'nova-internal-only',
+        rbacValidated: true,
+        indexedAt: new Date(),
+        source: doc.metadata?.source?.startsWith('nova-') ? doc.metadata.source : `nova-${doc.metadata?.source || 'document'}`,
+      }
+    };
+
+    this.documents.set(doc.id, enhancedDoc);
+    
+    logger.info('Document added to RAG Engine with RBAC validation', { 
+      docId: doc.id,
+      tenantId: rbacContext.tenantId,
+      classification: rbacContext.securityClassification 
+    });
+
+    return { success: true, docId: doc.id, rbacEnforced: true };
   }
 
   /**
-   * Add multiple documents to knowledge base
+   * Add multiple documents to knowledge base with RBAC enforcement
    */
   async addDocuments(documents, rbacContext = null) {
     if (!this.initialized) {
       throw new Error('RAG Engine not initialized');
     }
 
+    if (!rbacContext) {
+      throw new Error('RBAC context required for Nova data policy compliance');
+    }
+
     const results = [];
     for (const doc of documents) {
       try {
-        // Enhance document with RBAC context if provided
-        const enhancedDoc = rbacContext ? {
-          ...doc,
-          metadata: {
-            ...doc.metadata,
-            tenantId: rbacContext.tenantId,
-            userId: rbacContext.userId,
-            securityClassification: rbacContext.securityClassification || 'internal',
-            indexedAt: new Date()
-          }
-        } : doc;
-
-        const result = await this.addDocument(enhancedDoc);
+        const result = await this.addDocument(doc, rbacContext);
         results.push(result);
       } catch (error) {
-        logger.error('Failed to add document', { docId: doc.id, error: error.message });
-        results.push({ success: false, docId: doc.id, error: error.message });
+        logger.error('Failed to add document with RBAC', { docId: doc.id, error: error.message });
+        results.push({ success: false, docId: doc.id, error: error.message, rbacEnforced: true });
       }
     }
 
-    logger.info(`Added ${documents.length} documents to RAG system`, {
+    logger.info(`Added ${documents.length} documents to RAG system with RBAC`, {
       successful: results.filter(r => r.success).length,
       failed: results.filter(r => !r.success).length,
-      rbacEnabled: !!rbacContext
+      rbacEnabled: true,
+      tenantId: rbacContext.tenantId
     });
 
     return results;
   }
 
   /**
-   * Search documents
+   * Search documents with RBAC filtering
    */
-  async search(query, options = {}) {
+  async search(query, options = {}, userContext = null) {
     if (!this.initialized) {
       throw new Error('RAG Engine not initialized');
     }
 
-    logger.info('RAG search executed', { query, options });
+    if (!userContext) {
+      throw new Error('User context required for RBAC enforcement');
+    }
+
+    // Get all documents and filter through RBAC
+    const allDocuments = Array.from(this.documents.values());
+    
+    // Apply RBAC filtering
+    const rbacSystem = await getRagRBAC();
+    const accessibleDocuments = await rbacSystem.filterDocuments(
+      allDocuments,
+      userContext.userId,
+      userContext.tenantId,
+      'read'
+    );
+
+    logger.info('RAG search executed with RBAC filtering', { 
+      query: query.substring(0, 50), 
+      totalDocs: allDocuments.length,
+      accessibleDocs: accessibleDocuments.length,
+      userId: userContext.userId,
+      tenantId: userContext.tenantId
+    });
 
     return {
-      results: [],
-      totalCount: 0,
+      results: accessibleDocuments,
+      totalCount: accessibleDocuments.length,
+      filteredByRBAC: allDocuments.length - accessibleDocuments.length,
       query,
       timestamp: new Date().toISOString(),
+      rbacEnforced: true,
     };
   }
 
   /**
-   * Query documents using RAG approach
+   * Query documents using RAG approach with RBAC
    */
-  async query(ragQuery) {
+  async query(ragQuery, userContext = null) {
     if (!this.initialized) {
       throw new Error('RAG Engine not initialized');
+    }
+
+    if (!userContext) {
+      throw new Error('User context required for Nova RBAC enforcement');
     }
 
     const startTime = Date.now();
@@ -121,12 +208,24 @@ class RAGEngine {
     const maxResults = options.maxResults || 10;
     const hybridSearch = options.hybridSearch || false;
     
-    // Perform document search
-    const searchResults = await this.search(query, options);
+    // Perform RBAC-filtered search
+    const searchResults = await this.search(query, options, userContext);
     
-    // Convert documents to chunks format for compatibility
-    const chunks = Array.from(this.documents.values())
+    // Convert accessible documents to chunks format
+    const chunks = searchResults.results
       .filter(doc => {
+        // Additional Nova-only validation
+        if (doc.metadata?.dataSource !== 'nova-internal-only') {
+          logger.warn('Filtering non-Nova document', { docId: doc.id, dataSource: doc.metadata?.dataSource });
+          return false;
+        }
+        
+        // Tenant isolation check
+        if (doc.metadata?.tenantId !== userContext.tenantId) {
+          logger.warn('Filtering cross-tenant document', { docId: doc.id, docTenant: doc.metadata?.tenantId, userTenant: userContext.tenantId });
+          return false;
+        }
+        
         // Simple relevance filtering based on content
         const content = doc.content?.toLowerCase() || '';
         const queryLower = query?.toLowerCase() || '';
@@ -142,15 +241,23 @@ class RAGEngine {
         metadata: {
           ...doc.metadata,
           relevanceScore: Math.random() * 0.5 + 0.5, // Simple mock relevance
-          source: doc.metadata?.source || 'unknown',
+          source: doc.metadata?.source || 'nova-internal',
           type: doc.metadata?.type || 'document',
           category: doc.metadata?.category,
           createdAt: doc.metadata?.createdAt || new Date(),
-          updatedAt: doc.metadata?.updatedAt || new Date()
+          updatedAt: doc.metadata?.updatedAt || new Date(),
+          rbacValidated: true,
+          tenantIsolated: true,
         },
         position: {
           start: 0,
           end: doc.content?.length || 0
+        },
+        accessControl: {
+          granted: true,
+          userHasAccess: true,
+          tenantMatch: true,
+          rbacEnforced: true,
         }
       }));
     
@@ -168,38 +275,61 @@ class RAGEngine {
       confidence,
       retrievalTime,
       totalResults: chunks.length,
+      rbacStats: {
+        totalDocuments: Array.from(this.documents.values()).length,
+        accessibleDocuments: searchResults.results.length,
+        filteredByRBAC: searchResults.filteredByRBAC,
+        tenantFiltered: chunks.length,
+        rbacEnforced: true,
+      },
       metadata: {
         searchStrategy: hybridSearch ? 'hybrid' : 'semantic',
-        embeddingModel: 'local',
-        vectorStore: 'memory',
+        embeddingModel: 'nova-local',
+        vectorStore: 'nova-memory',
+        dataSource: 'nova-internal-only',
+        userContext: {
+          userId: userContext.userId,
+          tenantId: userContext.tenantId,
+        },
         filters: ragQuery.filters || {}
       }
     };
     
-    logger.info('RAG query completed', {
-      query,
+    logger.info('RAG query completed with RBAC enforcement', {
+      query: query.substring(0, 50),
       chunksFound: chunks.length,
       confidence,
-      retrievalTime
+      retrievalTime,
+      rbacFiltered: searchResults.filteredByRBAC,
+      userId: userContext.userId,
+      tenantId: userContext.tenantId
     });
     
     return result;
   }
 
   /**
-   * Generate response using RAG
+   * Generate response using RAG with RBAC context
    */
-  async generateResponse(query, context = {}) {
+  async generateResponse(query, context = {}, userContext = null) {
     if (!this.initialized) {
       throw new Error('RAG Engine not initialized');
     }
 
-    logger.info('RAG response generation', { query, context });
+    if (!userContext) {
+      throw new Error('User context required for Nova RBAC enforcement');
+    }
 
-    // Use context to enhance the response
+    logger.info('RAG response generation with RBAC', { 
+      query: query.substring(0, 50), 
+      userId: userContext.userId,
+      tenantId: userContext.tenantId 
+    });
+
+    // Use context to enhance the response with RBAC awareness
     const enhancedResponse = context.userRole
-      ? `[As ${context.userRole}] RAG-generated response`
-      : 'RAG-generated response';
+      ? `[As ${context.userRole} in tenant ${userContext.tenantId}] Nova RAG response`
+      : `[Nova tenant ${userContext.tenantId}] RAG-generated response`;
 
     const confidenceBoost = context.sessionHistory ? 0.1 : 0;
 
@@ -211,8 +341,39 @@ class RAGEngine {
         userRole: context.userRole,
         sessionId: context.sessionId,
         hasHistory: Boolean(context.sessionHistory),
+        rbacEnforced: true,
+        tenantId: userContext.tenantId,
+        userId: userContext.userId,
+        dataSource: 'nova-internal-only',
       },
       timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Get RBAC-filtered document count for tenant
+   */
+  async getDocumentStats(userContext) {
+    if (!userContext) {
+      throw new Error('User context required for RBAC enforcement');
+    }
+
+    const allDocuments = Array.from(this.documents.values());
+    const rbacSystem = await getRagRBAC();
+    const accessibleDocuments = await rbacSystem.filterDocuments(
+      allDocuments,
+      userContext.userId,
+      userContext.tenantId,
+      'read'
+    );
+
+    return {
+      totalDocuments: allDocuments.length,
+      accessibleDocuments: accessibleDocuments.length,
+      rbacFiltered: allDocuments.length - accessibleDocuments.length,
+      tenantId: userContext.tenantId,
+      userId: userContext.userId,
+      rbacEnforced: true,
     };
   }
 }

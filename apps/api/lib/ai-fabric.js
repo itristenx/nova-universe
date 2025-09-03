@@ -153,6 +153,9 @@ class AIFabric extends EventEmitter {
       request.timestamp = new Date();
       request.sessionId = request.sessionId || crypto.randomUUID();
 
+      // NOVA-ONLY DATA VALIDATION: Ensure only Nova data sources are accessed
+      await this.validateNovaDataOnly(request);
+
       // STEP 1: Security and Compliance Pre-checks (NIST AI RMF - GOVERN)
       await this.securityGuard.validateRequest(request);
       const complianceCheck = await this.complianceEngine.checkCompliance(request);
@@ -447,22 +450,63 @@ class AIFabric extends EventEmitter {
     // Notify governance framework
     await this.governanceFramework.handleHighRiskRequest(request);
   }
+
+  /**
+   * Validate Nova-Only Data Access Policy
+   * Ensures all AI requests only access Nova internal data sources
+   */
+  async validateNovaDataOnly(request) {
+    // Check for external data source indicators
+    const externalIndicators = [
+      'external_api',
+      'third_party',
+      'openai',
+      'anthropic',
+      'google',
+      'azure',
+      'aws',
+      'external_url',
+      'http://',
+      'https://',
+    ];
+
+    // Validate request input doesn't contain external references
+    const requestStr = JSON.stringify(request).toLowerCase();
+    for (const indicator of externalIndicators) {
+      if (requestStr.includes(indicator)) {
+        throw new SecurityViolation(`Nova-only policy violation: External data source detected (${indicator})`);
+      }
+    }
+
+    // Ensure data source is Nova-internal
+    if (request.dataSource && request.dataSource !== 'nova-internal-only') {
+      throw new SecurityViolation(`Nova-only policy violation: Non-Nova data source specified (${request.dataSource})`);
+    }
+
+    // Validate context contains proper tenant isolation
+    if (!request.context?.tenantId) {
+      throw new SecurityViolation('Nova-only policy violation: Missing tenant context for data isolation');
+    }
+
+    // Validate user context for RBAC
+    if (!request.context?.userId) {
+      throw new SecurityViolation('Nova-only policy violation: Missing user context for RBAC enforcement');
+    }
+
+    // Mark request as Nova-validated
+    request.novaValidated = true;
+    request.dataSource = 'nova-internal-only';
+    
+    logger.debug('Nova-only data policy validated', { 
+      requestId: request.id, 
+      tenantId: request.context.tenantId,
+      userId: request.context.userId 
+    });
+  }
   async registerDefaultProviders() {
+    // NOVA-ONLY POLICY: Only register internal Nova providers for data security
+    // External providers are disabled to ensure Nova data isolation
     const defaultProviders = [
-      {
-        id: 'openai-gpt4',
-        name: 'OpenAI GPT-4',
-        type: 'external',
-        capabilities: ['text_generation', 'classification', 'sentiment'],
-        config: {
-          apiKey: process.env.OPENAI_API_KEY,
-          model: 'gpt-4-turbo',
-          endpoint: 'https://api.openai.com/v1/chat/completions',
-        },
-        isActive: !!process.env.OPENAI_API_KEY,
-        healthStatus: 'healthy',
-        lastHealthCheck: new Date(),
-      },
       {
         id: 'nova-local-classifier',
         name: 'Nova Local Classifier',
@@ -471,13 +515,47 @@ class AIFabric extends EventEmitter {
         config: {
           modelPath: '/models/nova-classifier',
           threshold: 0.7,
+          dataSource: 'nova-internal-only',
         },
         isActive: true,
         healthStatus: 'healthy',
         lastHealthCheck: new Date(),
+        rbacEnabled: true,
+      },
+      {
+        id: 'nova-rag-engine',
+        name: 'Nova RAG Engine',
+        type: 'internal',
+        capabilities: ['knowledge_retrieval', 'document_search'],
+        config: {
+          engineType: 'nova-rag',
+          rbacEnabled: true,
+          dataSource: 'nova-internal-only',
+        },
+        isActive: true,
+        healthStatus: 'healthy',
+        lastHealthCheck: new Date(),
+        rbacEnabled: true,
+      },
+      {
+        id: 'nova-sentiment-analyzer',
+        name: 'Nova Sentiment Analyzer',
+        type: 'internal',
+        capabilities: ['sentiment_analysis', 'emotion_detection'],
+        config: {
+          modelPath: '/models/nova-sentiment',
+          dataSource: 'nova-internal-only',
+        },
+        isActive: true,
+        healthStatus: 'healthy',
+        lastHealthCheck: new Date(),
+        rbacEnabled: true,
       },
     ];
 
+    // Log Nova-only policy enforcement
+    logger.info('AI Fabric enforcing Nova-only data policy - external providers disabled');
+    
     for (const provider of defaultProviders) {
       if (provider.isActive) {
         await this.registerProvider(provider);
@@ -486,24 +564,39 @@ class AIFabric extends EventEmitter {
   }
 
   async selectOptimalProvider(request) {
+    // NOVA-ONLY FILTER: Only select internal Nova providers
     const candidates = Array.from(this.providers.values()).filter(
-      (p) => p.isActive && p.healthStatus !== 'unhealthy' && p.capabilities.includes(request.type),
+      (p) => p.isActive && 
+             p.healthStatus !== 'unhealthy' && 
+             p.capabilities.includes(request.type) &&
+             p.type === 'internal' &&  // Only internal providers
+             p.rbacEnabled === true &&  // RBAC must be enabled
+             (p.config?.dataSource === 'nova-internal-only' || p.type === 'internal')
     );
 
     if (candidates.length === 0) {
-      throw new Error(`No available providers for request type: ${request.type}`);
+      throw new Error(`No Nova-internal providers available for request type: ${request.type}`);
     }
 
-    // If preferences specified, try those first
+    // If preferences specified, validate they're Nova-internal
     if (request.preferences?.preferredProviders?.length) {
       const preferred = candidates.find((p) =>
         request.preferences.preferredProviders.includes(p.id),
       );
-      if (preferred) return preferred.id;
+      if (preferred) {
+        logger.info(`Using preferred Nova provider: ${preferred.id}`, { requestId: request.id });
+        return preferred.id;
+      }
     }
 
-    // Return first healthy provider for now
-    return candidates[0].id;
+    // Return first healthy Nova-internal provider
+    const selectedProvider = candidates[0];
+    logger.info(`Selected Nova provider: ${selectedProvider.id}`, { 
+      requestId: request.id,
+      capabilities: selectedProvider.capabilities 
+    });
+    
+    return selectedProvider.id;
   }
 
   async execute(providerId, request) {
