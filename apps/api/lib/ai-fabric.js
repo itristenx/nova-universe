@@ -232,7 +232,10 @@ class AIFabric extends EventEmitter {
   async registerProvider(provider) {
     try {
       // Validate provider
-      await this.validateProvider(provider);
+      const shouldProceed = await this.validateProvider(provider);
+      if (!shouldProceed) {
+        return; // Skip if already registered
+      }
 
       // Add to registry
       this.providers.set(provider.id, provider);
@@ -710,8 +713,10 @@ class AIFabric extends EventEmitter {
       throw new Error('Provider missing required fields');
     }
     if (this.providers.has(provider.id)) {
-      throw new Error(`Provider ${provider.id} already registered`);
+      console.warn(`Provider ${provider.id} already registered, skipping duplicate registration`);
+      return false; // Return false to indicate skipping
     }
+    return true; // Return true to indicate should proceed
   }
 
   startHealthMonitoring() {

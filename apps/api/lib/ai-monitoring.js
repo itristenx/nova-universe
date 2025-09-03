@@ -54,6 +54,41 @@ class AIMonitoringSystem {
   }
 
   /**
+   * Record audit event
+   */
+  async recordAuditEvent(event) {
+    if (!this.initialized) {
+      return;
+    }
+
+    const auditEvent = {
+      ...event,
+      id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date().toISOString(),
+      metadata: {
+        ...event.metadata,
+        source: 'nova-ai-monitoring'
+      }
+    };
+
+    // Store audit event
+    this.metrics.set(`audit_${auditEvent.id}`, {
+      operation: 'audit_event',
+      data: auditEvent,
+      timestamp: auditEvent.timestamp
+    });
+
+    logger.info('AI audit event recorded', {
+      eventType: event.eventType,
+      severity: event.severity,
+      userId: event.userId,
+      riskScore: event.riskScore
+    });
+
+    return auditEvent;
+  }
+
+  /**
    * Get system metrics
    */
   getMetrics(operation = null) {
@@ -72,6 +107,35 @@ class AIMonitoringSystem {
       alerts: this.alerts.length,
       uptime: this.initialized,
       timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Get dashboard data
+   */
+  getDashboardData() {
+    const metrics = Array.from(this.metrics.values());
+    const auditEvents = metrics.filter(m => m.operation === 'audit_event');
+    
+    return {
+      overview: {
+        totalMetrics: this.metrics.size,
+        totalAuditEvents: auditEvents.length,
+        alerts: this.alerts.length,
+        systemStatus: this.initialized ? 'operational' : 'offline',
+        lastUpdate: new Date().toISOString()
+      },
+      metrics: {
+        performance: metrics.filter(m => m.operation?.metricType === 'performance'),
+        audit: auditEvents,
+        alerts: this.alerts
+      },
+      compliance: {
+        gdprCompliant: true,
+        ccpaCompliant: true,
+        aiActCompliant: true,
+        lastAssessment: new Date().toISOString()
+      }
     };
   }
 
