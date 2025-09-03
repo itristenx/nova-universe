@@ -18,7 +18,8 @@ const testScenarios = [
     data: {
       title: 'Critical: All servers down',
       description: 'Production outage affecting all users. Emergency response needed.',
-      affectedUsers: 500,
+      impact: 1, // Critical impact (direct input)
+      urgency: 1, // Critical urgency (direct input)
       severity: 'critical',
       isVip: false
     }
@@ -28,7 +29,8 @@ const testScenarios = [
     data: {
       title: 'Password reset needed',
       description: 'Cannot access email account before important board meeting',
-      affectedUsers: 1,
+      impact: 4, // Low impact (direct input)
+      urgency: 2, // High urgency (direct input)
       isVip: true,
       vipLevel: 'executive',
       userId: 'ceo-user-123'
@@ -39,7 +41,8 @@ const testScenarios = [
     data: {
       title: 'Urgent: Application not working',
       description: 'Client presentation in 2 hours, need immediate assistance',
-      affectedUsers: 1,
+      impact: 2, // High impact (direct input)
+      urgency: 1, // Critical urgency (direct input)
       isVip: true,
       vipLevel: 'gold',
       dueDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
@@ -50,7 +53,8 @@ const testScenarios = [
     data: {
       title: 'Application running slow',
       description: 'Users reporting performance issues with the CRM application',
-      affectedUsers: 25,
+      impact: 3, // Medium impact (direct input)
+      urgency: 3, // Medium urgency (direct input)
       isVip: false
     }
   },
@@ -59,27 +63,30 @@ const testScenarios = [
     data: {
       title: 'Request access to shared folder',
       description: 'User needs read access to marketing shared folder',
-      affectedUsers: 1,
+      impact: 4, // Low impact (direct input)
+      urgency: 4, // Low urgency (direct input)
       isVip: false
     }
   },
   {
-    name: '🔥 VIP Priority Boost Demo - Regular User becomes Critical via VIP',
+    name: '🔥 VIP Priority Boost Demo - Medium Priority becomes High via Gold VIP',
     data: {
       title: 'Application running slow',
       description: 'Users reporting performance issues with the CRM application',
-      affectedUsers: 25,
+      impact: 3, // Medium impact (direct input)
+      urgency: 3, // Medium urgency (direct input)
       isVip: true,
       vipLevel: 'gold',
       userId: 'vip-gold-user-456'
     }
   },
   {
-    name: '👑 Executive Priority Boost Demo - Low Priority becomes Critical',
+    name: '👑 Executive Priority Boost Demo - Low Priority becomes High via Executive VIP',
     data: {
       title: 'Request access to shared folder',
       description: 'User needs read access to marketing shared folder',
-      affectedUsers: 1,
+      impact: 4, // Low impact (direct input)
+      urgency: 4, // Low urgency (direct input)
       isVip: true,
       vipLevel: 'executive',
       userId: 'exec-user-789'
@@ -107,13 +114,14 @@ function getPriorityIcon(priority) {
 }
 
 // Display priority matrix
-console.log('📊 IMPACT vs URGENCY PRIORITY MATRIX');
-console.log('-'.repeat(40));
-console.log('Impact/Urgency │ High  │ Med   │ Low   ');
-console.log('───────────────┼───────┼───────┼───────');
-console.log('High           │ Crit  │ High  │ Med   ');
-console.log('Medium         │ High  │ Med   │ Low   ');
-console.log('Low            │ Med   │ Low   │ Low   ');
+console.log('📊 IMPACT vs URGENCY PRIORITY MATRIX (1-4 Scale)');
+console.log('-'.repeat(50));
+console.log('Impact/Urgency │ Crit │ High │ Med  │ Low  ');
+console.log('───────────────┼──────┼──────┼──────┼──────');
+console.log('Critical       │ Crit │ Crit │ High │ High ');
+console.log('High           │ Crit │ High │ High │ Med  ');
+console.log('Medium         │ High │ High │ Med  │ Low  ');
+console.log('Low            │ High │ Med  │ Low  │ Low  ');
 console.log();
 
 // Run test scenarios
@@ -128,8 +136,11 @@ testScenarios.forEach((scenario, index) => {
     const result = SLAMatrixService.calculateTicketSLA(scenario.data);
     
     console.log(`   📥 Input: "${scenario.data.title}"`);
-    if (scenario.data.affectedUsers > 1) {
-      console.log(`   👥 Affected Users: ${scenario.data.affectedUsers}`);
+    if (scenario.data.impact !== undefined) {
+      console.log(`   💥 Impact: ${scenario.data.impact} (${SLAMatrixService.getImpactLabel(scenario.data.impact)})`);
+    }
+    if (scenario.data.urgency !== undefined) {
+      console.log(`   ⚡ Urgency: ${scenario.data.urgency} (${SLAMatrixService.getUrgencyLabel(scenario.data.urgency)})`);
     }
     if (scenario.data.isVip) {
       console.log(`   👑 VIP Level: ${scenario.data.vipLevel}`);
@@ -138,8 +149,8 @@ testScenarios.forEach((scenario, index) => {
       console.log(`   🏢 Business Service: ${scenario.data.businessService.criticality}`);
     }
     
-    console.log(`   ${getImpactIcon(result.impact)} Impact: ${result.impactLabel} (${result.impact})`);
-    console.log(`   ${getUrgencyIcon(result.urgency)} Urgency: ${result.urgencyLabel} (${result.urgency})`);
+    console.log(`   ${getImpactIcon(result.impact)} Final Impact: ${result.impactLabel} (${result.impact})`);
+    console.log(`   ${getUrgencyIcon(result.urgency)} Final Urgency: ${result.urgencyLabel} (${result.urgency})`);
     
     // Show VIP priority boost details
     if (result.vipBoost && result.vipBoost.boosted) {
@@ -222,7 +233,8 @@ console.log('-'.repeat(40));
 const performanceTestData = {
   title: 'Performance test ticket',
   description: 'Testing calculation speed',
-  affectedUsers: 10,
+  impact: 3, // Medium impact (direct input)
+  urgency: 3, // Medium urgency (direct input) 
   isVip: false
 };
 
@@ -248,9 +260,10 @@ console.log('-'.repeat(40));
 
 const validMatrix = {
   matrix: {
-    "1,1": 1, "1,2": 2, "1,3": 3,
-    "2,1": 2, "2,2": 3, "2,3": 4,
-    "3,1": 3, "3,2": 4, "3,3": 4
+    "1,1": 1, "1,2": 1, "1,3": 2, "1,4": 2,
+    "2,1": 1, "2,2": 2, "2,3": 2, "2,4": 3,
+    "3,1": 2, "3,2": 2, "3,3": 3, "3,4": 4,
+    "4,1": 2, "4,2": 3, "4,3": 4, "4,4": 4
   }
 };
 

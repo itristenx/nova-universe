@@ -8,31 +8,41 @@ export class SLAMatrixService {
   /**
    * Standard Impact vs Urgency matrix for priority calculation
    * Follows ServiceNow convention where lower numbers = higher priority
+   * Updated to support 1-4 scale for both impact and urgency as requested
    */
   static DEFAULT_PRIORITY_MATRIX = {
-    // Impact levels (High=1, Medium=2, Low=3)
-    // Urgency levels (High=1, Medium=2, Low=3)
+    // Impact levels (Critical=1, High=2, Medium=3, Low=4)
+    // Urgency levels (Critical=1, High=2, Medium=3, Low=4)
     // Result: Priority (Critical=1, High=2, Medium=3, Low=4)
     matrix: {
-      "1,1": 1, // High Impact, High Urgency = Critical
-      "1,2": 2, // High Impact, Medium Urgency = High
-      "1,3": 3, // High Impact, Low Urgency = Medium
-      "2,1": 2, // Medium Impact, High Urgency = High
-      "2,2": 3, // Medium Impact, Medium Urgency = Medium
-      "2,3": 4, // Medium Impact, Low Urgency = Low
-      "3,1": 3, // Low Impact, High Urgency = Medium
-      "3,2": 4, // Low Impact, Medium Urgency = Low
-      "3,3": 4  // Low Impact, Low Urgency = Low
+      "1,1": 1, // Critical Impact, Critical Urgency = Critical
+      "1,2": 1, // Critical Impact, High Urgency = Critical
+      "1,3": 2, // Critical Impact, Medium Urgency = High
+      "1,4": 2, // Critical Impact, Low Urgency = High
+      "2,1": 1, // High Impact, Critical Urgency = Critical
+      "2,2": 2, // High Impact, High Urgency = High
+      "2,3": 2, // High Impact, Medium Urgency = High
+      "2,4": 3, // High Impact, Low Urgency = Medium
+      "3,1": 2, // Medium Impact, Critical Urgency = High
+      "3,2": 2, // Medium Impact, High Urgency = High
+      "3,3": 3, // Medium Impact, Medium Urgency = Medium
+      "3,4": 4, // Medium Impact, Low Urgency = Low
+      "4,1": 2, // Low Impact, Critical Urgency = High
+      "4,2": 3, // Low Impact, High Urgency = Medium
+      "4,3": 4, // Low Impact, Medium Urgency = Low
+      "4,4": 4  // Low Impact, Low Urgency = Low
     },
     impactLevels: {
-      1: "High",
-      2: "Medium", 
-      3: "Low"
+      1: "Critical",
+      2: "High",
+      3: "Medium", 
+      4: "Low"
     },
     urgencyLevels: {
-      1: "High",
-      2: "Medium",
-      3: "Low"
+      1: "Critical",
+      2: "High",
+      3: "Medium",
+      4: "Low"
     },
     priorityLevels: {
       1: "Critical",
@@ -192,50 +202,58 @@ export class SLAMatrixService {
   }
 
   /**
-   * Analyze ticket content to determine impact level
+   * Determine impact level from ticket data
+   * Users can provide direct impact level (1-4) or let the system analyze content
    */
   static analyzeImpact(ticketData) {
     try {
       const { 
+        impact, // Direct impact input (1-4 scale)
         category, 
         subcategory, 
         title, 
         description, 
-        affectedUsers, 
         businessService,
         severity 
       } = ticketData;
 
-      let impactScore = 3; // Default to Low impact
+      // If direct impact is provided, use it (normalized to 1-4)
+      if (impact !== undefined && impact !== null) {
+        return this.normalizeLevel(impact);
+      }
+
+      let impactScore = 4; // Default to Low impact
 
       // High impact indicators
+      const criticalImpactKeywords = [
+        'critical', 'emergency', 'production down', 'system crash', 'data loss', 
+        'security breach', 'virus', 'complete outage', 'total failure'
+      ];
+      
       const highImpactKeywords = [
-        'outage', 'down', 'critical', 'emergency', 'production', 'server down',
-        'network down', 'system crash', 'data loss', 'security breach', 'virus'
+        'outage', 'down', 'server down', 'network down', 'service unavailable',
+        'major', 'significant', 'widespread'
       ];
       
       // Medium impact indicators  
       const mediumImpactKeywords = [
         'slow', 'performance', 'error', 'issue', 'problem', 'malfunction',
-        'not working', 'unable to', 'connection', 'timeout'
+        'not working', 'unable to', 'connection', 'timeout', 'intermittent'
       ];
 
       const content = `${title} ${description}`.toLowerCase();
       
+      // Check for critical impact keywords
+      if (criticalImpactKeywords.some(keyword => content.includes(keyword))) {
+        impactScore = 1; // Critical impact
+      }
       // Check for high impact keywords
-      if (highImpactKeywords.some(keyword => content.includes(keyword))) {
-        impactScore = 1; // High impact
+      else if (highImpactKeywords.some(keyword => content.includes(keyword))) {
+        impactScore = 2; // High impact
       }
       // Check for medium impact keywords
       else if (mediumImpactKeywords.some(keyword => content.includes(keyword))) {
-        impactScore = 2; // Medium impact
-      }
-
-      // Adjust based on affected users
-      if (affectedUsers > 100) {
-        impactScore = Math.min(impactScore, 1); // High impact
-      } else if (affectedUsers > 10) {
-        impactScore = Math.min(impactScore, 2); // Medium impact
+        impactScore = 3; // Medium impact
       }
 
       // Adjust based on business service criticality
@@ -243,15 +261,17 @@ export class SLAMatrixService {
         impactScore = Math.min(impactScore, 1);
       } else if (businessService?.criticality === 'High') {
         impactScore = Math.min(impactScore, 2);
+      } else if (businessService?.criticality === 'Medium') {
+        impactScore = Math.min(impactScore, 3);
       }
 
       // Override with explicit severity if provided
       if (severity) {
         const severityMap = {
           'critical': 1,
-          'high': 1,
-          'medium': 2,
-          'low': 3
+          'high': 2,
+          'medium': 3,
+          'low': 4
         };
         if (severityMap[severity.toLowerCase()]) {
           impactScore = severityMap[severity.toLowerCase()];
@@ -261,49 +281,65 @@ export class SLAMatrixService {
       return impactScore;
     } catch (error) {
       logger.error('Error analyzing impact:', error);
-      return 3; // Default to Low impact
+      return 4; // Default to Low impact
     }
   }
 
   /**
-   * Analyze ticket to determine urgency level
+   * Determine urgency level from ticket data
+   * Users can provide direct urgency level (1-4) or let the system analyze content
    */
   static analyzeUrgency(ticketData) {
     try {
       const { 
+        urgency, // Direct urgency input (1-4 scale)
         isVip, 
         vipLevel, 
         requestedBy, 
         dueDate, 
         businessHours, 
         title, 
-        description,
-        urgency 
+        description
       } = ticketData;
 
-      let urgencyScore = 3; // Default to Low urgency
+      // If direct urgency is provided, use it (normalized to 1-4)
+      if (urgency !== undefined && urgency !== null) {
+        return this.normalizeLevel(urgency);
+      }
+
+      let urgencyScore = 4; // Default to Low urgency
+
+      // Critical urgency indicators
+      const criticalUrgencyKeywords = [
+        'emergency', 'immediate', 'now', 'critical', 'asap',
+        'deadline today', 'meeting in', 'presentation now'
+      ];
 
       // High urgency indicators
       const highUrgencyKeywords = [
-        'urgent', 'asap', 'immediately', 'now', 'emergency', 'deadline',
-        'meeting', 'presentation', 'demo', 'client', 'customer'
+        'urgent', 'deadline', 'meeting', 'presentation', 'demo', 'client', 
+        'customer', 'important', 'priority', 'soon'
       ];
 
       const content = `${title} ${description}`.toLowerCase();
 
+      // Check for critical urgency keywords
+      if (criticalUrgencyKeywords.some(keyword => content.includes(keyword))) {
+        urgencyScore = 1; // Critical urgency
+      }
       // Check for high urgency keywords
-      if (highUrgencyKeywords.some(keyword => content.includes(keyword))) {
-        urgencyScore = 1; // High urgency
+      else if (highUrgencyKeywords.some(keyword => content.includes(keyword))) {
+        urgencyScore = 2; // High urgency
       }
 
       // VIP user urgency boost
       if (isVip) {
         if (vipLevel === 'executive' || vipLevel === 'exec') {
-          urgencyScore = Math.min(urgencyScore, 1); // High urgency for executives
+          urgencyScore = Math.min(urgencyScore, 1); // Critical urgency for executives
         } else if (vipLevel === 'gold') {
-          urgencyScore = Math.min(urgencyScore, 2); // Medium urgency for gold VIPs
+          urgencyScore = Math.min(urgencyScore, 2); // High urgency for gold VIPs
         } else {
-          urgencyScore = Math.min(urgencyScore, 2); // Medium urgency for VIPs
+          urgencyScore = Math.min(urgencyScore, 2); // High urgency for VIPs
         }
       }
 
@@ -314,58 +350,49 @@ export class SLAMatrixService {
         const hoursUntilDue = (due - now) / (1000 * 60 * 60);
         
         if (hoursUntilDue <= 0) {
-          urgencyScore = Math.min(urgencyScore, 1); // High urgency for overdue
-        } else if (hoursUntilDue <= 4) {
-          urgencyScore = Math.min(urgencyScore, 1); // High urgency
+          urgencyScore = Math.min(urgencyScore, 1); // Critical urgency for overdue
+        } else if (hoursUntilDue <= 2) {
+          urgencyScore = Math.min(urgencyScore, 1); // Critical urgency
+        } else if (hoursUntilDue <= 8) {
+          urgencyScore = Math.min(urgencyScore, 2); // High urgency
         } else if (hoursUntilDue <= 24) {
-          urgencyScore = Math.min(urgencyScore, 2); // Medium urgency
+          urgencyScore = Math.min(urgencyScore, 3); // Medium urgency
         }
         // For far future dates (> 24 hours), don't boost urgency - keep default
       }
 
       // Business hours consideration - only reduce high urgency outside business hours
       if (businessHours === false && urgencyScore < 3) {
-        urgencyScore = Math.max(urgencyScore, 2); // Don't go below medium urgency outside business hours
-      }
-
-      // Override with explicit urgency if provided
-      if (urgency) {
-        const urgencyMap = {
-          'high': 1,
-          'medium': 2,
-          'low': 3
-        };
-        if (urgencyMap[urgency.toLowerCase()]) {
-          urgencyScore = urgencyMap[urgency.toLowerCase()];
-        }
+        urgencyScore = Math.max(urgencyScore, 3); // Don't go below medium urgency outside business hours
       }
 
       return urgencyScore;
     } catch (error) {
       logger.error('Error analyzing urgency:', error);
-      return 3; // Default to Low urgency
+      return 4; // Default to Low urgency
     }
   }
 
   /**
-   * Normalize level input to numeric value
+   * Normalize level input to numeric value (1-4 scale)
    */
   static normalizeLevel(level) {
     if (typeof level === 'number') {
-      return Math.max(1, Math.min(3, level)); // Ensure 1-3 range
+      return Math.max(1, Math.min(4, level)); // Ensure 1-4 range
     }
     
     const levelMap = {
-      'high': 1,
-      'medium': 2,
-      'low': 3,
       'critical': 1,
+      'high': 2,
+      'medium': 3,
+      'low': 4,
       '1': 1,
       '2': 2,
-      '3': 3
+      '3': 3,
+      '4': 4
     };
     
-    return levelMap[String(level).toLowerCase()] || 3;
+    return levelMap[String(level).toLowerCase()] || 4;
   }
 
   /**
@@ -570,9 +597,10 @@ export class SLAMatrixService {
    */
   static validateMatrix(matrix) {
     const requiredKeys = [
-      "1,1", "1,2", "1,3",
-      "2,1", "2,2", "2,3", 
-      "3,1", "3,2", "3,3"
+      "1,1", "1,2", "1,3", "1,4",
+      "2,1", "2,2", "2,3", "2,4",
+      "3,1", "3,2", "3,3", "3,4",
+      "4,1", "4,2", "4,3", "4,4"
     ];
     
     for (const key of requiredKeys) {

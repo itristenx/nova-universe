@@ -12,21 +12,21 @@ const mockLogger = {
 describe('SLA Matrix Service', () => {
   describe('Priority Matrix Calculation', () => {
     test('should calculate priority correctly using default matrix', () => {
-      // High Impact, High Urgency = Critical (1)
+      // Critical Impact, Critical Urgency = Critical (1)
       assert.strictEqual(SLAMatrixService.calculatePriority(1, 1), 1);
       
-      // High Impact, Medium Urgency = High (2)
-      assert.strictEqual(SLAMatrixService.calculatePriority(1, 2), 2);
+      // Critical Impact, High Urgency = Critical (1)
+      assert.strictEqual(SLAMatrixService.calculatePriority(1, 2), 1);
       
-      // Medium Impact, High Urgency = High (2)
-      assert.strictEqual(SLAMatrixService.calculatePriority(2, 1), 2);
+      // High Impact, Critical Urgency = Critical (1)
+      assert.strictEqual(SLAMatrixService.calculatePriority(2, 1), 1);
       
       // Low Impact, Low Urgency = Low (4)
-      assert.strictEqual(SLAMatrixService.calculatePriority(3, 3), 4);
+      assert.strictEqual(SLAMatrixService.calculatePriority(4, 4), 4);
     });
 
     test('should handle string inputs correctly', () => {
-      assert.strictEqual(SLAMatrixService.calculatePriority('high', 'high'), 1);
+      assert.strictEqual(SLAMatrixService.calculatePriority('critical', 'critical'), 1);
       assert.strictEqual(SLAMatrixService.calculatePriority('medium', 'low'), 4);
       assert.strictEqual(SLAMatrixService.calculatePriority('low', 'medium'), 4);
     });
@@ -38,45 +38,60 @@ describe('SLA Matrix Service', () => {
   });
 
   describe('Impact Analysis', () => {
-    test('should detect high impact from content keywords', () => {
+    test('should use direct impact input when provided', () => {
       const ticketData = {
-        title: 'Critical server outage',
-        description: 'Production server is down affecting all users',
-        affectedUsers: 150
+        title: 'Test ticket',
+        description: 'Test description',
+        impact: 2 // Direct high impact input
       };
       
-      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 1); // High impact
+      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 2); // High impact
+    });
+
+    test('should detect critical impact from content keywords', () => {
+      const ticketData = {
+        title: 'Critical: Complete system crash',
+        description: 'Production emergency with data loss affecting all users'
+      };
+      
+      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 1); // Critical impact
+    });
+
+    test('should detect high impact from content keywords', () => {
+      const ticketData = {
+        title: 'Major server outage',
+        description: 'Production server is down affecting all users'
+      };
+      
+      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 2); // High impact
     });
 
     test('should detect medium impact from performance issues', () => {
       const ticketData = {
         title: 'Application running slow',
-        description: 'Users reporting performance issues with the main application',
-        affectedUsers: 50
+        description: 'Users reporting performance issues with the main application'
       };
       
-      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 2); // Medium impact
+      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 3); // Medium impact
     });
 
     test('should default to low impact for routine requests', () => {
       const ticketData = {
         title: 'Password reset request',
-        description: 'User needs password reset for email account',
-        affectedUsers: 1
+        description: 'User needs password reset for email account'
       };
       
-      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 3); // Low impact
+      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 4); // Low impact
     });
 
     test('should consider business service criticality', () => {
       const ticketData = {
         title: 'Minor email issue',
         description: 'Single user email problem',
-        affectedUsers: 1,
         businessService: { criticality: 'Critical' }
       };
       
-      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 1); // High impact due to critical service
+      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 1); // Critical impact due to critical service
     });
 
     test('should override with explicit severity', () => {
@@ -86,19 +101,39 @@ describe('SLA Matrix Service', () => {
         severity: 'critical'
       };
       
-      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 1); // High impact due to explicit severity
+      assert.strictEqual(SLAMatrixService.analyzeImpact(ticketData), 1); // Critical impact due to explicit severity
     });
   });
 
   describe('Urgency Analysis', () => {
-    test('should detect high urgency from content keywords', () => {
+    test('should use direct urgency input when provided', () => {
       const ticketData = {
-        title: 'Urgent: Client meeting in 1 hour',
-        description: 'Need immediate assistance for important client presentation',
+        title: 'Test ticket',
+        description: 'Test description',
+        urgency: 1 // Direct critical urgency input
+      };
+      
+      assert.strictEqual(SLAMatrixService.analyzeUrgency(ticketData), 1); // Critical urgency
+    });
+
+    test('should detect critical urgency from content keywords', () => {
+      const ticketData = {
+        title: 'Emergency: Client meeting in 30 minutes',
+        description: 'Need immediate assistance for critical client presentation',
         isVip: false
       };
       
-      assert.strictEqual(SLAMatrixService.analyzeUrgency(ticketData), 1); // High urgency
+      assert.strictEqual(SLAMatrixService.analyzeUrgency(ticketData), 1); // Critical urgency
+    });
+
+    test('should detect high urgency from content keywords', () => {
+      const ticketData = {
+        title: 'Urgent: Client presentation tomorrow',
+        description: 'Need assistance for important client presentation',
+        isVip: false
+      };
+      
+      assert.strictEqual(SLAMatrixService.analyzeUrgency(ticketData), 2); // High urgency
     });
 
     test('should boost urgency for VIP users', () => {
@@ -109,12 +144,12 @@ describe('SLA Matrix Service', () => {
         vipLevel: 'executive'
       };
       
-      assert.strictEqual(SLAMatrixService.analyzeUrgency(ticketData), 1); // High urgency for executive
+      assert.strictEqual(SLAMatrixService.analyzeUrgency(ticketData), 1); // Critical urgency for executive
     });
 
     test('should consider due dates', () => {
       const now = new Date();
-      const dueDate = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
+      const dueDate = new Date(now.getTime() + 1 * 60 * 60 * 1000); // 1 hour from now
       
       const ticketData = {
         title: 'Regular task',
@@ -123,7 +158,7 @@ describe('SLA Matrix Service', () => {
         isVip: false
       };
       
-      assert.strictEqual(SLAMatrixService.analyzeUrgency(ticketData), 1); // High urgency due to close deadline
+      assert.strictEqual(SLAMatrixService.analyzeUrgency(ticketData), 1); // Critical urgency due to close deadline
     });
 
     test('should reduce urgency outside business hours', () => {
@@ -135,7 +170,7 @@ describe('SLA Matrix Service', () => {
       };
       
       const urgency = SLAMatrixService.analyzeUrgency(ticketData);
-      assert(urgency >= 2); // Should not be high urgency outside business hours
+      assert(urgency >= 3); // Should not be high urgency outside business hours
     });
   });
 
@@ -173,19 +208,20 @@ describe('SLA Matrix Service', () => {
   });
 
   describe('Complete Ticket SLA Calculation', () => {
-    test('should calculate complete SLA for high impact, high urgency ticket', () => {
+    test('should calculate complete SLA for critical impact, critical urgency ticket', () => {
       const ticketData = {
         title: 'Critical production outage',
         description: 'All systems down, urgent fix needed',
-        affectedUsers: 200,
+        impact: 1, // Critical impact (direct input)
+        urgency: 1, // Critical urgency (direct input)
         isVip: false,
         userId: 'test-user-123'
       };
 
       const result = SLAMatrixService.calculateTicketSLA(ticketData);
       
-      assert.strictEqual(result.impact, 1); // High impact
-      assert.strictEqual(result.urgency, 1); // High urgency
+      assert.strictEqual(result.impact, 1); // Critical impact
+      assert.strictEqual(result.urgency, 1); // Critical urgency
       assert.strictEqual(result.priority, 1); // Critical priority
       assert.strictEqual(result.priorityLabel, 'Critical');
       assert.strictEqual(result.userType, 'standard');
@@ -196,7 +232,8 @@ describe('SLA Matrix Service', () => {
       const ticketData = {
         title: 'Password reset needed',
         description: 'User cannot access email',
-        affectedUsers: 1,
+        impact: 4, // Low impact (direct input)
+        urgency: 3, // Medium urgency (direct input)
         isVip: true,
         vipLevel: 'gold',
         userId: 'vip-user-456'
@@ -205,7 +242,8 @@ describe('SLA Matrix Service', () => {
       const result = SLAMatrixService.calculateTicketSLA(ticketData);
       
       assert.strictEqual(result.userType, 'vip');
-      assert(result.urgency <= 2); // VIP boost should improve urgency
+      assert.strictEqual(result.impact, 4); // Low impact
+      assert.strictEqual(result.urgency, 3); // Medium urgency
       assert(result.slaPolicy.responseTime < 480); // Should be faster than standard low priority
     });
 
@@ -213,7 +251,8 @@ describe('SLA Matrix Service', () => {
       const ticketData = {
         title: 'Minor issue',
         description: 'Small technical problem',
-        affectedUsers: 1,
+        impact: 4, // Low impact (direct input)
+        urgency: 4, // Low urgency (direct input)
         isVip: true,
         vipLevel: 'executive',
         userId: 'exec-user-789'
@@ -222,7 +261,10 @@ describe('SLA Matrix Service', () => {
       const result = SLAMatrixService.calculateTicketSLA(ticketData);
       
       assert.strictEqual(result.userType, 'executive');
-      assert.strictEqual(result.urgency, 1); // Executive should get high urgency
+      assert.strictEqual(result.impact, 4); // Low impact
+      assert.strictEqual(result.urgency, 4); // Low urgency
+      // VIP boost should improve the final priority
+      assert(result.priority < 4); // Priority should be boosted from Low (4)
       assert(result.slaPolicy.responseTime <= 30); // Executive gets fastest response
     });
 
@@ -230,6 +272,8 @@ describe('SLA Matrix Service', () => {
       const ticketData = {
         title: 'Test ticket',
         description: 'Test description',
+        impact: 3, // Medium impact (direct input)
+        urgency: 3, // Medium urgency (direct input)
         isVip: false
       };
 
@@ -255,24 +299,27 @@ describe('SLA Matrix Service', () => {
     });
 
     test('should return correct impact labels', () => {
-      assert.strictEqual(SLAMatrixService.getImpactLabel(1), 'High');
-      assert.strictEqual(SLAMatrixService.getImpactLabel(2), 'Medium');
-      assert.strictEqual(SLAMatrixService.getImpactLabel(3), 'Low');
+      assert.strictEqual(SLAMatrixService.getImpactLabel(1), 'Critical');
+      assert.strictEqual(SLAMatrixService.getImpactLabel(2), 'High');
+      assert.strictEqual(SLAMatrixService.getImpactLabel(3), 'Medium');
+      assert.strictEqual(SLAMatrixService.getImpactLabel(4), 'Low');
     });
 
     test('should return correct urgency labels', () => {
-      assert.strictEqual(SLAMatrixService.getUrgencyLabel(1), 'High');
-      assert.strictEqual(SLAMatrixService.getUrgencyLabel(2), 'Medium');
-      assert.strictEqual(SLAMatrixService.getUrgencyLabel(3), 'Low');
+      assert.strictEqual(SLAMatrixService.getUrgencyLabel(1), 'Critical');
+      assert.strictEqual(SLAMatrixService.getUrgencyLabel(2), 'High');
+      assert.strictEqual(SLAMatrixService.getUrgencyLabel(3), 'Medium');
+      assert.strictEqual(SLAMatrixService.getUrgencyLabel(4), 'Low');
     });
 
     test('should normalize levels correctly', () => {
       assert.strictEqual(SLAMatrixService.normalizeLevel(1), 1);
-      assert.strictEqual(SLAMatrixService.normalizeLevel('high'), 1);
+      assert.strictEqual(SLAMatrixService.normalizeLevel('critical'), 1);
       assert.strictEqual(SLAMatrixService.normalizeLevel('CRITICAL'), 1);
-      assert.strictEqual(SLAMatrixService.normalizeLevel('medium'), 2);
-      assert.strictEqual(SLAMatrixService.normalizeLevel('low'), 3);
-      assert.strictEqual(SLAMatrixService.normalizeLevel('invalid'), 3); // Default to low
+      assert.strictEqual(SLAMatrixService.normalizeLevel('high'), 2);
+      assert.strictEqual(SLAMatrixService.normalizeLevel('medium'), 3);
+      assert.strictEqual(SLAMatrixService.normalizeLevel('low'), 4);
+      assert.strictEqual(SLAMatrixService.normalizeLevel('invalid'), 4); // Default to low
     });
   });
 
@@ -280,9 +327,10 @@ describe('SLA Matrix Service', () => {
     test('should validate correct matrix configuration', () => {
       const validMatrix = {
         matrix: {
-          "1,1": 1, "1,2": 2, "1,3": 3,
-          "2,1": 2, "2,2": 3, "2,3": 4,
-          "3,1": 3, "3,2": 4, "3,3": 4
+          "1,1": 1, "1,2": 1, "1,3": 2, "1,4": 2,
+          "2,1": 1, "2,2": 2, "2,3": 2, "2,4": 3,
+          "3,1": 2, "3,2": 2, "3,3": 3, "3,4": 4,
+          "4,1": 2, "4,2": 3, "4,3": 4, "4,4": 4
         }
       };
       
@@ -337,6 +385,8 @@ describe('SLA Matrix Service', () => {
         title: '',
         description: '',
         category: '',
+        impact: 4, // Low impact (direct input)
+        urgency: 4, // Low urgency (direct input)
         isVip: false
       };
       
@@ -344,15 +394,15 @@ describe('SLA Matrix Service', () => {
       assert.strictEqual(result.priority, 4); // Should default to low priority
     });
 
-    test('should handle very large affected user counts', () => {
+    test('should handle missing impact/urgency by using content analysis', () => {
       const ticketData = {
         title: 'System issue',
-        description: 'Problem affecting users',
-        affectedUsers: 999999
+        description: 'Problem affecting users'
+        // No direct impact/urgency provided - should analyze from content
       };
       
       const impact = SLAMatrixService.analyzeImpact(ticketData);
-      assert.strictEqual(impact, 1); // Should be high impact
+      assert(impact >= 1 && impact <= 4); // Should return valid impact level
     });
 
     test('should handle future and past due dates', () => {
@@ -373,11 +423,11 @@ describe('SLA Matrix Service', () => {
         isVip: false
       };
       
-      // Past due should be high urgency
+      // Past due should be critical urgency
       assert.strictEqual(SLAMatrixService.analyzeUrgency(pastTicket), 1);
       
       // Far future should be low urgency
-      assert.strictEqual(SLAMatrixService.analyzeUrgency(futureTicket), 3);
+      assert.strictEqual(SLAMatrixService.analyzeUrgency(futureTicket), 4);
     });
   });
 });

@@ -219,7 +219,7 @@ router.post('/impact/analyze', async (req, res) => {
         factors: {
           title: ticketData.title,
           description: ticketData.description,
-          affectedUsers: ticketData.affectedUsers,
+          impact: ticketData.impact,
           businessService: ticketData.businessService,
           severity: ticketData.severity
         }
@@ -254,11 +254,11 @@ router.post('/urgency/analyze', async (req, res) => {
         factors: {
           title: ticketData.title,
           description: ticketData.description,
+          urgency: ticketData.urgency,
           isVip: ticketData.isVip,
           vipLevel: ticketData.vipLevel,
           dueDate: ticketData.dueDate,
-          businessHours: ticketData.businessHours,
-          explicitUrgency: ticketData.urgency
+          businessHours: ticketData.businessHours
         }
       },
       message: 'Urgency analysis completed successfully'
