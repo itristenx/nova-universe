@@ -18102,3 +18102,300 @@
 [2025-09-03T12:32:37.476Z] 🐛 IoT system health check completed
 [2025-09-03T12:32:37.476Z] 🐛 Cleaning up inactive IoT devices
 [2025-09-03T12:32:37.476Z] 🐛 IoT device cleanup completed
+[2025-09-03T12:37:37.444Z] 🐛 Cleaning up expired visitors
+[2025-09-03T12:37:37.449Z] 🐛 Updating visitor metrics
+[2025-09-03T12:37:37.449Z] 🐛 Visitor metrics updated
+[2025-09-03T12:37:37.452Z] 🐛 Syncing all calendars
+[2025-09-03T12:37:37.452Z] 🐛 Starting sync for zoom with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:32:37.472Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:37:37.454Z] 🐛 Syncing zoom platform for user [object Object]
+[2025-09-03T12:37:37.454Z] 🐛 zoom sync completed: 13 events
+[2025-09-03T12:37:37.455Z] 🐛 Starting sync for teams with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:32:37.472Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:37:37.455Z] 🐛 Syncing teams platform for user [object Object]
+[2025-09-03T12:37:37.455Z] 🐛 teams sync completed: 10 events
+[2025-09-03T12:37:37.455Z] 🐛 Starting sync for webex with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:32:37.472Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:37:37.455Z] 🐛 Syncing webex platform for user [object Object]
+[2025-09-03T12:37:37.455Z] 🐛 webex sync completed: 16 events
+[2025-09-03T12:37:37.455Z] 🐛 Starting sync for google with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:32:37.472Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:37:37.455Z] 🐛 Syncing google platform for user [object Object]
+[2025-09-03T12:37:37.455Z] 🐛 google sync completed: 23 events
+[2025-09-03T12:37:37.456Z] 🐛 Starting sync for slack with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:32:37.476Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:37:37.456Z] 🐛 Syncing slack platform for user [object Object]
+[2025-09-03T12:37:37.456Z] 🐛 slack sync completed: 9 events
+[2025-09-03T12:37:37.459Z] 🐛 Cleaning up expired bookings
+[2025-09-03T12:37:37.459Z] 🐛 Updating availability metrics
+[2025-09-03T12:37:37.459Z] 🐛 Availability metrics updated
+[2025-09-03T12:37:37.467Z] 🐛 Collecting all metrics...
+[2025-09-03T12:37:37.467Z] 🐛 Metrics collection completed
+[2025-09-03T12:37:37.470Z] 🐛 Syncing all calendars
+[2025-09-03T12:37:37.470Z] 🐛 Starting sync for zoom with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:37:37.455Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:37:37.470Z] 🐛 Syncing zoom platform for user [object Object]
+[2025-09-03T12:37:37.470Z] 🐛 zoom sync completed: 8 events
+[2025-09-03T12:37:37.471Z] 🐛 Starting sync for teams with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:37:37.455Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:37:37.471Z] 🐛 Syncing teams platform for user [object Object]
+[2025-09-03T12:37:37.471Z] 🐛 teams sync completed: 12 events
+[2025-09-03T12:37:37.471Z] 🐛 Starting sync for webex with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:37:37.455Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:37:37.471Z] 🐛 Syncing webex platform for user [object Object]
+[2025-09-03T12:37:37.471Z] 🐛 webex sync completed: 23 events
+[2025-09-03T12:37:37.471Z] 🐛 Starting sync for google with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:37:37.456Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:37:37.471Z] 🐛 Syncing google platform for user [object Object]
+[2025-09-03T12:37:37.471Z] 🐛 google sync completed: 5 events
+[2025-09-03T12:37:37.471Z] 🐛 Starting sync for slack with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:37:37.456Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:37:37.471Z] 🐛 Syncing slack platform for user [object Object]
+[2025-09-03T12:37:37.471Z] 🐛 slack sync completed: 17 events
+[2025-09-03T12:37:37.501Z] 🐛 Performing IoT system health check
+[2025-09-03T12:37:37.501Z] 🐛 IoT system health check completed
+[2025-09-03T12:37:37.501Z] 🐛 Cleaning up inactive IoT devices
+[2025-09-03T12:37:37.501Z] 🐛 IoT device cleanup completed
+[2025-09-03T12:42:37.468Z] 🐛 Collecting all metrics...
+[2025-09-03T12:42:37.470Z] 🐛 Metrics collection completed
+[2025-09-03T12:42:37.471Z] 🐛 Syncing all calendars
+[2025-09-03T12:42:37.471Z] 🐛 Starting sync for zoom with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:37:37.471Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:42:37.474Z] 🐛 Syncing zoom platform for user [object Object]
+[2025-09-03T12:42:37.474Z] 🐛 zoom sync completed: 13 events
+[2025-09-03T12:42:37.474Z] 🐛 Starting sync for teams with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:37:37.471Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:42:37.474Z] 🐛 Syncing teams platform for user [object Object]
+[2025-09-03T12:42:37.474Z] 🐛 teams sync completed: 6 events
+[2025-09-03T12:42:37.474Z] 🐛 Starting sync for webex with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:37:37.471Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:42:37.474Z] 🐛 Syncing webex platform for user [object Object]
+[2025-09-03T12:42:37.475Z] 🐛 webex sync completed: 19 events
+[2025-09-03T12:42:37.475Z] 🐛 Starting sync for google with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:37:37.471Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:42:37.475Z] 🐛 Syncing google platform for user [object Object]
+[2025-09-03T12:42:37.475Z] 🐛 google sync completed: 19 events
+[2025-09-03T12:42:37.475Z] 🐛 Starting sync for slack with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:37:37.471Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:42:37.475Z] 🐛 Syncing slack platform for user [object Object]
+[2025-09-03T12:42:37.475Z] 🐛 slack sync completed: 24 events
+[2025-09-03T12:42:37.501Z] 🐛 Performing IoT system health check
+[2025-09-03T12:42:37.501Z] 🐛 IoT system health check completed
+[2025-09-03T12:42:37.502Z] 🐛 Cleaning up inactive IoT devices
+[2025-09-03T12:42:37.502Z] 🐛 IoT device cleanup completed
+[2025-09-03T12:47:37.460Z] 🐛 Cleaning up expired bookings
+[2025-09-03T12:47:37.463Z] 🐛 Updating availability metrics
+[2025-09-03T12:47:37.463Z] 🐛 Availability metrics updated
+[2025-09-03T12:47:37.466Z] 🐛 Collecting all metrics...
+[2025-09-03T12:47:37.466Z] 🐛 Metrics collection completed
+[2025-09-03T12:47:37.471Z] 🐛 Syncing all calendars
+[2025-09-03T12:47:37.471Z] 🐛 Starting sync for zoom with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:42:37.474Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:47:37.472Z] 🐛 Syncing zoom platform for user [object Object]
+[2025-09-03T12:47:37.472Z] 🐛 zoom sync completed: 10 events
+[2025-09-03T12:47:37.473Z] 🐛 Starting sync for teams with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:42:37.474Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:47:37.473Z] 🐛 Syncing teams platform for user [object Object]
+[2025-09-03T12:47:37.473Z] 🐛 teams sync completed: 23 events
+[2025-09-03T12:47:37.473Z] 🐛 Starting sync for webex with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:42:37.475Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:47:37.479Z] 🐛 Syncing webex platform for user [object Object]
+[2025-09-03T12:47:37.480Z] 🐛 webex sync completed: 20 events
+[2025-09-03T12:47:37.480Z] 🐛 Starting sync for google with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:42:37.475Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:47:37.480Z] 🐛 Syncing google platform for user [object Object]
+[2025-09-03T12:47:37.480Z] 🐛 google sync completed: 24 events
+[2025-09-03T12:47:37.480Z] 🐛 Starting sync for slack with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:42:37.475Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:47:37.480Z] 🐛 Syncing slack platform for user [object Object]
+[2025-09-03T12:47:37.481Z] 🐛 slack sync completed: 22 events
+[2025-09-03T12:47:37.501Z] 🐛 Performing IoT system health check
+[2025-09-03T12:47:37.501Z] 🐛 IoT system health check completed
+[2025-09-03T12:47:37.501Z] 🐛 Cleaning up inactive IoT devices
+[2025-09-03T12:47:37.501Z] 🐛 IoT device cleanup completed
+[2025-09-03T12:52:37.441Z] 🐛 Cleaning up expired visitors
+[2025-09-03T12:52:37.444Z] 🐛 Updating visitor metrics
+[2025-09-03T12:52:37.444Z] 🐛 Visitor metrics updated
+[2025-09-03T12:52:37.448Z] 🐛 Syncing all calendars
+[2025-09-03T12:52:37.449Z] 🐛 Starting sync for zoom with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:47:37.473Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:52:37.450Z] 🐛 Syncing zoom platform for user [object Object]
+[2025-09-03T12:52:37.450Z] 🐛 zoom sync completed: 20 events
+[2025-09-03T12:52:37.450Z] 🐛 Starting sync for teams with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:47:37.473Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:52:37.450Z] 🐛 Syncing teams platform for user [object Object]
+[2025-09-03T12:52:37.450Z] 🐛 teams sync completed: 23 events
+[2025-09-03T12:52:37.450Z] 🐛 Starting sync for webex with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:47:37.480Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:52:37.450Z] 🐛 Syncing webex platform for user [object Object]
+[2025-09-03T12:52:37.450Z] 🐛 webex sync completed: 19 events
+[2025-09-03T12:52:37.450Z] 🐛 Starting sync for google with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:47:37.480Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:52:37.450Z] 🐛 Syncing google platform for user [object Object]
+[2025-09-03T12:52:37.450Z] 🐛 google sync completed: 12 events
+[2025-09-03T12:52:37.450Z] 🐛 Starting sync for slack with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:47:37.481Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:52:37.450Z] 🐛 Syncing slack platform for user [object Object]
+[2025-09-03T12:52:37.450Z] 🐛 slack sync completed: 5 events
+[2025-09-03T12:52:37.466Z] 🐛 Collecting all metrics...
+[2025-09-03T12:52:37.466Z] 🐛 Metrics collection completed
+[2025-09-03T12:52:37.470Z] 🐛 Syncing all calendars
+[2025-09-03T12:52:37.470Z] 🐛 Starting sync for zoom with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:52:37.450Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:52:37.470Z] 🐛 Syncing zoom platform for user [object Object]
+[2025-09-03T12:52:37.470Z] 🐛 zoom sync completed: 24 events
+[2025-09-03T12:52:37.470Z] 🐛 Starting sync for teams with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:52:37.450Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:52:37.471Z] 🐛 Syncing teams platform for user [object Object]
+[2025-09-03T12:52:37.471Z] 🐛 teams sync completed: 20 events
+[2025-09-03T12:52:37.471Z] 🐛 Starting sync for webex with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:52:37.450Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:52:37.471Z] 🐛 Syncing webex platform for user [object Object]
+[2025-09-03T12:52:37.471Z] 🐛 webex sync completed: 24 events
+[2025-09-03T12:52:37.471Z] 🐛 Starting sync for google with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:52:37.450Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:52:37.471Z] 🐛 Syncing google platform for user [object Object]
+[2025-09-03T12:52:37.471Z] 🐛 google sync completed: 7 events
+[2025-09-03T12:52:37.471Z] 🐛 Starting sync for slack with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:52:37.450Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:52:37.471Z] 🐛 Syncing slack platform for user [object Object]
+[2025-09-03T12:52:37.471Z] 🐛 slack sync completed: 9 events
+[2025-09-03T12:52:37.501Z] 🐛 Performing IoT system health check
+[2025-09-03T12:52:37.501Z] 🐛 IoT system health check completed
+[2025-09-03T12:52:37.501Z] 🐛 Cleaning up inactive IoT devices
+[2025-09-03T12:52:37.501Z] 🐛 IoT device cleanup completed
+[2025-09-03T12:57:37.415Z] 🐛 Cleaning up expired bookings
+[2025-09-03T12:57:37.424Z] 🐛 Updating availability metrics
+[2025-09-03T12:57:37.424Z] 🐛 Availability metrics updated
+[2025-09-03T12:57:37.428Z] 🐛 Collecting all metrics...
+[2025-09-03T12:57:37.428Z] 🐛 Metrics collection completed
+[2025-09-03T12:57:37.428Z] 🐛 Syncing all calendars
+[2025-09-03T12:57:37.428Z] 🐛 Starting sync for zoom with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:52:37.470Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:57:37.430Z] 🐛 Syncing zoom platform for user [object Object]
+[2025-09-03T12:57:37.430Z] 🐛 zoom sync completed: 9 events
+[2025-09-03T12:57:37.430Z] 🐛 Starting sync for teams with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:52:37.471Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:57:37.430Z] 🐛 Syncing teams platform for user [object Object]
+[2025-09-03T12:57:37.430Z] 🐛 teams sync completed: 11 events
+[2025-09-03T12:57:37.430Z] 🐛 Starting sync for webex with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:52:37.471Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:57:37.431Z] 🐛 Syncing webex platform for user [object Object]
+[2025-09-03T12:57:37.431Z] 🐛 webex sync completed: 23 events
+[2025-09-03T12:57:37.431Z] 🐛 Starting sync for google with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:52:37.471Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:57:37.431Z] 🐛 Syncing google platform for user [object Object]
+[2025-09-03T12:57:37.431Z] 🐛 google sync completed: 19 events
+[2025-09-03T12:57:37.431Z] 🐛 Starting sync for slack with config: {
+  enabled: true,
+  lastSync: '2025-09-03T12:52:37.471Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-03T12:57:37.431Z] 🐛 Syncing slack platform for user [object Object]
+[2025-09-03T12:57:37.432Z] 🐛 slack sync completed: 19 events
+[2025-09-03T12:57:37.451Z] 🐛 Performing IoT system health check
+[2025-09-03T12:57:37.451Z] 🐛 IoT system health check completed
+[2025-09-03T12:57:37.451Z] 🐛 Cleaning up inactive IoT devices
+[2025-09-03T12:57:37.451Z] 🐛 IoT device cleanup completed
