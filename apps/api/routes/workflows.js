@@ -156,6 +156,35 @@ router.get('/templates', authenticateJWT, checkPermission('workflows:read'), (re
   res.json(workflowTemplates);
 });
 
+/**
+ * @swagger
+ * /api/workflows/status:
+ *   get:
+ *     summary: Get workflow status
+ *     responses:
+ *       200:
+ *         description: List of workflow runs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   workflow:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *                   triggeredAt:
+ *                     type: string
+ *                     format: date-time
+ */
+router.get('/status', (req, res) => {
+  res.json(runs);
+});
+
 // Get single workflow
 router.get('/:id', authenticateJWT, checkPermission('workflows:read'), async (req, res) => {
   try {
@@ -473,35 +502,6 @@ router.post('/trigger', (req, res) => {
   }
   const record = triggerWorkflow(workflow);
   res.json({ runId: record.id, status: record.status });
-});
-
-/**
- * @swagger
- * /api/workflows/status:
- *   get:
- *     summary: Get workflow status
- *     responses:
- *       200:
- *         description: List of workflow runs
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   workflow:
- *                     type: string
- *                   status:
- *                     type: string
- *                   triggeredAt:
- *                     type: string
- *                     format: date-time
- */
-router.get('/status', (req, res) => {
-  res.json(runs);
 });
 
 export function resetWorkflowRuns() {
