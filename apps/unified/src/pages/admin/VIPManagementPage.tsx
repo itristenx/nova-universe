@@ -3,6 +3,7 @@ import { apiFetch } from '@/utils/api';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
 import { cn, formatNumber } from '@utils/index';
 import { useUserStore } from '@stores/users';
+import { VipBadge } from '@components/vip/VipComponents';
 import toast from 'react-hot-toast';
 
 // Custom icon components for React 19 compatibility

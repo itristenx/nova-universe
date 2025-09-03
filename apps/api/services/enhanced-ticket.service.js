@@ -24,6 +24,27 @@ async function getPrismaClient() {
  */
 export class TicketService {
   /**
+   * Build order by clause with VIP priority weighting
+   */
+  static buildOrderByClause(sortBy, sortOrder) {
+    // If sorting by default queue order, prioritize VIP tickets first
+    if (sortBy === 'created_at' || sortBy === 'priority' || !sortBy) {
+      return [
+        { vipPriorityScore: 'desc' }, // VIP tickets first
+        { priority: 'desc' },         // Then by priority
+        { createdAt: sortOrder || 'desc' } // Then by creation time
+      ];
+    }
+
+    // For other sort orders, still include VIP priority as secondary sort
+    return [
+      { [sortBy]: sortOrder },
+      { vipPriorityScore: 'desc' },
+      { priority: 'desc' }
+    ];
+  }
+
+  /**
    * Get tickets with advanced filtering, sorting, and pagination
    */
   static async getTickets(filters = {}, user) {
@@ -57,13 +78,16 @@ export class TicketService {
         whereClause.OR = searchConditions;
       }
 
+      // Build order by clause with VIP priority
+      const orderBy = this.buildOrderByClause(sortBy, sortOrder);
+
       // Execute queries
       const [tickets, totalCount] = await Promise.all([
         prismaClient.enhancedSupportTicket.findMany({
           where: whereClause,
           include: {
             requester: {
-              select: { id: true, name: true, email: true },
+              select: { id: true, name: true, email: true, isVip: true, vipLevel: true },
             },
             assignedUser: {
               select: { id: true, name: true, email: true },
@@ -85,7 +109,7 @@ export class TicketService {
               },
             },
           },
-          orderBy: { [sortBy]: sortOrder },
+          orderBy,
           skip,
           take: limit,
         }),
@@ -155,11 +179,26 @@ export class TicketService {
         // Generate ticket number
         const ticketNumber = await generateTypedTicketId(ticketData.type || 'REQUEST');
 
-        // Determine SLA
-        const sla = await SLAService.determineSLA(ticketData);
+        // Get VIP information for the requesting user
+        const vipInfo = await this.getVipUserInfo(ticketData.userId);
+
+        // Determine SLA (VIP users get priority SLA)
+        let sla;
+        if (vipInfo.isVip) {
+          sla = await this.applyVipSLA(ticketData, vipInfo);
+        }
+        if (!sla) {
+          sla = await SLAService.determineSLA(ticketData);
+        }
 
         // Calculate due dates
         const dueDates = this.calculateDueDates(sla, ticketData.priority, ticketData.urgency);
+
+        // Determine priority boost for VIP users
+        let adjustedPriority = ticketData.priority || 'MEDIUM';
+        if (vipInfo.isVip) {
+          adjustedPriority = this.adjustPriorityForVip(adjustedPriority, vipInfo.vipLevel);
+        }
 
         // Create ticket
         const ticket = await tx.enhancedSupportTicket.create({
@@ -171,7 +210,7 @@ export class TicketService {
               ticketData.shortDescription || this.generateShortDescription(ticketData.title),
             type: this.normalizeTicketType(ticketData.type || 'REQUEST'),
             state: 'NEW',
-            priority: ticketData.priority || 'MEDIUM',
+            priority: adjustedPriority,
             urgency: ticketData.urgency || 'MEDIUM',
             impact: ticketData.impact || 'MEDIUM',
             category: ticketData.category,
@@ -195,7 +234,9 @@ export class TicketService {
             customFields: ticketData.customFields || {},
             confidentialityLevel: ticketData.confidentialityLevel || 'internal',
             parentTicketId: ticketData.parentTicketId,
-            isVip: await this.isVipUser(ticketData.userId),
+            isVip: vipInfo.isVip,
+            vipPriorityScore: vipInfo.vipPriorityScore,
+            vipTriggerSource: vipInfo.vipTriggerSource,
             lastActivityAt: new Date(),
           },
           include: {
@@ -220,6 +261,11 @@ export class TicketService {
         // Add automatic watchers
         await this.addAutoWatchers(tx, ticket);
 
+        // VIP-specific actions
+        if (vipInfo.isVip) {
+          await this.handleVipTicketCreation(tx, ticket, vipInfo, user);
+        }
+
         // Create audit entry
         await AuditService.logTicketCreated(ticket, user);
 
@@ -235,6 +281,11 @@ export class TicketService {
       setImmediate(async () => {
         try {
           await NotificationService.sendTicketCreatedNotifications(transaction);
+          
+          // Send VIP-specific notifications
+          if (transaction.isVip) {
+            await this.sendVipNotifications(transaction);
+          }
         } catch (error) {
           logger.error('Error sending ticket created notifications:', error);
         }
@@ -1319,15 +1370,228 @@ export class TicketService {
     if (!userId) return false;
 
     try {
-      const userExtended = await db.userExtended.findUnique({
-        where: { userId },
-        select: { vipLevel: true },
+      const user = await db.user.findUnique({
+        where: { id: parseInt(userId) },
+        select: { isVip: true, vipLevel: true },
       });
 
-      return userExtended?.vipLevel > 0;
+      return user?.isVip === true;
     } catch (error) {
       logger.error('Error checking VIP status:', error);
       return false;
+    }
+  }
+
+  /**
+   * Get VIP user information including level and priority score
+   */
+  static async getVipUserInfo(userId) {
+    if (!userId) return { isVip: false, vipLevel: null, vipPriorityScore: 0 };
+
+    try {
+      const user = await db.user.findUnique({
+        where: { id: parseInt(userId) },
+        select: { isVip: true, vipLevel: true, vipTriggerSource: true },
+      });
+
+      if (!user?.isVip) {
+        return { isVip: false, vipLevel: null, vipPriorityScore: 0 };
+      }
+
+      // Calculate VIP priority score based on level
+      const vipPriorityScore = this.calculateVipPriorityScore(user.vipLevel);
+
+      return {
+        isVip: true,
+        vipLevel: user.vipLevel,
+        vipPriorityScore,
+        vipTriggerSource: user.vipTriggerSource || 'manual'
+      };
+    } catch (error) {
+      logger.error('Error getting VIP user info:', error);
+      return { isVip: false, vipLevel: null, vipPriorityScore: 0 };
+    }
+  }
+
+  /**
+   * Calculate VIP priority score for queue sorting
+   */
+  static calculateVipPriorityScore(vipLevel) {
+    switch (vipLevel) {
+      case 'exec':
+        return 100; // Highest priority
+      case 'gold':
+        return 50;
+      case 'priority':
+        return 25;
+      default:
+        return 0;
+    }
+  }
+
+  /**
+   * Apply VIP-specific SLA policies
+   */
+  static async applyVipSLA(ticketData, vipInfo) {
+    if (!vipInfo.isVip) return null;
+
+    try {
+      // Get VIP-specific SLA based on level
+      const vipSlaName = `VIP ${vipInfo.vipLevel === 'exec' ? 'Executive' : 
+                               vipInfo.vipLevel === 'gold' ? 'Gold' : 'Priority'} SLA`;
+      
+      const vipSla = await db.slaDefinition.findFirst({
+        where: { 
+          name: vipSlaName,
+          isActive: true,
+          isVipOnly: true
+        }
+      });
+
+      if (vipSla) {
+        logger.info(`Applied VIP SLA: ${vipSlaName} for user ${ticketData.userId}`);
+        return vipSla;
+      }
+
+      // Fallback to default VIP SLA if specific one not found
+      const defaultVipSla = await db.slaDefinition.findFirst({
+        where: { 
+          isVipOnly: true,
+          isActive: true,
+          isDefault: true
+        }
+      });
+
+      return defaultVipSla;
+    } catch (error) {
+      logger.error('Error applying VIP SLA:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Adjust ticket priority based on VIP level
+   */
+  static adjustPriorityForVip(currentPriority, vipLevel) {
+    const priorityOrder = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+    const currentIndex = priorityOrder.indexOf(currentPriority);
+    
+    switch (vipLevel) {
+      case 'exec':
+        // Executive VIPs always get CRITICAL priority
+        return 'CRITICAL';
+      case 'gold':
+        // Gold VIPs get minimum HIGH priority
+        return currentIndex < 2 ? 'HIGH' : currentPriority;
+      case 'priority':
+        // Priority VIPs get minimum MEDIUM priority
+        return currentIndex < 1 ? 'MEDIUM' : currentPriority;
+      default:
+        return currentPriority;
+    }
+  }
+
+  /**
+   * Handle VIP-specific ticket creation tasks
+   */
+  static async handleVipTicketCreation(tx, ticket, vipInfo, user) {
+    try {
+      // Log VIP ticket creation
+      await tx.auditLog.create({
+        data: {
+          userId: user.id,
+          action: 'VIP_TICKET_CREATED',
+          details: JSON.stringify({
+            ticketId: ticket.id,
+            ticketNumber: ticket.ticketNumber,
+            vipLevel: vipInfo.vipLevel,
+            vipPriorityScore: vipInfo.vipPriorityScore,
+            triggerSource: vipInfo.vipTriggerSource,
+            originalPriority: ticket.priority,
+            slaOverride: {
+              responseMinutes: ticket.responseTimeTarget,
+              resolutionMinutes: ticket.resolutionTimeTarget
+            }
+          }),
+          timestamp: new Date()
+        }
+      });
+
+      // Add VIP tag if not already present
+      if (!ticket.tags.includes('VIP')) {
+        await tx.enhancedSupportTicket.update({
+          where: { id: ticket.id },
+          data: {
+            tags: [...ticket.tags, 'VIP', `VIP-${vipInfo.vipLevel.toUpperCase()}`]
+          }
+        });
+      }
+
+      // Auto-escalate executive VIP tickets
+      if (vipInfo.vipLevel === 'exec') {
+        await this.createAutoEscalation(tx, ticket, 'EXECUTIVE_VIP_AUTO_ESCALATION', user);
+      }
+
+    } catch (error) {
+      logger.error('Error handling VIP ticket creation:', error);
+      // Don't throw - VIP handling should not block ticket creation
+    }
+  }
+
+  /**
+   * Create automatic escalation for VIP tickets
+   */
+  static async createAutoEscalation(tx, ticket, reason, user) {
+    try {
+      await tx.ticketEscalation.create({
+        data: {
+          ticketId: ticket.id,
+          escalationLevel: 1,
+          escalatedBy: user.id,
+          reason: reason,
+          status: 'ACTIVE'
+        }
+      });
+
+      logger.info(`Auto-escalated VIP ticket ${ticket.ticketNumber}: ${reason}`);
+    } catch (error) {
+      logger.error('Error creating auto-escalation:', error);
+    }
+  }
+
+  /**
+   * Send VIP-specific notifications
+   */
+  static async sendVipNotifications(ticket) {
+    try {
+      // Notify VIP support team
+      await NotificationService.sendNotification({
+        type: 'VIP_TICKET_CREATED',
+        title: `🌟 VIP Ticket Created - ${ticket.vipLevel?.toUpperCase()}`,
+        message: `VIP ticket #${ticket.ticketNumber} requires immediate attention: ${ticket.title}`,
+        priority: 'HIGH',
+        channels: ['email', 'slack'],
+        data: {
+          ticketId: ticket.id,
+          ticketNumber: ticket.ticketNumber,
+          vipLevel: ticket.vipLevel,
+          priority: ticket.priority,
+          userId: ticket.userId
+        }
+      });
+
+      // Send to VIP-specific slack channel if configured
+      if (process.env.VIP_SLACK_CHANNEL) {
+        await NotificationService.sendSlackNotification({
+          channel: process.env.VIP_SLACK_CHANNEL,
+          message: `🚨 NEW VIP TICKET: #${ticket.ticketNumber} - ${ticket.title}\nLevel: ${ticket.vipLevel?.toUpperCase()}\nPriority: ${ticket.priority}\nRequester: ${ticket.requester?.name}`,
+          priority: 'HIGH'
+        });
+      }
+
+      logger.info(`Sent VIP notifications for ticket ${ticket.ticketNumber}`);
+    } catch (error) {
+      logger.error('Error sending VIP notifications:', error);
     }
   }
 

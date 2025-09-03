@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useTicketStore } from '@stores/tickets';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { VipBadge, VipTicketIndicator } from '@components/vip/VipComponents';
 import {
   cn,
   formatRelativeTime,
@@ -251,23 +252,45 @@ export function TicketTable({
                 {/* Title */}
                 <td className="px-4 py-4">
                   <div className="flex flex-col">
-                    <Link
-                      to={`/tickets/${ticket.id}`}
-                      className="font-medium text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-gray-300"
-                    >
-                      {ticket.title}
-                    </Link>
+                    <div className="flex items-center space-x-2">
+                      <Link
+                        to={`/tickets/${ticket.id}`}
+                        className="font-medium text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-gray-300"
+                      >
+                        {ticket.title}
+                      </Link>
+                      {(ticket as any).isVip && (
+                        <VipBadge 
+                          isVip={(ticket as any).isVip} 
+                          vipLevel={(ticket as any).vipLevel} 
+                          size="sm" 
+                          showText={false}
+                        />
+                      )}
+                    </div>
                     {ticket.description && (
                       <p className="mt-1 line-clamp-1 text-sm text-gray-500 dark:text-gray-400">
                         {ticket.description}
                       </p>
+                    )}
+                    {/* VIP Ticket Indicator */}
+                    {(ticket as any).isVip && (
+                      <VipTicketIndicator 
+                        ticket={ticket as any} 
+                        className="mt-1"
+                      />
                     )}
                     {ticket.tags && ticket.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {ticket.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag}
-                            className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                            className={cn(
+                              'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                              tag.startsWith('VIP') 
+                                ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                            )}
                           >
                             {tag}
                           </span>
