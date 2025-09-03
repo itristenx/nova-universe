@@ -120,19 +120,6 @@ class ConnectionService {
       return this.status;
     }
 
-    // Check if we're using mock data mode for demo screenshots
-    const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true' && import.meta.env.NODE_ENV !== 'production';
-    if (useMockData) {
-      // Simulate a successful connection for demo mode
-      this.status.isAPIConnected = true;
-      this.status.retryCount = 0;
-      this.status.latency = 45; // Simulate good latency
-      this.status.quality = 'excellent';
-      this.status.lastCheck = new Date();
-      this.notifyListeners();
-      return this.status;
-    }
-
     this.isChecking = true;
     const startTime = Date.now();
 
@@ -195,10 +182,25 @@ class ConnectionService {
    * Get API base URL
    */
   private getAPIBaseURL(): string {
-    // Use environment variable if available, otherwise default to localhost
-    const apiUrl = process.env.VITE_API_URL || 'http://localhost:3000';
-    console.log('🔍 Connection Service: Using API URL:', apiUrl);
-    return apiUrl;
+    // Always check for explicit API URL configuration first
+    const configuredApiUrl = import.meta.env.VITE_API_URL;
+    
+    if (configuredApiUrl) {
+      console.log('🔍 Connection Service: Using configured VITE_API_URL:', configuredApiUrl);
+      return configuredApiUrl;
+    }
+    
+    // In browser environment, use relative URLs to take advantage of Vite proxy
+    // This is only used when VITE_API_URL is not explicitly configured
+    if (typeof window !== 'undefined') {
+      console.log('🔍 Connection Service: Using proxy via current origin (no VITE_API_URL configured)');
+      return window.location.origin;
+    }
+    
+    // Fallback for server-side rendering or non-browser environments
+    const fallbackUrl = 'http://localhost:3000';
+    console.log('🔍 Connection Service: Using fallback URL:', fallbackUrl);
+    return fallbackUrl;
   }
 
   /**

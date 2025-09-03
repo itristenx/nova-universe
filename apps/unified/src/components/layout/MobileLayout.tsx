@@ -24,7 +24,7 @@ interface MobileLayoutProps {
 }
 
 export function MobileLayout({ children, sidebar, header, className }: MobileLayoutProps) {
-  const { t } = useTranslation(['common']);
+  const { t } = useTranslation(['common', 'app']);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);

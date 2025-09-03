@@ -24,7 +24,7 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick, onToggleSidebar, sidebarCollapsed }: HeaderProps) {
-  const { t } = useTranslation(['navigation', 'common']);
+  const { t } = useTranslation(['navigation', 'common', 'app']);
   const [searchOpen, setSearchOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
