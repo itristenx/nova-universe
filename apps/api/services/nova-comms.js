@@ -25,6 +25,79 @@ import { logger } from '../logger.js';
 let slackApp = null;
 let isInitialized = false;
 let activeConversations = new Map(); // Track Cosmo conversation states
+let conversationMutex = new Map(); // Prevent race conditions in conversation handling
+
+// Constants
+const CONVERSATION_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour
+
+/**
+ * Format message content for ticket description
+ */
+function formatMessageContent(messageContent, userInfo, channelId, messageTs) {
+  const userName = userInfo?.user?.real_name || userInfo?.user?.name || 'Unknown User';
+  const timestamp = new Date(parseFloat(messageTs) * 1000).toISOString();
+  
+  return `Original Slack message from ${userName}:\n\n${messageContent}\n\n---\nChannel: <#${channelId}>\nTimestamp: ${timestamp}`;
+}
+
+/**
+ * Parse metadata safely with fallback
+ */
+function parseMetadata(privateMetadata) {
+  try {
+    return privateMetadata ? JSON.parse(privateMetadata) : {};
+  } catch {
+    return { channel: privateMetadata };
+  }
+}
+
+/**
+ * Open a DM conversation with a user
+ */
+async function openDMConversation(client, userId) {
+  try {
+    const response = await client.conversations.open({
+      users: userId
+    });
+    return response.channel.id;
+  } catch (error) {
+    logger.error('Failed to open DM conversation:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Get or create a conversation ID for posting messages
+ */
+async function getConversationId(client, metadata, userId) {
+  if (metadata.channel && metadata.channel.startsWith('C') || metadata.channel.startsWith('G') || metadata.channel.startsWith('D')) {
+    return metadata.channel;
+  }
+  
+  // For global shortcuts or invalid channels, open a DM
+  return await openDMConversation(client, userId);
+}
+
+/**
+ * Safely access conversation state with mutex
+ */
+async function withConversationLock(conversationKey, operation) {
+  // Simple mutex implementation using promises
+  if (conversationMutex.has(conversationKey)) {
+    await conversationMutex.get(conversationKey);
+  }
+  
+  const lockPromise = (async () => {
+    try {
+      return await operation();
+    } finally {
+      conversationMutex.delete(conversationKey);
+    }
+  })();
+  
+  conversationMutex.set(conversationKey, lockPromise);
+  return lockPromise;
+}
 
 /**
  * Validate required environment variables for Slack integration
@@ -251,12 +324,7 @@ export function initializeSlackApp() {
 
       try {
         // Parse metadata if it exists (from message shortcuts)
-        let metadata = {};
-        try {
-          metadata = view.private_metadata ? JSON.parse(view.private_metadata) : { channel: view.private_metadata };
-        } catch (e) {
-          metadata = { channel: view.private_metadata };
-        }
+        const metadata = parseMetadata(view.private_metadata);
 
         // Create ticket via Nova Platform API
         const token = issueServiceJWT({ 
@@ -343,8 +411,11 @@ export function initializeSlackApp() {
           });
         }
 
+        // Get the appropriate conversation ID for posting the success message
+        const conversationId = await getConversationId(client, metadata, body.user.id);
+
         await client.chat.postEphemeral({
-          channel: metadata.channel || body.user.id,
+          channel: conversationId,
           user: body.user.id,
           text: `Ticket ${ticketId} created successfully!`,
           blocks,
@@ -363,29 +434,27 @@ export function initializeSlackApp() {
         logger.error('Failed to submit ticket:', err.message);
         logger.error('Error details:', err.response?.data);
         
-        const channelForError = (() => {
-          try {
-            const metadata = view.private_metadata ? JSON.parse(view.private_metadata) : {};
-            return metadata.channel || body.user.id;
-          } catch (e) {
-            return view.private_metadata || body.user.id;
-          }
-        })();
-        
-        await client.chat.postEphemeral({
-          channel: channelForError,
-          user: body.user.id,
-          text: ':x: Failed to create ticket. Please try again or contact support.',
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: ':x: *Failed to create ticket*\n\nThere was an error processing your request. Please try again or contact your IT support team directly.',
+        try {
+          const metadata = parseMetadata(view.private_metadata);
+          const conversationId = await getConversationId(client, metadata, body.user.id);
+          
+          await client.chat.postEphemeral({
+            channel: conversationId,
+            user: body.user.id,
+            text: ':x: Failed to create ticket. Please try again or contact support.',
+            blocks: [
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: ':x: *Failed to create ticket*\n\nThere was an error processing your request. Please try again or contact your IT support team directly.',
+                },
               },
-            },
-          ],
-        });
+            ],
+          });
+        } catch (errorPostErr) {
+          logger.error('Failed to post error message:', errorPostErr.message);
+        }
       }
     });
 
@@ -544,7 +613,7 @@ export function initializeSlackApp() {
       }
     });
 
-    // Cosmo AI conversation with enhanced threading
+    // Cosmo AI conversation with enhanced threading and synchronization
     slackApp.event('app_mention', async ({ event, client }) => {
       try {
         const token = issueServiceJWT({
@@ -556,38 +625,42 @@ export function initializeSlackApp() {
         const conversationKey = `${event.channel}-${event.thread_ts || event.ts}`;
         const userMessage = event.text.replace(/<@[^>]+>/g, '').trim() || 'Help';
         
-        let response;
-        if (activeConversations.has(conversationKey)) {
-          // Continue existing conversation
-          const conversationId = activeConversations.get(conversationKey);
-          response = await axios.post(
-            `${config.apiUrl}/api/v2/synth/conversation/continue`,
-            {
-              conversationId,
-              message: userMessage,
-            },
-            { headers: { Authorization: `Bearer ${token}` } },
-          );
-        } else {
-          // Start new conversation
-          response = await axios.post(
-            `${config.apiUrl}/api/v2/synth/conversation/start`,
-            {
-              context: { module: 'comms', userRole: 'user' },
-              initialMessage: userMessage,
-            },
-            { headers: { Authorization: `Bearer ${token}` } },
-          );
-          
-          // Store conversation ID for threading
-          if (response.data?.conversationId) {
-            activeConversations.set(conversationKey, response.data.conversationId);
-            // Clean up after 1 hour
-            setTimeout(() => {
-              activeConversations.delete(conversationKey);
-            }, 3600000);
+        // Use mutex to prevent race conditions
+        const response = await withConversationLock(conversationKey, async () => {
+          if (activeConversations.has(conversationKey)) {
+            // Continue existing conversation
+            const conversationId = activeConversations.get(conversationKey);
+            return await axios.post(
+              `${config.apiUrl}/api/v2/synth/conversation/continue`,
+              {
+                conversationId,
+                message: userMessage,
+              },
+              { headers: { Authorization: `Bearer ${token}` } },
+            );
+          } else {
+            // Start new conversation
+            const response = await axios.post(
+              `${config.apiUrl}/api/v2/synth/conversation/start`,
+              {
+                context: { module: 'comms', userRole: 'user' },
+                initialMessage: userMessage,
+              },
+              { headers: { Authorization: `Bearer ${token}` } },
+            );
+            
+            // Store conversation ID for threading
+            if (response.data?.conversationId) {
+              activeConversations.set(conversationKey, response.data.conversationId);
+              // Clean up after timeout
+              setTimeout(() => {
+                activeConversations.delete(conversationKey);
+              }, CONVERSATION_TIMEOUT_MS);
+            }
+            
+            return response;
           }
-        }
+        });
         
         const message = response.data?.message || 'Hello! How can I help you today?';
         await client.chat.postMessage({
@@ -595,8 +668,8 @@ export function initializeSlackApp() {
           thread_ts: event.thread_ts || event.ts,
           text: `🤖 ${message}`,
         });
-      } catch (e) {
-        logger.error('Failed to handle app mention:', e.message);
+      } catch (err) {
+        logger.error('Failed to handle app mention:', err.message);
         await client.chat.postMessage({
           channel: event.channel,
           thread_ts: event.thread_ts || event.ts,
@@ -657,7 +730,7 @@ export function initializeSlackApp() {
               .filter(Boolean);
 
         // Format message content for ticket description
-        const formattedContent = `Original Slack message from ${userInfo?.user?.real_name || userInfo?.user?.name || 'Unknown User'}:\n\n${messageContent}\n\n---\nChannel: <#${channelId}>\nTimestamp: ${new Date(parseFloat(messageTs) * 1000).toISOString()}`;
+        const formattedContent = formatMessageContent(messageContent, userInfo, channelId, messageTs);
         
         const view = buildModal(systems, urgencies, channelId, formattedContent);
         
