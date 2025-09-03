@@ -120,19 +120,6 @@ class ConnectionService {
       return this.status;
     }
 
-    // Check if we're using mock data mode for demo screenshots
-    const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
-    if (useMockData) {
-      // Simulate a successful connection for demo mode
-      this.status.isAPIConnected = true;
-      this.status.retryCount = 0;
-      this.status.latency = 45; // Simulate good latency
-      this.status.quality = 'excellent';
-      this.status.lastCheck = new Date();
-      this.notifyListeners();
-      return this.status;
-    }
-
     this.isChecking = true;
     const startTime = Date.now();
 

@@ -38,7 +38,7 @@
     },
 
     /* Global types */
-    "types": ["vite/client", "@testing-library/jest-dom"],
+    "types": ["vite/client"],
 
     /* Additional options */
     "allowSyntheticDefaultImports": true,

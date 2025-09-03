@@ -85,20 +85,10 @@ function mapHelixUserToUser(helixUser: {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => {
-      // Check if we're in demo mode
-      const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
-      
       return {
-        // Initial state - enable auth for demo mode
-        user: useMockData ? mapHelixUserToUser({
-          id: 'demo-user-123',
-          email: 'demo@novauniverse.com',
-          firstName: 'Demo',
-          lastName: 'User',
-          role: 'admin',
-          tenantId: 'demo-tenant'
-        }) : null,
-        isAuthenticated: useMockData,
+        // Initial state - production mode with no mock user
+        user: null,
+        isAuthenticated: false,
         isLoading: false,
         error: null,
 
