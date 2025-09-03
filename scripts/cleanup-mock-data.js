@@ -61,18 +61,18 @@ const mockData = process.env.NODE_ENV === 'production' ? {} : {`
       modified = true;
     }
 
-    // Guard mock data usage
-    const mockDataUsageRegex = /mockData\./g;
+    // Guard mock data usage - Fix syntax issues
+    const mockDataUsageRegex = /mockData\.(\w+)/g;
     if (mockDataUsageRegex.test(content)) {
       content = content.replace(
         mockDataUsageRegex,
-        `(process.env.NODE_ENV !== 'production' ? mockData : {}),`
+        `(process.env.NODE_ENV !== 'production' ? mockData.$1 : undefined)`
       );
       modified = true;
     }
 
-    // Add production checks for route handlers that use mock data
-    const routeHandlerRegex = /(router\.(get|post|put|delete)\([^,]+,\s*[^,]*,\s*async\s*\([^)]*\)\s*=>\s*{)/g;
+    // Add production checks for route handlers that use mock data - Fix to ensure res parameter exists
+    const routeHandlerRegex = /(router\.(get|post|put|delete)\([^,]+,\s*[^,]*,\s*async\s*\([^)]*res[^)]*\)\s*=>\s*{)/g;
     if (routeHandlerRegex.test(content)) {
       content = content.replace(
         routeHandlerRegex,

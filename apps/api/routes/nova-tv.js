@@ -13,12 +13,12 @@ async function getDashboardsFromDB(filters = {}) {
     const conditions = [];
 
     if (filters.department) {
-      conditions.push('department = ?');
+      conditions.push(`department = $${params.length + 1}`);
       params.push(filters.department);
     }
 
     if (filters.isPublic !== undefined) {
-      conditions.push('is_public = ?');
+      conditions.push(`is_public = $${params.length + 1}`);
       params.push(filters.isPublic);
     }
 
@@ -28,8 +28,8 @@ async function getDashboardsFromDB(filters = {}) {
 
     query += ' ORDER BY created_at DESC';
 
-    const result = await db.all(query, params);
-    return result.map(transformDashboardFromDB);
+    const result = await db.query(query, params);
+    return result.rows.map(transformDashboardFromDB);
   } catch (error) {
     logger.error('Error fetching dashboards from database:', error);
     return [];
@@ -38,8 +38,8 @@ async function getDashboardsFromDB(filters = {}) {
 
 async function getDashboardFromDB(id) {
   try {
-    const result = await db.get('SELECT * FROM nova_tv_dashboards WHERE id = ?', [id]);
-    return result ? transformDashboardFromDB(result) : null;
+    const result = await db.query('SELECT * FROM nova_tv_dashboards WHERE id = $1', [id]);
+    return result.rows && result.rows.length > 0 ? transformDashboardFromDB(result.rows[0]) : null;
   } catch (error) {
     logger.error('Error fetching dashboard from database:', error);
     return null;
@@ -51,7 +51,7 @@ async function createDashboardInDB(dashboardData) {
     const query = `
       INSERT INTO nova_tv_dashboards 
       (id, name, description, department, created_by, configuration, is_active, is_public, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     `;
     
     const params = [
@@ -67,7 +67,7 @@ async function createDashboardInDB(dashboardData) {
       dashboardData.updatedAt
     ];
 
-    await db.run(query, params);
+    await db.query(query, params);
     return dashboardData;
   } catch (error) {
     logger.error('Error creating dashboard in database:', error);
@@ -77,9 +77,10 @@ async function createDashboardInDB(dashboardData) {
 
 async function updateDashboardInDB(id, updates) {
   try {
+    // Convert SQLite-style placeholders to PostgreSQL-style ($1, $2, etc.)
     const setClause = Object.keys(updates)
       .filter(key => key !== 'id')
-      .map(key => `${key} = ?`)
+      .map((key, index) => `${key} = $${index + 1}`)
       .join(', ');
     
     const params = Object.keys(updates)
@@ -92,8 +93,8 @@ async function updateDashboardInDB(id, updates) {
       });
     params.push(id);
 
-    const query = `UPDATE nova_tv_dashboards SET ${setClause}, updated_at = datetime('now') WHERE id = ?`;
-    await db.run(query, params);
+    const query = `UPDATE nova_tv_dashboards SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $${params.length}`;
+    await db.query(query, params);
     
     return await getDashboardFromDB(id);
   } catch (error) {
@@ -104,7 +105,7 @@ async function updateDashboardInDB(id, updates) {
 
 async function deleteDashboardFromDB(id) {
   try {
-    await db.run('DELETE FROM nova_tv_dashboards WHERE id = ?', [id]);
+    await db.query('DELETE FROM nova_tv_dashboards WHERE id = $1', [id]);
     return true;
   } catch (error) {
     logger.error('Error deleting dashboard from database:', error);
@@ -120,12 +121,12 @@ async function getDevicesFromDB(filters = {}) {
     const conditions = [];
 
     if (filters.status) {
-      conditions.push('status = ?');
+      conditions.push(`status = $${params.length + 1}`);
       params.push(filters.status);
     }
 
     if (filters.location) {
-      conditions.push('location = ?');
+      conditions.push(`location = $${params.length + 1}`);
       params.push(filters.location);
     }
 
@@ -135,8 +136,8 @@ async function getDevicesFromDB(filters = {}) {
 
     query += ' ORDER BY created_at DESC';
 
-    const result = await db.all(query, params);
-    return result.map(transformDeviceFromDB);
+    const result = await db.query(query, params);
+    return result.rows.map(transformDeviceFromDB);
   } catch (error) {
     logger.error('Error fetching devices from database:', error);
     return [];
@@ -145,8 +146,8 @@ async function getDevicesFromDB(filters = {}) {
 
 async function getDeviceFromDB(id) {
   try {
-    const result = await db.get('SELECT * FROM nova_tv_devices WHERE id = ?', [id]);
-    return result ? transformDeviceFromDB(result) : null;
+    const result = await db.query('SELECT * FROM nova_tv_devices WHERE id = $1', [id]);
+    return result.rows && result.rows.length > 0 ? transformDeviceFromDB(result.rows[0]) : null;
   } catch (error) {
     logger.error('Error fetching device from database:', error);
     return null;
@@ -155,8 +156,8 @@ async function getDeviceFromDB(id) {
 
 async function getDeviceByDeviceIdFromDB(deviceId) {
   try {
-    const result = await db.get('SELECT * FROM nova_tv_devices WHERE device_id = ?', [deviceId]);
-    return result ? transformDeviceFromDB(result) : null;
+    const result = await db.query('SELECT * FROM nova_tv_devices WHERE device_id = $1', [deviceId]);
+    return result.rows && result.rows.length > 0 ? transformDeviceFromDB(result.rows[0]) : null;
   } catch (error) {
     logger.error('Error fetching device by device_id from database:', error);
     return null;
@@ -168,7 +169,7 @@ async function createDeviceInDB(deviceData) {
     const query = `
       INSERT INTO nova_tv_devices 
       (id, name, device_id, location, status, last_ping, configuration, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `;
     
     const params = [
@@ -183,7 +184,7 @@ async function createDeviceInDB(deviceData) {
       deviceData.updatedAt
     ];
 
-    await db.run(query, params);
+    await db.query(query, params);
     return deviceData;
   } catch (error) {
     logger.error('Error creating device in database:', error);
@@ -193,9 +194,10 @@ async function createDeviceInDB(deviceData) {
 
 async function updateDeviceInDB(id, updates) {
   try {
+    // Convert SQLite-style placeholders to PostgreSQL-style ($1, $2, etc.)
     const setClause = Object.keys(updates)
       .filter(key => key !== 'id')
-      .map(key => `${key} = ?`)
+      .map((key, index) => `${key} = $${index + 1}`)
       .join(', ');
     
     const params = Object.keys(updates)
@@ -208,8 +210,8 @@ async function updateDeviceInDB(id, updates) {
       });
     params.push(id);
 
-    const query = `UPDATE nova_tv_devices SET ${setClause}, updated_at = datetime('now') WHERE id = ?`;
-    await db.run(query, params);
+    const query = `UPDATE nova_tv_devices SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $${params.length}`;
+    await db.query(query, params);
     
     return await getDeviceFromDB(id);
   } catch (error) {
