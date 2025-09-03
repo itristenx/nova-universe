@@ -1,0 +1,30 @@
+{
+  "name": "@nova-universe/nova-comms",
+  "version": "1.0.0",
+  "description": "Nova Universe Slack Integration Service",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "NODE_ENV=development node index.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:integration": "node test-integration.js",
+    "validate": "node validate.js",
+    "build": "echo 'No build step required'"
+  },
+  "keywords": ["slack", "integration", "nova-universe", "ticketing"],
+  "author": "Nova Universe Team",
+  "license": "MIT",
+  "dependencies": {
+    "@slack/bolt": "^4.4.0",
+    "axios": "^1.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^17.2.1"
+  },
+  "devDependencies": {
+    "jest": "^30.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
