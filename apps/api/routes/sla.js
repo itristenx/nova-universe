@@ -18,9 +18,14 @@ router.post('/calculate', async (req, res) => {
   try {
     const ticketData = req.body;
     
-    if (!ticketData.title && !ticketData.description) {
+    // Allow requests with direct impact/urgency inputs OR textual content for analysis
+    const hasDirectInputs = (ticketData.impact !== undefined && ticketData.impact !== null) || 
+                           (ticketData.urgency !== undefined && ticketData.urgency !== null);
+    const hasTextualContent = ticketData.title || ticketData.description;
+    
+    if (!hasDirectInputs && !hasTextualContent) {
       return res.status(400).json({
-        error: 'Title or description is required for SLA calculation'
+        error: 'Either impact/urgency values (1-4 scale) or title/description is required for SLA calculation'
       });
     }
 

@@ -613,6 +613,24 @@ export class SLAMatrixService {
   }
 
   /**
+   * Get visual representation of the priority matrix for display
+   */
+  static getMatrixDisplay() {
+    return {
+      title: '📊 IMPACT vs URGENCY PRIORITY MATRIX (1-4 Scale)',
+      separator: '-'.repeat(50),
+      header: 'Impact/Urgency │ Crit │ High │ Med  │ Low  ',
+      divider: '───────────────┼──────┼──────┼──────┼──────',
+      rows: [
+        'Critical       │ Crit │ Crit │ High │ High ',
+        'High           │ Crit │ High │ High │ Med  ',
+        'Medium         │ High │ High │ Med  │ Low  ',
+        'Low            │ High │ Med  │ Low  │ Low  '
+      ]
+    };
+  }
+
+  /**
    * Validate custom SLA template
    */
   static validateSLATemplate(template) {

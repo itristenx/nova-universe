@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { SLAMatrixService } from './sla-matrix.service.js';
+import { SLAMatrixService } from '../services/sla-matrix.service.js';
 import { logger } from '../logger.js';
 import * as tf from '@tensorflow/tfjs-node';
 import * as fs from 'fs/promises';

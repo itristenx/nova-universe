@@ -114,14 +114,12 @@ function getPriorityIcon(priority) {
 }
 
 // Display priority matrix
-console.log('📊 IMPACT vs URGENCY PRIORITY MATRIX (1-4 Scale)');
-console.log('-'.repeat(50));
-console.log('Impact/Urgency │ Crit │ High │ Med  │ Low  ');
-console.log('───────────────┼──────┼──────┼──────┼──────');
-console.log('Critical       │ Crit │ Crit │ High │ High ');
-console.log('High           │ Crit │ High │ High │ Med  ');
-console.log('Medium         │ High │ High │ Med  │ Low  ');
-console.log('Low            │ High │ Med  │ Low  │ Low  ');
+const matrixDisplay = SLAMatrixService.getMatrixDisplay();
+console.log(matrixDisplay.title);
+console.log(matrixDisplay.separator);
+console.log(matrixDisplay.header);
+console.log(matrixDisplay.divider);
+matrixDisplay.rows.forEach(row => console.log(row));
 console.log();
 
 // Run test scenarios
@@ -258,13 +256,9 @@ console.log(`🚀 Throughput: ${Math.round(1000 / avgTimeMs)} calculations/secon
 console.log('\n🔍 MATRIX VALIDATION TEST');
 console.log('-'.repeat(40));
 
+// Use the actual default matrix for validation test
 const validMatrix = {
-  matrix: {
-    "1,1": 1, "1,2": 1, "1,3": 2, "1,4": 2,
-    "2,1": 1, "2,2": 2, "2,3": 2, "2,4": 3,
-    "3,1": 2, "3,2": 2, "3,3": 3, "3,4": 4,
-    "4,1": 2, "4,2": 3, "4,3": 4, "4,4": 4
-  }
+  matrix: SLAMatrixService.DEFAULT_PRIORITY_MATRIX.matrix
 };
 
 const invalidMatrix = {
