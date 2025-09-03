@@ -26,6 +26,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useCatalogStore } from '../stores/catalogStore';
+import { useRBACStore } from '../stores/rbacStore';
 import { cn } from '@utils/index';
 import type { CatalogItem, CatalogCategory, BillingReport } from '../stores/catalogStore';
 
@@ -54,6 +55,7 @@ export default function CatalogManagement() {
     getDepartmentCosts: _getDepartmentCosts,
     getLicenseUtilization: _getLicenseUtilization,
   } = useCatalogStore();
+  const { currentUser } = useRBACStore();
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -99,8 +101,8 @@ export default function CatalogManagement() {
   const handleCreateItem = (itemData: any) => {
     createItem({
       ...itemData,
-      created_by: 'current_user',
-      updated_by: 'current_user',
+      created_by: currentUser?.id || 'system',
+      updated_by: currentUser?.id || 'system',
       variables: [],
       available_for: ['*'],
       departments: ['*'],

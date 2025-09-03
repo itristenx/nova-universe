@@ -19,9 +19,11 @@ import {
   type CustomApp,
   type AppAssignment,
 } from '@services/enhancedAppSwitcher';
+import { useRBACStore } from '../../stores/rbacStore';
 
 export function AppManagement() {
   const { t } = useTranslation(['admin']);
+  const { currentUser } = useRBACStore();
   const { addNotification } = useNotifications();
   const [apps, setApps] = useState<CustomApp[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +78,7 @@ export function AppManagement() {
 
   const handleCreateApp = async () => {
     try {
-      await enhancedAppSwitcherService.createCustomApp(formData);
+      await enhancedAppSwitcherService.createCustomApp(formData, currentUser?.id);
       addNotification({
         type: 'success',
         title: 'Success',
