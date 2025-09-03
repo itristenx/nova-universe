@@ -265,16 +265,107 @@ router.get('/slack/commands', (req, res) => {
     },
     {
       command: '@Cosmo',
-      description: 'Mention @Cosmo to start a conversation',
+      description: 'Mention @Cosmo to start a conversation with Nova AI',
       usage: '@Cosmo <your message>',
     },
   ];
 
+  const shortcuts = [
+    {
+      shortcut: 'create_ticket_from_message',
+      description: 'Convert any Slack message into a support ticket',
+      usage: 'Right-click any message → More actions → Create Ticket',
+      type: 'message_action'
+    },
+    {
+      shortcut: 'quick_ticket',
+      description: 'Quick ticket creation from anywhere in Slack',
+      usage: 'Use the shortcuts menu in Slack',
+      type: 'global_shortcut'
+    }
+  ];
+
   res.json({
     commands,
-    total: commands.length,
+    shortcuts,
+    total_commands: commands.length,
+    total_shortcuts: shortcuts.length,
     timestamp: new Date().toISOString(),
   });
+});
+
+/**
+ * @swagger
+ * /api/v1/comms/slack/message-to-ticket:
+ *   post:
+ *     summary: Convert a Slack message to a ticket (for testing)
+ *     tags: [Comms]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               channel:
+ *                 type: string
+ *                 description: Slack channel ID
+ *               message_ts:
+ *                 type: string
+ *                 description: Message timestamp
+ *               message_text:
+ *                 type: string
+ *                 description: Message content
+ *               user_name:
+ *                 type: string
+ *                 description: User who triggered the action
+ *     responses:
+ *       200:
+ *         description: Message-to-ticket conversion result
+ *       400:
+ *         description: Invalid request or Slack not initialized
+ *       500:
+ *         description: Conversion failed
+ */
+router.post('/slack/message-to-ticket', async (req, res) => {
+  try {
+    const slackApp = getSlackApp();
+
+    if (!slackApp) {
+      return res.status(400).json({
+        error: 'Slack integration not initialized',
+        status: 'error',
+      });
+    }
+
+    const { channel, message_ts, message_text, user_name } = req.body;
+
+    if (!channel || !message_ts || !message_text) {
+      return res.status(400).json({
+        error: 'Missing required fields: channel, message_ts, message_text',
+        status: 'error',
+      });
+    }
+
+    // Simulate the message-to-ticket workflow
+    const formattedContent = `Original Slack message from ${user_name || 'Unknown User'}:\n\n${message_text}\n\n---\nChannel: ${channel}\nTimestamp: ${new Date().toISOString()}`;
+
+    res.json({
+      message: 'Message-to-ticket conversion simulated successfully',
+      status: 'success',
+      formatted_content: formattedContent,
+      channel,
+      message_ts,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Message-to-ticket conversion test failed:', error);
+    res.status(500).json({
+      error: error.message,
+      status: 'error',
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 export default router;

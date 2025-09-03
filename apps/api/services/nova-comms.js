@@ -5,6 +5,8 @@
  * - Submit tickets via /new-ticket command
  * - Interact with modals for ticket creation
  * - Receive confirmations and status updates
+ * - Convert Slack messages to tickets via message shortcuts
+ * - Full Cosmo AI conversation support
  *
  * Environment Variables Required:
  * - SLACK_SIGNING_SECRET: Slack app signing secret
@@ -22,6 +24,7 @@ import { logger } from '../logger.js';
 
 let slackApp = null;
 let isInitialized = false;
+let activeConversations = new Map(); // Track Cosmo conversation states
 
 /**
  * Validate required environment variables for Slack integration
@@ -71,18 +74,26 @@ function issueServiceJWT(extraPayload = {}) {
 /**
  * Build Slack modal for ticket submission
  */
-function buildModal(systems = [], urgencies = [], channel) {
+function buildModal(systems = [], urgencies = [], channel, messageContent = '') {
   const systemOptions = systems.map((s) => ({
     text: { type: 'plain_text', text: s },
     value: s,
   }));
-  const urgencyOptions = urgencies.length ? urgencies : ['Urgent', 'High', 'Medium', 'Low'];
+  const urgencyOptions = urgencies.length ? urgencies.map((u) => ({
+    text: { type: 'plain_text', text: u },
+    value: u,
+  })) : [
+    { text: { type: 'plain_text', text: 'Low' }, value: 'low' },
+    { text: { type: 'plain_text', text: 'Medium' }, value: 'medium' },
+    { text: { type: 'plain_text', text: 'High' }, value: 'high' },
+    { text: { type: 'plain_text', text: 'Critical' }, value: 'critical' }
+  ];
 
   return {
     type: 'modal',
     callback_id: 'ticket_submit',
     private_metadata: channel || '',
-    title: { type: 'plain_text', text: 'New Ticket' },
+    title: { type: 'plain_text', text: 'New Support Ticket' },
     submit: { type: 'plain_text', text: 'Submit' },
     close: { type: 'plain_text', text: 'Cancel' },
     blocks: [
@@ -96,38 +107,49 @@ function buildModal(systems = [], urgencies = [], channel) {
         type: 'input',
         block_id: 'email',
         label: { type: 'plain_text', text: 'Email' },
-        element: { type: 'plain_text_input', action_id: 'value' },
+        element: { 
+          type: 'plain_text_input', 
+          action_id: 'value',
+          placeholder: { type: 'plain_text', text: 'your.email@company.com' }
+        },
       },
       {
         type: 'input',
         block_id: 'title',
-        label: { type: 'plain_text', text: 'Title' },
-        element: { type: 'plain_text_input', action_id: 'value' },
+        label: { type: 'plain_text', text: 'Issue Title' },
+        element: { 
+          type: 'plain_text_input', 
+          action_id: 'value',
+          placeholder: { type: 'plain_text', text: 'Brief description of the issue' }
+        },
       },
       {
         type: 'input',
         block_id: 'system',
-        label: { type: 'plain_text', text: 'System' },
+        label: { type: 'plain_text', text: 'System/Category' },
         element:
           systemOptions.length > 0
             ? {
                 type: 'static_select',
                 action_id: 'value',
                 options: systemOptions,
+                placeholder: { type: 'plain_text', text: 'Select a system' }
               }
-            : { type: 'plain_text_input', action_id: 'value' },
+            : { 
+                type: 'plain_text_input', 
+                action_id: 'value',
+                placeholder: { type: 'plain_text', text: 'e.g., Network, Hardware, Software' }
+              },
       },
       {
         type: 'input',
         block_id: 'urgency',
-        label: { type: 'plain_text', text: 'Urgency' },
+        label: { type: 'plain_text', text: 'Priority' },
         element: {
           type: 'static_select',
           action_id: 'value',
-          options: urgencyOptions.map((u) => ({
-            text: { type: 'plain_text', text: u },
-            value: u,
-          })),
+          options: urgencyOptions,
+          placeholder: { type: 'plain_text', text: 'Select priority level' }
         },
       },
       {
@@ -138,6 +160,8 @@ function buildModal(systems = [], urgencies = [], channel) {
           type: 'plain_text_input',
           multiline: true,
           action_id: 'value',
+          placeholder: { type: 'plain_text', text: 'Detailed description of the issue...' },
+          initial_value: messageContent || ''
         },
         optional: true,
       },
@@ -226,54 +250,141 @@ export function initializeSlackApp() {
       };
 
       try {
-        // Map to Orbit ticket create contract
-        const token = issueServiceJWT({ type: 'slack' });
+        // Parse metadata if it exists (from message shortcuts)
+        let metadata = {};
+        try {
+          metadata = view.private_metadata ? JSON.parse(view.private_metadata) : { channel: view.private_metadata };
+        } catch (e) {
+          metadata = { channel: view.private_metadata };
+        }
+
+        // Create ticket via Nova Platform API
+        const token = issueServiceJWT({ 
+          type: 'slack',
+          user: {
+            name: payload.name,
+            email: payload.email
+          }
+        });
+        
         const createBody = {
           title: payload.title,
           description: payload.description || payload.title,
           category: payload.system || 'general',
-          priority: String(payload.urgency || 'Medium').toLowerCase(),
+          priority: String(payload.urgency || 'medium').toLowerCase(),
           contactMethod: 'email',
           contactInfo: payload.email,
+          // Additional context from Slack
+          source: 'slack',
+          sourceChannel: metadata.channel || view.private_metadata,
+          sourceUser: body.user.id,
+          sourceMessageTs: metadata.messageTs,
+          sourceMessageUser: metadata.sourceUser
         };
+
+        logger.info('Creating ticket with payload:', createBody);
+        
         const res = await axios.post(`${config.apiUrl}/api/v1/orbit/tickets`, createBody, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
         });
+
         const ticket = res.data?.ticket;
-        const ticketId = ticket?.ticketId || ticket?.id || 'INC-NEW';
-        const aUrl = config.adminUrl;
+        const ticketId = ticket?.ticketId || ticket?.id || 'NEW-TICKET';
+        
+        // Success response with enhanced formatting
         const blocks = [
           {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `:white_check_mark: Ticket *${ticketId}* submitted.`,
+              text: `:white_check_mark: *Ticket ${ticketId} created successfully!*`,
             },
           },
-        ];
-        if (aUrl) {
-          blocks.push({
-            type: 'context',
-            elements: [
+          {
+            type: 'section',
+            fields: [
               {
                 type: 'mrkdwn',
-                text: `<${aUrl}|Open Nova Universe Portal>`,
+                text: `*Title:*\n${payload.title}`,
+              },
+              {
+                type: 'mrkdwn',
+                text: `*Priority:*\n${payload.urgency}`,
+              },
+              {
+                type: 'mrkdwn',
+                text: `*Category:*\n${payload.system || 'General'}`,
+              },
+              {
+                type: 'mrkdwn',
+                text: `*Contact:*\n${payload.email}`,
+              },
+            ],
+          },
+        ];
+
+        if (config.adminUrl) {
+          blocks.push({
+            type: 'actions',
+            elements: [
+              {
+                type: 'button',
+                text: {
+                  type: 'plain_text',
+                  text: 'View Ticket',
+                },
+                url: `${config.adminUrl}/tickets/${ticketId}`,
+                action_id: 'view_ticket',
               },
             ],
           });
         }
+
         await client.chat.postEphemeral({
-          channel: view.private_metadata || body.user.id,
+          channel: metadata.channel || body.user.id,
           user: body.user.id,
-          text: `Ticket ${ticketId} submitted`,
+          text: `Ticket ${ticketId} created successfully!`,
           blocks,
         });
+
+        // If this was created from a message, also post a threaded reply to the original message
+        if (metadata.messageTs && metadata.channel) {
+          await client.chat.postMessage({
+            channel: metadata.channel,
+            thread_ts: metadata.messageTs,
+            text: `:white_check_mark: This message has been converted to ticket *${ticketId}*`,
+          });
+        }
+
       } catch (err) {
         logger.error('Failed to submit ticket:', err.message);
+        logger.error('Error details:', err.response?.data);
+        
+        const channelForError = (() => {
+          try {
+            const metadata = view.private_metadata ? JSON.parse(view.private_metadata) : {};
+            return metadata.channel || body.user.id;
+          } catch (e) {
+            return view.private_metadata || body.user.id;
+          }
+        })();
+        
         await client.chat.postEphemeral({
-          channel: view.private_metadata || body.user.id,
+          channel: channelForError,
           user: body.user.id,
-          text: 'Failed to submit ticket.',
+          text: ':x: Failed to create ticket. Please try again or contact support.',
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: ':x: *Failed to create ticket*\n\nThere was an error processing your request. Please try again or contact your IT support team directly.',
+              },
+            },
+          ],
         });
       }
     });
@@ -297,20 +408,31 @@ export function initializeSlackApp() {
             .then((r) => r.data)
             .catch(() => ({ monitors: [] })),
         ]);
+        
         const current = statusConfig.currentStatus || 'unknown';
         const total = (monitors.monitors || []).length;
         const up = (monitors.monitors || []).filter((m) => m.current_status !== false).length;
+        
         await client.chat.postEphemeral({
           channel: body.channel_id,
           user: body.user_id,
-          text: `Status: ${current} | Monitors up: ${up}/${total}`,
+          text: `📊 *Nova System Status*\n\n*Overall Status:* ${current}\n*Monitors:* ${up}/${total} operational`,
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `📊 *Nova System Status*\n\n*Overall Status:* ${current}\n*Monitors:* ${up}/${total} operational`,
+              },
+            },
+          ],
         });
       } catch (e) {
         logger.error('Failed to fetch status for /nova-status:', e.message);
         await client.chat.postEphemeral({
           channel: body.channel_id,
           user: body.user_id,
-          text: 'Unable to fetch status.',
+          text: ':warning: Unable to fetch system status at this time.',
         });
       }
     });
@@ -323,24 +445,26 @@ export function initializeSlackApp() {
         const res = await axios.get(`${config.apiUrl}/api/v1/pulse/queues/metrics`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        
         const metrics = res.data?.metrics || [];
-        const top = metrics
+        const queueSummary = metrics
           .slice(0, 5)
           .map(
-            (q) => `• ${q.queue_name || q.queueName}: ${q.open_tickets || q.openTickets || 0} open`,
+            (q) => `• *${q.queue_name || q.queueName}:* ${q.open_tickets || q.openTickets || 0} open tickets`,
           )
           .join('\n');
+        
         await client.chat.postEphemeral({
           channel: body.channel_id,
           user: body.user_id,
-          text: top || 'No queue metrics found.',
+          text: `📋 *Queue Summary*\n\n${queueSummary || 'No queue metrics available'}`,
         });
       } catch (e) {
         logger.error('Failed to fetch queue metrics for /nova-queue:', e.message);
         await client.chat.postEphemeral({
           channel: body.channel_id,
           user: body.user_id,
-          text: 'Unable to fetch queues.',
+          text: ':warning: Unable to fetch queue metrics at this time.',
         });
       }
     });
@@ -354,30 +478,33 @@ export function initializeSlackApp() {
           id: body.user_id,
           email: `${body.user_id}@slack.local`,
         });
+        
         const subject = 'Slack Feedback';
-        const message = command.text?.slice(0, 1000) || 'No message';
+        const message = command.text?.slice(0, 1000) || 'No message provided';
         const type = 'feedback';
+        
         await axios.post(
           `${config.apiUrl}/api/v1/orbit/feedback`,
           { subject, message, type },
           { headers: { Authorization: `Bearer ${token}` } },
         );
+        
         await client.chat.postEphemeral({
           channel: body.channel_id,
           user: body.user_id,
-          text: 'Thanks for the feedback!',
+          text: ':white_check_mark: Thank you for your feedback! It has been submitted to the Nova team.',
         });
       } catch (e) {
         logger.error('Failed to submit feedback for /nova-feedback:', e.message);
         await client.chat.postEphemeral({
           channel: body.channel_id,
           user: body.user_id,
-          text: 'Failed to submit feedback.',
+          text: ':x: Failed to submit feedback. Please try again later.',
         });
       }
     });
 
-    // /nova-assign <TICKET_ID> @user → leverage Synth v2 optimize or direct assign (placeholder)
+    // /nova-assign <TICKET_ID> → leverage Synth v2 optimize or direct assign
     slackApp.command('/nova-assign', async ({ ack, body, client, command }) => {
       await ack();
       const text = (command.text || '').trim();
@@ -385,10 +512,11 @@ export function initializeSlackApp() {
         await client.chat.postEphemeral({
           channel: body.channel_id,
           user: body.user_id,
-          text: 'Usage: /nova-assign INC000001',
+          text: 'Usage: `/nova-assign <TICKET_ID>`\nExample: `/nova-assign INC000001`',
         });
         return;
       }
+      
       try {
         const token = issueServiceJWT();
         const optimize = await axios
@@ -399,23 +527,24 @@ export function initializeSlackApp() {
           )
           .then((r) => r.data)
           .catch(() => null);
-        const rec = optimize?.recommendation?.recommendedTechnician?.name || 'a technician';
+        
+        const rec = optimize?.recommendation?.recommendedTechnician?.name || 'a qualified technician';
         await client.chat.postEphemeral({
           channel: body.channel_id,
           user: body.user_id,
-          text: `Recommended assignee for ${text}: ${rec}`,
+          text: `🎯 *Assignment Recommendation for ${text}*\n\nRecommended assignee: **${rec}**`,
         });
       } catch (e) {
         logger.error('Failed to compute assignment for /nova-assign:', e.message);
         await client.chat.postEphemeral({
           channel: body.channel_id,
           user: body.user_id,
-          text: 'Failed to compute assignment.',
+          text: ':warning: Failed to compute assignment recommendation.',
         });
       }
     });
 
-    // Cosmo thread: mention @Cosmo to start conversation and reply
+    // Cosmo AI conversation with enhanced threading
     slackApp.event('app_mention', async ({ event, client }) => {
       try {
         const token = issueServiceJWT({
@@ -423,28 +552,166 @@ export function initializeSlackApp() {
           id: event.user,
           email: `${event.user}@slack.local`,
         });
-        // Start conversation in Synth v2 with module context
-        const start = await axios.post(
-          `${config.apiUrl}/api/v2/synth/conversation/start`,
-          {
-            context: { module: 'comms', userRole: 'user' },
-            initialMessage: event.text.replace(/<@[^>]+>/g, '').trim() || 'Help',
-          },
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-        const message = start.data?.message || 'How can I help?';
+        
+        const conversationKey = `${event.channel}-${event.thread_ts || event.ts}`;
+        const userMessage = event.text.replace(/<@[^>]+>/g, '').trim() || 'Help';
+        
+        let response;
+        if (activeConversations.has(conversationKey)) {
+          // Continue existing conversation
+          const conversationId = activeConversations.get(conversationKey);
+          response = await axios.post(
+            `${config.apiUrl}/api/v2/synth/conversation/continue`,
+            {
+              conversationId,
+              message: userMessage,
+            },
+            { headers: { Authorization: `Bearer ${token}` } },
+          );
+        } else {
+          // Start new conversation
+          response = await axios.post(
+            `${config.apiUrl}/api/v2/synth/conversation/start`,
+            {
+              context: { module: 'comms', userRole: 'user' },
+              initialMessage: userMessage,
+            },
+            { headers: { Authorization: `Bearer ${token}` } },
+          );
+          
+          // Store conversation ID for threading
+          if (response.data?.conversationId) {
+            activeConversations.set(conversationKey, response.data.conversationId);
+            // Clean up after 1 hour
+            setTimeout(() => {
+              activeConversations.delete(conversationKey);
+            }, 3600000);
+          }
+        }
+        
+        const message = response.data?.message || 'Hello! How can I help you today?';
         await client.chat.postMessage({
           channel: event.channel,
-          thread_ts: event.ts,
-          text: message,
+          thread_ts: event.thread_ts || event.ts,
+          text: `🤖 ${message}`,
         });
       } catch (e) {
         logger.error('Failed to handle app mention:', e.message);
         await client.chat.postMessage({
           channel: event.channel,
-          thread_ts: event.ts,
-          text: 'Cosmo is unavailable right now.',
+          thread_ts: event.thread_ts || event.ts,
+          text: '🤖 Hi! I\'m currently unavailable, but I\'ll be back soon. For immediate help, try `/it-help` to create a support ticket.',
         });
+      }
+    });
+
+    // Message shortcut: Convert any Slack message to a ticket
+    slackApp.shortcut('create_ticket_from_message', async ({ ack, body, client }) => {
+      await ack();
+      
+      try {
+        // Get the message content
+        const messageTs = body.message_ts;
+        const channelId = body.channel.id;
+        
+        // Fetch the original message
+        const messageInfo = await client.conversations.history({
+          channel: channelId,
+          latest: messageTs,
+          limit: 1,
+          inclusive: true
+        });
+        
+        const originalMessage = messageInfo.messages?.[0];
+        const messageContent = originalMessage?.text || '';
+        const messageUser = originalMessage?.user;
+        
+        // Get user info for the message author
+        let userInfo = null;
+        if (messageUser) {
+          try {
+            userInfo = await client.users.info({ user: messageUser });
+          } catch (e) {
+            logger.warn('Could not fetch user info:', e.message);
+          }
+        }
+        
+        // Build modal with message content pre-filled
+        const token = issueServiceJWT({ type: 'slack' });
+        const res = await axios.get(`${config.apiUrl}/api/config`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        const systems = Array.isArray(res.data.systems)
+          ? res.data.systems
+          : String(res.data.systems || '')
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean);
+        
+        const urgencies = Array.isArray(res.data.urgencyLevels)
+          ? res.data.urgencyLevels
+          : String(res.data.urgencyLevels || '')
+              .split(',')
+              .map((u) => u.trim())
+              .filter(Boolean);
+
+        // Format message content for ticket description
+        const formattedContent = `Original Slack message from ${userInfo?.user?.real_name || userInfo?.user?.name || 'Unknown User'}:\n\n${messageContent}\n\n---\nChannel: <#${channelId}>\nTimestamp: ${new Date(parseFloat(messageTs) * 1000).toISOString()}`;
+        
+        const view = buildModal(systems, urgencies, channelId, formattedContent);
+        
+        // Update the modal title to indicate it's from a message
+        view.title.text = 'Create Ticket from Message';
+        view.private_metadata = JSON.stringify({
+          channel: channelId,
+          messageTs: messageTs,
+          sourceUser: messageUser
+        });
+        
+        await client.views.open({ 
+          trigger_id: body.trigger_id, 
+          view 
+        });
+        
+      } catch (err) {
+        logger.error('Failed to create ticket from message:', err.message);
+        await client.chat.postEphemeral({
+          channel: body.channel.id,
+          user: body.user.id,
+          text: ':x: Failed to create ticket from message. Please try again or use `/it-help` to create a ticket manually.',
+        });
+      }
+    });
+
+    // Global shortcut: Quick ticket creation
+    slackApp.shortcut('quick_ticket', async ({ ack, body, client }) => {
+      await ack();
+      
+      try {
+        const token = issueServiceJWT({ type: 'slack' });
+        const res = await axios.get(`${config.apiUrl}/api/config`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        const systems = Array.isArray(res.data.systems)
+          ? res.data.systems
+          : String(res.data.systems || '')
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean);
+        
+        const urgencies = Array.isArray(res.data.urgencyLevels)
+          ? res.data.urgencyLevels
+          : String(res.data.urgencyLevels || '')
+              .split(',')
+              .map((u) => u.trim())
+              .filter(Boolean);
+
+        const view = buildModal(systems, urgencies, '');
+        await client.views.open({ trigger_id: body.trigger_id, view });
+      } catch (err) {
+        logger.error('Failed to open quick ticket modal:', err.message);
       }
     });
 
