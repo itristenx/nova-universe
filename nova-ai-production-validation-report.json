@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-09-03T00:14:24.747Z",
+  "timestamp": "2025-09-03T00:18:20.378Z",
   "status": "FAILED",
   "summary": {
-    "totalChecks": 18,
-    "passed": 16,
+    "totalChecks": 19,
+    "passed": 17,
     "warnings": 1,
     "errors": 1,
-    "mockDataInstances": 292
+    "mockDataInstances": 296
   },
   "industryStandardsCompliance": {
     "security": true,
@@ -18,6 +18,7 @@
     "passed": [
       "Mock data properly disabled in .env.production.template",
       "Production environment set in .env.production.template",
+      "Mock data properly disabled in .env.production.secure",
       "Production environment set in .env.production.secure",
       "AI Fabric implements NIST AI RMF",
       "AI Fabric implements OWASP AI Security",
@@ -41,7 +42,7 @@
     ],
     "errors": [
       {
-        "message": "Found 292 instances of mock data in production code",
+        "message": "Found 296 instances of mock data in production code",
         "details": null
       }
     ],
@@ -56,7 +57,7 @@
       },
       {
         "pattern": "mockData",
-        "line": "apps/unified/src/utils/index.ts:    return mockData;"
+        "line": "apps/unified/src/utils/index.ts:      return mockData;"
       },
       {
         "pattern": "mockData",
@@ -1048,7 +1049,15 @@
       },
       {
         "pattern": "mock.*data",
+        "line": "apps/unified/src/utils/index.ts: * PRODUCTION VERSION: Does not fall back to mock data"
+      },
+      {
+        "pattern": "mock.*data",
         "line": "apps/unified/src/utils/index.ts: * Handle API operations with graceful fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/unified/src/utils/index.ts:  // In production, this should never use mock data"
       },
       {
         "pattern": "mock.*data",
@@ -1056,7 +1065,15 @@
       },
       {
         "pattern": "mock.*data",
-        "line": "apps/unified/src/utils/index.ts:    console.warn('API call failed, falling back to mock data:', {"
+        "line": "apps/unified/src/utils/index.ts:      // In production, throw the error instead of falling back to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/unified/src/utils/index.ts:      // Only fall back to mock data in development"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/unified/src/utils/index.ts:      console.warn('API call failed, falling back to mock data:', {"
       },
       {
         "pattern": "mock.*data",
