@@ -6,6 +6,7 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline';
 import { cn } from '@utils/index';
+import { VIPBadge, VIPPriorityBoost } from './VIPBadge';
 
 interface SLAStatusProps {
   status: 'ok' | 'warning' | 'breach' | 'at_risk';
@@ -14,6 +15,12 @@ interface SLAStatusProps {
   breachTime?: number; // minutes (if already breached)
   showDetails?: boolean;
   className?: string;
+  // VIP enhancement props
+  isVip?: boolean;
+  vipLevel?: string;
+  basePriority?: number;
+  finalPriority?: number;
+  vipBoostReason?: string;
 }
 
 interface SLABreachInfo {
@@ -91,6 +98,11 @@ export function SLAStatusBadge({
   breachTime,
   showDetails = false,
   className,
+  isVip,
+  vipLevel,
+  basePriority,
+  finalPriority,
+  vipBoostReason,
 }: SLAStatusProps) {
   const displayTime = () => {
     if (status === 'breach' && breachTime) {
@@ -106,17 +118,32 @@ export function SLAStatusBadge({
   };
 
   return (
-    <div
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium',
-        getSLAStatusColor(status),
-        className,
+    <div className={cn('inline-flex items-center gap-2', className)}>
+      <div
+        className={cn(
+          'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium',
+          getSLAStatusColor(status),
+        )}
+      >
+        {getSLAStatusIcon(status)}
+        <span className="capitalize">{status.replace('_', ' ')}</span>
+        {showDetails && displayTime() && (
+          <span className="text-xs opacity-75">• {displayTime()}</span>
+        )}
+      </div>
+      
+      {/* VIP Badge */}
+      {isVip !== undefined && (
+        <VIPBadge isVip={isVip} vipLevel={vipLevel} />
       )}
-    >
-      {getSLAStatusIcon(status)}
-      <span className="capitalize">{status.replace('_', ' ')}</span>
-      {showDetails && displayTime() && (
-        <span className="text-xs opacity-75">• {displayTime()}</span>
+      
+      {/* VIP Priority Boost */}
+      {basePriority !== undefined && finalPriority !== undefined && basePriority !== finalPriority && (
+        <VIPPriorityBoost
+          basePriority={basePriority}
+          finalPriority={finalPriority}
+          boostReason={vipBoostReason}
+        />
       )}
     </div>
   );

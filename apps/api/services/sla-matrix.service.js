@@ -390,6 +390,46 @@ export class SLAMatrixService {
   }
 
   /**
+   * Apply VIP priority boost - VIP users get priority level increased by 1
+   * This follows the requirement that "a VIP might bump up the priority +1"
+   */
+  static applyVipPriorityBoost(basePriority, isVip, vipLevel) {
+    if (!isVip) {
+      return {
+        finalPriority: basePriority,
+        boosted: false,
+        boostReason: null
+      };
+    }
+
+    // VIP priority boost: lower number = higher priority (1=Critical, 2=High, 3=Medium, 4=Low)
+    let boostedPriority = basePriority;
+    let boostReason = 'VIP Status';
+
+    // Apply different boost levels based on VIP tier
+    if (vipLevel === 'executive' || vipLevel === 'exec') {
+      // Executive VIPs get +2 priority boost (but minimum Critical = 1)
+      boostedPriority = Math.max(1, basePriority - 2);
+      boostReason = 'Executive VIP Status (+2 levels)';
+    } else if (vipLevel === 'gold') {
+      // Gold VIPs get +1 priority boost
+      boostedPriority = Math.max(1, basePriority - 1);
+      boostReason = 'Gold VIP Status (+1 level)';
+    } else {
+      // Regular VIPs get +1 priority boost
+      boostedPriority = Math.max(1, basePriority - 1);
+      boostReason = 'VIP Status (+1 level)';
+    }
+
+    return {
+      finalPriority: boostedPriority,
+      boosted: boostedPriority !== basePriority,
+      boostReason: boostedPriority !== basePriority ? boostReason : null,
+      originalPriority: basePriority
+    };
+  }
+
+  /**
    * Calculate complete SLA policy for a ticket
    */
   static calculateTicketSLA(ticketData) {
@@ -398,8 +438,12 @@ export class SLAMatrixService {
       const impact = this.analyzeImpact(ticketData);
       const urgency = this.analyzeUrgency(ticketData);
       
-      // Calculate priority using matrix
-      const priority = this.calculatePriority(impact, urgency);
+      // Calculate base priority using matrix
+      const basePriority = this.calculatePriority(impact, urgency);
+      
+      // Apply VIP priority boost
+      const vipBoost = this.applyVipPriorityBoost(basePriority, ticketData.isVip, ticketData.vipLevel);
+      const finalPriority = vipBoost.finalPriority;
       
       // Determine user type for SLA template
       let userType = 'standard';
@@ -411,8 +455,8 @@ export class SLAMatrixService {
         }
       }
       
-      // Get SLA policy
-      const slaPolicy = this.getSLAPolicy(priority, userType);
+      // Get SLA policy using the final (boosted) priority
+      const slaPolicy = this.getSLAPolicy(finalPriority, userType);
       
       // Calculate target times
       const now = new Date();
@@ -425,8 +469,11 @@ export class SLAMatrixService {
         impactLabel: this.getImpactLabel(impact),
         urgency,
         urgencyLabel: this.getUrgencyLabel(urgency),
-        priority,
-        priorityLabel: this.getPriorityLabel(priority),
+        basePriority,
+        basePriorityLabel: this.getPriorityLabel(basePriority),
+        priority: finalPriority,
+        priorityLabel: this.getPriorityLabel(finalPriority),
+        vipBoost,
         userType,
         slaPolicy,
         targets: {
@@ -440,6 +487,82 @@ export class SLAMatrixService {
       logger.error('Error calculating ticket SLA:', error);
       throw new Error(`Failed to calculate SLA: ${error.message}`);
     }
+  }
+
+  /**
+   * Get VIP identification information for agents/users
+   * This allows agents to easily identify VIP users and their priority levels
+   */
+  static getVipIdentification(ticketData) {
+    const { isVip, vipLevel, userId, requestedBy } = ticketData;
+    
+    if (!isVip) {
+      return {
+        isVip: false,
+        identification: {
+          badge: null,
+          level: null,
+          description: 'Standard User',
+          priority: 'normal',
+          icon: '👤',
+          color: 'gray'
+        }
+      };
+    }
+
+    // VIP identification configuration
+    const vipIdentificationMap = {
+      'executive': {
+        badge: 'EXEC VIP',
+        level: 'Executive',
+        description: 'Executive VIP - Immediate escalation required',
+        priority: 'critical',
+        icon: '👑',
+        color: 'purple',
+        slaHighlight: 'Executive SLA (2-30min response)'
+      },
+      'exec': {
+        badge: 'EXEC VIP',
+        level: 'Executive', 
+        description: 'Executive VIP - Immediate escalation required',
+        priority: 'critical',
+        icon: '👑',
+        color: 'purple',
+        slaHighlight: 'Executive SLA (2-30min response)'
+      },
+      'gold': {
+        badge: 'GOLD VIP',
+        level: 'Gold',
+        description: 'Gold VIP - Enhanced support with dedicated agent',
+        priority: 'high',
+        icon: '⭐',
+        color: 'yellow',
+        slaHighlight: 'VIP SLA (5min-2hr response)'
+      },
+      'priority': {
+        badge: 'VIP',
+        level: 'Priority',
+        description: 'VIP User - Priority support',
+        priority: 'elevated',
+        icon: '🌟',
+        color: 'blue',
+        slaHighlight: 'VIP SLA (5min-2hr response)'
+      }
+    };
+
+    const identification = vipIdentificationMap[vipLevel] || vipIdentificationMap['priority'];
+
+    return {
+      isVip: true,
+      vipLevel,
+      userId,
+      requestedBy,
+      identification: {
+        ...identification,
+        userId,
+        assignedAt: new Date().toISOString()
+      }
+    };
   }
 
   /**

@@ -272,4 +272,62 @@ router.post('/urgency/analyze', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/sla/vip/identification
+ * Get VIP identification information for agents
+ */
+router.post('/vip/identification', async (req, res) => {
+  try {
+    const ticketData = req.body;
+    
+    const vipInfo = SLAMatrixService.getVipIdentification(ticketData);
+    
+    res.json({
+      success: true,
+      data: vipInfo,
+      message: 'VIP identification retrieved successfully'
+    });
+  } catch (error) {
+    logger.error('Error getting VIP identification:', error);
+    res.status(500).json({
+      error: 'Failed to get VIP identification',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/sla/priority/boost
+ * Calculate priority boost for VIP users
+ */
+router.post('/priority/boost', async (req, res) => {
+  try {
+    const { basePriority, isVip, vipLevel } = req.body;
+    
+    if (basePriority === undefined) {
+      return res.status(400).json({
+        error: 'basePriority is required'
+      });
+    }
+    
+    const boostResult = SLAMatrixService.applyVipPriorityBoost(basePriority, isVip, vipLevel);
+    
+    res.json({
+      success: true,
+      data: {
+        ...boostResult,
+        basePriorityLabel: SLAMatrixService.getPriorityLabel(basePriority),
+        finalPriorityLabel: SLAMatrixService.getPriorityLabel(boostResult.finalPriority)
+      },
+      message: 'VIP priority boost calculated successfully'
+    });
+  } catch (error) {
+    logger.error('Error calculating VIP priority boost:', error);
+    res.status(500).json({
+      error: 'Failed to calculate VIP priority boost',
+      details: error.message
+    });
+  }
+});
+
 export default router;

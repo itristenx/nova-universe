@@ -64,13 +64,25 @@ const testScenarios = [
     }
   },
   {
-    name: '🏢 Business Service Critical',
+    name: '🔥 VIP Priority Boost Demo - Regular User becomes Critical via VIP',
     data: {
-      title: 'Email sync issue',
-      description: 'Single user email not syncing properly',
+      title: 'Application running slow',
+      description: 'Users reporting performance issues with the CRM application',
+      affectedUsers: 25,
+      isVip: true,
+      vipLevel: 'gold',
+      userId: 'vip-gold-user-456'
+    }
+  },
+  {
+    name: '👑 Executive Priority Boost Demo - Low Priority becomes Critical',
+    data: {
+      title: 'Request access to shared folder',
+      description: 'User needs read access to marketing shared folder',
       affectedUsers: 1,
-      businessService: { criticality: 'Critical' },
-      isVip: false
+      isVip: true,
+      vipLevel: 'executive',
+      userId: 'exec-user-789'
     }
   }
 ];
@@ -128,7 +140,16 @@ testScenarios.forEach((scenario, index) => {
     
     console.log(`   ${getImpactIcon(result.impact)} Impact: ${result.impactLabel} (${result.impact})`);
     console.log(`   ${getUrgencyIcon(result.urgency)} Urgency: ${result.urgencyLabel} (${result.urgency})`);
-    console.log(`   ${getPriorityIcon(result.priority)} Priority: ${result.priorityLabel} (${result.priority})`);
+    
+    // Show VIP priority boost details
+    if (result.vipBoost && result.vipBoost.boosted) {
+      console.log(`   📊 Base Priority: ${result.basePriorityLabel} (${result.basePriority})`);
+      console.log(`   🚀 VIP Boost: ${result.vipBoost.boostReason}`);
+      console.log(`   ${getPriorityIcon(result.priority)} Final Priority: ${result.priorityLabel} (${result.priority})`);
+    } else {
+      console.log(`   ${getPriorityIcon(result.priority)} Priority: ${result.priorityLabel} (${result.priority})`);
+    }
+    
     console.log(`   👥 User Type: ${result.userType}`);
     console.log(`   ⏱️  Response Time: ${formatTime(result.slaPolicy.responseTime)}`);
     console.log(`   🔧 Resolution Time: ${formatTime(result.slaPolicy.resolutionTime)}`);
@@ -160,6 +181,38 @@ Object.entries(templates).forEach(([key, template]) => {
     const priorityLabel = SLAMatrixService.getPriorityLabel(parseInt(priority));
     console.log(`   ${getPriorityIcon(parseInt(priority))} ${priorityLabel}: ${formatTime(policy.responseTime)} response, ${formatTime(policy.resolutionTime)} resolution`);
   });
+});
+
+// VIP Priority Boost Examples
+console.log('\n🚀 VIP PRIORITY BOOST EXAMPLES');
+console.log('-'.repeat(40));
+
+const boostExamples = [
+  { basePriority: 4, isVip: false, vipLevel: null, description: 'Standard User - Low Priority' },
+  { basePriority: 4, isVip: true, vipLevel: 'priority', description: 'VIP User - Low becomes Medium' },
+  { basePriority: 4, isVip: true, vipLevel: 'gold', description: 'Gold VIP - Low becomes Medium' },
+  { basePriority: 4, isVip: true, vipLevel: 'executive', description: 'Executive VIP - Low becomes High' },
+  { basePriority: 3, isVip: true, vipLevel: 'gold', description: 'Gold VIP - Medium becomes High' },
+  { basePriority: 2, isVip: true, vipLevel: 'executive', description: 'Executive VIP - High becomes Critical' }
+];
+
+boostExamples.forEach((example, index) => {
+  const boost = SLAMatrixService.applyVipPriorityBoost(example.basePriority, example.isVip, example.vipLevel);
+  const basePriorityLabel = SLAMatrixService.getPriorityLabel(example.basePriority);
+  const finalPriorityLabel = SLAMatrixService.getPriorityLabel(boost.finalPriority);
+  
+  console.log(`\n${index + 1}. ${example.description}`);
+  console.log(`   📊 Base: ${basePriorityLabel} (${example.basePriority}) → Final: ${finalPriorityLabel} (${boost.finalPriority})`);
+  if (boost.boosted) {
+    console.log(`   🚀 Boost: ${boost.boostReason}`);
+    
+    // Show the SLA impact
+    const standardSla = SLAMatrixService.getSLAPolicy(example.basePriority, 'standard');
+    const boostedSla = SLAMatrixService.getSLAPolicy(boost.finalPriority, example.isVip && example.vipLevel === 'executive' ? 'executive' : example.isVip ? 'vip' : 'standard');
+    console.log(`   ⏱️  SLA Impact: ${formatTime(standardSla.responseTime)} → ${formatTime(boostedSla.responseTime)} response`);
+  } else {
+    console.log(`   📝 No boost applied`);
+  }
 });
 
 // Performance test
