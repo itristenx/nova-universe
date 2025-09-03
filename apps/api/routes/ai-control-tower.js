@@ -906,7 +906,7 @@ router.post('/external-providers/enable', async (req, res) => {
         riskScore: 0.3
       });
     } catch (auditError) {
-      logger.warn('Failed to record audit event:', auditError);
+      logger.warn('Failed to record audit event:', { message: auditError.message });
     }
 
     res.json({
@@ -970,7 +970,7 @@ router.post('/external-providers/disable', async (req, res) => {
         riskScore: 0.3
       });
     } catch (auditError) {
-      logger.warn('Failed to record audit event:', auditError);
+      logger.warn('Failed to record audit event:', { message: auditError.message });
     }
 
     res.json({
@@ -1072,7 +1072,7 @@ router.put('/external-providers/update', async (req, res) => {
         riskScore: 0.3
       });
     } catch (auditError) {
-      logger.warn('Failed to record audit event:', auditError);
+      logger.warn('Failed to record audit event:', { message: auditError.message });
     }
 
     res.json({
@@ -1083,6 +1083,14 @@ router.put('/external-providers/update', async (req, res) => {
         updatedBy: req.user.id,
         updatedAt: new Date().toISOString()
       }
+    });
+  } catch (error) {
+    logger.error('Failed to update external providers:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update external providers',
+      details: error.message
+    });
   }
 });
 
@@ -1278,6 +1286,10 @@ router.post('/providers/validate-config', async (req, res) => {
     });
   }
 });
+
+/**
+ * @swagger
+ * /api/ai-control-tower/audit/{towerId}:
  *   get:
  *     summary: Get audit trail for control tower
  *     tags: [Audit]
