@@ -1,0 +1,744 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  UserIcon,
+  ArrowRightIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  EyeIcon,
+  ChatBubbleLeftRightIcon,
+  ExclamationTriangleIcon,
+  DocumentTextIcon,
+  CalendarIcon,
+  BellIcon,
+  ArrowPathIcon,
+  UsersIcon,
+  ChartBarIcon,
+  FunnelIcon,
+} from '@heroicons/react/24/outline';
+
+interface ApprovalFlow {
+  id: string;
+  name: string;
+  description: string;
+  trigger_conditions: {
+    request_types?: string[];
+    cost_threshold?: number;
+    department?: string[];
+    priority?: string[];
+  };
+  steps: ApprovalStep[];
+  is_active: boolean;
+  priority: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ApprovalStep {
+  step_number: number;
+  name: string;
+  approvers: string[];
+  approver_roles: string[];
+  conditions?: {
+    all_required?: boolean;
+    minimum_approvals?: number;
+  };
+  timeout_hours?: number;
+  escalation?: {
+    enabled: boolean;
+    timeout_hours: number;
+    escalate_to: string[];
+  };
+}
+
+interface ApprovalInstance {
+  id: string;
+  workflow_id: string;
+  request_id: string;
+  current_step: number;
+  status: 'pending' | 'approved' | 'rejected' | 'escalated' | 'cancelled';
+  metadata: {
+    actions?: ApprovalAction[];
+    request_details?: any;
+  };
+  created_at: string;
+  updated_at: string;
+  workflow_name: string;
+  requester_name: string;
+  item_name?: string;
+  total_cost?: number;
+}
+
+interface ApprovalAction {
+  step: number;
+  action: 'approve' | 'reject' | 'delegate' | 'escalate';
+  comment?: string;
+  approved_by: string;
+  approved_at: string;
+  delegated_to?: string;
+}
+
+interface ApprovalManagerProps {
+  className?: string;
+  mode?: 'admin' | 'approver';
+}
+
+export default function ApprovalManager({ className = '', mode = 'admin' }: ApprovalManagerProps) {
+  const [activeTab, setActiveTab] = useState<'flows' | 'pending' | 'history' | 'analytics'>('flows');
+  const [approvalFlows, setApprovalFlows] = useState<ApprovalFlow[]>([]);
+  const [approvalInstances, setApprovalInstances] = useState<ApprovalInstance[]>([]);
+  const [selectedFlow, setSelectedFlow] = useState<ApprovalFlow | null>(null);
+  const [selectedInstance, setSelectedInstance] = useState<ApprovalInstance | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showCreateFlowModal, setShowCreateFlowModal] = useState(false);
+  const [approvalComment, setApprovalComment] = useState('');
+  const [rejectReason, setRejectReason] = useState('');
+
+  // Mock data - replace with API calls
+  useEffect(() => {
+    const mockFlows: ApprovalFlow[] = [
+      {
+        id: 'flow_standard_purchase',
+        name: 'Standard Purchase Approval',
+        description: 'Standard approval process for purchase requests under $5000',
+        trigger_conditions: {
+          request_types: ['purchase', 'equipment'],
+          cost_threshold: 5000,
+          department: ['IT', 'Operations']
+        },
+        steps: [
+          {
+            step_number: 1,
+            name: 'Manager Approval',
+            approvers: ['mgr_001', 'mgr_002'],
+            approver_roles: ['Manager', 'Team Lead'],
+            conditions: { all_required: false, minimum_approvals: 1 },
+            timeout_hours: 24,
+            escalation: {
+              enabled: true,
+              timeout_hours: 48,
+              escalate_to: ['dir_001']
+            }
+          },
+          {
+            step_number: 2,
+            name: 'Finance Approval',
+            approvers: ['fin_001'],
+            approver_roles: ['Finance Manager'],
+            conditions: { all_required: true },
+            timeout_hours: 48
+          }
+        ],
+        is_active: true,
+        priority: 1,
+        created_by: 'admin',
+        created_at: '2024-01-15T10:00:00Z',
+        updated_at: '2024-01-15T10:00:00Z'
+      },
+      {
+        id: 'flow_high_value_purchase',
+        name: 'High Value Purchase Approval',
+        description: 'Enhanced approval process for purchases over $5000',
+        trigger_conditions: {
+          request_types: ['purchase', 'equipment'],
+          cost_threshold: 5000,
+        },
+        steps: [
+          {
+            step_number: 1,
+            name: 'Manager Approval',
+            approvers: ['mgr_001'],
+            approver_roles: ['Manager'],
+            conditions: { all_required: true },
+            timeout_hours: 24
+          },
+          {
+            step_number: 2,
+            name: 'Finance Review',
+            approvers: ['fin_001'],
+            approver_roles: ['Finance Manager'],
+            conditions: { all_required: true },
+            timeout_hours: 48
+          },
+          {
+            step_number: 3,
+            name: 'Executive Approval',
+            approvers: ['exec_001'],
+            approver_roles: ['Director', 'VP'],
+            conditions: { all_required: true },
+            timeout_hours: 72
+          }
+        ],
+        is_active: true,
+        priority: 2,
+        created_by: 'admin',
+        created_at: '2024-01-10T14:30:00Z',
+        updated_at: '2024-01-10T14:30:00Z'
+      }
+    ];
+
+    const mockInstances: ApprovalInstance[] = [
+      {
+        id: 'inst_001',
+        workflow_id: 'flow_standard_purchase',
+        request_id: 'req_001',
+        current_step: 1,
+        status: 'pending',
+        metadata: {
+          request_details: {
+            item_name: 'MacBook Pro 16-inch',
+            cost: 2999,
+            justification: 'Replacement for development work'
+          }
+        },
+        created_at: '2024-01-20T09:30:00Z',
+        updated_at: '2024-01-20T09:30:00Z',
+        workflow_name: 'Standard Purchase Approval',
+        requester_name: 'John Smith',
+        item_name: 'MacBook Pro 16-inch',
+        total_cost: 2999
+      },
+      {
+        id: 'inst_002',
+        workflow_id: 'flow_high_value_purchase',
+        request_id: 'req_002',
+        current_step: 2,
+        status: 'pending',
+        metadata: {
+          actions: [
+            {
+              step: 1,
+              action: 'approve',
+              comment: 'Request approved for business need',
+              approved_by: 'mgr_001',
+              approved_at: '2024-01-19T14:00:00Z'
+            }
+          ],
+          request_details: {
+            item_name: 'Server Hardware Upgrade',
+            cost: 15000,
+            justification: 'Critical infrastructure upgrade'
+          }
+        },
+        created_at: '2024-01-19T11:00:00Z',
+        updated_at: '2024-01-19T14:00:00Z',
+        workflow_name: 'High Value Purchase Approval',
+        requester_name: 'Sarah Johnson',
+        item_name: 'Server Hardware Upgrade',
+        total_cost: 15000
+      }
+    ];
+
+    setTimeout(() => {
+      setApprovalFlows(mockFlows);
+      setApprovalInstances(mockInstances);
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <ClockIcon className="w-5 h-5 text-yellow-500" />;
+      case 'approved':
+        return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
+      case 'rejected':
+        return <XCircleIcon className="w-5 h-5 text-red-500" />;
+      case 'escalated':
+        return <ExclamationTriangleIcon className="w-5 h-5 text-orange-500" />;
+      case 'cancelled':
+        return <XCircleIcon className="w-5 h-5 text-gray-500" />;
+      default:
+        return <ClockIcon className="w-5 h-5 text-gray-400" />;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  const handleApprovalAction = async (instanceId: string, action: 'approve' | 'reject', comment: string) => {
+    try {
+      const response = await fetch(`/api/approvals/instances/${instanceId}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, comment })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Approval action completed:', result);
+        // Refresh instances
+        setSelectedInstance(null);
+        setApprovalComment('');
+        setRejectReason('');
+      }
+    } catch (error) {
+      console.error('Error processing approval:', error);
+    }
+  };
+
+  const pendingInstances = approvalInstances.filter(inst => inst.status === 'pending');
+  const completedInstances = approvalInstances.filter(inst => ['approved', 'rejected', 'cancelled'].includes(inst.status));
+
+  if (loading) {
+    return (
+      <div className={`approval-manager ${className}`}>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`approval-manager ${className}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {mode === 'approver' ? 'My Approvals' : 'Approval Management'}
+          </h1>
+          <p className="text-gray-600">
+            {mode === 'approver' 
+              ? 'Review and process approval requests assigned to you'
+              : 'Manage approval workflows and monitor approval processes'
+            }
+          </p>
+        </div>
+        {mode === 'admin' && (
+          <button
+            onClick={() => setShowCreateFlowModal(true)}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <PlusIcon className="w-5 h-5 mr-2" />
+            Create Approval Flow
+          </button>
+        )}
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="flex items-center">
+            <ClockIcon className="w-8 h-8 text-yellow-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
+              <p className="text-2xl font-bold text-gray-900">{pendingInstances.length}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="flex items-center">
+            <CheckCircleIcon className="w-8 h-8 text-green-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Approved Today</p>
+              <p className="text-2xl font-bold text-gray-900">12</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="flex items-center">
+            <ArrowPathIcon className="w-8 h-8 text-blue-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Active Flows</p>
+              <p className="text-2xl font-bold text-gray-900">{approvalFlows.filter(f => f.is_active).length}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="flex items-center">
+            <ChartBarIcon className="w-8 h-8 text-purple-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Avg. Approval Time</p>
+              <p className="text-2xl font-bold text-gray-900">2.4h</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="-mb-px flex space-x-8">
+          {[
+            { key: 'flows', label: 'Approval Flows', count: approvalFlows.length, adminOnly: true },
+            { key: 'pending', label: 'Pending Approvals', count: pendingInstances.length },
+            { key: 'history', label: 'History', count: completedInstances.length },
+            { key: 'analytics', label: 'Analytics', count: 0, adminOnly: true }
+          ].filter(tab => mode === 'admin' || !tab.adminOnly).map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as any)}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === tab.key
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.label}
+              {tab.count > 0 && (
+                <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Content */}
+      <AnimatePresence mode="wait">
+        {/* Approval Flows Tab */}
+        {activeTab === 'flows' && mode === 'admin' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-4"
+          >
+            {approvalFlows.map((flow) => (
+              <motion.div
+                key={flow.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3">
+                      <h3 className="text-lg font-semibold text-gray-900">{flow.name}</h3>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        flow.is_active 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {flow.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                        Priority {flow.priority}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">{flow.description}</p>
+                    
+                    {/* Flow Steps */}
+                    <div className="mt-4 flex items-center space-x-2">
+                      <span className="text-xs font-medium text-gray-700">Steps:</span>
+                      {flow.steps.map((step, index) => (
+                        <div key={step.step_number} className="flex items-center">
+                          <div className="flex items-center space-x-1">
+                            <UsersIcon className="w-4 h-4 text-gray-400" />
+                            <span className="text-xs text-gray-600">{step.name}</span>
+                          </div>
+                          {index < flow.steps.length - 1 && (
+                            <ArrowRightIcon className="w-3 h-3 text-gray-400 mx-2" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Trigger Conditions */}
+                    <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                      {flow.trigger_conditions.cost_threshold && (
+                        <span>Cost threshold: {formatCurrency(flow.trigger_conditions.cost_threshold)}</span>
+                      )}
+                      {flow.trigger_conditions.request_types && (
+                        <span>Types: {flow.trigger_conditions.request_types.join(', ')}</span>
+                      )}
+                      {flow.trigger_conditions.department && (
+                        <span>Departments: {flow.trigger_conditions.department.join(', ')}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setSelectedFlow(flow)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                      title="View Details"
+                    >
+                      <EyeIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg"
+                      title="Edit Flow"
+                    >
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      title="Delete Flow"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Pending Approvals Tab */}
+        {activeTab === 'pending' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-4"
+          >
+            {pendingInstances.map((instance) => (
+              <motion.div
+                key={instance.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3">
+                      {getStatusIcon(instance.status)}
+                      <h3 className="text-lg font-semibold text-gray-900">{instance.item_name || 'Request'}</h3>
+                      <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                        Step {instance.current_step}
+                      </span>
+                    </div>
+                    
+                    <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium text-gray-700">Requester:</span>
+                        <p className="text-gray-600">{instance.requester_name}</p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Workflow:</span>
+                        <p className="text-gray-600">{instance.workflow_name}</p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Amount:</span>
+                        <p className="text-gray-600">
+                          {instance.total_cost ? formatCurrency(instance.total_cost) : 'N/A'}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Submitted:</span>
+                        <p className="text-gray-600">{formatDate(instance.created_at)}</p>
+                      </div>
+                    </div>
+
+                    {/* Request Details */}
+                    {instance.metadata?.request_details && (
+                      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                        <h4 className="text-sm font-medium text-gray-700 mb-1">Request Details</h4>
+                        <p className="text-sm text-gray-600">
+                          {instance.metadata.request_details.justification || 'No justification provided'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Previous Actions */}
+                    {instance.metadata?.actions && instance.metadata.actions.length > 0 && (
+                      <div className="mt-3">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Previous Actions</h4>
+                        <div className="space-y-2">
+                          {instance.metadata.actions.map((action, index) => (
+                            <div key={index} className="flex items-start space-x-3 text-sm">
+                              {action.action === 'approve' ? (
+                                <CheckCircleIcon className="w-4 h-4 text-green-500 mt-0.5" />
+                              ) : (
+                                <XCircleIcon className="w-4 h-4 text-red-500 mt-0.5" />
+                              )}
+                              <div>
+                                <p className="text-gray-600">
+                                  Step {action.step} {action.action}d by {action.approved_by}
+                                </p>
+                                {action.comment && (
+                                  <p className="text-gray-500 italic">"{action.comment}"</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col space-y-2">
+                    <button
+                      onClick={() => setSelectedInstance(instance)}
+                      className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+                    >
+                      <CheckCircleIcon className="w-4 h-4 mr-2" />
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => setSelectedInstance(instance)}
+                      className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                    >
+                      <XCircleIcon className="w-4 h-4 mr-2" />
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => setSelectedInstance(instance)}
+                      className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm"
+                    >
+                      <EyeIcon className="w-4 h-4 mr-2" />
+                      Details
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+
+            {pendingInstances.length === 0 && (
+              <div className="text-center py-12">
+                <CheckCircleIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No pending approvals</h3>
+                <p className="text-gray-500">All approval requests have been processed</p>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* History Tab */}
+        {activeTab === 'history' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-white rounded-lg p-8 text-center"
+          >
+            <DocumentTextIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Approval History</h3>
+            <p className="text-gray-500">View completed approval requests and their outcomes</p>
+          </motion.div>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && mode === 'admin' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-white rounded-lg p-8 text-center"
+          >
+            <ChartBarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Approval Analytics</h3>
+            <p className="text-gray-500">Performance metrics and approval trends</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Approval Action Modal */}
+      <AnimatePresence>
+        {selectedInstance && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={() => setSelectedInstance(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Approval Request</h2>
+                <button
+                  onClick={() => setSelectedInstance(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircleIcon className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900 mb-2">Item</h3>
+                    <p className="text-gray-600">{selectedInstance.item_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900 mb-2">Amount</h3>
+                    <p className="text-gray-600">
+                      {selectedInstance.total_cost ? formatCurrency(selectedInstance.total_cost) : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900 mb-2">Requester</h3>
+                    <p className="text-gray-600">{selectedInstance.requester_name}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900 mb-2">Current Step</h3>
+                    <p className="text-gray-600">Step {selectedInstance.current_step}</p>
+                  </div>
+                </div>
+
+                {selectedInstance.metadata?.request_details?.justification && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900 mb-2">Justification</h3>
+                    <p className="text-gray-600 bg-gray-50 p-3 rounded-lg">
+                      {selectedInstance.metadata.request_details.justification}
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                    Add Comment
+                  </label>
+                  <textarea
+                    value={approvalComment}
+                    onChange={(e) => setApprovalComment(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Add a comment about your decision..."
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => handleApprovalAction(selectedInstance.id, 'reject', approvalComment)}
+                    className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    <XCircleIcon className="w-4 h-4 mr-2" />
+                    Reject
+                  </button>
+                  <button
+                    onClick={() => handleApprovalAction(selectedInstance.id, 'approve', approvalComment)}
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    <CheckCircleIcon className="w-4 h-4 mr-2" />
+                    Approve
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

@@ -7,6 +7,15 @@ export { default as RequestManagement } from './RequestManagement';
 // Admin Components
 export { default as ConfigurationManagement } from './admin/ConfigurationManagement';
 
+// Enterprise Components - NEW
+export { default as WorkflowManager } from './enterprise/WorkflowManager';
+export { default as ApprovalManager } from './enterprise/ApprovalManager';
+export { default as WorkflowAutomationDashboard } from './enterprise/WorkflowAutomationDashboard';
+
+// AI and Workflow Components
+export { default as ApprovalWorkflowEngine } from './ApprovalWorkflowEngine';
+export { default as VisualWorkflowBuilder } from './VisualWorkflowBuilder';
+
 // Workflow Components
 export * from './workflow';
 
