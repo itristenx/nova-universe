@@ -10,6 +10,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:integration": "node test-integration.js",
     "validate": "node validate.js",
+    "demo": "node demo.js",
     "build": "echo 'No build step required'"
   },
   "keywords": ["slack", "integration", "nova-universe", "ticketing"],
