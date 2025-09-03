@@ -1,0 +1,1219 @@
+{
+  "timestamp": "2025-09-03T00:14:24.747Z",
+  "status": "FAILED",
+  "summary": {
+    "totalChecks": 18,
+    "passed": 16,
+    "warnings": 1,
+    "errors": 1,
+    "mockDataInstances": 292
+  },
+  "industryStandardsCompliance": {
+    "security": true,
+    "privacy": true,
+    "performance": false,
+    "monitoring": false
+  },
+  "details": {
+    "passed": [
+      "Mock data properly disabled in .env.production.template",
+      "Production environment set in .env.production.template",
+      "Production environment set in .env.production.secure",
+      "AI Fabric implements NIST AI RMF",
+      "AI Fabric implements OWASP AI Security",
+      "AI Fabric implements Circuit Breakers",
+      "AI Fabric implements Rate Limiting",
+      "AI Fabric implements Audit Trails",
+      "AI Fabric implements Security Monitoring",
+      "RAG Engine supports vector stores: ChromaDB, Pinecone, Qdrant, FAISS",
+      "RAG Engine implements RBAC for document access",
+      "RAG Engine implements real API calls for embeddings",
+      "Monitoring system supports compliance frameworks: GDPR, CCPA, AI Act",
+      "Monitoring system implements bias detection",
+      "Monitoring system implements explainable AI",
+      "Production database schema migration exists"
+    ],
+    "warnings": [
+      {
+        "message": "AI Fabric may contain mock implementations",
+        "details": null
+      }
+    ],
+    "errors": [
+      {
+        "message": "Found 292 instances of mock data in production code",
+        "details": null
+      }
+    ],
+    "mockDataFound": [
+      {
+        "pattern": "mockData",
+        "line": "apps/unified/src/utils/index.ts:  mockData: T,"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/unified/src/utils/index.ts:    return Promise.resolve(mockData);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/unified/src/utils/index.ts:    return mockData;"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      let devices = Array.from(mockData.devices.values());"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      const device = mockData.devices.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      const existingDevice = Array.from(mockData.devices.values()).find("
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:        mockData.devices.set(existingDevice.id, updatedDevice);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:        mockData.devices.set(deviceData.id, deviceData);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      const existingDevice = mockData.devices.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      mockData.devices.set(id, updatedDevice);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      const device = mockData.devices.get(deviceId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      const dashboard = mockData.dashboards.get(dashboardId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      mockData.devices.set(deviceId, updatedDevice);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      const device = mockData.devices.get(deviceId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:        mockData.devices.set(deviceId, device);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:    mockData.activations.set(activationId, activation);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:    const activation = Array.from(mockData.activations.values()).find("
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:    mockData.activations.set(activation.id, activation);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:    let device = Array.from(mockData.devices.values()).find("
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      mockData.devices.set(device.id, device);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:    mockData.authSessions.set(sessionId, authSession);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:    const session = mockData.authSessions.get(sessionId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:    const availableDashboards = Array.from(mockData.dashboards.values()).filter((d) => d.isActive);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      mockData.authSessions.delete(sessionId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:    const session = mockData.authSessions.get(sessionId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/routes/nova-tv.js:      mockData.authSessions.delete(sessionId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:const mockData = {"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    let dashboards = Array.from(mockData.dashboards.values());"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    const dashboard = mockData.dashboards.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    mockData.dashboards.set(dashboardData.id, dashboardData);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    const existingDashboard = mockData.dashboards.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    mockData.dashboards.set(id, updatedDashboard);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    if (!mockData.dashboards.has(id)) {"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    mockData.dashboards.delete(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    const originalDashboard = mockData.dashboards.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    mockData.dashboards.set(newDashboard.id, newDashboard);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    let devices = Array.from(mockData.devices.values());"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    const device = mockData.devices.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    mockData.devices.set(deviceData.id, deviceData);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    const existingDevice = mockData.devices.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    mockData.devices.set(id, updatedDevice);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    if (!mockData.devices.has(id)) {"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    mockData.devices.delete(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    const device = mockData.devices.get(deviceId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    mockData.devices.set(deviceId, updatedDevice);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    mockData.authSessions.set(sessionId, authSession);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    const session = mockData.authSessions.get(sessionId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    const availableDashboards = Array.from(mockData.dashboards.values()).filter("
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    mockData.authSessions.delete(sessionId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:const mockData = {"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:  mockData.dashboards.set(demoDashboard.id, demoDashboard);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    let dashboards = Array.from(mockData.dashboards.values());"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    const dashboard = mockData.dashboards.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    mockData.dashboards.set(dashboardData.id, dashboardData);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    const existingDashboard = mockData.dashboards.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    mockData.dashboards.set(id, updatedDashboard);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    if (!mockData.dashboards.has(id)) {"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    mockData.dashboards.delete(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    const originalDashboard = mockData.dashboards.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    mockData.dashboards.set(newDashboard.id, newDashboard);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      let devices = Array.from(mockData.devices.values());"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      const device = mockData.devices.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      const existingDevice = Array.from(mockData.devices.values()).find("
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:        mockData.devices.set(existingDevice.id, updatedDevice);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:        mockData.devices.set(deviceData.id, deviceData);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      const existingDevice = mockData.devices.get(id);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      mockData.devices.set(id, updatedDevice);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      const device = mockData.devices.get(deviceId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      const dashboard = mockData.dashboards.get(dashboardId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      mockData.devices.set(deviceId, updatedDevice);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      const device = mockData.devices.get(deviceId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:        mockData.devices.set(deviceId, device);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    mockData.activations.set(activationId, activation);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    const activation = Array.from(mockData.activations.values()).find("
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    mockData.activations.set(activation.id, activation);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    let device = Array.from(mockData.devices.values()).find("
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      mockData.devices.set(device.id, device);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    mockData.authSessions.set(sessionId, authSession);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    const session = mockData.authSessions.get(sessionId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    const availableDashboards = Array.from(mockData.dashboards.values()).filter("
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      mockData.authSessions.delete(sessionId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:    const session = mockData.authSessions.get(sessionId);"
+      },
+      {
+        "pattern": "mockData",
+        "line": "apps/api/src/routes/nova-tv.ts:      mockData.authSessions.delete(sessionId);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/utils/index.ts:  const randomPart = Math.random().toString(36).substring(2, 8);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/services/connectionService.ts:    return delay + Math.random() * 1000; // Add jitter"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:    const id = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:    const id = `role_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:    const id = `perm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:    const id = `group_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:    const id = `flow_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:    const instanceId = `approval_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:    const id = `flag_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:      const hash = userId ? userId.charCodeAt(0) : Math.random();"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:    const id = `config_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:    const id = `module_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:      id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/unified/src/stores/rbacStore.ts:    const reportId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:            duration: Math.random() * 100 + 50,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:        const currentXP = Math.floor(Math.random() * 1000) + 500; // Mock current XP"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:          xp: Math.floor(Math.random() * 2000) + 500,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:          level: Math.floor((Math.random() * 2000 + 500) / 100),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:          leaderboardRank: includeLeaderboard ? Math.floor(Math.random() * 50) + 1 : null,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:            ticketsResolved: Math.floor(Math.random() * 100) + 10,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:            knowledgeShared: Math.floor(Math.random() * 20) + 3,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:            feedbackGiven: Math.floor(Math.random() * 15) + 5,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:        const responseTime = Math.random() * 200 + 50;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:        const success = Math.random() > 0.1; // 90% success rate"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/utils/cosmo.js:  return responses[Math.floor(Math.random() * responses.length)];"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/services/email-communication.service.js:      sentiment: Math.random() * 2 - 1, // -1 to 1"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/services/email-communication.service.js:      urgency: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'][Math.floor(Math.random() * 4)],"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/services/email-communication.service.js:      confidence: Math.random(),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/services/email-integration.service.js:    const random = Math.random().toString(36).substring(2);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/services/cmdb/CmdbService.js:      const number = Math.floor(100000 + Math.random() * 900000);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/services/cmdb/DiscoveryService.js:      const number = Math.floor(100000 + Math.random() * 900000);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/scripts/seed-uat.js:      password += chars.charAt(Math.floor(Math.random() * chars.length));"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/config/database.js:    result += chars.charAt(Math.floor(Math.random() * chars.length));"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/config/production-validation.js:    result += chars.charAt(Math.floor(Math.random() * chars.length));"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/synth.js:        .map((t) => t.id || `INC${Math.random().toString().slice(2, 8).padStart(6, '0')}`),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/synth.js:          .map((t) => t.id || `INC${Math.random().toString().slice(2, 8).padStart(6, '0')}`),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/ai-fabric.js:      startTime: new Date(Date.now() - Math.random() * 3600000).toISOString(),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/ai-fabric.js:      status: Math.random() > 0.3 ? 'completed' : 'active',"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/ai-fabric.js:      requestCount: Math.floor(Math.random() * 20) + 1,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/ai-fabric.js:      lastActivity: new Date(Date.now() - Math.random() * 300000).toISOString(),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/ai-fabric.js:      processingTime: request.processingTime || Math.floor(Math.random() * 2000) + 100,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/ai-fabric.js:      cpuUsage: Math.random() * 20 + 30, // Mock data"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/ai-fabric.js:      memoryUsage: Math.random() * 30 + 40, // Mock data"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/analytics.js:        .catch(() => ({ rows: [{ active_sessions: Math.floor(Math.random() * 20) + 5 }] })),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/analytics.js:        rows: [{ cpu_usage: Math.random() * 30 + 10, memory_usage: Math.random() * 40 + 30 }],"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/tickets.js:    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/auth.js:        const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/nova-tv.js:    const activationCode = Math.floor(100000 + Math.random() * 900000).toString();"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/nova-tv.js:    const sixDigitCode = Math.floor(100000 + Math.random() * 900000).toString();"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/ml-pipeline.js:      progress: experiment.status === 'running' ? Math.random() * 100 : 100, // Simplified progress"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/itsm.js:    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/monitoring.js:    const errorRate = Math.random() * 10; // Mock error rate"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/routes/monitoring.js:        usage: Math.random() * 30 + 10, // Mock CPU usage"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/cli/commands/user.js:      newPassword = Math.random().toString(36).slice(-12);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/cli/utils/index.js:    password += chars.charAt(Math.floor(Math.random() * chars.length));"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/src/routes/nova-tv-simplified.ts:    const sixDigitCode = Math.floor(100000 + Math.random() * 900000).toString();"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/src/routes/nova-tv 2.ts:    const sixDigitCode = Math.floor(100000 + Math.random() * 900000).toString();"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/src/routes/nova-tv.js:  return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/src/routes/nova-tv.js:  return Math.random().toString(36).substr(2, 8).toUpperCase();"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/src/routes/nova-tv.ts:    const activationCode = Math.floor(100000 + Math.random() * 900000).toString();"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/src/routes/nova-tv.ts:    const sixDigitCode = Math.floor(100000 + Math.random() * 900000).toString();"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/src/routes/nova-tv-digital-signage.js:    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/src/routes/nova-tv-enhanced.ts:    const activationCode = Math.floor(100000 + Math.random() * 900000).toString();"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/middleware/twoFactor.js:      code: Math.random().toString(36).substring(2, 10).toUpperCase(),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/middleware/performance-monitor.js:      const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/middleware/error-handler.js:  return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/setup-env.js:    result += chars.charAt(Math.floor(Math.random() * chars.length));"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/ai-control-tower.js:    return Array.from({ length: 384 }, () => Math.random());"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/ai-control-tower.js:      score: Math.random(), // Placeholder similarity score"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/ai-control-tower.js:        Array(inputDim).fill(0).map(() => Math.random() * 2 - 1)"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/ai-control-tower.js:      Math.floor(Math.random() * (config.numClasses || 2))"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/gpt-oss-integration.ts:      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-ai-agent-analytics.ts:        responseTime: 2.0 + Math.random() * 3.0, // Would calculate from actual response times"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/ai-fabric.js:          .map(() => Math.random() - 0.5);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/ai-fabric.js:        const category = categories[Math.floor(Math.random() * categories.length)];"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/ai-fabric.js:        const sentiment = sentiments[Math.floor(Math.random() * sentiments.length)];"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/ai-fabric.js:        const score = Math.random();"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-ml-pipeline.ts:    const experimentId = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-ml-pipeline.ts:      accuracy: 0.85 + Math.random() * 0.1,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-ml-pipeline.ts:      precision: 0.82 + Math.random() * 0.1,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-ml-pipeline.ts:      recall: 0.88 + Math.random() * 0.1,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-ml-pipeline.ts:      f1_score: 0.85 + Math.random() * 0.1,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-ml-pipeline.ts:      auc: 0.90 + Math.random() * 0.05"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-ml-pipeline.ts:    const experimentId = `itsm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/unified-notification-service.js:    return `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:      completeness: 0.95 + Math.random() * 0.05, // 95-100%"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:      accuracy: 0.9 + Math.random() * 0.1, // 90-100%"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:      diversity: 0.8 + Math.random() * 0.2, // 80-100%"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:      bias_score: Math.random() * 0.2, // 0-20% (lower is better)"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        job.progress.loss = Math.max(0.1, 2.0 - epoch * 0.5 + Math.random() * 0.2);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        job.progress.accuracy = Math.min(0.95, 0.6 + epoch * 0.1 + Math.random() * 0.05);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:      job.costs.actualCost = job.costs.estimatedCost * (0.9 + Math.random() * 0.2);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:      const score = 0.7 + Math.random() * 0.3; // 70-100%"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:      safetyScore: 0.85 + Math.random() * 0.15,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:      alignmentScore: 0.8 + Math.random() * 0.2,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:      biasScore: Math.random() * 0.2, // Lower is better"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:      robustnessScore: 0.75 + Math.random() * 0.25,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        latency: 150 + Math.random() * 50, // ms"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        throughput: 10 + Math.random() * 5, // requests/sec"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        reliability: 0.95 + Math.random() * 0.05,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        harmfulOutputRate: Math.random() * 0.01, // <1%"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        biasDetectionRate: 0.85 + Math.random() * 0.15,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        jailbreakResistance: 0.9 + Math.random() * 0.1,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        contentFilterEffectiveness: 0.95 + Math.random() * 0.05,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        ticketResolutionImprovement: 0.25 + Math.random() * 0.15, // 25-40% improvement"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        userSatisfactionScore: 4.2 + Math.random() * 0.8, // 4.2-5.0"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/openai-harmony.ts:        operationalEfficiency: 0.3 + Math.random() * 0.2, // 30-50% improvement"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/integrations/spaces-integrations.js:    const userPlatforms = connectedPlatforms.filter(() => Math.random() > threshold);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/integrations/spaces-integrations.js:      const syncedEvents = Math.floor(Math.random() * 20) + 5;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/integrations/spaces-integrations.js:      spaceId: `space_${Math.floor(Math.random() * 100)}`,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/integrations/spaces-integrations.js:        accessCode: Math.floor(Math.random() * 1000000).toString(),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/integrations/spaces-integrations.js:        pin: Math.floor(Math.random() * 10000).toString()"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/integrations/spaces-integrations.js:      recordingEnabled: bookingDetails.recordingEnabled || Math.random() > 0.5,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/integrations/spaces-integrations.js:      waitingRoomEnabled: bookingDetails.waitingRoomEnabled || Math.random() > 0.5,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/booking/booking-engine.js:        const spaceCapacity = Math.floor(Math.random() * 20) + 5;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/booking/booking-engine.js:    if (Math.random() > 0.8) {"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/booking/booking-engine.js:        spaceId: `space_${Math.floor(Math.random() * 100)}`,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/booking/booking-engine.js:      canBookRecurring: Math.random() > 0.3,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/booking/booking-engine.js:      canBookVipSpaces: Math.random() > 0.7,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-custom-models.ts:      subcategories[bestCategory][Math.floor(Math.random() * subcategories[bestCategory].length)];"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-custom-models.ts:    const incidentProbability = Math.min(0.99, overallRisk + Math.random() * 0.1);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-custom-models.ts:        confidence_score: 0.85 + Math.random() * 0.1,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/nova-custom-models.ts:      reusability_score: 0.7 + Math.random() * 0.3,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/itsm-training-data.js:        customerSatisfaction: Math.random() * 5, // Simulated satisfaction score"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/itsm-training-data.js:        resolutionTime: Math.floor(Math.random() * 1440) + 30 // 30 minutes to 24 hours"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/itsm-training-data.ts:        customerSatisfaction: Math.random() * 5, // Simulated satisfaction score"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/itsm-training-data.ts:        resolutionTime: Math.floor(Math.random() * 1440) + 30 // 30 minutes to 24 hours"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          utilization: Math.random() * 100,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          averageDuration: Math.floor(Math.random() * 120) + 30"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          totalBookings: Math.floor(Math.random() * 50) + 10,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          uniqueUsers: Math.floor(Math.random() * 20) + 5,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          averageGroupSize: Math.floor(Math.random() * 8) + 2"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          trend: Math.random() > 0.5 ? 'increasing' : 'decreasing',"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          changeRate: Math.random() * 20,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          responseTime: Math.random() * 1000,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          availability: Math.random() * 100,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          satisfaction: Math.random() * 5"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:    return patterns[Math.floor(Math.random() * patterns.length)];"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:      totalSpaces: Math.floor(Math.random() * 100) + 50,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:      availableSpaces: Math.floor(Math.random() * 50) + 20,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:      occupiedSpaces: Math.floor(Math.random() * 30) + 10,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:      utilizationRate: Math.random() * 100,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:        bookings: Math.floor(Math.random() * 20) + 5,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:        utilization: Math.random() * 100"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          utilization: Math.random() * 80 + 20"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          utilization: Math.random() * 20"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:      utilization: Math.random() * 100,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:      bookings: Math.floor(Math.random() * 50) + 10"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:        utilization: Math.random() * 100,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          totalBookings: Math.floor(Math.random() * 100) + 20,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          averageDuration: Math.floor(Math.random() * 120) + 30,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:          userSatisfaction: Math.random() * 5"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:        utilization: Math.random() * 100,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:        bookings: Math.floor(Math.random() * 10) + 1"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:    return recommendations.slice(0, Math.floor(Math.random() * 3) + 1);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/ai-monitoring.ts:      id: Math.random().toString(36).substr(2, 9),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/ai-monitoring.ts:        const importance = Math.random() * 0.8 + 0.1; // 0.1 to 0.9"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/iot/iot-manager.js:        uptime: Math.random() * 100,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/iot/iot-manager.js:        dataPoints: Math.floor(Math.random() * 1000) + 100,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/iot/iot-manager.js:        averageValue: Math.random() * 50 + 25,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/iot/iot-manager.js:        minValue: Math.random() * 20,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/iot/iot-manager.js:        maxValue: Math.random() * 30 + 70,"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/advanced-features.ts:      Math.random().toString(36).substr(2, 8).toUpperCase(),"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/advanced-features.ts:    return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/advanced-features.ts:    return colors[Math.floor(Math.random() * colors.length)];"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/visitors/visitor-manager.js:    return `BADGE-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;"
+      },
+      {
+        "pattern": "Math.random()",
+        "line": "apps/api/lib/visitors/visitor-manager.js:      passed: Math.random() > 0.1, // 90% pass rate"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/unified/src/utils/index.ts: * Handle API operations with graceful fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/unified/src/utils/index.ts:    console.info(fallbackMessage || 'Using mock data (development mode)');"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/unified/src/utils/index.ts:    console.warn('API call failed, falling back to mock data:', {"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/unified/src/services/connectionService.ts:    // Check if we're using mock data mode for demo screenshots"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/ai-fabric.js:    // For now, generate mock sessions based on monitoring data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:// Production data access layer - uses database instead of mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      logger.warn('Database not available, using mock data:', dbError.message);"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      logger.warn('Database not available, using mock data:', dbError.message);"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      logger.warn('Database not available, using mock data:', dbError.message);"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      logger.warn('Database not available, using mock data:', dbError.message);"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      logger.warn('Database not available, using mock data:', dbError.message);"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/routes/nova-tv.js:      // Fallback to mock data when DB unavailable"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/database/factory.js:      // In development mode, immediately create mock database if no real database is configured"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/database/factory.js:        logger.info('🔧 Development mode detected - creating mock database');"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/database/factory.js:            // In development mode, create mock database methods"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/database/factory.js:   * Create mock database for development mode"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/database/factory.js:    logger.warn('🔧 Creating mock database for development mode.');"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/src/routes/nova-tv.ts:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/src/routes/nova-tv.ts:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/src/routes/nova-tv.ts:      console.warn('Database not available, using mock data:', dbError.message);"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/src/routes/nova-tv.ts:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/src/routes/nova-tv.ts:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/src/routes/nova-tv.ts:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/src/routes/nova-tv.ts:      // Fallback to mock data"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/src/routes/nova-tv-digital-signage.js:      // Fallback to mock data if database fails"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/src/routes/nova-tv-digital-signage.js:      // Fallback to mock data if database fails"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/src/routes/nova-tv-digital-signage.js:        warning: 'Database query failed - showing mock data',"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/setup-env.js:# Enable mock database for development"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/lib/nova-ai-agent-analytics.ts:    // For now, return mock data based on tenantId and timeframe"
+      },
+      {
+        "pattern": "mock.*data",
+        "line": "apps/api/lib/analytics/spaces-analytics.js:      // For now, return mock data"
+      },
+      {
+        "pattern": "demo.*data",
+        "line": "apps/unified/src/services/liveApiServices.ts: * Replaces all demo data with real API calls"
+      },
+      {
+        "pattern": "demo.*data",
+        "line": "apps/api/services/cmdb/DiscoveryService.js:      // For demonstration, we'll simulate some data"
+      },
+      {
+        "pattern": "demo.*data",
+        "line": "apps/api/services/cmdb/DiscoveryService.js:      // For demonstration, we'll simulate some data"
+      },
+      {
+        "pattern": "demo.*data",
+        "line": "apps/api/services/cmdb/DiscoveryService.js:      // For demonstration, we'll simulate some database instances based on config"
+      },
+      {
+        "pattern": "demo.*data",
+        "line": "apps/api/src/routes/nova-tv.js:// Initialize memory stores with demo data"
+      },
+      {
+        "pattern": "demo.*data",
+        "line": "apps/api/src/routes/nova-tv.ts:// Initialize with some demo data"
+      },
+      {
+        "pattern": "demo.*data",
+        "line": "apps/api/lib/nova-ai-agent-analytics.ts:      // Use userId as a proxy for demographic analysis since userDemographic doesn't exist in the data model"
+      }
+    ]
+  }
+}

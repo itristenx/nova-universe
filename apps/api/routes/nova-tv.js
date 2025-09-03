@@ -5,46 +5,250 @@ import { logger } from '../logger.js';
 
 const router = express.Router();
 
-// Mock data store (fallback when database not available)
-const mockData = {
-  dashboards: new Map(),
-  devices: new Map(),
-  templates: new Map(),
-  content: new Map(),
-  analytics: new Map(),
-  authSessions: new Map(),
-  activations: new Map(),
-};
+// Production data access layer - uses database instead of mock data
+async function getDashboardsFromDB(filters = {}) {
+  try {
+    let query = 'SELECT * FROM nova_tv_dashboards';
+    const params = [];
+    const conditions = [];
 
-// Initialize with some demo data
-initializeMockData();
+    if (filters.department) {
+      conditions.push('department = ?');
+      params.push(filters.department);
+    }
 
-function initializeMockData() {
-  // Demo dashboard
-  const demoDashboard = {
-    id: 'demo-dashboard',
-    name: 'IT Department Dashboard',
-    description: 'Main dashboard for IT department',
-    department: 'IT',
-    createdBy: 'user-1',
-    configuration: {
-      layout: 'grid',
-      theme: 'dark',
-      refreshInterval: 30000,
-      widgets: [
-        { type: 'tickets', position: { x: 0, y: 0, w: 6, h: 4 } },
-        { type: 'system-health', position: { x: 6, y: 0, w: 6, h: 4 } },
-        { type: 'announcements', position: { x: 0, y: 4, w: 12, h: 3 } },
-      ],
-    },
-    isActive: true,
-    isPublic: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    creator: { id: 'user-1', name: 'Nova Admin', email: 'admin@nova.com' },
+    if (filters.isPublic !== undefined) {
+      conditions.push('is_public = ?');
+      params.push(filters.isPublic);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    query += ' ORDER BY created_at DESC';
+
+    const result = await db.all(query, params);
+    return result.map(transformDashboardFromDB);
+  } catch (error) {
+    logger.error('Error fetching dashboards from database:', error);
+    return [];
+  }
+}
+
+async function getDashboardFromDB(id) {
+  try {
+    const result = await db.get('SELECT * FROM nova_tv_dashboards WHERE id = ?', [id]);
+    return result ? transformDashboardFromDB(result) : null;
+  } catch (error) {
+    logger.error('Error fetching dashboard from database:', error);
+    return null;
+  }
+}
+
+async function createDashboardInDB(dashboardData) {
+  try {
+    const query = `
+      INSERT INTO nova_tv_dashboards 
+      (id, name, description, department, created_by, configuration, is_active, is_public, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    const params = [
+      dashboardData.id,
+      dashboardData.name,
+      dashboardData.description,
+      dashboardData.department,
+      dashboardData.createdBy,
+      JSON.stringify(dashboardData.configuration),
+      dashboardData.isActive,
+      dashboardData.isPublic,
+      dashboardData.createdAt,
+      dashboardData.updatedAt
+    ];
+
+    await db.run(query, params);
+    return dashboardData;
+  } catch (error) {
+    logger.error('Error creating dashboard in database:', error);
+    throw error;
+  }
+}
+
+async function updateDashboardInDB(id, updates) {
+  try {
+    const setClause = Object.keys(updates)
+      .filter(key => key !== 'id')
+      .map(key => `${key} = ?`)
+      .join(', ');
+    
+    const params = Object.keys(updates)
+      .filter(key => key !== 'id')
+      .map(key => {
+        if (key === 'configuration') {
+          return JSON.stringify(updates[key]);
+        }
+        return updates[key];
+      });
+    params.push(id);
+
+    const query = `UPDATE nova_tv_dashboards SET ${setClause}, updated_at = datetime('now') WHERE id = ?`;
+    await db.run(query, params);
+    
+    return await getDashboardFromDB(id);
+  } catch (error) {
+    logger.error('Error updating dashboard in database:', error);
+    throw error;
+  }
+}
+
+async function deleteDashboardFromDB(id) {
+  try {
+    await db.run('DELETE FROM nova_tv_dashboards WHERE id = ?', [id]);
+    return true;
+  } catch (error) {
+    logger.error('Error deleting dashboard from database:', error);
+    throw error;
+  }
+}
+
+// Production data access layer - devices
+async function getDevicesFromDB(filters = {}) {
+  try {
+    let query = 'SELECT * FROM nova_tv_devices';
+    const params = [];
+    const conditions = [];
+
+    if (filters.status) {
+      conditions.push('status = ?');
+      params.push(filters.status);
+    }
+
+    if (filters.location) {
+      conditions.push('location = ?');
+      params.push(filters.location);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    query += ' ORDER BY created_at DESC';
+
+    const result = await db.all(query, params);
+    return result.map(transformDeviceFromDB);
+  } catch (error) {
+    logger.error('Error fetching devices from database:', error);
+    return [];
+  }
+}
+
+async function getDeviceFromDB(id) {
+  try {
+    const result = await db.get('SELECT * FROM nova_tv_devices WHERE id = ?', [id]);
+    return result ? transformDeviceFromDB(result) : null;
+  } catch (error) {
+    logger.error('Error fetching device from database:', error);
+    return null;
+  }
+}
+
+async function getDeviceByDeviceIdFromDB(deviceId) {
+  try {
+    const result = await db.get('SELECT * FROM nova_tv_devices WHERE device_id = ?', [deviceId]);
+    return result ? transformDeviceFromDB(result) : null;
+  } catch (error) {
+    logger.error('Error fetching device by device_id from database:', error);
+    return null;
+  }
+}
+
+async function createDeviceInDB(deviceData) {
+  try {
+    const query = `
+      INSERT INTO nova_tv_devices 
+      (id, name, device_id, location, status, last_ping, configuration, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    const params = [
+      deviceData.id,
+      deviceData.name,
+      deviceData.deviceId,
+      deviceData.location,
+      deviceData.status,
+      deviceData.lastPing,
+      JSON.stringify(deviceData.configuration || {}),
+      deviceData.createdAt,
+      deviceData.updatedAt
+    ];
+
+    await db.run(query, params);
+    return deviceData;
+  } catch (error) {
+    logger.error('Error creating device in database:', error);
+    throw error;
+  }
+}
+
+async function updateDeviceInDB(id, updates) {
+  try {
+    const setClause = Object.keys(updates)
+      .filter(key => key !== 'id')
+      .map(key => `${key} = ?`)
+      .join(', ');
+    
+    const params = Object.keys(updates)
+      .filter(key => key !== 'id')
+      .map(key => {
+        if (key === 'configuration') {
+          return JSON.stringify(updates[key]);
+        }
+        return updates[key];
+      });
+    params.push(id);
+
+    const query = `UPDATE nova_tv_devices SET ${setClause}, updated_at = datetime('now') WHERE id = ?`;
+    await db.run(query, params);
+    
+    return await getDeviceFromDB(id);
+  } catch (error) {
+    logger.error('Error updating device in database:', error);
+    throw error;
+  }
+}
+
+function transformDeviceFromDB(dbRow) {
+  return {
+    id: dbRow.id,
+    name: dbRow.name,
+    deviceId: dbRow.device_id,
+    location: dbRow.location,
+    status: dbRow.status,
+    lastPing: dbRow.last_ping,
+    configuration: typeof dbRow.configuration === 'string' 
+      ? JSON.parse(dbRow.configuration) 
+      : dbRow.configuration,
+    createdAt: dbRow.created_at,
+    updatedAt: dbRow.updated_at,
   };
+}
 
-  mockData.dashboards.set(demoDashboard.id, demoDashboard);
+function transformDashboardFromDB(dbRow) {
+  return {
+    id: dbRow.id,
+    name: dbRow.name,
+    description: dbRow.description,
+    department: dbRow.department,
+    createdBy: dbRow.created_by,
+    configuration: typeof dbRow.configuration === 'string' 
+      ? JSON.parse(dbRow.configuration) 
+      : dbRow.configuration,
+    isActive: Boolean(dbRow.is_active),
+    isPublic: Boolean(dbRow.is_public),
+    createdAt: dbRow.created_at,
+    updatedAt: dbRow.updated_at,
+  };
 }
 
 // Enhanced auth middleware
@@ -70,21 +274,20 @@ const requireAuth = (req, res, next) => {
 router.get('/dashboards', requireAuth, async (req, res) => {
   try {
     const { department, createdBy, isActive } = req.query;
+    
+    const filters = {};
+    if (department) filters.department = department;
+    if (isActive !== undefined) filters.isPublic = isActive === 'true';
 
-    let dashboards = Array.from(mockData.dashboards.values());
+    const dashboards = await getDashboardsFromDB(filters);
 
-    // Apply filters
-    if (department) {
-      dashboards = dashboards.filter((d) => d.department === department);
-    }
+    // Apply additional filters that aren't in DB query
+    let filteredDashboards = dashboards;
     if (createdBy) {
-      dashboards = dashboards.filter((d) => d.createdBy === createdBy);
-    }
-    if (isActive !== undefined) {
-      dashboards = dashboards.filter((d) => d.isActive === (isActive === 'true'));
+      filteredDashboards = dashboards.filter((d) => d.createdBy === createdBy);
     }
 
-    res.json(dashboards);
+    res.json(filteredDashboards);
   } catch (error) {
     logger.error('Error fetching dashboards:', error);
     res.status(500).json({ error: 'Failed to fetch dashboards' });
@@ -95,7 +298,7 @@ router.get('/dashboards/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const dashboard = mockData.dashboards.get(id);
+    const dashboard = await getDashboardFromDB(id);
 
     if (!dashboard) {
       return res.status(404).json({ error: 'Dashboard not found' });
@@ -116,16 +319,15 @@ router.post('/dashboards', requireAuth, async (req, res) => {
       createdBy: req.user.id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      creator: req.user,
     };
 
-    mockData.dashboards.set(dashboardData.id, dashboardData);
+    const createdDashboard = await createDashboardInDB(dashboardData);
 
     logger.info('Created Nova TV dashboard:', {
       dashboardId: dashboardData.id,
       name: dashboardData.name,
     });
-    res.status(201).json(dashboardData);
+    res.status(201).json(createdDashboard);
   } catch (error) {
     logger.error('Error creating dashboard:', error);
     res.status(500).json({ error: 'Failed to create dashboard' });
@@ -137,18 +339,12 @@ router.put('/dashboards/:id', requireAuth, async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
-    const existingDashboard = mockData.dashboards.get(id);
+    const existingDashboard = await getDashboardFromDB(id);
     if (!existingDashboard) {
       return res.status(404).json({ error: 'Dashboard not found' });
     }
 
-    const updatedDashboard = {
-      ...existingDashboard,
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-
-    mockData.dashboards.set(id, updatedDashboard);
+    const updatedDashboard = await updateDashboardInDB(id, updates);
 
     logger.info('Updated Nova TV dashboard:', { dashboardId: id });
     res.json(updatedDashboard);
@@ -162,11 +358,12 @@ router.delete('/dashboards/:id', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mockData.dashboards.has(id)) {
+    const existingDashboard = await getDashboardFromDB(id);
+    if (!existingDashboard) {
       return res.status(404).json({ error: 'Dashboard not found' });
     }
 
-    mockData.dashboards.delete(id);
+    await deleteDashboardFromDB(id);
 
     logger.info('Deleted Nova TV dashboard:', { dashboardId: id });
     res.status(204).send();
@@ -181,7 +378,7 @@ router.post('/dashboards/:id/duplicate', requireAuth, async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
 
-    const originalDashboard = mockData.dashboards.get(id);
+    const originalDashboard = await getDashboardFromDB(id);
 
     if (!originalDashboard) {
       return res.status(404).json({ error: 'Dashboard not found' });
@@ -194,13 +391,12 @@ router.post('/dashboards/:id/duplicate', requireAuth, async (req, res) => {
       createdBy: req.user.id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      creator: req.user,
     };
 
-    mockData.dashboards.set(newDashboard.id, newDashboard);
+    const createdDashboard = await createDashboardInDB(newDashboard);
 
     logger.info('Duplicated Nova TV dashboard:', { originalId: id, newId: newDashboard.id });
-    res.status(201).json(newDashboard);
+    res.status(201).json(createdDashboard);
   } catch (error) {
     logger.error('Error duplicating dashboard:', error);
     res.status(500).json({ error: 'Failed to duplicate dashboard' });
