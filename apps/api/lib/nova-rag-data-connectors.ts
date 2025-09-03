@@ -768,49 +768,62 @@ export class NovaRAGDataConnectors extends EventEmitter {
   private async initializeDefaultConnectors(): Promise<void> {
     const defaultConnectors: DataSourceConfig[] = [
       {
-        id: 'knowledge_base',
-        name: 'Knowledge Base Articles',
+        id: 'nova_knowledge_base',
+        name: 'Nova Knowledge Base Articles (Primary Source)',
         type: 'knowledge_base',
         enabled: true,
-        syncInterval: 5 * 60 * 1000, // 5 minutes
+        syncInterval: 2 * 60 * 1000, // 2 minutes - Frequent sync for primary source
         incrementalSync: true,
         rbacEnabled: true,
         tenantScoped: true,
-        config: {},
+        config: {
+          priority: 'highest',
+          isNovaSource: true,
+          dataQuality: 'high',
+          sourceTrustLevel: 'primary',
+        },
       },
       {
-        id: 'support_tickets',
-        name: 'Support Tickets',
+        id: 'nova_support_tickets',
+        name: 'Nova Support Tickets (Operational Data)',
         type: 'tickets',
         enabled: true,
-        syncInterval: 10 * 60 * 1000, // 10 minutes
+        syncInterval: 5 * 60 * 1000, // 5 minutes - High priority for operational data
         incrementalSync: true,
         rbacEnabled: true,
         tenantScoped: true,
         config: {
           includeClosedTickets: true,
           maxAge: 30, // days
+          priority: 'highest',
+          isNovaSource: true,
+          dataQuality: 'high',
+          sourceTrustLevel: 'primary',
         },
       },
       {
-        id: 'service_catalog',
-        name: 'Service Catalog',
+        id: 'nova_service_catalog',
+        name: 'Nova Service Catalog (Authoritative)',
         type: 'service_catalog',
         enabled: true,
-        syncInterval: 30 * 60 * 1000, // 30 minutes
+        syncInterval: 10 * 60 * 1000, // 10 minutes - Authoritative source
         incrementalSync: false,
         rbacEnabled: false, // Service catalog is generally public
         tenantScoped: false,
         config: {
           includeInactive: false,
+          priority: 'highest',
+          isNovaSource: true,
+          dataQuality: 'high',
+          sourceTrustLevel: 'authoritative',
         },
       },
       {
-        id: 'monitoring_data',
-        name: 'Monitoring Data',
+        id: 'nova_monitoring_data',
+        name: 'Nova Monitoring Data (Real-time)',
         type: 'monitoring',
         enabled: true,
-        syncInterval: 15 * 60 * 1000, // 15 minutes
+        syncInterval: 5 * 60 * 1000, // 5 minutes - Real-time Nova operational data
         incrementalSync: true,
         rbacEnabled: true,
         tenantScoped: true,
@@ -818,6 +831,49 @@ export class NovaRAGDataConnectors extends EventEmitter {
           includeGoAlert: true,
           includeSentinel: true,
           maxAlerts: 100,
+          priority: 'highest',
+          isNovaSource: true,
+          dataQuality: 'high',
+          sourceTrustLevel: 'primary',
+        },
+      },
+      {
+        id: 'nova_workflows',
+        name: 'Nova Workflow Patterns (Source of Truth)',
+        type: 'workflows',
+        enabled: true,
+        syncInterval: 3 * 60 * 1000, // 3 minutes - Critical for workflow optimization
+        incrementalSync: true,
+        rbacEnabled: true,
+        tenantScoped: true,
+        config: {
+          includeCompleted: true,
+          includeInProgress: true,
+          maxAge: 90, // days
+          priority: 'highest',
+          isNovaSource: true,
+          dataQuality: 'high',
+          sourceTrustLevel: 'authoritative',
+          workflowTypes: ['service_request', 'incident', 'change', 'problem'],
+        },
+      },
+      {
+        id: 'nova_historical_data',
+        name: 'Nova Historical Patterns (Learning Source)',
+        type: 'historical',
+        enabled: true,
+        syncInterval: 60 * 60 * 1000, // 60 minutes - Historical data for pattern learning
+        incrementalSync: true,
+        rbacEnabled: true,
+        tenantScoped: true,
+        config: {
+          timeRange: '1 year',
+          priority: 'high',
+          isNovaSource: true,
+          dataQuality: 'high',
+          sourceTrustLevel: 'primary',
+          includePerformanceMetrics: true,
+          includeUserBehavior: true,
         },
       },
     ];

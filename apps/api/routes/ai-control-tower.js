@@ -8,6 +8,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { body, param, query, validationResult } from 'express-validator';
 import { aiControlTower } from '../lib/ai-control-tower.js';
+import { aiMonitoringSystem } from '../lib/ai-monitoring.js';
 import { authenticateJWT as authMiddleware } from '../middleware/auth.js';
 import { logger } from '../logger.js';
 
@@ -767,6 +768,524 @@ router.post(
     }
   },
 );
+
+/**
+ * @swagger
+ * /api/ai-control-tower/external-providers/config:
+ *   get:
+ *     summary: Get external provider configuration
+ *     tags: [AI Control Tower - External Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: External provider configuration retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     enabled:
+ *                       type: boolean
+ *                     allowedProviders:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     lastModified:
+ *                       type: string
+ *                       format: date-time
+ *                     modifiedBy:
+ *                       type: string
+ *                     totalExternalProviders:
+ *                       type: integer
+ *                     activeExternalProviders:
+ *                       type: integer
+ *       403:
+ *         description: Admin privileges required
+ */
+router.get('/external-providers/config', async (req, res) => {
+  try {
+    // Check admin privileges
+    if (!req.user.roles?.includes('admin')) {
+      return res.status(403).json({ 
+        success: false,
+        error: 'Admin privileges required for external provider configuration'
+      });
+    }
+
+    const { aiFabric } = await import('../lib/ai-fabric.js');
+    const config = aiFabric.getExternalProviderConfig();
+
+    res.json({
+      success: true,
+      data: config
+    });
+  } catch (error) {
+    logger.error('Failed to get external provider configuration:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve external provider configuration',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/ai-control-tower/external-providers/enable:
+ *   post:
+ *     summary: Enable external AI providers (admin only)
+ *     tags: [AI Control Tower - External Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               allowedProviders:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [openai-gpt4, anthropic-claude, azure-openai]
+ *                 description: List of external providers to enable (empty array means all available)
+ *                 example: ["openai-gpt4"]
+ *     responses:
+ *       200:
+ *         description: External providers enabled successfully
+ *       403:
+ *         description: Admin privileges required
+ */
+router.post('/external-providers/enable', async (req, res) => {
+  try {
+    // Check admin privileges
+    if (!req.user.roles?.includes('admin')) {
+      return res.status(403).json({ 
+        success: false,
+        error: 'Admin privileges required to enable external providers'
+      });
+    }
+
+    const { allowedProviders = [] } = req.body;
+
+    // Validate provider IDs
+    const validProviders = ['openai-gpt4', 'anthropic-claude', 'azure-openai'];
+    const invalidProviders = allowedProviders.filter(p => !validProviders.includes(p));
+    
+    if (invalidProviders.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid provider IDs',
+        invalidProviders,
+        validProviders
+      });
+    }
+
+    const { aiFabric } = await import('../lib/ai-fabric.js');
+    await aiFabric.enableExternalProviders(req.user.id, allowedProviders);
+
+    // Record audit event
+    try {
+      await aiMonitoringSystem.recordAuditEvent({
+        eventType: 'admin_action',
+        severity: 'medium',
+        userId: req.user.id,
+        metadata: {
+          action: 'external_providers_enabled',
+          allowedProviders,
+          totalEnabled: allowedProviders.length
+        },
+        complianceFlags: ['admin_configuration_change'],
+        riskScore: 0.3
+      });
+    } catch (auditError) {
+      logger.warn('Failed to record audit event:', { message: auditError.message });
+    }
+
+    res.json({
+      success: true,
+      message: 'External providers enabled successfully',
+      data: {
+        enabled: true,
+        allowedProviders,
+        enabledBy: req.user.id,
+        enabledAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to enable external providers:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to enable external providers',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/ai-control-tower/external-providers/disable:
+ *   post:
+ *     summary: Disable all external AI providers (admin only)
+ *     tags: [AI Control Tower - External Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: External providers disabled successfully
+ *       403:
+ *         description: Admin privileges required
+ */
+router.post('/external-providers/disable', async (req, res) => {
+  try {
+    // Check admin privileges
+    if (!req.user.roles?.includes('admin')) {
+      return res.status(403).json({ 
+        success: false,
+        error: 'Admin privileges required to disable external providers'
+      });
+    }
+
+    const { aiFabric } = await import('../lib/ai-fabric.js');
+    await aiFabric.disableExternalProviders(req.user.id);
+
+    // Record audit event
+    try {
+      await aiMonitoringSystem.recordAuditEvent({
+        eventType: 'admin_action',
+        severity: 'medium',
+        userId: req.user.id,
+        metadata: {
+          action: 'external_providers_disabled',
+          reason: 'admin_request'
+        },
+        complianceFlags: ['admin_configuration_change'],
+        riskScore: 0.3
+      });
+    } catch (auditError) {
+      logger.warn('Failed to record audit event:', { message: auditError.message });
+    }
+
+    res.json({
+      success: true,
+      message: 'External providers disabled successfully',
+      data: {
+        enabled: false,
+        disabledBy: req.user.id,
+        disabledAt: new Date().toISOString(),
+        note: 'Nova models remain active and prioritized'
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to disable external providers:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to disable external providers',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/ai-control-tower/external-providers/update:
+ *   put:
+ *     summary: Update allowed external providers (admin only)
+ *     tags: [AI Control Tower - External Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - allowedProviders
+ *             properties:
+ *               allowedProviders:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [openai-gpt4, anthropic-claude, azure-openai]
+ *                 description: Updated list of allowed external providers
+ *     responses:
+ *       200:
+ *         description: External providers updated successfully
+ *       403:
+ *         description: Admin privileges required
+ */
+router.put('/external-providers/update', async (req, res) => {
+  try {
+    // Check admin privileges
+    if (!req.user.roles?.includes('admin')) {
+      return res.status(403).json({ 
+        success: false,
+        error: 'Admin privileges required to update external providers'
+      });
+    }
+
+    const { allowedProviders } = req.body;
+
+    if (!Array.isArray(allowedProviders)) {
+      return res.status(400).json({
+        success: false,
+        error: 'allowedProviders must be an array'
+      });
+    }
+
+    // Validate provider IDs
+    const validProviders = ['openai-gpt4', 'anthropic-claude', 'azure-openai'];
+    const invalidProviders = allowedProviders.filter(p => !validProviders.includes(p));
+    
+    if (invalidProviders.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid provider IDs',
+        invalidProviders,
+        validProviders
+      });
+    }
+
+    const { aiFabric } = await import('../lib/ai-fabric.js');
+    await aiFabric.updateAllowedExternalProviders(req.user.id, allowedProviders);
+
+    // Record audit event
+    try {
+      await aiMonitoringSystem.recordAuditEvent({
+        eventType: 'admin_action',
+        severity: 'medium',
+        userId: req.user.id,
+        metadata: {
+          action: 'external_providers_updated',
+          allowedProviders,
+          totalAllowed: allowedProviders.length
+        },
+        complianceFlags: ['admin_configuration_change'],
+        riskScore: 0.3
+      });
+    } catch (auditError) {
+      logger.warn('Failed to record audit event:', { message: auditError.message });
+    }
+
+    res.json({
+      success: true,
+      message: 'External providers configuration updated successfully',
+      data: {
+        allowedProviders,
+        updatedBy: req.user.id,
+        updatedAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to update external providers:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update external providers',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/ai-control-tower/providers/status:
+ *   get:
+ *     summary: Get all AI provider status with Nova/External categorization
+ *     tags: [AI Control Tower - Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Provider status retrieved successfully
+ */
+router.get('/providers/status', async (req, res) => {
+  try {
+    const { aiFabric } = await import('../lib/ai-fabric.js');
+    const status = aiFabric.getStatus();
+    const externalConfig = aiFabric.getExternalProviderConfig();
+    
+    const providers = status.providers || [];
+    
+    // Categorize providers
+    const novaProviders = providers.filter(p => p.isNova);
+    const externalProviders = providers.filter(p => !p.isNova);
+    
+    res.json({
+      success: true,
+      data: {
+        summary: {
+          totalProviders: providers.length,
+          novaProviders: novaProviders.length,
+          externalProviders: externalProviders.length,
+          activeNovaProviders: novaProviders.filter(p => p.isActive).length,
+          activeExternalProviders: externalProviders.filter(p => p.isActive).length
+        },
+        externalProviderConfig: externalConfig,
+        providers: {
+          nova: novaProviders.map(p => ({
+            id: p.id,
+            name: p.name,
+            type: p.type,
+            capabilities: p.capabilities,
+            isActive: p.isActive,
+            canDisable: p.canDisable || false,
+            healthStatus: p.healthStatus,
+            lastHealthCheck: p.lastHealthCheck,
+            priority: 'always_highest'
+          })),
+          external: externalProviders.map(p => ({
+            id: p.id,
+            name: p.name,
+            type: p.type,
+            capabilities: p.capabilities,
+            isActive: p.isActive,
+            canDisable: p.canDisable !== false,
+            healthStatus: p.healthStatus,
+            lastHealthCheck: p.lastHealthCheck,
+            adminControlled: true,
+            allowedByAdmin: externalConfig.enabled && (
+              externalConfig.allowedProviders.length === 0 || 
+              externalConfig.allowedProviders.includes(p.id)
+            )
+          }))
+        }
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to get provider status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve provider status',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/ai-control-tower/providers/validate-config:
+ *   post:
+ *     summary: Validate provider configuration changes (admin only)
+ *     tags: [AI Control Tower - Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               action:
+ *                 type: string
+ *                 enum: [enable_external, disable_external, update_external]
+ *               allowedProviders:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Configuration validated successfully
+ *       400:
+ *         description: Configuration validation failed
+ *       403:
+ *         description: Admin privileges required
+ */
+router.post('/providers/validate-config', async (req, res) => {
+  try {
+    // Check admin privileges
+    if (!req.user.roles?.includes('admin')) {
+      return res.status(403).json({ 
+        success: false,
+        error: 'Admin privileges required for provider configuration validation'
+      });
+    }
+
+    const { action, allowedProviders = [] } = req.body;
+    const validActions = ['enable_external', 'disable_external', 'update_external'];
+    
+    if (!validActions.includes(action)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid action',
+        validActions
+      });
+    }
+
+    const validationResult = {
+      valid: true,
+      warnings: [],
+      errors: [],
+      recommendations: []
+    };
+
+    // Validate provider IDs if provided
+    if (allowedProviders.length > 0) {
+      const validProviders = ['openai-gpt4', 'anthropic-claude', 'azure-openai'];
+      const invalidProviders = allowedProviders.filter(p => !validProviders.includes(p));
+      
+      if (invalidProviders.length > 0) {
+        validationResult.valid = false;
+        validationResult.errors.push({
+          field: 'allowedProviders',
+          message: 'Invalid provider IDs',
+          invalidProviders,
+          validProviders
+        });
+      }
+    }
+
+    // Check for potential issues
+    if (action === 'disable_external') {
+      validationResult.warnings.push({
+        type: 'availability',
+        message: 'Disabling external providers will limit AI capabilities to Nova models only',
+        impact: 'Reduced fallback options for AI requests'
+      });
+      
+      validationResult.recommendations.push({
+        type: 'monitoring',
+        message: 'Monitor Nova model performance closely after disabling external providers',
+        action: 'Set up enhanced monitoring for Nova model health and response times'
+      });
+    }
+
+    if (action === 'enable_external' && allowedProviders.length === 0) {
+      validationResult.warnings.push({
+        type: 'security',
+        message: 'Enabling all external providers increases attack surface',
+        recommendation: 'Consider limiting to specific providers only'
+      });
+    }
+
+    // Always remind about Nova model priority
+    validationResult.recommendations.push({
+      type: 'architecture',
+      message: 'Nova models will always maintain highest priority regardless of external provider settings',
+      detail: 'This configuration only affects fallback behavior when Nova models are unavailable'
+    });
+
+    res.json({
+      success: true,
+      data: validationResult
+    });
+  } catch (error) {
+    logger.error('Failed to validate provider configuration:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to validate provider configuration',
+      details: error.message
+    });
+  }
+});
 
 /**
  * @swagger
