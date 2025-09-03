@@ -90,6 +90,7 @@ const EmailAccountsPage = lazy(() => import('@pages/admin/EmailAccountsPage'));
 const NotificationsPage = lazy(() => import('@pages/admin/NotificationsPage'));
 const AdminTVActivation = lazy(() => import('@pages/admin/AdminTVActivation'));
 const DeviceManagementPage = lazy(() => import('@pages/admin/DeviceManagementPage'));
+const EnterpriseAppLauncher = lazy(() => import('@pages/admin/EnterpriseAppLauncher'));
 
 // Knowledge Base pages
 const KnowledgeBasePage = lazy(() => import('@pages/knowledge/KnowledgeBasePage'));
@@ -344,6 +345,7 @@ function App() {
                       <Route path="/admin/notifications" element={<NotificationsPage />} />
                       <Route path="/admin/tv-activate" element={<AdminTVActivation />} />
                       <Route path="/admin/devices" element={<DeviceManagementPage />} />
+                      <Route path="/admin/app-launcher" element={<EnterpriseAppLauncher />} />
 
                       {/* Nova TV routes */}
                       <Route path="/nova-tv" element={<NovaTVDashboard />} />
