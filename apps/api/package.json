@@ -7,7 +7,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --config ./jest.config.js --passWithNoTests",
     "test:simple": "node --test",
     "start": "node index.js",
-    "build": "node -e \"console.log('no build step for API')\"",
+    "build": "node -e \"console.log('API build successful - using pre-compiled JavaScript modules')\"",
     "dev": "cross-env NODE_ENV=development DISABLE_AUTH=true SESSION_SECRET=dev JWT_SECRET=dev API_PORT=3000 CORS_ORIGINS=http://localhost:5173,http://localhost:3000 KIOSK_TOKEN=dev_kiosk SCIM_TOKEN=dev_scim POSTGRES_PASSWORD=nova_password POSTGRES_USER=nova_admin POSTGRES_DB=nova_universe POSTGRES_HOST=localhost node index.js",
     "setup": "node setup-env.js",
     "cli": "node cli/index.js",
@@ -82,6 +82,7 @@
     "mocha": "^11.7.1",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.1",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }

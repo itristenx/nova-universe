@@ -1,0 +1,788 @@
+import { EventEmitter } from 'events';
+import * as tf from '@tensorflow/tfjs-node';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { createHash } from 'crypto';
+import { aiMonitoringSystem } from './ai-monitoring.js';
+/**
+ * Nova Local AI/ML System
+ * Provides in-house AI capabilities with continuous learning
+ */
+export class NovaLocalAI extends EventEmitter {
+    models = new Map();
+    loadedModels = new Map();
+    trainingQueue = [];
+    isTraining = false;
+    modelsPath;
+    feedbackBuffer = [];
+    retrainingThreshold = 100; // Number of feedback items before retraining
+    constructor() {
+        super();
+        this.modelsPath = process.env.NOVA_AI_MODELS_PATH || '/workspace/data/ai-models';
+        this.initializeDirectory();
+        this.loadExistingModels();
+        this.startContinuousLearning();
+    }
+    /**
+     * Initialize models directory
+     */
+    async initializeDirectory() {
+        try {
+            await fs.mkdir(this.modelsPath, { recursive: true });
+            await fs.mkdir(path.join(this.modelsPath, 'training'), { recursive: true });
+            await fs.mkdir(path.join(this.modelsPath, 'production'), { recursive: true });
+            await fs.mkdir(path.join(this.modelsPath, 'archive'), { recursive: true });
+        }
+        catch (error) {
+            console.error('Failed to initialize models directory:', error);
+        }
+    }
+    /**
+     * Load existing models from disk
+     */
+    async loadExistingModels() {
+        try {
+            const modelsFile = path.join(this.modelsPath, 'models.json');
+            const exists = await fs
+                .access(modelsFile)
+                .then(() => true)
+                .catch(() => false);
+            if (exists) {
+                const modelsData = await fs.readFile(modelsFile, 'utf-8');
+                const models = JSON.parse(modelsData);
+                for (const model of models) {
+                    this.models.set(model.id, model);
+                    if (model.status === 'ready') {
+                        await this.loadModel(model.id);
+                    }
+                }
+                console.log(`Loaded ${models.length} Nova AI models`);
+            }
+        }
+        catch (error) {
+            console.error('Failed to load existing models:', error);
+        }
+    }
+    /**
+     * Create a new AI model
+     */
+    async createModel(name, type, config) {
+        const modelId = createHash('sha256')
+            .update(`${name}-${type}-${Date.now()}`)
+            .digest('hex')
+            .substring(0, 16);
+        const model = {
+            id: modelId,
+            name,
+            version: '1.0.0',
+            type,
+            status: 'training',
+            trainingData: {
+                samples: 0,
+                features: 0,
+                lastUpdated: new Date(),
+            },
+            modelPath: path.join(this.modelsPath, 'production', modelId),
+            metadata: { config },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+        this.models.set(modelId, model);
+        await this.saveModelsMetadata();
+        await aiMonitoringSystem.recordAuditEvent({
+            type: 'model_created',
+            userId: 'system',
+            details: { modelId, name, type },
+            riskLevel: 'low',
+        });
+        this.emit('modelCreated', model);
+        return modelId;
+    }
+    /**
+     * Train a model with provided data
+     */
+    async trainModel(modelId, trainingData, config) {
+        const model = this.models.get(modelId);
+        if (!model) {
+            throw new Error(`Model ${modelId} not found`);
+        }
+        // Add to training queue
+        this.trainingQueue.push({ modelId, config, data: trainingData });
+        model.status = 'training';
+        model.trainingData = {
+            samples: trainingData.features.length,
+            features: trainingData.features[0]?.length || 0,
+            lastUpdated: new Date(),
+        };
+        this.models.set(modelId, model);
+        await this.saveModelsMetadata();
+        if (!this.isTraining) {
+            this.processTrainingQueue();
+        }
+        await aiMonitoringSystem.recordAuditEvent({
+            type: 'model_training_started',
+            userId: 'system',
+            details: { modelId, samples: trainingData.features.length },
+            riskLevel: 'medium',
+        });
+    }
+    /**
+     * Process training queue
+     */
+    async processTrainingQueue() {
+        if (this.isTraining || this.trainingQueue.length === 0) {
+            return;
+        }
+        this.isTraining = true;
+        while (this.trainingQueue.length > 0) {
+            const job = this.trainingQueue.shift();
+            await this.executeTraining(job.modelId, job.data, job.config);
+        }
+        this.isTraining = false;
+    }
+    /**
+     * Execute model training
+     */
+    async executeTraining(modelId, data, config) {
+        try {
+            const model = this.models.get(modelId);
+            // Create TensorFlow model based on type
+            let tfModel;
+            switch (model.type) {
+                case 'classification':
+                    tfModel = await this.createClassificationModel(data, config);
+                    break;
+                case 'regression':
+                    tfModel = await this.createRegressionModel(data, config);
+                    break;
+                case 'nlp':
+                    tfModel = await this.createNLPModel(data, config);
+                    break;
+                case 'prediction':
+                    tfModel = await this.createPredictionModel(data, config);
+                    break;
+                default:
+                    throw new Error(`Unsupported model type: ${model.type}`);
+            }
+            // Prepare training data
+            const xs = tf.tensor2d(data.features);
+            const ys = tf.tensor1d(data.labels);
+            // Training callbacks
+            const callbacks = {
+                onEpochEnd: (epoch, logs) => {
+                    this.emit('trainingProgress', {
+                        modelId,
+                        epoch,
+                        loss: logs.loss,
+                        accuracy: logs.accuracy,
+                    });
+                },
+            };
+            // Train the model
+            const history = await tfModel.fit(xs, ys, {
+                epochs: config.epochs,
+                batchSize: config.batchSize,
+                validationSplit: config.validationSplit,
+                callbacks,
+            });
+            // Save the trained model
+            await tfModel.save(`file://${model.modelPath}`);
+            // Update model metadata
+            const finalAccuracy = history.history.accuracy?.slice(-1)[0] || 0;
+            model.status = 'ready';
+            model.accuracy = finalAccuracy;
+            model.updatedAt = new Date();
+            this.models.set(modelId, model);
+            this.loadedModels.set(modelId, tfModel);
+            await this.saveModelsMetadata();
+            // Record training completion
+            await aiMonitoringSystem.recordMetric({
+                type: 'model_performance',
+                value: finalAccuracy,
+                metadata: { modelId, type: model.type, trainingTime: Date.now() },
+            });
+            // Cleanup tensors
+            xs.dispose();
+            ys.dispose();
+            this.emit('trainingCompleted', { modelId, accuracy: finalAccuracy });
+        }
+        catch (error) {
+            const model = this.models.get(modelId);
+            model.status = 'error';
+            this.models.set(modelId, model);
+            await aiMonitoringSystem.recordAuditEvent({
+                type: 'model_training_failed',
+                userId: 'system',
+                details: { modelId, error: error.message },
+                riskLevel: 'high',
+            });
+            throw error;
+        }
+    }
+    /**
+     * Create classification model
+     */
+    async createClassificationModel(data, config) {
+        const inputShape = data.features[0].length;
+        const numClasses = Math.max(...data.labels) + 1;
+        const model = tf.sequential({
+            layers: [
+                tf.layers.dense({
+                    inputShape: [inputShape],
+                    units: 128,
+                    activation: 'relu',
+                }),
+                tf.layers.dropout({ rate: 0.3 }),
+                tf.layers.dense({
+                    units: 64,
+                    activation: 'relu',
+                }),
+                tf.layers.dropout({ rate: 0.2 }),
+                tf.layers.dense({
+                    units: numClasses,
+                    activation: 'softmax',
+                }),
+            ],
+        });
+        model.compile({
+            optimizer: tf.train.adam(config.learningRate),
+            loss: 'sparseCategoricalCrossentropy',
+            metrics: ['accuracy'],
+        });
+        return model;
+    }
+    /**
+     * Create regression model
+     */
+    async createRegressionModel(data, config) {
+        const inputShape = data.features[0].length;
+        const model = tf.sequential({
+            layers: [
+                tf.layers.dense({
+                    inputShape: [inputShape],
+                    units: 64,
+                    activation: 'relu',
+                }),
+                tf.layers.dense({
+                    units: 32,
+                    activation: 'relu',
+                }),
+                tf.layers.dense({
+                    units: 1,
+                    activation: 'linear',
+                }),
+            ],
+        });
+        model.compile({
+            optimizer: tf.train.adam(config.learningRate),
+            loss: 'meanSquaredError',
+            metrics: ['meanAbsoluteError'],
+        });
+        return model;
+    }
+    /**
+     * Create NLP model (simplified)
+     */
+    async createNLPModel(data, config) {
+        const inputShape = data.features[0].length;
+        const vocabSize = Math.max(...data.features.flat()) + 1;
+        const embeddingDim = 128;
+        const model = tf.sequential({
+            layers: [
+                tf.layers.embedding({
+                    inputDim: vocabSize,
+                    outputDim: embeddingDim,
+                    inputLength: inputShape,
+                }),
+                tf.layers.globalAveragePooling1d(),
+                tf.layers.dense({
+                    units: 64,
+                    activation: 'relu',
+                }),
+                tf.layers.dense({
+                    units: 1,
+                    activation: 'sigmoid',
+                }),
+            ],
+        });
+        model.compile({
+            optimizer: tf.train.adam(config.learningRate),
+            loss: 'binaryCrossentropy',
+            metrics: ['accuracy'],
+        });
+        return model;
+    }
+    /**
+     * Create prediction model (time series)
+     */
+    async createPredictionModel(data, config) {
+        const inputShape = data.features[0].length;
+        const model = tf.sequential({
+            layers: [
+                tf.layers.lstm({
+                    units: 50,
+                    returnSequences: true,
+                    inputShape: [inputShape, 1],
+                }),
+                tf.layers.lstm({
+                    units: 50,
+                    returnSequences: false,
+                }),
+                tf.layers.dense({
+                    units: 25,
+                    activation: 'relu',
+                }),
+                tf.layers.dense({
+                    units: 1,
+                    activation: 'linear',
+                }),
+            ],
+        });
+        model.compile({
+            optimizer: tf.train.adam(config.learningRate),
+            loss: 'meanSquaredError',
+            metrics: ['meanAbsoluteError'],
+        });
+        return model;
+    }
+    /**
+     * Load a trained model into memory
+     */
+    async loadModel(modelId) {
+        const model = this.models.get(modelId);
+        if (!model || model.status !== 'ready') {
+            throw new Error(`Model ${modelId} not ready for loading`);
+        }
+        try {
+            const tfModel = await tf.loadLayersModel(`file://${model.modelPath}/model.json`);
+            this.loadedModels.set(modelId, tfModel);
+            await aiMonitoringSystem.recordAuditEvent({
+                type: 'model_loaded',
+                userId: 'system',
+                details: { modelId },
+                riskLevel: 'low',
+            });
+        }
+        catch (error) {
+            console.error(`Failed to load model ${modelId}:`, error);
+            throw error;
+        }
+    }
+    /**
+     * Make prediction using a trained model
+     */
+    async predict(request) {
+        const startTime = Date.now();
+        const model = this.models.get(request.modelId);
+        if (!model) {
+            throw new Error(`Model ${request.modelId} not found`);
+        }
+        if (!this.loadedModels.has(request.modelId)) {
+            await this.loadModel(request.modelId);
+        }
+        const tfModel = this.loadedModels.get(request.modelId);
+        try {
+            // Prepare input tensor
+            const inputTensor = tf.tensor2d([request.input]);
+            // Make prediction
+            const prediction = tfModel.predict(inputTensor);
+            const predictionData = await prediction.data();
+            // Calculate confidence based on model type
+            let confidence = 0;
+            let result;
+            if (model.type === 'classification') {
+                const probabilities = Array.from(predictionData);
+                confidence = Math.max(...probabilities);
+                result = probabilities.indexOf(confidence);
+            }
+            else {
+                result = predictionData[0];
+                confidence = Math.min(1, Math.max(0, 1 - Math.abs(result) / 100)); // Simple confidence
+            }
+            // Cleanup tensors
+            inputTensor.dispose();
+            prediction.dispose();
+            const processingTime = Date.now() - startTime;
+            // Record prediction metric
+            await aiMonitoringSystem.recordMetric({
+                type: 'model_prediction',
+                value: confidence,
+                metadata: {
+                    modelId: request.modelId,
+                    processingTime,
+                    userId: request.userId,
+                },
+            });
+            const predictionResult = {
+                prediction: result,
+                confidence,
+                modelUsed: request.modelId,
+                processingTime,
+                explanation: await this.generateExplanation(request, result),
+            };
+            this.emit('predictionMade', predictionResult);
+            return predictionResult;
+        }
+        catch (error) {
+            await aiMonitoringSystem.recordAuditEvent({
+                type: 'model_prediction_failed',
+                userId: request.userId || 'system',
+                details: { modelId: request.modelId, error: error.message },
+                riskLevel: 'medium',
+            });
+            throw error;
+        }
+    }
+    /**
+     * Generate explanation for prediction
+     */
+    async generateExplanation(request, result) {
+        // Simplified explanation - in production, use SHAP, LIME, or similar
+        const featureCount = request.input.length;
+        const confidence = result.confidence || 0.8;
+        const prediction = result.prediction || result;
+        // Analyze result for explanation factors
+        const factors = [];
+        // Primary factor based on confidence
+        if (confidence > 0.9) {
+            factors.push({ feature: 'high_confidence_prediction', importance: 0.8, value: 'high' });
+        }
+        else if (confidence > 0.7) {
+            factors.push({ feature: 'moderate_confidence_prediction', importance: 0.6, value: 'medium' });
+        }
+        else {
+            factors.push({ feature: 'low_confidence_prediction', importance: 0.4, value: 'low' });
+        }
+        // Secondary factor based on input complexity
+        if (featureCount > 10) {
+            factors.push({ feature: 'complex_input_analysis', importance: 0.3, value: 'high' });
+        }
+        else if (featureCount > 5) {
+            factors.push({ feature: 'moderate_input_analysis', importance: 0.2, value: 'medium' });
+        }
+        else {
+            factors.push({ feature: 'simple_input_analysis', importance: 0.1, value: 'low' });
+        }
+        // Result-specific factors
+        if (result.risk_level) {
+            factors.push({ feature: 'risk_assessment', importance: 0.4, value: result.risk_level });
+        }
+        if (result.category) {
+            factors.push({ feature: 'category_classification', importance: 0.3, value: result.category });
+        }
+        return {
+            method: 'feature_importance',
+            factors,
+            reasoning: `Prediction based on ${featureCount} input features with ${(confidence * 100).toFixed(1)}% confidence`,
+            confidence_breakdown: {
+                model_confidence: confidence,
+                input_quality: featureCount > 5 ? 'high' : 'medium',
+                prediction_stability: result.stability || 'stable',
+            },
+            result_analysis: {
+                prediction_type: typeof prediction,
+                has_risk_assessment: !!result.risk_level,
+                has_category: !!result.category,
+                result_complexity: Object.keys(result).length,
+            },
+        };
+    }
+    /**
+     * Submit learning feedback
+     */
+    async submitFeedback(feedback) {
+        this.feedbackBuffer.push(feedback);
+        await aiMonitoringSystem.recordAuditEvent({
+            type: 'learning_feedback_received',
+            userId: 'system',
+            details: {
+                predictionId: feedback.predictionId,
+                feedback: feedback.feedback,
+            },
+            riskLevel: 'low',
+        });
+        // Trigger retraining if threshold reached
+        if (this.feedbackBuffer.length >= this.retrainingThreshold) {
+            await this.processLearningFeedback();
+        }
+        this.emit('feedbackReceived', feedback);
+    }
+    /**
+     * Process accumulated learning feedback
+     */
+    async processLearningFeedback() {
+        if (this.feedbackBuffer.length === 0)
+            return;
+        const feedback = [...this.feedbackBuffer];
+        this.feedbackBuffer = [];
+        // Group feedback by model
+        const modelFeedback = new Map();
+        for (const item of feedback) {
+            // Note: In real implementation, track prediction->model mapping
+            const modelId = 'default'; // Simplified for this example
+            if (!modelFeedback.has(modelId)) {
+                modelFeedback.set(modelId, []);
+            }
+            modelFeedback.get(modelId).push(item);
+        }
+        // Process feedback for each model
+        for (const [modelId, feedbackItems] of modelFeedback) {
+            await this.updateModelFromFeedback(modelId, feedbackItems);
+        }
+        await aiMonitoringSystem.recordAuditEvent({
+            type: 'learning_feedback_processed',
+            userId: 'system',
+            details: {
+                feedbackItems: feedback.length,
+                modelsUpdated: modelFeedback.size,
+            },
+            riskLevel: 'low',
+        });
+    }
+    /**
+     * Update model based on feedback
+     */
+    async updateModelFromFeedback(modelId, feedback) {
+        // In a real implementation, this would:
+        // 1. Extract corrected training samples from feedback
+        // 2. Retrain or fine-tune the model
+        // 3. Validate improved performance
+        // 4. Deploy updated model
+        console.log(`Processing ${feedback.length} feedback items for model ${modelId}`);
+        // Simplified: just log the feedback processing
+        const correctFeedback = feedback.filter((f) => f.feedback === 'correct').length;
+        const incorrectFeedback = feedback.filter((f) => f.feedback === 'incorrect').length;
+        const accuracy = correctFeedback / feedback.length;
+        await aiMonitoringSystem.recordMetric({
+            type: 'model_feedback_accuracy',
+            value: accuracy,
+            metadata: {
+                modelId,
+                totalFeedback: feedback.length,
+                correctFeedback,
+                incorrectFeedback,
+                accuracy: accuracy.toFixed(3),
+            },
+        });
+    }
+    /**
+     * Start continuous learning process with Nova data prioritization
+     */
+    startContinuousLearning() {
+        // Process feedback every 5 minutes, prioritizing Nova data sources
+        setInterval(async () => {
+            if (this.feedbackBuffer.length > 0) {
+                await this.processLearningFeedbackWithPrioritization();
+            }
+        }, 5 * 60 * 1000);
+        // Nova data sync and retraining every hour
+        setInterval(async () => {
+            await this.performNovaDataSync();
+            await this.performHealthCheck();
+        }, 60 * 60 * 1000);
+    }
+    /**
+     * Perform health check on all models
+     */
+    async performHealthCheck() {
+        for (const [modelId, model] of this.models) {
+            try {
+                if (model.status === 'ready' && this.loadedModels.has(modelId)) {
+                    // Simple health check - make a test prediction
+                    const testInput = Array(model.trainingData.features).fill(0);
+                    await this.predict({
+                        modelId,
+                        input: testInput,
+                        context: { healthCheck: true },
+                    });
+                }
+            }
+            catch (error) {
+                console.error(`Health check failed for model ${modelId}:`, error);
+                await aiMonitoringSystem.recordAuditEvent({
+                    type: 'model_health_check_failed',
+                    userId: 'system',
+                    details: { modelId, error: error.message },
+                    riskLevel: 'high',
+                });
+            }
+        }
+    }
+    /**
+     * Process learning feedback with Nova data prioritization
+     */
+    async processLearningFeedbackWithPrioritization() {
+        if (this.feedbackBuffer.length === 0)
+            return;
+        // Separate Nova data feedback from external feedback
+        const novaFeedback = this.feedbackBuffer.filter(feedback => this.isNovaDataSource(feedback.context?.source));
+        const externalFeedback = this.feedbackBuffer.filter(feedback => !this.isNovaDataSource(feedback.context?.source));
+        // Process Nova feedback first with higher priority
+        if (novaFeedback.length > 0) {
+            await this.processHighPriorityFeedback(novaFeedback);
+        }
+        // Process external feedback with lower priority
+        if (externalFeedback.length > 0) {
+            await this.processLowPriorityFeedback(externalFeedback);
+        }
+        this.feedbackBuffer = [];
+    }
+    /**
+     * Perform Nova data synchronization for continuous learning
+     */
+    async performNovaDataSync() {
+        try {
+            console.log('Performing Nova data sync for continuous learning...');
+            // Collect latest Nova operational data
+            const novaData = await this.collectNovaOperationalData();
+            // Update models with fresh Nova data
+            for (const [modelId, model] of this.models) {
+                if (model.status === 'ready') {
+                    await this.updateModelWithNovaData(modelId, novaData);
+                }
+            }
+            console.log('Nova data sync completed successfully');
+        }
+        catch (error) {
+            console.error('Failed to perform Nova data sync:', error);
+        }
+    }
+    /**
+     * Check if data source is from Nova
+     */
+    isNovaDataSource(source) {
+        if (!source)
+            return false;
+        const novaSources = [
+            'nova_tickets',
+            'nova_knowledge_base',
+            'nova_service_catalog',
+            'nova_workflows',
+            'nova_monitoring',
+            'nova_historical_data',
+            'nova_user_interactions'
+        ];
+        return novaSources.some(novaSource => source.includes(novaSource));
+    }
+    /**
+     * Process high priority feedback from Nova data sources
+     */
+    async processHighPriorityFeedback(feedback) {
+        // Immediate model updates for Nova data feedback
+        for (const item of feedback) {
+            // Apply feedback with higher learning rate for Nova data
+            await this.applyFeedbackToModel(item, { learningRate: 0.01, priority: 'high' });
+        }
+    }
+    /**
+     * Process low priority feedback from external sources
+     */
+    async processLowPriorityFeedback(feedback) {
+        // Batch process external feedback with lower learning rate
+        if (feedback.length >= 10) { // Only process when we have enough external feedback
+            for (const item of feedback) {
+                await this.applyFeedbackToModel(item, { learningRate: 0.001, priority: 'low' });
+            }
+        }
+    }
+    /**
+     * Collect latest Nova operational data for training
+     */
+    async collectNovaOperationalData() {
+        // In a real implementation, this would connect to Nova data sources
+        return {
+            tickets: [], // Latest ticket data
+            workflows: [], // Workflow execution data
+            monitoring: [], // System monitoring data
+            userInteractions: [], // User interaction patterns
+        };
+    }
+    /**
+     * Update model with fresh Nova data
+     */
+    async updateModelWithNovaData(modelId, novaData) {
+        // Incremental training with Nova data
+        console.log(`Updating model ${modelId} with fresh Nova data`);
+        // Implementation would process novaData and retrain model incrementally
+    }
+    /**
+     * Apply feedback to model with specified parameters
+     */
+    async applyFeedbackToModel(feedback, options) {
+        console.log(`Applying ${options.priority} priority feedback with learning rate ${options.learningRate}`);
+        // Implementation would update the specific model based on feedback
+    }
+    /**
+     * Get model information
+     */
+    getModel(modelId) {
+        return this.models.get(modelId);
+    }
+    /**
+     * List all models
+     */
+    listModels() {
+        return Array.from(this.models.values());
+    }
+    /**
+     * Delete a model
+     */
+    async deleteModel(modelId) {
+        const model = this.models.get(modelId);
+        if (!model) {
+            throw new Error(`Model ${modelId} not found`);
+        }
+        // Remove from memory
+        this.loadedModels.delete(modelId);
+        this.models.delete(modelId);
+        // Archive model files
+        const archivePath = path.join(this.modelsPath, 'archive', `${modelId}-${Date.now()}`);
+        try {
+            await fs.rename(model.modelPath, archivePath);
+        }
+        catch (error) {
+            console.error(`Failed to archive model ${modelId}:`, error);
+        }
+        await this.saveModelsMetadata();
+        await aiMonitoringSystem.recordAuditEvent({
+            type: 'model_deleted',
+            userId: 'system',
+            details: { modelId, archived: true },
+            riskLevel: 'medium',
+        });
+    }
+    /**
+     * Save models metadata to disk
+     */
+    async saveModelsMetadata() {
+        try {
+            const modelsFile = path.join(this.modelsPath, 'models.json');
+            const modelsArray = Array.from(this.models.values());
+            await fs.writeFile(modelsFile, JSON.stringify(modelsArray, null, 2));
+        }
+        catch (error) {
+            console.error('Failed to save models metadata:', error);
+        }
+    }
+    /**
+     * Get system status
+     */
+    getStatus() {
+        return {
+            totalModels: this.models.size,
+            loadedModels: this.loadedModels.size,
+            trainingQueue: this.trainingQueue.length,
+            isTraining: this.isTraining,
+            feedbackBuffer: this.feedbackBuffer.length,
+            models: Array.from(this.models.values()).map((m) => ({
+                id: m.id,
+                name: m.name,
+                type: m.type,
+                status: m.status,
+                accuracy: m.accuracy,
+            })),
+        };
+    }
+}
+// Export singleton instance
+export const novaLocalAI = new NovaLocalAI();

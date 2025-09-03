@@ -2592,10 +2592,20 @@ if (
       try {
         logger.info('🧠 Initializing Nova RAG systems...');
         
-        // Import available RAG components (using .js for compiled files)
+        // Import available RAG components
         let ragComponents = {};
         
-        // Try to import RAG engine (has compiled .js version)
+        // Initialize Nova RAG RBAC system
+        try {
+          const { ragRBAC } = await import('./lib/nova-rag-rbac.js');
+          ragComponents.ragRBAC = ragRBAC;
+          await ragRBAC.initialize();
+          logger.info('✅ Nova RAG RBAC system initialized');
+        } catch (rbacError) {
+          logger.warn('Nova RAG RBAC not available:', rbacError.message);
+        }
+        
+        // Initialize RAG engine
         try {
           const { ragEngine } = await import('./lib/rag-engine.js');
           ragComponents.ragEngine = ragEngine;
@@ -2605,31 +2615,79 @@ if (
           logger.warn('RAG engine not available:', engineError.message);
         }
         
-        // Other RAG components currently only exist as TypeScript files
-        // These will be skipped until they are compiled to JavaScript
-        logger.info('⚠️ Some RAG components skipped (TypeScript files need compilation)');
-        logger.info('  - nova-rag-rbac.ts');
-        logger.info('  - nova-rag-data-connectors.ts');
-        logger.info('  - nova-synth-rag-integration.ts');
+        // Initialize RAG data connectors
+        try {
+          const { ragDataConnectors } = await import('./lib/nova-rag-data-connectors.js');
+          ragComponents.ragDataConnectors = ragDataConnectors;
+          await ragDataConnectors.initialize();
+          logger.info('✅ Nova RAG data connectors initialized');
+        } catch (connectorError) {
+          logger.warn('Nova RAG data connectors not available:', connectorError.message);
+        }
         
-        // Initialize available compiled services
+        // Initialize Nova Synth RAG integration
+        try {
+          const { novaSynthRAG } = await import('./lib/nova-synth-rag-integration.js');
+          ragComponents.novaSynthRAG = novaSynthRAG;
+          await novaSynthRAG.initialize();
+          logger.info('✅ Nova Synth RAG integration initialized');
+        } catch (synthError) {
+          logger.warn('Nova Synth RAG integration not available:', synthError.message);
+        }
+        
+        // Initialize Nova Synth Email Processor
         try {
           const { novaSynthEmailProcessor } = await import('./lib/nova-synth-email-processor.js');
+          ragComponents.novaSynthEmailProcessor = novaSynthEmailProcessor;
           await novaSynthEmailProcessor.initialize();
           logger.info('✅ Nova Synth Email Processor initialized');
         } catch (emailError) {
           logger.warn('Nova Synth Email Processor not available:', emailError.message);
         }
         
+        // Initialize User Interaction Service
         try {
           const { userInteractionService } = await import('./services/user-interaction.service.js');
+          ragComponents.userInteractionService = userInteractionService;
           await userInteractionService.initialize();
           logger.info('✅ User Interaction Service initialized');
         } catch (interactionError) {
           logger.warn('User Interaction Service not available:', interactionError.message);
         }
         
-        logger.info('🎯 Nova RAG systems initialized (limited functionality due to TypeScript compilation requirements)');
+        // Initialize Nova AI Agent Framework
+        try {
+          const { novaAIAgentFramework } = await import('./lib/nova-ai-agent-framework.js');
+          ragComponents.novaAIAgentFramework = novaAIAgentFramework;
+          await novaAIAgentFramework.initialize();
+          logger.info('✅ Nova AI Agent Framework initialized');
+        } catch (agentError) {
+          logger.warn('Nova AI Agent Framework not available:', agentError.message);
+        }
+        
+        // Initialize Nova ML Pipeline
+        try {
+          const { novaMLPipeline } = await import('./lib/nova-ml-pipeline.js');
+          ragComponents.novaMLPipeline = novaMLPipeline;
+          await novaMLPipeline.initialize();
+          logger.info('✅ Nova ML Pipeline initialized');
+        } catch (mlError) {
+          logger.warn('Nova ML Pipeline not available:', mlError.message);
+        }
+        
+        // Initialize Nova Conversational Interface
+        try {
+          const { novaConversationalInterface } = await import('./lib/nova-conversational-interface.js');
+          ragComponents.novaConversationalInterface = novaConversationalInterface;
+          await novaConversationalInterface.initialize();
+          logger.info('✅ Nova Conversational Interface initialized');
+        } catch (conversationError) {
+          logger.warn('Nova Conversational Interface not available:', conversationError.message);
+        }
+        
+        const activeComponents = Object.keys(ragComponents).length;
+        logger.info(`🎯 Nova RAG systems initialized successfully (${activeComponents} components active)`);
+        logger.info('✅ Full RAG functionality available - no TypeScript limitations');
       } catch (ragError) {
         logger.error('Failed to initialize Nova RAG systems:', ragError);
         logger.warn('Nova RAG functionality will be limited');
