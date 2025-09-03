@@ -148,44 +148,10 @@ class EnhancedAppSwitcherService {
       type: appData.type as any,
       iconUrl: appData.iconUrl,
       color: appData.color,
-      external_config: {
-        open_in_new_window: appData.newWindow || true,
-        sso_enabled: appData.ssoEnabled || false,
-      },
-      assignments: [],
-      created_by: 'admin',
-      is_active: true,
-      order: 0,
-    };
-
-    return this.createApp(app);
-  }
-
-  /**
-   * Create a new custom app (simplified interface for admin)
-   */
-  async createCustomApp(appData: {
-    name: string;
-    description: string;
-    url: string;
-    type: 'external' | 'saml' | 'oauth';
-    iconUrl?: string;
-    color: string;
-    ssoEnabled?: boolean;
-    newWindow?: boolean;
-    category?: string;
-  }): Promise<CustomApp> {
-    const app = {
-      name: appData.name,
-      description: appData.description,
-      url: appData.url,
-      type: appData.type as any,
-      iconUrl: appData.iconUrl,
-      color: appData.color,
       assignments: [],
       external_config: {
-        open_in_new_window: appData.newWindow || true,
-        sso_enabled: appData.ssoEnabled || false,
+        open_in_new_window: appData.newWindow ?? true, // Default to true for new window
+        sso_enabled: appData.ssoEnabled ?? false,
       },
       created_by: 'current_user', // Will be set by backend
       is_active: true,
