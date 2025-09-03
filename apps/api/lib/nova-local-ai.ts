@@ -44,6 +44,11 @@ export interface TrainingData {
     timestamp: Date;
     userId?: string;
     ticketId?: string;
+    // Nova Data Source Tracking
+    isNovaSource: boolean;
+    dataQuality: 'high' | 'medium' | 'low';
+    sourcePriority: number; // Higher number = higher priority
+    novaDataType?: 'operational' | 'historical' | 'knowledge' | 'monitoring';
   }[];
 }
 
@@ -749,22 +754,23 @@ export class NovaLocalAI extends EventEmitter {
   }
 
   /**
-   * Start continuous learning process
+   * Start continuous learning process with Nova data prioritization
    */
   private startContinuousLearning(): void {
-    // Process feedback every 5 minutes
+    // Process feedback every 5 minutes, prioritizing Nova data sources
     setInterval(
       async () => {
         if (this.feedbackBuffer.length > 0) {
-          await this.processLearningFeedback();
+          await this.processLearningFeedbackWithPrioritization();
         }
       },
       5 * 60 * 1000,
     );
 
-    // Health check every hour
+    // Nova data sync and retraining every hour
     setInterval(
       async () => {
+        await this.performNovaDataSync();
         await this.performHealthCheck();
       },
       60 * 60 * 1000,
@@ -797,6 +803,132 @@ export class NovaLocalAI extends EventEmitter {
         });
       }
     }
+  }
+
+  /**
+   * Process learning feedback with Nova data prioritization
+   */
+  private async processLearningFeedbackWithPrioritization(): Promise<void> {
+    if (this.feedbackBuffer.length === 0) return;
+
+    // Separate Nova data feedback from external feedback
+    const novaFeedback = this.feedbackBuffer.filter(feedback => 
+      this.isNovaDataSource(feedback.context?.source)
+    );
+    
+    const externalFeedback = this.feedbackBuffer.filter(feedback => 
+      !this.isNovaDataSource(feedback.context?.source)
+    );
+
+    // Process Nova feedback first with higher priority
+    if (novaFeedback.length > 0) {
+      await this.processHighPriorityFeedback(novaFeedback);
+    }
+
+    // Process external feedback with lower priority
+    if (externalFeedback.length > 0) {
+      await this.processLowPriorityFeedback(externalFeedback);
+    }
+
+    this.feedbackBuffer = [];
+  }
+
+  /**
+   * Perform Nova data synchronization for continuous learning
+   */
+  private async performNovaDataSync(): Promise<void> {
+    try {
+      console.log('Performing Nova data sync for continuous learning...');
+      
+      // Collect latest Nova operational data
+      const novaData = await this.collectNovaOperationalData();
+      
+      // Update models with fresh Nova data
+      for (const [modelId, model] of this.models) {
+        if (model.status === 'ready') {
+          await this.updateModelWithNovaData(modelId, novaData);
+        }
+      }
+      
+      console.log('Nova data sync completed successfully');
+    } catch (error) {
+      console.error('Failed to perform Nova data sync:', error);
+    }
+  }
+
+  /**
+   * Check if data source is from Nova
+   */
+  private isNovaDataSource(source?: string): boolean {
+    if (!source) return false;
+    
+    const novaSources = [
+      'nova_tickets',
+      'nova_knowledge_base', 
+      'nova_service_catalog',
+      'nova_workflows',
+      'nova_monitoring',
+      'nova_historical_data',
+      'nova_user_interactions'
+    ];
+    
+    return novaSources.some(novaSource => source.includes(novaSource));
+  }
+
+  /**
+   * Process high priority feedback from Nova data sources
+   */
+  private async processHighPriorityFeedback(feedback: LearningFeedback[]): Promise<void> {
+    // Immediate model updates for Nova data feedback
+    for (const item of feedback) {
+      // Apply feedback with higher learning rate for Nova data
+      await this.applyFeedbackToModel(item, { learningRate: 0.01, priority: 'high' });
+    }
+  }
+
+  /**
+   * Process low priority feedback from external sources
+   */
+  private async processLowPriorityFeedback(feedback: LearningFeedback[]): Promise<void> {
+    // Batch process external feedback with lower learning rate
+    if (feedback.length >= 10) { // Only process when we have enough external feedback
+      for (const item of feedback) {
+        await this.applyFeedbackToModel(item, { learningRate: 0.001, priority: 'low' });
+      }
+    }
+  }
+
+  /**
+   * Collect latest Nova operational data for training
+   */
+  private async collectNovaOperationalData(): Promise<any> {
+    // In a real implementation, this would connect to Nova data sources
+    return {
+      tickets: [], // Latest ticket data
+      workflows: [], // Workflow execution data
+      monitoring: [], // System monitoring data
+      userInteractions: [], // User interaction patterns
+    };
+  }
+
+  /**
+   * Update model with fresh Nova data
+   */
+  private async updateModelWithNovaData(modelId: string, novaData: any): Promise<void> {
+    // Incremental training with Nova data
+    console.log(`Updating model ${modelId} with fresh Nova data`);
+    // Implementation would process novaData and retrain model incrementally
+  }
+
+  /**
+   * Apply feedback to model with specified parameters
+   */
+  private async applyFeedbackToModel(
+    feedback: LearningFeedback, 
+    options: { learningRate: number; priority: string }
+  ): Promise<void> {
+    console.log(`Applying ${options.priority} priority feedback with learning rate ${options.learningRate}`);
+    // Implementation would update the specific model based on feedback
   }
 
   /**

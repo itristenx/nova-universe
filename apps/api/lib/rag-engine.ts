@@ -185,7 +185,7 @@ export class NovaRAGEngine extends EventEmitter {
 
   // Configuration
   private config = {
-    defaultEmbeddingModel: 'text-embedding-ada-002',
+    defaultEmbeddingModel: 'nova-local-embeddings', // Prioritize Nova's own embedding model
     defaultVectorStore: 'chromadb',
     chunkSize: 512,
     chunkOverlap: 50,
@@ -194,6 +194,19 @@ export class NovaRAGEngine extends EventEmitter {
     rerankingEnabled: true,
     knowledgeGraphEnabled: true,
     realTimeUpdates: true,
+    // Nova Data Prioritization Settings
+    novaDataPriority: true,
+    novaDataBoostFactor: 1.5, // Boost score for Nova-sourced data
+    novaSourcesOfTruth: [
+      'nova_knowledge_base',
+      'nova_tickets', 
+      'nova_service_catalog',
+      'nova_documentation',
+      'nova_monitoring',
+      'nova_workflows',
+      'nova_historical_data'
+    ],
+    externalSourcePenalty: 0.8, // Reduce score for external sources
   };
 
   constructor() {
@@ -713,15 +726,18 @@ export class NovaRAGEngine extends EventEmitter {
       },
       {
         id: 'nova-local-embeddings',
-        name: 'Nova Local Embeddings',
+        name: 'Nova Local Embeddings (Trained on Nova Data)',
         provider: 'local',
         model: 'nova-embeddings-v1',
         dimensions: 768,
         maxTokens: 512,
         config: {
           modelPath: '/models/nova-embeddings',
+          trainingData: 'nova_corpus', // Trained exclusively on Nova data
+          domainSpecific: true,
+          novaOptimized: true,
         },
-        isActive: true,
+        isActive: true, // Always active as primary embedding model
       },
     ];
 
@@ -1140,20 +1156,26 @@ export class NovaRAGEngine extends EventEmitter {
     query: RAGQuery,
     queryEmbedding: number[],
   ): Promise<DocumentChunk[]> {
-    // Semantic search using vector similarity
+    // Semantic search using vector similarity with Nova data prioritization
     const chunks = Array.from(this.documentChunks.values());
     const results: Array<{ chunk: DocumentChunk; score: number }> = [];
 
     for (const chunk of chunks) {
       if (!chunk.embedding) continue;
 
-      const similarity = this.cosineSimilarity(queryEmbedding, chunk.embedding);
+      let similarity = this.cosineSimilarity(queryEmbedding, chunk.embedding);
+      
+      // Apply Nova data prioritization
+      if (this.config.novaDataPriority) {
+        similarity = this.applyNovaDataPrioritization(chunk, similarity);
+      }
+      
       if (similarity >= (query.options.minScore || this.config.minSimilarity)) {
         results.push({ chunk, score: similarity });
       }
     }
 
-    // Sort by similarity score
+    // Sort by similarity score (Nova data will naturally rank higher due to boost)
     results.sort((a, b) => b.score - a.score);
 
     return results.map((r) => {
@@ -1329,6 +1351,33 @@ export class NovaRAGEngine extends EventEmitter {
     if (normA === 0 || normB === 0) return 0;
 
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+  }
+
+  /**
+   * Apply Nova data prioritization to boost or penalize scores based on data source
+   */
+  private applyNovaDataPrioritization(chunk: DocumentChunk, similarity: number): number {
+    const source = chunk.metadata.source;
+    
+    // Boost Nova sources of truth
+    if (this.config.novaSourcesOfTruth.includes(source)) {
+      const boostedScore = similarity * this.config.novaDataBoostFactor;
+      
+      // Additional boost for core Nova operational data
+      if (['nova_tickets', 'nova_knowledge_base', 'nova_workflows'].includes(source)) {
+        return Math.min(1.0, boostedScore * 1.2); // Extra boost for critical Nova data
+      }
+      
+      return Math.min(1.0, boostedScore);
+    }
+    
+    // Apply penalty to external sources
+    if (!source.startsWith('nova_')) {
+      return similarity * this.config.externalSourcePenalty;
+    }
+    
+    // Default: no modification for other Nova sources
+    return similarity;
   }
 
   private async expandQuery(query: string): Promise<string> {

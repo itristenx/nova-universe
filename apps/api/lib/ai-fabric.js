@@ -491,15 +491,66 @@ class AIFabric extends EventEmitter {
       throw new Error(`No available providers for request type: ${request.type}`);
     }
 
-    // If preferences specified, try those first
+    // NOVA DATA PRIORITIZATION: Prioritize Nova's own AI models and data sources
+    
+    // First priority: Nova Custom Models (highest priority)
+    const novaCustomModels = candidates.filter(p => 
+      p.type === 'nova_custom' || p.id.includes('nova-custom')
+    );
+    if (novaCustomModels.length > 0) {
+      logger.info(`Routing to Nova Custom Model: ${novaCustomModels[0].id}`);
+      return novaCustomModels[0].id;
+    }
+
+    // Second priority: Nova Local AI models
+    const novaLocalModels = candidates.filter(p => 
+      p.type === 'nova_local' || p.id.includes('nova-local')
+    );
+    if (novaLocalModels.length > 0) {
+      logger.info(`Routing to Nova Local AI: ${novaLocalModels[0].id}`);
+      return novaLocalModels[0].id;
+    }
+
+    // Third priority: Nova RAG with Nova data sources
+    const novaRAGProviders = candidates.filter(p => 
+      p.type === 'rag' && p.config?.dataSource?.startsWith('nova_')
+    );
+    if (novaRAGProviders.length > 0) {
+      logger.info(`Routing to Nova RAG Engine: ${novaRAGProviders[0].id}`);
+      return novaRAGProviders[0].id;
+    }
+
+    // Fourth priority: Internal Nova providers
+    const internalProviders = candidates.filter(p => 
+      p.type === 'internal' || p.provider === 'nova' || p.id.includes('nova')
+    );
+    if (internalProviders.length > 0) {
+      logger.info(`Routing to Nova Internal Provider: ${internalProviders[0].id}`);
+      return internalProviders[0].id;
+    }
+
+    // If preferences specified for external providers, apply them as fallback
     if (request.preferences?.preferredProviders?.length) {
       const preferred = candidates.find((p) =>
         request.preferences.preferredProviders.includes(p.id),
       );
-      if (preferred) return preferred.id;
+      if (preferred) {
+        logger.warn(`Falling back to external provider: ${preferred.id}`);
+        return preferred.id;
+      }
     }
 
-    // Return first healthy provider for now
+    // Last resort: external providers (with reduced priority)
+    const externalProviders = candidates.filter(p => 
+      !p.id.includes('nova') && !p.provider === 'nova'
+    );
+    if (externalProviders.length > 0) {
+      logger.warn(`Using external provider as last resort: ${externalProviders[0].id}`);
+      return externalProviders[0].id;
+    }
+
+    // Fallback to first available provider
+    logger.warn(`Using fallback provider: ${candidates[0].id}`);
     return candidates[0].id;
   }
 
