@@ -298,6 +298,27 @@ export const useAuthStore = create<AuthState>()(
 
       // Refresh user data
       refreshUser: async () => {
+        // Check if we're in demo mode
+        const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
+        
+        if (useMockData) {
+          // In demo mode, just set up the demo user
+          set({
+            user: mapHelixUserToUser({
+              id: 'demo-user-123',
+              email: 'demo@novauniverse.com',
+              firstName: 'Demo',
+              lastName: 'User',
+              role: 'admin',
+              tenantId: 'demo-tenant'
+            }),
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+          return;
+        }
+        
         if (!helixAuthService.isAuthenticated()) {
           set({
             user: null,

@@ -195,7 +195,14 @@ class ConnectionService {
    * Get API base URL
    */
   private getAPIBaseURL(): string {
-    // Use environment variable if available, otherwise default to localhost
+    // In browser environment, use relative URLs to take advantage of Vite proxy
+    // This avoids CORS issues and uses the proxy configuration
+    if (typeof window !== 'undefined') {
+      console.log('🔍 Connection Service: Using proxy via current origin for browser environment');
+      return window.location.origin;
+    }
+    
+    // Fallback for server-side rendering or non-browser environments
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     console.log('🔍 Connection Service: Using API URL:', apiUrl);
     return apiUrl;
