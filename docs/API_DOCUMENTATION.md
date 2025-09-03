@@ -107,6 +107,69 @@ PUT /api/v1/tickets/{id}
 DELETE /api/v1/tickets/{id}
 ```
 
+#### Get Ticket Comments
+
+```http
+GET /api/v1/tickets/{id}/comments
+```
+
+**Description:** Returns ticket comments filtered by user role. End users only see public comments, while staff roles see all comments including internal ones.
+
+**Query Parameters:**
+- `id` - Ticket ID (required)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "comment_123",
+      "content": "We're looking into this issue.",
+      "isInternal": false,
+      "user": {
+        "id": "user_456",
+        "name": "John Smith",
+        "email": "john@company.com"
+      },
+      "createdAt": "2025-08-09T10:00:00Z",
+      "updatedAt": "2025-08-09T10:00:00Z"
+    }
+  ]
+}
+```
+
+#### Add Ticket Comment
+
+```http
+POST /api/v1/tickets/{id}/comments
+```
+
+**Description:** Adds a comment to a ticket. Internal comments can only be created by staff roles (technician, admin, hr_agent, etc.).
+
+**Request Body:**
+```json
+{
+  "content": "This is a comment",
+  "isInternal": false
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "comment_124",
+    "content": "This is a comment",
+    "isInternal": false,
+    "userId": "user_456",
+    "createdAt": "2025-08-09T10:05:00Z"
+  },
+  "message": "Comment added successfully"
+}
+```
+
 ### 👥 User Management
 
 #### Get Users

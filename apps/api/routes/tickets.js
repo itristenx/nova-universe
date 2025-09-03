@@ -428,6 +428,15 @@ router.post(
       const ticketId = req.params.id;
       const { content, isInternal = false } = req.body;
 
+      // Validate user can create internal comments
+      if (isInternal && !canViewInternalComments(req.user.roles)) {
+        return res.status(403).json({
+          success: false,
+          error: 'You do not have permission to create internal comments',
+          errorCode: 'INSUFFICIENT_PERMISSIONS_INTERNAL_COMMENT',
+        });
+      }
+
       const comment = await TicketService.addComment(ticketId, {
         content,
         isInternal,
@@ -479,8 +488,28 @@ router.get(
 );
 
 /**
+ * Helper function to check if user can view internal comments
+ * Customers (end_user) can only see public comments
+ * Staff roles (technician, admin, hr_agent, etc.) can see all comments
+ */
+function canViewInternalComments(userRoles) {
+  if (!userRoles || !Array.isArray(userRoles)) {
+    return false;
+  }
+  
+  // Staff roles that can view internal comments
+  const staffRoles = [
+    'technician', 'admin', 'hr_agent', 'hr_admin', 
+    'ops_agent', 'ops_admin', 'cyber_agent', 'cyber_admin',
+    'tech_lead', 'superadmin', 'nova_superadmin'
+  ];
+  
+  return userRoles.some(role => staffRoles.includes(role));
+}
+
+/**
  * @route GET /api/v1/tickets/:id/comments
- * @description Get comments for a ticket
+ * @description Get comments for a ticket (filtered by user role)
  * @access Protected
  */
 router.get(
@@ -494,12 +523,23 @@ router.get(
       if (!errors.isEmpty()) {
         return res.status(400).json({ success: false, error: 'Validation failed', details: errors.array() });
       }
+      
       const ticketId = req.params.id;
+      const canViewInternal = canViewInternalComments(req.user.roles);
+      
+      // Build where clause based on user permissions
+      const whereClause = { ticketId };
+      if (!canViewInternal) {
+        // Non-staff users can only see public comments
+        whereClause.isInternal = false;
+      }
+      
       const comments = await prisma.ticketComment.findMany({
-        where: { ticketId },
+        where: whereClause,
         include: { user: { select: { id: true, name: true, email: true } } },
         orderBy: { createdAt: 'asc' },
       });
+      
       res.json({ success: true, data: comments });
     } catch (error) {
       logger.error('Error fetching ticket comments:', error);

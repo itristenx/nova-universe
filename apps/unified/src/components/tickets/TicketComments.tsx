@@ -2,7 +2,19 @@ import React, { useState } from 'react';
 
 export interface TicketCommentsProps {
   ticketId: string;
+  userRoles?: string[]; // Add user roles to props
 }
+
+// Helper function to check if user can view/create internal comments
+const canViewInternalComments = (userRoles: string[] = []): boolean => {
+  const staffRoles = [
+    'technician', 'admin', 'hr_agent', 'hr_admin', 
+    'ops_agent', 'ops_admin', 'cyber_agent', 'cyber_admin',
+    'tech_lead', 'superadmin', 'nova_superadmin'
+  ];
+  
+  return userRoles.some(role => staffRoles.includes(role));
+};
 
 // Custom icons for React 19 compatibility
 const PaperAirplaneIcon = ({ className }: { className?: string }) => (
@@ -81,16 +93,27 @@ const mockComments = [
   },
 ];
 
-export function TicketComments({ ticketId }: TicketCommentsProps) {
+export function TicketComments({ ticketId, userRoles = [] }: TicketCommentsProps) {
   const [newComment, setNewComment] = useState('');
   const [commentType, setCommentType] = useState<'public' | 'internal'>('public');
+  const canViewInternal = canViewInternalComments(userRoles);
+
+  // Filter comments based on user permissions
+  const filteredComments = canViewInternal 
+    ? mockComments 
+    : mockComments.filter(comment => comment.type === 'public');
 
   const handleSubmitComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
     // Here you would typically submit the comment to your API
-    console.log('Submitting comment:', { ticketId, content: newComment, type: commentType });
+    console.log('Submitting comment:', { 
+      ticketId, 
+      content: newComment, 
+      type: commentType,
+      isInternal: commentType === 'internal'
+    });
 
     // Reset form
     setNewComment('');
@@ -119,7 +142,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Comments</h3>
 
-        {mockComments.length === 0 ? (
+        {filteredComments.length === 0 ? (
           <div className="py-8 text-center text-gray-500">
             <div className="mx-auto mb-4 h-16 w-16 text-gray-300">
               <UserCircleIcon className="h-full w-full" />
@@ -128,7 +151,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            {mockComments.map((comment) => (
+            {filteredComments.map((comment) => (
               <div
                 key={comment.id}
                 className={`rounded-lg border p-4 ${getCommentTypeColor(comment.type)}`}
@@ -164,31 +187,33 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
       <div className="border-t pt-6">
         <h4 className="text-md mb-4 font-medium text-gray-900">Add Comment</h4>
         <form onSubmit={handleSubmitComment} className="space-y-4">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Comment Type</label>
-            <div className="flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="public"
-                  checked={commentType === 'public'}
-                  onChange={(e) => setCommentType(e.target.value as 'public' | 'internal')}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">Public (visible to customer)</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="internal"
-                  checked={commentType === 'internal'}
-                  onChange={(e) => setCommentType(e.target.value as 'public' | 'internal')}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">Internal (staff only)</span>
-              </label>
+          {canViewInternal && (
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Comment Type</label>
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="public"
+                    checked={commentType === 'public'}
+                    onChange={(e) => setCommentType(e.target.value as 'public' | 'internal')}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Public (visible to customer)</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    value="internal"
+                    checked={commentType === 'internal'}
+                    onChange={(e) => setCommentType(e.target.value as 'public' | 'internal')}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Internal (staff only)</span>
+                </label>
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <label htmlFor="comment" className="mb-2 block text-sm font-medium text-gray-700">
