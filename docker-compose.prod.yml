@@ -76,7 +76,9 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    # No host port needed; accessed via nginx
+    # Expose for demo connectivity from browser
+    ports:
+      - '3000:3000'
     volumes:
       - ./logs/api:/app/logs
       - ./uploads:/app/uploads

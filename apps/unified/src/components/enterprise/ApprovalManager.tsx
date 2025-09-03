@@ -98,6 +98,7 @@ export default function ApprovalManager({ className = '', mode = 'admin' }: Appr
   const [showCreateFlowModal, setShowCreateFlowModal] = useState(false);
   const [approvalComment, setApprovalComment] = useState('');
   const [rejectReason, setRejectReason] = useState('');
+  const [showRejectReason, setShowRejectReason] = useState(false);
 
   // Mock data - replace with API calls
   useEffect(() => {
@@ -290,6 +291,7 @@ export default function ApprovalManager({ className = '', mode = 'admin' }: Appr
         setSelectedInstance(null);
         setApprovalComment('');
         setRejectReason('');
+        setShowRejectReason(false);
       }
     } catch (error) {
       console.error('Error processing approval:', error);
@@ -333,6 +335,18 @@ export default function ApprovalManager({ className = '', mode = 'admin' }: Appr
             Create Approval Flow
           </button>
         )}
+        
+        {/* Filter Controls */}
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => {/* Toggle filter panel */}}
+            className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            title="Filter approvals"
+          >
+            <FunnelIcon className="w-5 h-5 mr-2" />
+            Filter
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -340,10 +354,13 @@ export default function ApprovalManager({ className = '', mode = 'admin' }: Appr
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center">
             <ClockIcon className="w-8 h-8 text-yellow-500" />
-            <div className="ml-4">
+            <div className="ml-4 flex-1">
               <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
               <p className="text-2xl font-bold text-gray-900">{pendingInstances.length}</p>
             </div>
+            {pendingInstances.some(instance => isUrgent(instance.created_at)) && (
+              <BellIcon className="w-6 h-6 text-red-500 animate-pulse" title="Urgent approvals pending" />
+            )}
           </div>
         </div>
 
@@ -525,7 +542,10 @@ export default function ApprovalManager({ className = '', mode = 'admin' }: Appr
                     
                     <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <span className="font-medium text-gray-700">Requester:</span>
+                        <span className="font-medium text-gray-700 flex items-center">
+                          <UserIcon className="w-4 h-4 mr-1" />
+                          Requester:
+                        </span>
                         <p className="text-gray-600">{instance.requester_name}</p>
                       </div>
                       <div>
@@ -539,8 +559,13 @@ export default function ApprovalManager({ className = '', mode = 'admin' }: Appr
                         </p>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-700">Submitted:</span>
-                        <p className="text-gray-600">{formatDate(instance.created_at)}</p>
+                        <span className="font-medium text-gray-700 flex items-center">
+                          <CalendarIcon className="w-4 h-4 mr-1" />
+                          Deadline:
+                        </span>
+                        <p className="text-gray-600">
+                          {getApprovalDeadline(instance.created_at, instance.current_step)}
+                        </p>
                       </div>
                     </div>
 
@@ -595,6 +620,16 @@ export default function ApprovalManager({ className = '', mode = 'admin' }: Appr
                     >
                       <XCircleIcon className="w-4 h-4 mr-2" />
                       Reject
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedInstance(instance);
+                        setApprovalComment('');
+                      }}
+                      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                    >
+                      <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
+                      Comment
                     </button>
                     <button
                       onClick={() => setSelectedInstance(instance)}
@@ -718,27 +753,187 @@ export default function ApprovalManager({ className = '', mode = 'admin' }: Appr
                   />
                 </div>
 
+                {/* Rejection Reason Field */}
+                {showRejectReason && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                      Rejection Reason <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      placeholder="Please provide a detailed reason for rejection..."
+                      required
+                    />
+                  </div>
+                )}
+
                 <div className="flex justify-end space-x-3">
-                  <button
-                    onClick={() => handleApprovalAction(selectedInstance.id, 'reject', approvalComment)}
-                    className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                  >
-                    <XCircleIcon className="w-4 h-4 mr-2" />
-                    Reject
-                  </button>
-                  <button
-                    onClick={() => handleApprovalAction(selectedInstance.id, 'approve', approvalComment)}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                  >
-                    <CheckCircleIcon className="w-4 h-4 mr-2" />
-                    Approve
-                  </button>
+                  {!showRejectReason ? (
+                    <>
+                      <button
+                        onClick={() => setShowRejectReason(true)}
+                        className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                      >
+                        <XCircleIcon className="w-4 h-4 mr-2" />
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => handleApprovalAction(selectedInstance.id, 'approve', approvalComment)}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      >
+                        <CheckCircleIcon className="w-4 h-4 mr-2" />
+                        Approve
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          setShowRejectReason(false);
+                          setRejectReason('');
+                        }}
+                        className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                      >
+                        Cancel Rejection
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (rejectReason.trim()) {
+                            handleApprovalAction(selectedInstance.id, 'reject', `${approvalComment}\n\nRejection Reason: ${rejectReason}`);
+                            setShowRejectReason(false);
+                          }
+                        }}
+                        disabled={!rejectReason.trim()}
+                        className={`flex items-center px-4 py-2 rounded-lg ${
+                          rejectReason.trim() 
+                            ? 'bg-red-600 text-white hover:bg-red-700' 
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        <XCircleIcon className="w-4 h-4 mr-2" />
+                        Confirm Rejection
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Flow Details Modal */}
+      {selectedFlow && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setSelectedFlow(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">{selectedFlow.name}</h2>
+                <button
+                  onClick={() => setSelectedFlow(null)}
+                  title="Close flow details"
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircleIcon className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-medium text-gray-900">Description</h3>
+                  <p className="text-gray-600">{selectedFlow.description}</p>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium text-gray-900">Approval Steps</h3>
+                  <div className="space-y-3 mt-2">
+                    {selectedFlow.steps.map((step) => (
+                      <div key={step.step_number} className="border rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">Step {step.step_number}: {step.name}</h4>
+                          <span className="text-sm text-gray-500">
+                            {step.timeout_hours}h timeout
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Approvers: {step.approver_roles.join(', ')}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Create Flow Modal */}
+      {showCreateFlowModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setShowCreateFlowModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Create Approval Flow</h2>
+              <p className="text-gray-600">Flow creation form would go here...</p>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => setShowCreateFlowModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => setShowCreateFlowModal(false)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Create Flow
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
+
+  // Helper function for deadline calculation
+  function getApprovalDeadline(createdAt: string, currentStep: number): string {
+    const created = new Date(createdAt);
+    const timeoutHours = 24 * currentStep; // Simple calculation based on step
+    const deadline = new Date(created.getTime() + timeoutHours * 60 * 60 * 1000);
+    return formatDate(deadline.toISOString());
+  }
+
+  function isUrgent(createdAt: string): boolean {
+    const created = new Date(createdAt);
+    const hoursSinceCreated = (Date.now() - created.getTime()) / (1000 * 60 * 60);
+    return hoursSinceCreated > 48; // Urgent if older than 48 hours
+  }
 }

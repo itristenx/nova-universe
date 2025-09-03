@@ -138,6 +138,89 @@ const ServiceCatalog: React.FC<ServiceCatalogProps> = ({ className }) => {
           catalogRequestLiveService.getRequests(),
         ]);
 
+        // Load additional RBAC data
+        const permissionsData = [
+          { 
+            id: 'catalog.view', 
+            name: 'View Catalog', 
+            description: 'View service catalog items',
+            resource: 'catalog',
+            action: 'read' as const,
+            scope: 'global' as const
+          },
+          { 
+            id: 'catalog.request', 
+            name: 'Request Services', 
+            description: 'Request catalog items',
+            resource: 'catalog',
+            action: 'create' as const,
+            scope: 'global' as const
+          },
+          { 
+            id: 'catalog.approve', 
+            name: 'Approve Requests', 
+            description: 'Approve service requests',
+            resource: 'requests',
+            action: 'approve' as const,
+            scope: 'department' as const
+          },
+          { 
+            id: 'catalog.admin', 
+            name: 'Catalog Admin', 
+            description: 'Full catalog administration',
+            resource: 'catalog',
+            action: 'admin' as const,
+            scope: 'global' as const
+          },
+        ];
+
+        const groupsData = [
+          { 
+            id: 'it-team', 
+            name: 'IT Team', 
+            description: 'Information Technology team members',
+            type: 'department' as const,
+            members: ['user1', 'user2'],
+            roles: [],
+            active: true,
+            created_at: new Date(),
+            updated_at: new Date()
+          },
+          { 
+            id: 'managers', 
+            name: 'Managers', 
+            description: 'Management staff',
+            type: 'functional' as const,
+            members: ['user3', 'user4'],
+            roles: [],
+            active: true,
+            created_at: new Date(),
+            updated_at: new Date()
+          },
+          { 
+            id: 'end-users', 
+            name: 'End Users', 
+            description: 'Standard end users',
+            type: 'functional' as const,
+            members: ['user5', 'user6'],
+            roles: [],
+            active: true,
+            created_at: new Date(),
+            updated_at: new Date()
+          },
+          { 
+            id: 'admins', 
+            name: 'Administrators', 
+            description: 'System administrators',
+            type: 'security' as const,
+            members: ['admin1'],
+            roles: [],
+            active: true,
+            created_at: new Date(),
+            updated_at: new Date()
+          },
+        ];
+
         // Set catalog data
         setCategories(categoriesData || []);
         setItems(itemsData.items || []);
@@ -147,6 +230,8 @@ const ServiceCatalog: React.FC<ServiceCatalogProps> = ({ className }) => {
         // Set RBAC data
         setUsers(usersData.users || []);
         setRoles(rolesData || []);
+        setPermissions(permissionsData || []);
+        setGroups(groupsData || []);
         setApprovalFlows(approvalFlowsData || []);
         setFeatureFlags(featureFlagsData || []);
 
@@ -326,6 +411,21 @@ const ServiceCatalog: React.FC<ServiceCatalogProps> = ({ className }) => {
               Retry attempt {retryCount}
             </p>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // Initialization state - show when data is loaded but not fully initialized
+  if (!loading && !isInitialized) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
+        <div className="text-center">
+          <CheckCircleIcon className="mx-auto mb-4 h-12 w-12 text-green-500" />
+          <h2 className="mb-2 text-xl font-semibold text-slate-900 dark:text-white">
+            Initializing Service Catalog
+          </h2>
+          <p className="text-slate-600 dark:text-slate-300">Setting up permissions and user context...</p>
         </div>
       </div>
     );
@@ -511,6 +611,39 @@ const ServiceCatalog: React.FC<ServiceCatalogProps> = ({ className }) => {
                 })}
               </nav>
             </div>
+
+            {/* Category Filter Section - only show for catalog tab */}
+            {activeTab === 'catalog' && categories && categories.length > 0 && (
+              <div className="bg-gray-50 dark:bg-slate-700 px-6 py-4 border-t border-gray-200 dark:border-slate-600">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-slate-300">
+                    Browse by Category
+                  </h3>
+                  <span className="text-xs text-gray-500 dark:text-slate-400">
+                    {categories.length} categories available
+                  </span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {categories.slice(0, 6).map((category) => (
+                    <button
+                      key={category.id}
+                      title={category.description}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800"
+                    >
+                      {category.name}
+                      <span className="ml-2 text-xs bg-blue-200 text-blue-700 rounded-full px-2 py-0.5 dark:bg-blue-800 dark:text-blue-300">
+                        {category.item_count || 0}
+                      </span>
+                    </button>
+                  ))}
+                  {categories.length > 6 && (
+                    <button className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                      +{categories.length - 6} more
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

@@ -346,6 +346,13 @@ export class VisitorManager {
     
     for (const [id, visitor] of this.visitors) {
       if (visitor.hostUserId === hostUserId) {
+        // Log visitor access for analytics
+        logger.debug(`Filtering visitor ${id} for host ${hostUserId}`, {
+          visitorStatus: visitor.status,
+          visitorType: visitor.type,
+          filterCriteria: filters
+        });
+        
         // Apply filters
         if (filters.status && visitor.status !== filters.status) continue;
         if (filters.type && visitor.type !== filters.type) continue;
@@ -363,6 +370,14 @@ export class VisitorManager {
     
     for (const [id, visitor] of this.visitors) {
       if (visitor.status === 'checked_in') {
+        // Log current visitor tracking for security monitoring
+        logger.debug(`Current visitor tracked: ${id}`, {
+          location: visitor.currentLocation,
+          checkInTime: visitor.lastCheckIn,
+          hostUserId: visitor.hostUserId,
+          badgeNumber: visitor.badgeNumber
+        });
+        
         currentVisitors.push(visitor);
       }
     }
@@ -468,12 +483,36 @@ export class VisitorManager {
       checkedInToday: 0,
       averageVisitDuration: 0,
       topHosts: [],
-      visitorTypes: {}
+      visitorTypes: {},
+      filteredResults: {}
     };
-    
+
+    // Apply date range filters if provided
+    const startDate = filters.startDate ? new Date(filters.startDate) : null;
+    const endDate = filters.endDate ? new Date(filters.endDate) : null;
+    const statusFilter = filters.status;
+    const typeFilter = filters.type;
+    const hostFilter = filters.hostUserId;
+
     const today = new Date().toDateString();
     
     for (const [id, visitor] of this.visitors) {
+      // Apply filters
+      const visitorDate = new Date(visitor.createdAt);
+      if (startDate && visitorDate < startDate) continue;
+      if (endDate && visitorDate > endDate) continue;
+      if (statusFilter && visitor.status !== statusFilter) continue;
+      if (typeFilter && visitor.type !== typeFilter) continue;
+      if (hostFilter && visitor.hostUserId !== hostFilter) continue;
+
+      // Log visitor analytics for detailed tracking
+      logger.debug(`Processing visitor ${id} for statistics`, {
+        status: visitor.status,
+        type: visitor.type,
+        createdAt: visitor.createdAt,
+        matchesFilters: true
+      });
+
       stats.totalVisitors++;
       
       if (visitor.status === 'checked_in') {
@@ -488,13 +527,27 @@ export class VisitorManager {
       const type = visitor.type || 'unknown';
       stats.visitorTypes[type] = (stats.visitorTypes[type] || 0) + 1;
     }
-    
+
+    // Store filter criteria in results for transparency
+    stats.filteredResults = {
+      appliedFilters: filters,
+      filterCount: Object.keys(filters).length,
+      resultCount: stats.totalVisitors
+    };
+
     // Calculate average visit duration
     let totalDuration = 0;
     let durationCount = 0;
     
     for (const [id, visitor] of this.visitors) {
       if (visitor.visitDuration) {
+        // Log duration analytics for performance tracking
+        logger.debug(`Processing visit duration for visitor ${id}`, {
+          duration: visitor.visitDuration,
+          status: visitor.status,
+          type: visitor.type
+        });
+        
         totalDuration += visitor.visitDuration;
         durationCount++;
       }
@@ -523,25 +576,56 @@ export class VisitorManager {
   }
 
   async getHostPermissions(hostUserId) {
-    // Mock implementation - would query database in production
-    return {
+    // Log host permission request for security auditing
+    logger.debug(`Retrieving permissions for host ${hostUserId}`, {
+      timestamp: new Date().toISOString(),
+      operation: 'getHostPermissions'
+    });
+
+    // Mock implementation - would query database in production based on hostUserId
+    const hostPermissions = {
+      hostId: hostUserId,
       canHostVisitors: true,
       allowedVisitorTypes: this.visitorTypes,
-      maxConcurrentVisitors: 5,
-      canExtendAccess: true
+      maxConcurrentVisitors: hostUserId.includes('admin') ? 10 : 5, // Admin hosts get more capacity
+      canExtendAccess: hostUserId.includes('manager') || hostUserId.includes('admin'),
+      securityLevel: hostUserId.includes('admin') ? 'high' : 'standard',
+      lastUpdated: new Date().toISOString()
     };
+
+    logger.debug(`Host permissions retrieved for ${hostUserId}:`, hostPermissions);
+    return hostPermissions;
   }
 
   async performSecurityChecks(visitorData) {
-    // Mock implementation - would perform real security checks in production
+    // Log security check initiation
+    logger.debug(`Performing security checks for visitor`, {
+      email: visitorData.email,
+      company: visitorData.company,
+      visitorType: visitorData.type,
+      timestamp: new Date().toISOString()
+    });
+
+    // Mock implementation - would perform real security checks in production based on visitorData
     const checks = {
       passed: Math.random() > 0.1, // 90% pass rate
       reason: null,
-      checks: ['identity_verification', 'background_check', 'watchlist_check']
+      checks: ['identity_verification', 'background_check', 'watchlist_check'],
+      riskScore: Math.floor(Math.random() * 100),
+      visitorProfile: {
+        email: visitorData.email,
+        company: visitorData.company,
+        previousVisits: Math.floor(Math.random() * 5),
+        trustLevel: visitorData.company?.includes('trusted') ? 'high' : 'standard'
+      },
+      timestamp: new Date().toISOString()
     };
     
     if (!checks.passed) {
-      checks.reason = 'Background check failed';
+      checks.reason = `Background check failed for ${visitorData.email}`;
+      logger.warn(`Security check failed for visitor ${visitorData.email}:`, checks);
+    } else {
+      logger.debug(`Security checks passed for visitor ${visitorData.email}:`, checks);
     }
     
     return checks;

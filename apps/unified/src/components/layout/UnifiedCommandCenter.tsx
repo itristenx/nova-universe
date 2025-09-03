@@ -2,7 +2,7 @@
  * Unified Command Center - Phase 1 Implementation
  * Advanced search and command interface inspired by ServiceNow and Apple
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -219,6 +219,53 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
     },
   ];
 
+  // Filter quick actions based on user role and permissions
+  const filteredQuickActions = useMemo(() => {
+    if (!user) return quickActions;
+
+    // Check if user has admin privileges
+    const hasAdminRole = user.roles?.some(role => 
+      role.toString().toLowerCase().includes('admin')
+    );
+    if (hasAdminRole) {
+      return quickActions;
+    }
+
+    // Filter actions based on user role and permissions
+    return quickActions.filter(action => {
+      // Basic actions available to all users
+      const basicActions = ['create-ticket', 'dashboard', 'knowledge-base', 'book-space'];
+      if (basicActions.includes(action.id)) {
+        return true;
+      }
+
+      // AI actions for users with appropriate roles
+      if (action.category === 'AI') {
+        const hasAIAccess = user.roles?.some(role => {
+          const roleStr = role.toString().toLowerCase();
+          return roleStr.includes('it') || roleStr.includes('ai') || roleStr.includes('analytics');
+        });
+        return hasAIAccess;
+      }
+
+      // Asset management for IT staff and managers
+      if (action.id === 'asset-checkout') {
+        const hasAssetAccess = user.roles?.some(role => {
+          const roleStr = role.toString().toLowerCase();
+          return roleStr.includes('it') || roleStr.includes('manager') || roleStr.includes('asset');
+        });
+        return hasAssetAccess;
+      }
+
+      // Admin actions only for admin users
+      if (action.category === 'Admin') {
+        return hasAdminRole;
+      }
+
+      return true;
+    });
+  }, [user, quickActions]);
+
   // Enhanced search function with AI scope integration and prepared for full API integration
   const performSearch = useCallback(async (searchQuery: string, scope: string) => {
     if (!searchQuery.trim()) {
@@ -227,6 +274,14 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
     }
 
     setIsLoading(true);
+
+    // Add to recent searches if not already present
+    if (searchQuery.length > 2) {
+      setRecentSearches(prev => {
+        const newSearches = [searchQuery, ...prev.filter(s => s !== searchQuery)].slice(0, 5);
+        return newSearches;
+      });
+    }
 
     try {
       // AI scope - provide relevant AI feature results
@@ -469,6 +524,15 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {t('navigation:commandCenter.title')}
               </span>
+              {/* Location-aware context */}
+              {location.pathname !== '/' && (
+                <>
+                  <span className="text-gray-300 dark:text-gray-600">•</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                    {location.pathname.split('/').filter(Boolean).join(' › ') || 'Home'}
+                  </span>
+                </>
+              )}
             </div>
             <div className="flex-1" />
             <button
@@ -585,7 +649,7 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
 
                   {/* Group actions by category */}
                   {Object.entries(
-                    quickActions.reduce(
+                    filteredQuickActions.reduce(
                       (acc, action) => {
                         if (!acc[action.category]) {
                           acc[action.category] = [];
@@ -598,7 +662,7 @@ export function UnifiedCommandCenter({ isOpen, onClose }: CommandCenterProps) {
                   ).map(([category, actions]) => (
                     <div key={category} className="mb-4 last:mb-0">
                       {Object.keys(
-                        quickActions.reduce(
+                        filteredQuickActions.reduce(
                           (acc, action) => {
                             if (!acc[action.category]) {
                               acc[action.category] = [];

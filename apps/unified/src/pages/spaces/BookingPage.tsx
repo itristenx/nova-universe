@@ -205,7 +205,21 @@ export default function BookingPage() {
       toast.success('Booking created successfully!');
       navigate(`/spaces/${id}`);
     } catch (_error) {
-      toast.error('Failed to create booking');
+      console.error('Booking creation failed:', _error);
+      
+      // Provide more specific error messaging based on error type
+      let errorMessage = 'Failed to create booking';
+      if (_error instanceof Error) {
+        if (_error.message.includes('network')) {
+          errorMessage = 'Network error - please check your connection';
+        } else if (_error.message.includes('validation')) {
+          errorMessage = 'Please check your booking details';
+        } else if (_error.message.includes('conflict')) {
+          errorMessage = 'This time slot is no longer available';
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -261,12 +275,48 @@ export default function BookingPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Booking Form */}
         <div className="lg:col-span-2">
+          {/* Step Indicator */}
+          <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+            <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+              {getStepTitle()}
+            </h2>
+            <div className="flex items-center space-x-4">
+              {[1, 2, 3].map((step) => (
+                <div key={step} className="flex items-center">
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
+                      step <= currentStep
+                        ? 'bg-nova-600 text-white'
+                        : 'bg-gray-200 text-gray-500 dark:bg-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    {step < currentStep ? (
+                      <CheckCircleIcon className="h-5 w-5" />
+                    ) : (
+                      step
+                    )}
+                  </div>
+                  {step < 3 && (
+                    <div
+                      className={`h-1 w-12 ${
+                        step < currentStep
+                          ? 'bg-nova-600'
+                          : 'bg-gray-200 dark:bg-gray-600'
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
-                Booking Details
-              </h3>
+            {/* Step 1: Basic Information */}
+            {currentStep === 1 && (
+              <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
+                  Booking Details
+                </h3>
 
               <div className="space-y-4">
                 <div>
@@ -386,12 +436,16 @@ export default function BookingPage() {
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Additional Options */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
-                Additional Options
-              </h3>
+            {/* Step 2: Additional Requirements */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                {/* Additional Options */}
+                <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                  <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
+                    Additional Options
+                  </h3>
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -460,23 +514,99 @@ export default function BookingPage() {
                 </div>
               </div>
             </div>
+            </div>
+            )}
 
-            {/* Submit Button */}
-            <div className="flex items-center justify-end space-x-4">
-              <button
-                type="button"
-                onClick={() => navigate(`/spaces/${id}`)}
-                className="rounded-lg bg-gray-100 px-6 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-nova-600 hover:bg-nova-700 focus:ring-nova-500 rounded-lg px-6 py-2 text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSubmitting ? 'Creating Booking...' : 'Create Booking'}
-              </button>
+            {/* Step 3: Review & Confirm */}
+            {currentStep === 3 && (
+              <div className="space-y-6">
+                <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                  <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
+                    Review & Confirm
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">Event Details</h4>
+                        <p className="text-gray-600 dark:text-gray-400">{formData.title}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-500">{formData.description || 'No description'}</p>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">Date & Time</h4>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          {formData.startDate} at {formData.startTime}
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          to {formData.endDate} at {formData.endTime}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">Attendees</h4>
+                        <p className="text-gray-600 dark:text-gray-400">{formData.attendees} people</p>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">Total Cost</h4>
+                        <p className="text-2xl font-bold text-nova-600">${totalCost}</p>
+                      </div>
+                    </div>
+                    
+                    {formData.specialRequirements && (
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">Special Requirements</h4>
+                        <p className="text-gray-600 dark:text-gray-400">{formData.specialRequirements}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center justify-between space-x-4">
+              <div>
+                {currentStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="flex items-center rounded-lg bg-gray-100 px-6 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                  >
+                    <ArrowLeftIcon className="mr-2 h-4 w-4" />
+                    Previous
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/spaces/${id}`)}
+                  className="rounded-lg bg-gray-100 px-6 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+                
+                {currentStep < 3 ? (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="bg-nova-600 hover:bg-nova-700 focus:ring-nova-500 rounded-lg px-6 py-2 text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none"
+                  >
+                    Next
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-nova-600 hover:bg-nova-700 focus:ring-nova-500 rounded-lg px-6 py-2 text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isSubmitting ? 'Creating Booking...' : 'Create Booking'}
+                  </button>
+                )}
+              </div>
             </div>
           </form>
         </div>

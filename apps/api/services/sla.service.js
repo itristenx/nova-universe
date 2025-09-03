@@ -19,12 +19,20 @@ export class SLAService {
       const isVip = await this.isVipUser(userId);
       const vipLevel = isVip ? await this.getVipLevel(userId) : null;
 
+      // Apply category-specific SLA adjustments
+      const categoryMultiplier = this.getCategorySLAMultiplier(category, subcategory);
+      const priorityAdjustment = this.getPriorityAdjustment(priority);
+
       // Enhanced ticket data for matrix calculation
       const enhancedTicketData = {
         ...ticketData,
         isVip,
         vipLevel,
-        businessHours: this.isBusinessHours()
+        businessHours: this.isBusinessHours(),
+        categoryMultiplier,
+        priorityAdjustment,
+        // Include original priority for validation
+        originalPriority: priority
       };
 
       // Calculate SLA using Impact vs Urgency matrix
@@ -58,14 +66,30 @@ export class SLAService {
       } = slaCalculation;
 
       // Try to find existing SLA definition
+      // Use both calculated priority and priority label for enhanced matching
       let sla = await db.slaDefinition.findFirst({
         where: {
-          priority: priorityLabel.toUpperCase(),
-          isVipOnly: userType !== 'standard',
-          responseTime: slaPolicy.responseTime,
-          resolutionTime: slaPolicy.resolutionTime,
-          isActive: true
-        }
+          OR: [
+            // Primary match: Use calculated priority label
+            {
+              priority: priorityLabel.toUpperCase(),
+              isVipOnly: userType !== 'standard',
+              responseTime: slaPolicy.responseTime,
+              resolutionTime: slaPolicy.resolutionTime,
+              isActive: true
+            },
+            // Secondary match: Use original priority if priority label doesn't match
+            {
+              priority: priority.toString().toUpperCase(),
+              isVipOnly: userType !== 'standard',
+              isActive: true
+            }
+          ]
+        },
+        orderBy: [
+          { priority: 'asc' },
+          { responseTime: 'asc' }
+        ]
       });
 
       // Create new SLA definition if not found
@@ -132,6 +156,66 @@ export class SLAService {
     // Business hours: Monday-Friday, 8 AM - 6 PM
     return day >= 1 && day <= 5 && hour >= 8 && hour < 18;
   }
+
+  /**
+   * Get category-specific SLA multiplier for enhanced resolution times
+   */
+  static getCategorySLAMultiplier(category, subcategory) {
+    // Define category-based SLA multipliers
+    const categoryMultipliers = {
+      'security': 0.5,      // Security issues get faster response
+      'outage': 0.3,        // Outages get critical response
+      'hardware': 1.2,      // Hardware might take longer
+      'software': 1.0,      // Standard software issues
+      'request': 1.5,       // Service requests can take longer
+      'compliance': 0.7,    // Compliance issues need quick response
+      'network': 0.8,       // Network issues high priority
+      'access': 0.9,        // Access issues moderate priority
+    };
+
+    // Subcategory refinements
+    const subcategoryAdjustments = {
+      'critical': 0.5,      // Critical subcategory halves time
+      'high': 0.7,         // High subcategory reduces time  
+      'database': 0.8,     // Database issues need quick response
+      'email': 1.1,        // Email issues slightly longer
+      'printing': 1.3,     // Printing issues lower priority
+      'training': 2.0,     // Training requests much longer
+    };
+
+    let multiplier = categoryMultipliers[category?.toLowerCase()] || 1.0;
+    
+    // Apply subcategory adjustment
+    if (subcategory) {
+      const subcategoryAdjustment = subcategoryAdjustments[subcategory.toLowerCase()] || 1.0;
+      multiplier *= subcategoryAdjustment;
+    }
+
+    return Math.max(multiplier, 0.1); // Minimum 10% of base time
+  }
+
+  /**
+   * Get priority-based adjustment factor
+   */
+  static getPriorityAdjustment(priority) {
+    const priorityAdjustments = {
+      '1': 0.25,    // P1 - Critical - 25% of base time
+      '2': 0.5,     // P2 - High - 50% of base time  
+      '3': 1.0,     // P3 - Medium - 100% of base time
+      '4': 1.5,     // P4 - Low - 150% of base time
+      'critical': 0.25,
+      'high': 0.5,
+      'medium': 1.0,
+      'low': 1.5,
+      'p1': 0.25,
+      'p2': 0.5,
+      'p3': 1.0,
+      'p4': 1.5,
+    };
+
+    return priorityAdjustments[priority?.toString().toLowerCase()] || 1.0;
+  }
+
   /**
    * Check if a user is VIP
    */

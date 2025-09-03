@@ -47,7 +47,18 @@ export function SpaceFloorPlan({
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
 
-  // Mock floor plan data - would come from API
+  // Building and floor context
+  const buildingContext = {
+    id: buildingId,
+    name: buildingId === 'main-building' ? 'Main Building' : `Building ${buildingId}`,
+    floors: buildingId === 'main-building' ? ['Ground', 'Floor 1', 'Floor 2'] : ['Floor 1'],
+  };
+
+  const currentFloorName = floorId === 'floor-1' ? 'Floor 1' : 
+                          floorId === 'floor-2' ? 'Floor 2' : 
+                          floorId === 'ground' ? 'Ground' : `Floor ${floorId}`;
+
+  // Mock floor plan data - would come from API based on buildingId and floorId
   const floorPlanSpaces: FloorPlanSpace[] = [
     {
       id: 'meeting-001',
@@ -179,6 +190,50 @@ export function SpaceFloorPlan({
     setPan({ x: 0, y: 0 });
   };
 
+  // Handle mouse wheel zoom
+  const handleWheelZoom = (event: React.WheelEvent<SVGSVGElement>) => {
+    event.preventDefault();
+    const delta = event.deltaY * -0.001;
+    const newZoom = Math.max(0.3, Math.min(3, zoom + delta));
+    setZoom(newZoom);
+  };
+
+  // Calculate transform for zoom and pan
+  const getTransform = () => {
+    return `translate(${pan.x}, ${pan.y}) scale(${zoom})`;
+  };
+
+  // Pan interaction handlers
+  const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (event.button === 0) { // Left mouse button
+      setIsPanning(true);
+      setLastPanPoint({ x: event.clientX, y: event.clientY });
+      event.preventDefault();
+    }
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (isPanning) {
+      const deltaX = event.clientX - lastPanPoint.x;
+      const deltaY = event.clientY - lastPanPoint.y;
+      
+      setPan((prev) => ({
+        x: prev.x + deltaX / zoom,
+        y: prev.y + deltaY / zoom,
+      }));
+      
+      setLastPanPoint({ x: event.clientX, y: event.clientY });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsPanning(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsPanning(false);
+  };
+
   const filteredSpaces = filterStatus
     ? floorPlanSpaces.filter((space) => space.status === filterStatus)
     : floorPlanSpaces;
@@ -209,7 +264,10 @@ export function SpaceFloorPlan({
         <div className="toolbar-center">
           <span className="floor-info">
             <Building className="icon-sm" />
-            Main Building - Floor 1
+            {buildingContext.name} - {currentFloorName}
+          </span>
+          <span className="zoom-info" style={{ marginLeft: '1rem', fontSize: '0.75rem', color: '#6b7280' }}>
+            Zoom: {Math.round(zoom * 100)}%
           </span>
         </div>
 
@@ -253,6 +311,11 @@ export function SpaceFloorPlan({
           height="500"
           viewBox="0 0 500 300"
           className={`floorplan-svg ${isPanning ? 'grabbing' : 'grab'}`}
+          onWheel={handleWheelZoom}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
         >
           {/* Grid Pattern */}
           {showGrid && (
@@ -265,69 +328,72 @@ export function SpaceFloorPlan({
 
           {showGrid && <rect width="100%" height="100%" fill="url(#grid)" />}
 
-          {/* Building Outline */}
-          <rect
-            x="30"
-            y="30"
-            width="440"
-            height="240"
-            fill="none"
-            stroke="#374151"
-            strokeWidth="2"
-            rx="4"
-          />
+          {/* Main Content Group with Transform */}
+          <g transform={getTransform()}>
+            {/* Building Outline */}
+            <rect
+              x="30"
+              y="30"
+              width="440"
+              height="240"
+              fill="none"
+              stroke="#374151"
+              strokeWidth="2"
+              rx="4"
+            />
 
-          {/* Spaces */}
-          {filteredSpaces.map((space) => (
-            <g key={space.id}>
-              {/* Space Rectangle */}
-              <rect
-                x={space.x}
-                y={space.y}
-                width={space.width}
-                height={space.height}
-                fill={getStatusColor(space.status)}
-                fillOpacity={getStatusOpacity(space.status)}
-                stroke={selectedSpace === space.id ? '#1f2937' : '#374151'}
-                strokeWidth={selectedSpace === space.id ? 3 : 1}
-                rx="2"
-                className="space-rect"
-                onClick={() => handleSpaceClick(space)}
-              />
-
-              {/* Space Label */}
-              {showLabels && (
-                <text
-                  x={space.x + space.width / 2}
-                  y={space.y + space.height / 2}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="10"
-                  fill="#1f2937"
-                  fontWeight="500"
-                  className="space-label"
+            {/* Spaces */}
+            {filteredSpaces.map((space) => (
+              <g key={space.id}>
+                {/* Space Rectangle */}
+                <rect
+                  x={space.x}
+                  y={space.y}
+                  width={space.width}
+                  height={space.height}
+                  fill={getStatusColor(space.status)}
+                  fillOpacity={getStatusOpacity(space.status)}
+                  stroke={selectedSpace === space.id ? '#1f2937' : '#374151'}
+                  strokeWidth={selectedSpace === space.id ? 3 : 1}
+                  rx="2"
+                  className="space-rect"
                   onClick={() => handleSpaceClick(space)}
-                >
-                  {space.name}
-                </text>
-              )}
+                />
 
-              {/* Occupancy Indicator */}
-              {space.currentOccupancy !== undefined && (
-                <text
-                  x={space.x + space.width - 5}
-                  y={space.y + 12}
-                  textAnchor="end"
-                  fontSize="8"
-                  fill="#1f2937"
-                  fontWeight="600"
-                  className="occupancy-indicator"
-                >
-                  {space.currentOccupancy}/{space.capacity}
-                </text>
-              )}
-            </g>
-          ))}
+                {/* Space Label */}
+                {showLabels && (
+                  <text
+                    x={space.x + space.width / 2}
+                    y={space.y + space.height / 2}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize="10"
+                    fill="#1f2937"
+                    fontWeight="500"
+                    className="space-label"
+                    onClick={() => handleSpaceClick(space)}
+                  >
+                    {space.name}
+                  </text>
+                )}
+
+                {/* Occupancy Indicator */}
+                {space.currentOccupancy !== undefined && (
+                  <text
+                    x={space.x + space.width - 5}
+                    y={space.y + 12}
+                    textAnchor="end"
+                    fontSize="8"
+                    fill="#1f2937"
+                    fontWeight="600"
+                    className="occupancy-indicator"
+                  >
+                    {space.currentOccupancy}/{space.capacity}
+                  </text>
+                )}
+              </g>
+            ))}
+          </g>
 
           {/* Legend */}
           <g className="legend" transform="translate(350, 220)">

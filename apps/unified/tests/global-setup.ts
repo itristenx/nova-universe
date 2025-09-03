@@ -174,7 +174,8 @@ async function cleanupTestData(prisma: PrismaClient): Promise<void> {
         `DELETE FROM "${table}" WHERE email LIKE '%@test.nova.com' OR name LIKE '%TEST%'`,
       );
     } catch (error) {
-      // Ignore errors for tables that might not exist
+      // Log cleanup errors for debugging but continue with other tables
+      console.warn(`⚠️ Cleanup warning for table ${table}:`, error instanceof Error ? error.message : error);
     }
   }
 }
@@ -203,7 +204,12 @@ async function createTestData(prisma: PrismaClient): Promise<void> {
     },
   });
 
-  console.log('✅ Test data created');
+  // Validate test data creation
+  if (!testCategory.id) {
+    throw new Error('Failed to create test category');
+  }
+
+  console.log(`✅ Test data created - Organization: ${testOrg.id}, Category: ${testCategory.id}`);
 }
 
 async function setupTestUsers(
@@ -219,6 +225,12 @@ async function setupTestUsers(
       role: 'USER',
     });
 
+    // Validate user creation
+    if (userResponse.status !== 201 && userResponse.status !== 200) {
+      throw new Error(`User registration failed with status: ${userResponse.status}`);
+    }
+    console.log('✅ Test user created successfully');
+
     // Create test admin account
     const adminResponse = await axios.post(`${testEnv.apiBaseUrl}/auth/register`, {
       email: testEnv.testAdmin.email,
@@ -227,6 +239,12 @@ async function setupTestUsers(
       lastName: 'Admin',
       role: 'ADMIN',
     });
+
+    // Validate admin creation
+    if (adminResponse.status !== 201 && adminResponse.status !== 200) {
+      throw new Error(`Admin registration failed with status: ${adminResponse.status}`);
+    }
+    console.log('✅ Test admin created successfully');
 
     // Login to get tokens
     const userLogin = await axios.post(`${testEnv.apiBaseUrl}/auth/login`, {
@@ -261,7 +279,11 @@ async function setupTestUsers(
         adminToken: adminLogin.data.token,
       };
     } catch (loginError) {
-      throw new Error(`Failed to setup test users: ${error}`);
+      console.error('❌ Authentication failed for existing test users:', {
+        originalError: error instanceof Error ? error.message : error,
+        loginError: loginError instanceof Error ? loginError.message : loginError,
+      });
+      throw new Error(`Failed to setup test users: Registration failed (${error}), Login also failed (${loginError})`);
     }
   }
 }

@@ -41,6 +41,7 @@ interface WorkflowNodeData {
   config?: any;
   description?: string;
   assignee?: string;
+  assigneeRole?: string; // Role-based assignment for approval nodes
   conditions?: ApprovalCondition[];
   timeout?: number;
   escalation?: string[];
@@ -158,11 +159,13 @@ interface NodeConfigModalProps {
 
 const NodeConfigModal: React.FC<NodeConfigModalProps> = ({ node, isOpen, onClose, onSave }) => {
   const [config, setConfig] = useState<Partial<WorkflowNodeData>>({});
+  const [localSelectedNodeType, setLocalSelectedNodeType] = useState<string>('');
   const { users, roles } = useRBACStore();
 
   React.useEffect(() => {
     if (node) {
       setConfig(node.data);
+      setLocalSelectedNodeType(node.data.type || '');
     }
   }, [node]);
 
@@ -208,6 +211,32 @@ const NodeConfigModal: React.FC<NodeConfigModalProps> = ({ node, isOpen, onClose
                 </div>
 
                 <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Node Type</label>
+                  <select
+                    value={localSelectedNodeType}
+                    onChange={(e) => {
+                      setLocalSelectedNodeType(e.target.value);
+                      // Update the node type in real-time (cast to expected type)
+                      setConfig({ ...config, type: e.target.value as 'start' | 'approval' | 'condition' | 'action' | 'end' });
+                    }}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  >
+                    <option value="">Select Node Type</option>
+                    <option value="approval">Approval Node</option>
+                    <option value="condition">Condition Node</option>
+                    <option value="action">Action Node</option>
+                    <option value="notification">Notification Node</option>
+                    <option value="script">Script Node</option>
+                    <option value="delay">Delay Node</option>
+                    <option value="merge">Merge Node</option>
+                    <option value="split">Split Node</option>
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Change the node type to access different configuration options
+                  </p>
+                </div>
+
+                <div>
                   <label className="mb-1 block text-sm font-medium text-gray-700">
                     Description
                   </label>
@@ -233,10 +262,31 @@ const NodeConfigModal: React.FC<NodeConfigModalProps> = ({ node, isOpen, onClose
                         <option value="">Select assignee...</option>
                         {users.map((user) => (
                           <option key={user.id} value={user.id}>
-                            {user.display_name}
+                            {`${user.first_name} ${user.last_name}`.trim() || user.username || user.email}
                           </option>
                         ))}
                       </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">
+                        Assign by Role
+                      </label>
+                      <select
+                        value={config.assigneeRole || ''}
+                        onChange={(e) => setConfig({ ...config, assigneeRole: e.target.value, assignee: '' })}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      >
+                        <option value="">Select role-based assignment...</option>
+                        {roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name} - {role.description}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Role assignment will automatically route to users with this role
+                      </p>
                     </div>
 
                     <div>
@@ -340,8 +390,8 @@ export const VisualWorkflowBuilder: React.FC<VisualWorkflowBuilderProps> = ({
             id: step.id,
             label: step.name,
             type: 'approval',
-            description: step.description,
-            assignee: step.assignee_type === 'user' ? step.assignee_id : undefined,
+            assignee: step.approvers?.[0]?.type === 'user' ? step.approvers[0].identifier : undefined,
+            assigneeRole: step.approvers?.[0]?.type === 'role' ? step.approvers[0].identifier : undefined,
             timeout: step.timeout_hours,
           },
         });
@@ -527,15 +577,20 @@ export const VisualWorkflowBuilder: React.FC<VisualWorkflowBuilderProps> = ({
     const approvalNodes = nodes.filter((node) => node.data.type === 'approval');
     const steps: ApprovalStep[] = approvalNodes.map((node, index) => ({
       id: node.data.id,
-      name: node.data.label,
-      description: node.data.description || '',
       order: index + 1,
-      assignee_type: node.data.assignee ? 'user' : 'role',
-      assignee_id: node.data.assignee || '',
+      name: node.data.label,
+      type: (node.data.assigneeRole ? 'role' : 'user') as 'user' | 'group' | 'role' | 'manager' | 'script',
+      approvers: [{
+        type: node.data.assigneeRole ? 'role' : 'user',
+        identifier: node.data.assigneeRole || node.data.assignee || '',
+        fallback_approver: '',
+        delegation_enabled: true,
+      }],
+      approval_type: 'any' as const,
       timeout_hours: node.data.timeout || 24,
-      escalation_users: node.data.escalation || [],
+      escalation_rules: [],
       conditions: node.data.conditions || [],
-      required: true,
+      rejection_behavior: 'stop' as const,
     }));
 
     const workflowData: Partial<ApprovalFlow> = {
@@ -616,12 +671,26 @@ export const VisualWorkflowBuilder: React.FC<VisualWorkflowBuilderProps> = ({
           <div className="mt-6 border-t border-gray-200 pt-6">
             <h3 className="mb-4 text-sm font-medium text-gray-900">Actions</h3>
             <div className="space-y-2">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600">
+                  Node Type to Add
+                </label>
+                <select
+                  value={selectedNodeType}
+                  onChange={(e) => setSelectedNodeType(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="approval">Approval Node</option>
+                  <option value="condition">Condition Node</option>
+                  <option value="action">Action Node</option>
+                </select>
+              </div>
               <button
-                onClick={() => addNewNode('approval')}
+                onClick={() => addNewNode(selectedNodeType as 'start' | 'approval' | 'condition' | 'action' | 'end')}
                 className="flex w-full items-center space-x-2 rounded-md border border-green-200 bg-green-50 p-2 text-sm text-green-700 hover:bg-green-100"
               >
                 <PlusIcon className="h-4 w-4" />
-                <span>Add Node</span>
+                <span>Add {selectedNodeType.charAt(0).toUpperCase() + selectedNodeType.slice(1)} Node</span>
               </button>
               <button
                 onClick={duplicateSelectedNodes}
