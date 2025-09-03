@@ -48,6 +48,7 @@ import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
 import novaTVRouter from './routes/nova-tv.js'; // Nova TV - Channel Management
+import emailActionsRouter from './routes/email-actions.js'; // Enhanced Email Actions for Workflows
 import customerActivityRouter from './routes/customer-activity.js'; // Customer Activity & Email Communication Tracking
 // Service Catalog API routes
 import serviceCatalogRouter from './routes/serviceCatalog.js';
@@ -2396,6 +2397,7 @@ v2Router.use('/mcp', mcpServerRouter); // MCP Server Control Tower API (v2 only)
 v2Router.use('/synth', synthV2Router); // Nova Synth - AI Engine v2 (Enhanced)
 v2Router.use('/alerts', alertsRouter); // Unified Alerts facade (Nova Alert)
 v2Router.use('/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
+v2Router.use('/email-actions', emailActionsRouter); // Enhanced Email Actions for Workflows (no auth required for tokens)
 v2Router.use('/beacon', beaconRouter); // Nova Beacon - Kiosk Management v2
 v2Router.use('/goalert', goalertProxyRouter); // GoAlert Proxy for alerting
 
@@ -2431,6 +2433,7 @@ v1Router.use('/monitoring', monitoringRouter);
 v1Router.use('/uptime-kuma', uptimeKumaProxyRouter);
 v1Router.use('/websocket/uptime-kuma', uptimeKumaWebSocketRouter);
 v1Router.use('/auth', authRouter);
+v1Router.use('/email-actions', emailActionsRouter); // Enhanced Email Actions for Workflows (backward compatibility)
 v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
 v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - Enterprise AI/ML/RAG Management
 v1Router.use('/tickets', ticketsRouter);

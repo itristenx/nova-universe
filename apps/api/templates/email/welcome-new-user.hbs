@@ -98,14 +98,15 @@
   <body>
     <div class='container'>
       <div class='header'>
-        <h1>🎉 Welcome to {{companyName}}!</h1>
+        <h1>🎉 Welcome to %COMPANYNAME%!</h1>
       </div>
       <div class='content'>
         <div class='welcome-banner'>
-          <h2>Welcome aboard, {{user.name}}!</h2>
+          <h2>Welcome aboard, %USERFIRST%!</h2>
           <p>Your support portal account has been created successfully.</p>
         </div>
 
+        <p>Hello %USERNAME%,</p>
         <p>We're excited to have you join our community! Your support portal gives you access to:</p>
 
         <div class='feature-grid'>
@@ -128,15 +129,15 @@
         </div>
 
         <div style='text-align: center; margin: 32px 0;'>
-          <a href='{{baseUrl}}/portal' class='btn-primary'>Access Your Portal</a>
+          <a href='%PORTALURL%' class='btn-primary'>Access Your Portal</a>
         </div>
 
         <p><strong>📋 Your Account Details:</strong></p>
         <ul>
-          <li><strong>Email:</strong> {{user.email}}</li>
-          <li><strong>Portal URL:</strong> <a href='{{baseUrl}}/portal'>{{baseUrl}}/portal</a></li>
+          <li><strong>Email:</strong> %USEREMAIL%</li>
+          <li><strong>Portal URL:</strong> <a href='%PORTALURL%'>%PORTALURL%</a></li>
           <li><strong>Support Email:</strong>
-            <a href='mailto:{{supportEmail}}'>{{supportEmail}}</a></li>
+            <a href='mailto:%SUPPORTEMAIL%'>%SUPPORTEMAIL%</a></li>
         </ul>
 
         <p><strong>🚀 Getting Started:</strong></p>
@@ -148,9 +149,9 @@
         </ol>
       </div>
       <div class='footer'>
-        <p>Welcome to {{companyName}}!</p>
+        <p>Welcome to %COMPANYNAME%!</p>
         <p>Need help getting started? Contact us at
-          <a href='mailto:{{supportEmail}}'>{{supportEmail}}</a></p>
+          <a href='mailto:%SUPPORTEMAIL%'>%SUPPORTEMAIL%</a></p>
       </div>
     </div>
   </body>

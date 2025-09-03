@@ -106,50 +106,50 @@
         <h1>🎫 Support Ticket Created</h1>
       </div>
       <div class='content'>
-        <p>Hello {{customer.name}},</p>
+        <p>Hello %USERFIRST%,</p>
         <p>Thank you for contacting our support team. We've received your request and created a
           support ticket for you.</p>
 
         <div class='ticket-card'>
-          <div class='ticket-id'>Ticket #{{ticket.id}}</div>
+          <div class='ticket-id'>Ticket %TICKETID%</div>
 
           <div class='detail-row'>
             <div class='detail-label'>Subject:</div>
-            <div class='detail-value'>{{ticket.title}}</div>
+            <div class='detail-value'>%TICKETTITLE%</div>
           </div>
 
           <div class='detail-row'>
             <div class='detail-label'>Priority:</div>
-            <div class='detail-value'>{{upperCase ticket.priority}}</div>
+            <div class='detail-value'>%TICKETPRIORITY%</div>
           </div>
 
           <div class='detail-row'>
             <div class='detail-label'>Status:</div>
-            <div class='detail-value'>{{upperCase ticket.status}}</div>
+            <div class='detail-value'>%TICKETSTATUS%</div>
           </div>
 
           <div class='detail-row'>
             <div class='detail-label'>Created:</div>
-            <div class='detail-value'>{{formatDateTime ticket.createdAt}}</div>
+            <div class='detail-value'>%TICKETCREATED%</div>
           </div>
         </div>
 
         <div class='expectation-box'>
           <strong>📅 What to expect:</strong><br />
           Based on your ticket priority, you can expect a response within
-          <strong>{{responseTime}}</strong>. We'll keep you updated via email as our team works on
+          <strong>%RESPONSETIME%</strong>. We'll keep you updated via email as our team works on
           your request.
         </div>
 
-        <a href='{{baseUrl}}/tickets/{{ticket.id}}' class='btn-primary'>View Ticket Details</a>
+        <a href='%TICKETURL%' class='btn-primary'>View Ticket Details</a>
 
         <p><strong>🔗 Tracking your ticket:</strong><br />
-          Save this email for your records. You can always check your ticket status using ticket #{{ticket.id}}.</p>
+          Save this email for your records. You can always check your ticket status using ticket %TICKETID%.</p>
       </div>
       <div class='footer'>
-        <p>This message was sent from {{companyName}} Support</p>
+        <p>This message was sent from %COMPANYNAME% Support</p>
         <p>To reply to this ticket, please email
-          <a href='mailto:{{supportEmail}}'>{{supportEmail}}</a></p>
+          <a href='mailto:%SUPPORTEMAIL%'>%SUPPORTEMAIL%</a></p>
       </div>
     </div>
   </body>

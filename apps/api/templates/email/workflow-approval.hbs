@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Approval Required - Nova</title>
+    <style>
+        /* Modern email styling with action buttons */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #374151;
+            background-color: #f9fafb;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 32px 24px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 32px 24px;
+        }
+        
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        
+        .priority-high {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .priority-normal {
+            background: #f0f9ff;
+            color: #0284c7;
+            border: 1px solid #bae6fd;
+        }
+        
+        .priority-low {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .request-details {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        
+        .request-details h3 {
+            color: #1f2937;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            width: 120px;
+            color: #6b7280;
+        }
+        
+        .detail-value {
+            flex: 1;
+            color: #374151;
+        }
+        
+        .description {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 12px;
+            line-height: 1.5;
+        }
+        
+        .action-buttons {
+            text-align: center;
+            margin: 32px 0;
+            padding: 24px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .action-buttons h4 {
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-size: 16px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            margin: 0 8px 12px 8px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .btn-approve {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .btn-approve:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+        
+        .btn-deny {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-deny:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+        
+        .btn-view {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-view:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .btn-comment {
+            background: white;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+        
+        .btn-comment:hover {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .alternative-actions {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .alternative-actions p {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+        
+        .alternative-actions a {
+            color: #3b82f6;
+            text-decoration: none;
+            margin-right: 16px;
+        }
+        
+        .footer {
+            background: #f3f4f6;
+            padding: 24px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        
+        .tracking-info {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .content {
+                padding: 24px 16px;
+            }
+            
+            .btn {
+                display: block;
+                margin: 8px 0;
+                width: 100%;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+            }
+            
+            .detail-label {
+                width: auto;
+                margin-bottom: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 Approval Required</h1>
+            <p>A workflow is waiting for your approval</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            {{#if priority}}
+            <div class="priority-badge priority-{{priority}}">
+                {{upperCase priority}} Priority
+            </div>
+            {{/if}}
+            
+            <h2>{{title}}</h2>
+            <p>{{description}}</p>
+            
+            <!-- Request Details -->
+            <div class="request-details">
+                <h3>Request Details</h3>
+                <div class="detail-row">
+                    <div class="detail-label">Request ID:</div>
+                    <div class="detail-value">{{ticketId}}</div>
+                </div>
+                {{#if requester}}
+                <div class="detail-row">
+                    <div class="detail-label">Requester:</div>
+                    <div class="detail-value">{{requester.name}} ({{requester.email}})</div>
+                </div>
+                {{/if}}
+                {{#if department}}
+                <div class="detail-row">
+                    <div class="detail-label">Department:</div>
+                    <div class="detail-value">{{department}}</div>
+                </div>
+                {{/if}}
+                <div class="detail-row">
+                    <div class="detail-label">Submitted:</div>
+                    <div class="detail-value">{{formatDateTime createdAt}}</div>
+                </div>
+                {{#if dueDate}}
+                <div class="detail-row">
+                    <div class="detail-label">Due Date:</div>
+                    <div class="detail-value">{{formatDateTime dueDate}}</div>
+                </div>
+                {{/if}}
+                
+                {{#if requestDetails}}
+                <div class="description">
+                    {{{requestDetails}}}
+                </div>
+                {{/if}}
+            </div>
+            
+            <!-- Action Buttons -->
+            {{#if actions}}
+            <div class="action-buttons">
+                <h4>Take Action on this Request</h4>
+                
+                {{#if actions.approve}}
+                <a href="{{actions.approve.url}}" class="btn btn-approve">
+                    ✅ Approve Request
+                </a>
+                {{/if}}
+                
+                {{#if actions.deny}}
+                <a href="{{actions.deny.url}}" class="btn btn-deny">
+                    ❌ Deny Request
+                </a>
+                {{/if}}
+                
+                <br>
+                
+                {{#if actions.view}}
+                <a href="{{actions.view.url}}" class="btn btn-view">
+                    👁️ View Full Details
+                </a>
+                {{/if}}
+                
+                {{#if actions.comment}}
+                <a href="{{actions.comment.url}}" class="btn btn-comment">
+                    💬 Add Comment
+                </a>
+                {{/if}}
+                
+                <div class="alternative-actions">
+                    <p>Can't use the buttons above?</p>
+                    <a href="{{ticketUrl}}">Open in Nova Portal</a>
+                    <a href="mailto:support@nova.local?subject=RE: Approval Request {{ticketId}}">Reply via Email</a>
+                </div>
+            </div>
+            {{/if}}
+            
+            <!-- Workflow Information -->
+            {{#if workflowInfo}}
+            <div class="request-details">
+                <h3>Workflow Information</h3>
+                <div class="detail-row">
+                    <div class="detail-label">Workflow:</div>
+                    <div class="detail-value">{{workflowInfo.name}}</div>
+                </div>
+                {{#if workflowInfo.approvers}}
+                <div class="detail-row">
+                    <div class="detail-label">Approvers:</div>
+                    <div class="detail-value">{{workflowInfo.approvers}}</div>
+                </div>
+                {{/if}}
+                {{#if workflowInfo.currentStep}}
+                <div class="detail-row">
+                    <div class="detail-label">Current Step:</div>
+                    <div class="detail-value">{{workflowInfo.currentStep}}</div>
+                </div>
+                {{/if}}
+            </div>
+            {{/if}}
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                This email was sent by Nova Workflow System.<br>
+                <a href="{{baseUrl}}/notifications/preferences">Manage notification preferences</a> |
+                <a href="{{baseUrl}}/help">Get Help</a>
+            </p>
+            
+            {{#if trackingPixel}}
+            <div class="tracking-info">
+                Ticket ID: {{ticketId}} | Message ID: {{messageId}}<br>
+                This message is tracked for delivery confirmation.
+                <img src="{{trackingPixel}}" width="1" height="1" style="display:none;" alt="">
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</body>
+</html>

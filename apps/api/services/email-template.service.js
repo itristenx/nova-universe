@@ -4,6 +4,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { logger } from '../logger.js';
 import ConfigurationService from './configuration.service.js';
+import EmailTemplateModel from '../models/email-template.model.js';
+import { 
+  transformPlaceholders, 
+  processTemplateData, 
+  registerPlaceholderHelpers,
+  getAvailablePlaceholders,
+  validateTemplate
+} from '../utils/email-placeholders.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,51 +19,107 @@ const __dirname = path.dirname(__filename);
 class EmailTemplateService {
   constructor() {
     this.templates = new Map();
+    this.dbTemplates = new Map();
     this.templatesPath = path.join(__dirname, '../templates/email');
     this.loadTemplates();
   }
 
   /**
-   * Load all email templates
+   * Load all email templates from both files and database
    */
   loadTemplates() {
     try {
-      // Default templates directory
-      const templatesDir = this.templatesPath;
-
-      // Create templates directory if it doesn't exist
-      if (!fs.existsSync(templatesDir)) {
-        fs.mkdirSync(templatesDir, { recursive: true });
-        this.createDefaultTemplates();
-      }
-
-      const templateFiles = fs.readdirSync(templatesDir);
-
-      for (const file of templateFiles) {
-        if (file.endsWith('.hbs')) {
-          const templateName = path.basename(file, '.hbs');
-          const templateContent = fs.readFileSync(path.join(templatesDir, file), 'utf8');
-
-          try {
-            this.templates.set(templateName, Handlebars.compile(templateContent));
-            logger.info(`Loaded email template: ${templateName}`);
-          } catch (error) {
-            logger.error(`Error compiling template ${templateName}:`, error);
-          }
-        }
-      }
-
-      // Register helpers
+      // Load file-based templates first
+      this.loadFileTemplates();
+      
+      // Register enhanced helpers for placeholders
       this.registerHelpers();
+      registerPlaceholderHelpers(Handlebars);
 
-      logger.info(`Loaded ${this.templates.size} email templates`);
+      logger.info(`Loaded ${this.templates.size} file-based email templates`);
     } catch (error) {
       logger.error('Error loading email templates:', error);
     }
   }
 
   /**
-   * Register Handlebars helpers
+   * Load database templates for a specific organization
+   */
+  async loadDatabaseTemplates(organizationId = null) {
+    try {
+      const dbTemplates = await EmailTemplateModel.getAll(organizationId, { includeInactive: false });
+      
+      // Clear existing database templates for this organization
+      const orgKey = organizationId || 'global';
+      this.dbTemplates.set(orgKey, new Map());
+      
+      for (const template of dbTemplates) {
+        try {
+          // Templates from database are already transformed
+          const compiledTemplate = Handlebars.compile(template.body_html);
+          const compiledSubject = Handlebars.compile(template.subject);
+          
+          this.dbTemplates.get(orgKey).set(template.key, {
+            template: compiledTemplate,
+            subject: compiledSubject,
+            metadata: {
+              id: template.id,
+              name: template.name,
+              category: template.category,
+              source: 'database',
+              organizationId: template.organization_id,
+              isActive: template.is_active,
+              createdAt: template.created_at,
+              updatedAt: template.updated_at,
+            }
+          });
+          
+          logger.debug(`Loaded database template: ${template.key}`);
+        } catch (error) {
+          logger.error(`Error compiling database template ${template.key}:`, error);
+        }
+      }
+      
+      logger.info(`Loaded ${dbTemplates.length} database templates for organization: ${organizationId || 'global'}`);
+    } catch (error) {
+      logger.error('Error loading database templates:', error);
+    }
+  }
+
+  /**
+   * Load file-based templates (existing functionality)
+   */
+  loadFileTemplates() {
+    // Default templates directory
+    const templatesDir = this.templatesPath;
+
+    // Create templates directory if it doesn't exist
+    if (!fs.existsSync(templatesDir)) {
+      fs.mkdirSync(templatesDir, { recursive: true });
+      this.createDefaultTemplates();
+    }
+
+    const templateFiles = fs.readdirSync(templatesDir);
+
+    for (const file of templateFiles) {
+      if (file.endsWith('.hbs')) {
+        const templateName = path.basename(file, '.hbs');
+        const templateContent = fs.readFileSync(path.join(templatesDir, file), 'utf8');
+
+        try {
+          // Transform industry standard placeholders to Handlebars syntax
+          const transformedContent = transformPlaceholders(templateContent);
+          this.templates.set(templateName, Handlebars.compile(transformedContent));
+          logger.debug(`Loaded file template: ${templateName}`);
+        } catch (error) {
+          logger.error(`Error compiling template ${templateName}:`, error);
+        }
+      }
+    }
+  }
+
+  /**
+   * Register Handlebars helpers with enhanced placeholder support
    */
   registerHelpers() {
     Handlebars.registerHelper('formatDate', (date) => {
@@ -96,6 +160,23 @@ class EmailTemplateService {
     Handlebars.registerHelper('capitalize', (str) => {
       if (!str) return '';
       return str.charAt(0).toUpperCase() + str.slice(1);
+    });
+
+    // Enhanced helpers for name formatting
+    Handlebars.registerHelper('firstName', (name) => {
+      if (!name) return '';
+      return name.trim().split(/\s+/)[0] || '';
+    });
+
+    Handlebars.registerHelper('lastName', (name) => {
+      if (!name) return '';
+      const parts = name.trim().split(/\s+/);
+      return parts.length > 1 ? parts[parts.length - 1] : '';
+    });
+
+    Handlebars.registerHelper('initials', (name) => {
+      if (!name) return '';
+      return name.trim().split(/\s+/).map(part => part.charAt(0).toUpperCase()).join('');
     });
   }
 
@@ -924,11 +1005,31 @@ class EmailTemplateService {
   }
 
   /**
-   * Render email template
+   * Render email template with enhanced placeholder support
    */
-  async render(templateName, data) {
+  async render(templateName, data, organizationId = null) {
     try {
-      const template = this.templates.get(templateName);
+      let template = null;
+      let source = 'file';
+
+      // First try to get from database templates
+      if (organizationId !== undefined) {
+        await this.loadDatabaseTemplates(organizationId);
+        const orgKey = organizationId || 'global';
+        const orgTemplates = this.dbTemplates.get(orgKey);
+        
+        if (orgTemplates && orgTemplates.has(templateName)) {
+          template = orgTemplates.get(templateName).template;
+          source = 'database';
+        }
+      }
+
+      // Fallback to file-based templates
+      if (!template) {
+        template = this.templates.get(templateName);
+        source = 'file';
+      }
+
       if (!template) {
         throw new Error(`Template '${templateName}' not found`);
       }
@@ -936,15 +1037,24 @@ class EmailTemplateService {
       // Get configuration from database/environment with proper fallbacks
       const emailConfig = await ConfigurationService.getEmailConfig();
 
+      // Create single timestamp for consistency across the entire email
+      const currentTime = new Date();
+
+      // Process template data with proper name parsing and enhanced data
+      const processedData = processTemplateData(data, currentTime);
+
       // Add default data with dynamic configuration
       const templateData = {
-        ...data,
+        ...processedData,
         baseUrl: emailConfig.baseUrl,
         companyName: emailConfig.companyName,
         supportEmail: emailConfig.support_email || 'support@example.com',
         responseTime: this.getResponseTime(data.ticket?.priority),
+        // Use the same timestamp that was used in processTemplateData
+        now: currentTime,
       };
 
+      logger.debug(`Rendering template ${templateName} from ${source}`);
       return template(templateData);
     } catch (error) {
       logger.error(`Error rendering template ${templateName}:`, error);
@@ -953,11 +1063,31 @@ class EmailTemplateService {
   }
 
   /**
-   * Render email subject
+   * Render email subject with enhanced placeholder support
    */
-  async renderSubject(templateName, data) {
+  async renderSubject(templateName, data, organizationId = null) {
     try {
-      const subjectTemplate = this.templates.get(`${templateName}-subject`);
+      let subjectTemplate = null;
+      let source = 'file';
+
+      // First try to get from database templates
+      if (organizationId !== undefined) {
+        await this.loadDatabaseTemplates(organizationId);
+        const orgKey = organizationId || 'global';
+        const orgTemplates = this.dbTemplates.get(orgKey);
+        
+        if (orgTemplates && orgTemplates.has(templateName)) {
+          subjectTemplate = orgTemplates.get(templateName).subject;
+          source = 'database';
+        }
+      }
+
+      // Fallback to file-based subject template
+      if (!subjectTemplate) {
+        subjectTemplate = this.templates.get(`${templateName}-subject`);
+        source = 'file';
+      }
+
       if (!subjectTemplate) {
         // Fallback to generic subject
         return `Nova ITSM - ${templateName.replace('-', ' ')}`;
@@ -966,11 +1096,19 @@ class EmailTemplateService {
       // Get configuration from database/environment with proper fallbacks
       const emailConfig = await ConfigurationService.getEmailConfig();
 
+      // Create single timestamp for consistency across subject and body
+      const currentTime = new Date();
+
+      // Process template data with proper name parsing
+      const processedData = processTemplateData(data, currentTime);
+
       const templateData = {
-        ...data,
+        ...processedData,
         companyName: emailConfig.companyName,
+        now: currentTime,
       };
 
+      logger.debug(`Rendering subject for ${templateName} from ${source}`);
       return subjectTemplate(templateData);
     } catch (error) {
       logger.error(`Error rendering subject for ${templateName}:`, error);
@@ -993,16 +1131,146 @@ class EmailTemplateService {
   }
 
   /**
-   * Get available templates
+   * Get available templates (both file and database)
    */
-  getAvailableTemplates() {
-    return Array.from(this.templates.keys())
+  async getAvailableTemplates(organizationId = null) {
+    const templates = [];
+
+    // Add file-based templates
+    Array.from(this.templates.keys())
       .filter((name) => !name.endsWith('-subject'))
-      .map((name) => ({
-        name,
-        hasSubject: this.templates.has(`${name}-subject`),
-        category: this.getTemplateCategory(name),
-      }));
+      .forEach((name) => {
+        templates.push({
+          name,
+          key: name,
+          hasSubject: this.templates.has(`${name}-subject`),
+          category: this.getTemplateCategory(name),
+          source: 'file',
+          isEditable: false,
+        });
+      });
+
+    // Add database templates
+    try {
+      const dbTemplates = await EmailTemplateModel.getAll(organizationId);
+      dbTemplates.forEach((template) => {
+        templates.push({
+          id: template.id,
+          name: template.name,
+          key: template.key,
+          hasSubject: true,
+          category: template.category,
+          source: 'database',
+          isEditable: true,
+          isActive: template.is_active,
+          organizationId: template.organization_id,
+          createdAt: template.created_at,
+          updatedAt: template.updated_at,
+        });
+      });
+    } catch (error) {
+      logger.error('Error fetching database templates:', error);
+    }
+
+    return templates;
+  }
+
+  /**
+   * Get database template by key for editing
+   */
+  async getDatabaseTemplate(key, organizationId = null) {
+    try {
+      return await EmailTemplateModel.getByKey(key, organizationId);
+    } catch (error) {
+      logger.error(`Error fetching database template ${key}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create database template
+   */
+  async createDatabaseTemplate(templateData) {
+    try {
+      const created = await EmailTemplateModel.create(templateData);
+      
+      // Reload database templates for this organization
+      await this.loadDatabaseTemplates(templateData.organizationId);
+      
+      return created;
+    } catch (error) {
+      logger.error('Error creating database template:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update database template
+   */
+  async updateDatabaseTemplate(id, templateData) {
+    try {
+      const updated = await EmailTemplateModel.update(id, templateData);
+      
+      // Reload database templates for this organization
+      const template = await EmailTemplateModel.getById(id);
+      if (template) {
+        await this.loadDatabaseTemplates(template.organization_id);
+      }
+      
+      return updated;
+    } catch (error) {
+      logger.error('Error updating database template:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete database template
+   */
+  async deleteDatabaseTemplate(id) {
+    try {
+      const template = await EmailTemplateModel.getById(id);
+      const organizationId = template?.organization_id;
+      
+      const result = await EmailTemplateModel.delete(id);
+      
+      // Reload database templates for this organization
+      if (organizationId !== undefined) {
+        await this.loadDatabaseTemplates(organizationId);
+      }
+      
+      return result;
+    } catch (error) {
+      logger.error('Error deleting database template:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get available placeholders
+   */
+  getAvailablePlaceholders() {
+    return getAvailablePlaceholders();
+  }
+
+  /**
+   * Validate template content
+   */
+  validateTemplate(template) {
+    return validateTemplate(template);
+  }
+
+  /**
+   * Import default templates to database
+   */
+  async importDefaultTemplates(organizationId = null) {
+    try {
+      const defaultTemplates = this.getDefaultTemplatesForImport();
+      return await EmailTemplateModel.importDefaults(defaultTemplates, organizationId);
+    } catch (error) {
+      logger.error('Error importing default templates:', error);
+      throw error;
+    }
   }
 
   /**
@@ -1018,24 +1286,28 @@ class EmailTemplateService {
   }
 
   /**
-   * Create custom template
+   * Create custom template (file-based, for backward compatibility)
    */
   createTemplate(name, html, subject) {
     try {
+      // Transform industry standard placeholders to Handlebars syntax
+      const transformedHtml = transformPlaceholders(html);
+      const transformedSubject = subject ? transformPlaceholders(subject) : '';
+
       // Save HTML template
       const htmlPath = path.join(this.templatesPath, `${name}.hbs`);
-      fs.writeFileSync(htmlPath, html, 'utf8');
+      fs.writeFileSync(htmlPath, transformedHtml, 'utf8');
 
       // Save subject template if provided
-      if (subject) {
+      if (transformedSubject) {
         const subjectPath = path.join(this.templatesPath, `${name}-subject.hbs`);
-        fs.writeFileSync(subjectPath, subject, 'utf8');
+        fs.writeFileSync(subjectPath, transformedSubject, 'utf8');
       }
 
       // Reload templates
       this.loadTemplates();
 
-      logger.info(`Created custom template: ${name}`);
+      logger.info(`Created custom file template: ${name}`);
       return true;
     } catch (error) {
       logger.error(`Error creating template ${name}:`, error);
@@ -1044,7 +1316,7 @@ class EmailTemplateService {
   }
 
   /**
-   * Update existing template
+   * Update existing template (file-based, for backward compatibility)
    */
   updateTemplate(name, html, subject) {
     try {
@@ -1060,7 +1332,7 @@ class EmailTemplateService {
   }
 
   /**
-   * Delete template
+   * Delete template (file-based, for backward compatibility)
    */
   deleteTemplate(name) {
     try {
@@ -1078,7 +1350,7 @@ class EmailTemplateService {
       // Reload templates
       this.loadTemplates();
 
-      logger.info(`Deleted template: ${name}`);
+      logger.info(`Deleted file template: ${name}`);
       return true;
     } catch (error) {
       logger.error(`Error deleting template ${name}:`, error);
@@ -1087,40 +1359,331 @@ class EmailTemplateService {
   }
 
   /**
-   * Preview template with sample data
+   * Get default templates for database import
    */
-  async previewTemplate(templateName, sampleData = {}) {
+  getDefaultTemplatesForImport() {
+    return [
+      {
+        key: 'welcome-new-user',
+        name: 'Welcome New User',
+        category: 'System',
+        subject: 'Welcome to %COMPANYNAME% Support Portal!',
+        bodyHtml: `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to %COMPANYNAME%</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #374151; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; padding: 32px 24px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+        .content { padding: 32px 24px; }
+        .welcome-banner { background: #f0fdfa; border: 2px solid #14b8a6; border-radius: 8px; padding: 24px; text-align: center; margin: 24px 0; }
+        .btn-primary { display: inline-block; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin: 16px 8px 16px 0; }
+        .footer { background: #f8fafc; text-align: center; padding: 24px; color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; }
+        .footer a { color: #3b82f6; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Welcome to %COMPANYNAME%!</h1>
+        </div>
+        <div class="content">
+            <div class="welcome-banner">
+                <h2>Welcome aboard, %USERFIRST%!</h2>
+                <p>Your support portal account has been created successfully.</p>
+            </div>
+            
+            <p>Hello %USERNAME%,</p>
+            <p>We're excited to have you join our community! Your support portal gives you access to comprehensive help and support.</p>
+
+            <div style="text-align: center; margin: 32px 0;">
+                <a href="%PORTALURL%" class="btn-primary">Access Your Portal</a>
+            </div>
+
+            <p><strong>📋 Your Account Details:</strong></p>
+            <ul>
+                <li><strong>Email:</strong> %USEREMAIL%</li>
+                <li><strong>Portal URL:</strong> <a href="%PORTALURL%">%PORTALURL%</a></li>
+                <li><strong>Support Email:</strong> <a href="mailto:%SUPPORTEMAIL%">%SUPPORTEMAIL%</a></li>
+            </ul>
+
+            <p><strong>🚀 Getting Started:</strong></p>
+            <ol>
+                <li>Log in to your portal using the link above</li>
+                <li>Complete your profile information</li>
+                <li>Explore our help center for quick answers</li>
+                <li>Submit your first ticket if you need assistance</li>
+            </ol>
+        </div>
+        <div class="footer">
+            <p>Welcome to %COMPANYNAME%!</p>
+            <p>Need help getting started? Contact us at <a href="mailto:%SUPPORTEMAIL%">%SUPPORTEMAIL%</a></p>
+        </div>
+    </div>
+</body>
+</html>`
+      },
+      {
+        key: 'ticket-created-customer',
+        name: 'Ticket Created - Customer Notification',
+        category: 'Customer Notifications',
+        subject: '[%COMPANYNAME%] Ticket %TICKETID% Created - %TICKETTITLE%',
+        bodyHtml: `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Ticket Created</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #374151; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 32px 24px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+        .content { padding: 32px 24px; }
+        .ticket-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin: 24px 0; }
+        .ticket-id { background: #3b82f6; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; display: inline-block; margin-bottom: 16px; }
+        .detail-row { display: flex; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+        .detail-label { font-weight: 600; width: 120px; color: #64748b; }
+        .detail-value { flex: 1; }
+        .expectation-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin: 24px 0; }
+        .btn-primary { display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin: 16px 8px 16px 0; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); }
+        .footer { background: #f8fafc; text-align: center; padding: 24px; color: #64748b; font-size: 12px; border-top: 1px solid #e2e8f0; }
+        .footer a { color: #3b82f6; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎫 Support Ticket Created</h1>
+        </div>
+        <div class="content">
+            <p>Hello %USERFIRST%,</p>
+            <p>Thank you for contacting our support team. We've received your request and created a support ticket for you.</p>
+            
+            <div class="ticket-card">
+                <div class="ticket-id">Ticket %TICKETID%</div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Subject:</div>
+                    <div class="detail-value">%TICKETTITLE%</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Priority:</div>
+                    <div class="detail-value">%TICKETPRIORITY%</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Status:</div>
+                    <div class="detail-value">%TICKETSTATUS%</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Created:</div>
+                    <div class="detail-value">%TICKETCREATED%</div>
+                </div>
+            </div>
+
+            <div class="expectation-box">
+                <strong>📅 What to expect:</strong><br>
+                Based on your ticket priority, you can expect a response within <strong>%RESPONSETIME%</strong>. 
+                We'll keep you updated via email as our team works on your request.
+            </div>
+
+            <a href="%TICKETURL%" class="btn-primary">View Ticket Details</a>
+
+            <p><strong>🔗 Tracking your ticket:</strong><br>
+            Save this email for your records. You can always check your ticket status using ticket %TICKETID%.</p>
+        </div>
+        <div class="footer">
+            <p>This message was sent from %COMPANYNAME% Support</p>
+            <p>To reply to this ticket, please email <a href="mailto:%SUPPORTEMAIL%">%SUPPORTEMAIL%</a></p>
+        </div>
+    </div>
+</body>
+</html>`
+      },
+      {
+        key: 'workflow-approval',
+        name: 'Workflow Approval Request',
+        category: 'Workflow',
+        subject: '[%COMPANYNAME%] Approval Required - %REQUESTTITLE%',
+        bodyHtml: `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Approval Required</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #374151; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 32px 24px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+        .content { padding: 32px 24px; }
+        .request-details { background: #f8fafc; border-radius: 8px; padding: 20px; margin: 24px 0; }
+        .detail-row { display: flex; margin-bottom: 8px; }
+        .detail-label { font-weight: 600; width: 120px; color: #6b7280; }
+        .detail-value { flex: 1; color: #374151; }
+        .action-buttons { text-align: center; margin: 32px 0; padding: 24px; background: #f9fafb; border-radius: 8px; }
+        .btn { display: inline-block; padding: 14px 28px; margin: 0 8px 12px 8px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; text-align: center; }
+        .btn-approve { background: #22c55e; color: white; }
+        .btn-deny { background: #ef4444; color: white; }
+        .btn-view { background: #3b82f6; color: white; }
+        .footer { background: #f3f4f6; padding: 24px; text-align: center; color: #6b7280; font-size: 14px; }
+        .footer a { color: #3b82f6; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Approval Required</h1>
+            <p>A workflow is waiting for your approval</p>
+        </div>
+        
+        <div class="content">
+            <p>Hello %APPROVERNAME%,</p>
+            <p>%REQUESTERNAME% has submitted a request that requires your approval.</p>
+            
+            <div class="request-details">
+                <h3>Request Details</h3>
+                <div class="detail-row">
+                    <div class="detail-label">Request:</div>
+                    <div class="detail-value">%REQUESTTITLE%</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Requester:</div>
+                    <div class="detail-value">%REQUESTERNAME% (%REQUESTEREMAIL%)</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Submitted:</div>
+                    <div class="detail-value">%CURRENTTIME%</div>
+                </div>
+                
+                <div style="background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; margin-top: 12px; line-height: 1.5;">
+                    %REQUESTDESCRIPTION%
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <h4>Take Action on this Request</h4>
+                <a href="#" class="btn btn-approve">✅ Approve Request</a>
+                <a href="#" class="btn btn-deny">❌ Deny Request</a>
+                <br>
+                <a href="#" class="btn btn-view">👁️ View Full Details</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>This email was sent by %COMPANYNAME% Workflow System.</p>
+            <p>Expected response time: %RESPONSETIME%</p>
+        </div>
+    </div>
+</body>
+</html>`
+      }
+    ];
+  }
+
+  /**
+   * Preview template with sample data (enhanced with industry standard placeholders)
+   */
+  async previewTemplate(templateName, sampleData = {}, organizationId = null) {
     const defaultSampleData = {
+      user: {
+        id: 'USR-12345',
+        name: 'John Doe',
+        email: 'john.doe@example.com',
+        phone: '+1-555-123-4567',
+        firstName: 'John',
+        lastName: 'Doe',
+      },
       customer: {
         name: 'John Doe',
         email: 'john.doe@example.com',
+        phone: '+1-555-123-4567',
+        firstName: 'John',
+        lastName: 'Doe',
       },
       ticket: {
-        id: 'TICKET-12345',
+        id: 'NOVA-12345',
+        ticketNumber: 'NOVA-12345',
         title: 'Sample Support Request',
         description: 'This is a sample ticket description for template preview.',
         priority: 'medium',
         status: 'open',
+        category: 'Access Management',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       assignee: {
         name: 'Support Agent',
         email: 'agent@company.com',
+        firstName: 'Support',
+        lastName: 'Agent',
+      },
+      approver: {
+        name: 'Manager Smith',
+        email: 'manager@company.com',
+        firstName: 'Manager',
+        lastName: 'Smith',
+      },
+      requester: {
+        name: 'John Doe',
+        email: 'john.doe@company.com',
+        firstName: 'John',
+        lastName: 'Doe',
       },
       update: {
         user: {
           name: 'Support Agent',
+          firstName: 'Support',
+          lastName: 'Agent',
         },
         comment: 'Sample update comment for preview purposes.',
         createdAt: new Date(),
       },
-      companyName: 'Nova ITSM',
-      supportEmail: 'support@nova.com',
+      // Workflow data
+      title: 'Database Access Request',
+      description: 'User needs read access to customer database for reporting purposes.',
+      requestDetails: 'User needs read access to customer database for reporting purposes.',
+      department: 'IT Department',
+      location: 'New York Office',
+      office: 'New York Office',
+      
+      // URLs
+      ticketUrl: 'https://nova.company.com/tickets/12345',
+      
+      // Dates
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+      now: new Date(),
+      
+      // System info
+      companyName: 'Acme Corporation',
+      supportEmail: 'support@acme.com',
+      baseUrl: 'https://nova.acme.com',
+      responseTime: '4 hours',
     };
 
     const mergedData = { ...defaultSampleData, ...sampleData };
-    return await this.render(templateName, mergedData);
+    
+    try {
+      const html = await this.render(templateName, mergedData, organizationId);
+      const subject = await this.renderSubject(templateName, mergedData, organizationId);
+      
+      return {
+        subject,
+        html,
+        templateName,
+        sampleData: mergedData,
+      };
+    } catch (error) {
+      logger.error(`Error previewing template ${templateName}:`, error);
+      throw error;
+    }
   }
 }
 

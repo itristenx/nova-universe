@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[NOVA-{{ticket.id}}] {{ticket.title}} - Updated</title>
+    <style>
+        /* Enhanced ticket email styling with conversation threading */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #374151;
+            background-color: #f9fafb;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 24px;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .ticket-number {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        
+        .content {
+            padding: 24px;
+        }
+        
+        .status-change {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 16px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .status-change h3 {
+            color: #166534;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-open { background: #dbeafe; color: #1d4ed8; }
+        .status-in-progress { background: #fef3c7; color: #d97706; }
+        .status-resolved { background: #d1fae5; color: #059669; }
+        .status-closed { background: #f3f4f6; color: #6b7280; }
+        
+        .priority-critical { background: #fef2f2; color: #dc2626; }
+        .priority-high { background: #fff7ed; color: #ea580c; }
+        .priority-medium { background: #fffbeb; color: #d97706; }
+        .priority-low { background: #f0fdf4; color: #16a34a; }
+        
+        .ticket-details {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .detail-row {
+            display: flex;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            width: 120px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .detail-value {
+            flex: 1;
+            color: #374151;
+        }
+        
+        .update-section {
+            margin: 24px 0;
+            padding: 20px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        
+        .update-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .update-author {
+            font-weight: 600;
+            color: #1f2937;
+            margin-right: 12px;
+        }
+        
+        .update-time {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .update-content {
+            line-height: 1.6;
+            color: #374151;
+        }
+        
+        .update-content p {
+            margin-bottom: 12px;
+        }
+        
+        .action-buttons {
+            text-align: center;
+            margin: 24px 0;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 0 8px 8px 8px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .conversation-thread {
+            margin: 24px 0;
+        }
+        
+        .thread-item {
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 3px solid #e5e7eb;
+        }
+        
+        .thread-item.customer {
+            border-left-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .thread-item.agent {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .thread-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .thread-author {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .thread-time {
+            color: #6b7280;
+        }
+        
+        .thread-content {
+            color: #374151;
+            line-height: 1.5;
+        }
+        
+        .sla-warning {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            color: #991b1b;
+        }
+        
+        .sla-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            color: #0c4a6e;
+        }
+        
+        .footer {
+            background: #f3f4f6;
+            padding: 20px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        
+        .email-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .content {
+                padding: 16px;
+            }
+            
+            .btn {
+                display: block;
+                margin: 8px 0;
+                width: 100%;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .detail-label {
+                width: auto;
+                margin-bottom: 4px;
+            }
+            
+            .thread-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="ticket-number">NOVA-{{ticket.id}}</div>
+            <h1>{{#if isNewTicket}}🎫 New Ticket Created{{else}}📝 Ticket Updated{{/if}}</h1>
+            <p>{{ticket.title}}</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Status Change Notification -->
+            {{#if statusChanged}}
+            <div class="status-change">
+                <h3>Status Updated</h3>
+                <p>
+                    {{#if previousStatus}}
+                    <span class="status-badge status-{{lowerCase previousStatus}}">{{previousStatus}}</span>
+                    → 
+                    {{/if}}
+                    <span class="status-badge status-{{lowerCase ticket.status}}">{{ticket.status}}</span>
+                </p>
+            </div>
+            {{/if}}
+            
+            <!-- Ticket Details -->
+            <div class="ticket-details">
+                <div class="detail-row">
+                    <div class="detail-label">Priority:</div>
+                    <div class="detail-value">
+                        <span class="status-badge priority-{{lowerCase ticket.priority}}">
+                            {{upperCase ticket.priority}}
+                        </span>
+                    </div>
+                </div>
+                
+                {{#if ticket.assignedTo}}
+                <div class="detail-row">
+                    <div class="detail-label">Assigned to:</div>
+                    <div class="detail-value">{{ticket.assignedTo.name}}</div>
+                </div>
+                {{/if}}
+                
+                <div class="detail-row">
+                    <div class="detail-label">Category:</div>
+                    <div class="detail-value">{{ticket.category}}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Created:</div>
+                    <div class="detail-value">{{formatDateTime ticket.createdAt}}</div>
+                </div>
+                
+                {{#if ticket.dueDate}}
+                <div class="detail-row">
+                    <div class="detail-label">Due Date:</div>
+                    <div class="detail-value">{{formatDateTime ticket.dueDate}}</div>
+                </div>
+                {{/if}}
+            </div>
+            
+            <!-- Latest Update -->
+            {{#if latestUpdate}}
+            <div class="update-section">
+                <div class="update-header">
+                    <span class="update-author">{{latestUpdate.author.name}}</span>
+                    <span class="update-time">{{formatDateTime latestUpdate.createdAt}}</span>
+                </div>
+                <div class="update-content">
+                    {{{latestUpdate.content}}}
+                </div>
+            </div>
+            {{/if}}
+            
+            <!-- SLA Information -->
+            {{#if slaInfo}}
+            <div class="{{#if slaInfo.breached}}sla-warning{{else}}sla-info{{/if}}">
+                <strong>{{#if slaInfo.breached}}⚠️ SLA Breached{{else}}⏰ SLA Status{{/if}}</strong><br>
+                {{#if slaInfo.breached}}
+                    This ticket has exceeded the response time SLA by {{slaInfo.overdueBy}}.
+                {{else}}
+                    Response due: {{formatDateTime slaInfo.responseBy}}
+                    {{#if slaInfo.timeRemaining}}
+                    ({{slaInfo.timeRemaining}} remaining)
+                    {{/if}}
+                {{/if}}
+            </div>
+            {{/if}}
+            
+            <!-- Conversation Thread (Recent) -->
+            {{#if conversationThread}}
+            <div class="conversation-thread">
+                <h3 style="margin-bottom: 16px; color: #1f2937;">Recent Activity</h3>
+                {{#each conversationThread}}
+                <div class="thread-item {{type}}">
+                    <div class="thread-header">
+                        <span class="thread-author">{{author.name}}</span>
+                        <span class="thread-time">{{formatDateTime timestamp}}</span>
+                    </div>
+                    <div class="thread-content">
+                        {{#if content}}
+                            {{{content}}}
+                        {{else}}
+                            {{action}}
+                        {{/if}}
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+            {{/if}}
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{{ticketUrl}}" class="btn btn-primary">
+                    👁️ View Full Ticket
+                </a>
+                
+                {{#if userCanRespond}}
+                <a href="{{ticketUrl}}#respond" class="btn btn-secondary">
+                    💬 Add Response
+                </a>
+                {{/if}}
+                
+                {{#if userIsAssigned}}
+                <a href="{{ticketUrl}}#status" class="btn btn-secondary">
+                    🔄 Update Status
+                </a>
+                {{/if}}
+            </div>
+            
+            <!-- Reply Instructions -->
+            <div style="background: #f0f9ff; border-radius: 8px; padding: 16px; margin: 20px 0; font-size: 14px;">
+                <strong>💡 Pro Tip:</strong> You can reply directly to this email to add a comment to the ticket.
+                Your response will be automatically added to the conversation thread.
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <strong>Nova Service Desk</strong><br>
+                <a href="{{baseUrl}}/tickets/{{ticket.id}}">Ticket NOVA-{{ticket.id}}</a> |
+                <a href="{{baseUrl}}/notifications/preferences">Notification Preferences</a>
+            </p>
+            
+            <div class="email-controls">
+                {{#if trackingPixel}}
+                Message ID: {{messageId}} | Conversation ID: {{conversationId}}<br>
+                <img src="{{trackingPixel}}" width="1" height="1" style="display:none;" alt="">
+                {{/if}}
+                
+                To stop receiving these notifications, <a href="{{baseUrl}}/unsubscribe?token={{unsubscribeToken}}">click here</a>.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
