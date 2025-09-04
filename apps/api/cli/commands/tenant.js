@@ -15,6 +15,8 @@ import {
   formatDate,
   validateUrl,
 } from '../utils/index.js';
+import { ROLES } from '../constants/roles.js';
+import ConfigurationManager from '../config/app-settings.js';
 import db from '../../db.js';
 
 export const tenantCommand = new Command('tenant').description('Manage Nova Universe tenants');
@@ -426,7 +428,8 @@ async function createTenantAdmin(tenantDomain, adminData) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(adminData.password, 12);
+    const saltRounds = await ConfigurationManager.get('security.bcryptSaltRounds', 12);
+    const hashedPassword = await bcrypt.hash(adminData.password, saltRounds);
 
     // Create user
     const userId = uuidv4();
@@ -439,10 +442,10 @@ async function createTenantAdmin(tenantDomain, adminData) {
 
     const newUserId = userResult.rows[0].id;
 
-    // Assign admin role (role_id = 2 for admin, as seen in the database setup)
+    // Assign admin role
     await db.query(
       'INSERT INTO user_roles (user_id, role_id, assigned_at) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (user_id, role_id) DO NOTHING',
-      [newUserId, 2] // admin role
+      [newUserId, ROLES.ADMIN]
     );
 
     spinner.succeed('Tenant admin created successfully');
@@ -482,8 +485,8 @@ async function getTenantInfo(domain) {
     const adminsResult = await db.query(
       `SELECT COUNT(*) as count FROM users u 
        JOIN user_roles ur ON u.id = ur.user_id 
-       WHERE u.tenant_id = $1 AND ur.role_id IN (1, 2)`, // superadmin or admin
-      [tenant.id]
+       WHERE u.tenant_id = $1 AND ur.role_id IN ($2, $3)`,
+      [tenant.id, ROLES.SUPERADMIN, ROLES.ADMIN]
     );
     const adminsCount = parseInt(adminsResult.rows[0].count);
 

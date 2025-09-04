@@ -32,6 +32,7 @@ const DEFAULT_CONFIG = {
     sessionMaxAge: 86400000, // 24 hours
     maxLoginAttempts: 5,
     lockoutDuration: 900000, // 15 minutes
+    bcryptSaltRounds: 12, // BCrypt salt rounds for password hashing
   },
 
   // Application behavior (UI configurable)
