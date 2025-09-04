@@ -15,6 +15,7 @@ import {
   CalendarIcon,
 } from '@heroicons/react/24/outline';
 import { useCatalogStore } from '../stores/catalogStore';
+import { useRBACStore } from '../stores/rbacStore';
 import { cn } from '@utils/index';
 import type { CatalogRequest } from '../stores/catalogStore';
 
@@ -25,6 +26,7 @@ interface RequestManagementProps {
 export default function RequestManagement({ className }: RequestManagementProps) {
   const { requests, items, updateRequest, approveRequest, rejectRequest, createRequest } =
     useCatalogStore();
+  const { currentUser } = useRBACStore();
 
   const [selectedRequest, setSelectedRequest] = useState<CatalogRequest | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,11 +61,11 @@ export default function RequestManagement({ className }: RequestManagementProps)
   };
 
   const handleApprove = (requestId: string) => {
-    approveRequest(requestId, 'current_user');
+    approveRequest(requestId, currentUser?.id || 'system');
   };
 
   const handleReject = (requestId: string, reason: string) => {
-    rejectRequest(requestId, 'current_user', reason);
+    rejectRequest(requestId, currentUser?.id || 'system', reason);
   };
 
   return (
@@ -752,9 +754,10 @@ interface NewRequestModalProps {
 }
 
 function NewRequestModal({ onClose, items, onSubmit }: NewRequestModalProps) {
+  const { currentUser } = useRBACStore();
   const [formData, setFormData] = useState({
     item_id: '',
-    requested_by: 'current_user',
+    requested_by: currentUser?.id || 'system',
     requested_for: '',
     department: '',
     cost_center: '',

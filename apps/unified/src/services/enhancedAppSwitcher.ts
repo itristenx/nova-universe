@@ -140,7 +140,7 @@ class EnhancedAppSwitcherService {
     ssoEnabled?: boolean;
     newWindow?: boolean;
     category?: string;
-  }): Promise<CustomApp> {
+  }, userId?: string): Promise<CustomApp> {
     const app = {
       name: appData.name,
       description: appData.description,
@@ -153,7 +153,7 @@ class EnhancedAppSwitcherService {
         open_in_new_window: appData.newWindow ?? true, // Default to true for new window
         sso_enabled: appData.ssoEnabled ?? false,
       },
-      created_by: 'current_user', // Will be set by backend
+      created_by: userId || 'system', // Use provided userId or fallback
       is_active: true,
       order: 0,
     };

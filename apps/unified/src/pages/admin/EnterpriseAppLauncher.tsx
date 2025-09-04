@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PlusIcon, TrashIcon, ExternalLinkIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { useRBACStore } from '../../stores/rbacStore';
 import toast from 'react-hot-toast';
 import enhancedAppSwitcherService, { type CustomApp } from '@services/enhancedAppSwitcher';
 
@@ -24,6 +25,7 @@ const PRESET_COLORS = [
 ];
 
 export default function EnterpriseAppLauncher() {
+  const { currentUser } = useRBACStore();
   const [apps, setApps] = useState<CustomApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -114,7 +116,7 @@ export default function EnterpriseAppLauncher() {
         await enhancedAppSwitcherService.updateCustomApp(editingApp.id, appData);
         toast.success('Application updated successfully');
       } else {
-        await enhancedAppSwitcherService.createCustomApp(appData);
+        await enhancedAppSwitcherService.createCustomApp(appData, currentUser?.id);
         toast.success('Application created successfully');
       }
 
@@ -143,7 +145,7 @@ export default function EnterpriseAppLauncher() {
 
   const launchApp = (app: CustomApp) => {
     // Track usage and launch in new window
-    enhancedAppSwitcherService.trackAppAccess(app.id, 'current_user');
+    enhancedAppSwitcherService.trackAppAccess(app.id, currentUser?.id || 'system');
     window.open(app.url, '_blank', 'noopener,noreferrer');
   };
 

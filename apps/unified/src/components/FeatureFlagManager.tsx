@@ -209,7 +209,7 @@ export default function FeatureFlagManager({ className = '' }: FeatureFlagManage
         group_id: override.group_id,
         enabled: override.enabled,
         expires_at: override.expires_at,
-        created_by: 'current_user' // This would come from auth context
+        created_by: currentUser?.id || 'system'
       });
       console.log('Override created:', flagKey, override);
     } else {
@@ -456,7 +456,7 @@ export default function FeatureFlagManager({ className = '' }: FeatureFlagManage
                             flag_id: flag.key,
                             enabled: !flag.enabled,
                             value: !flag.enabled,
-                            created_by: 'current_user',
+                            created_by: currentUser?.id || 'system',
                             created_at: new Date()
                           })}
                           className="text-blue-600 hover:text-blue-900"
