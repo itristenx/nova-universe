@@ -8,15 +8,32 @@ dotenv.config();
 import { logger } from './logger.js';
 import { DatabaseFactory } from './database/factory.js';
 import bcrypt from 'bcryptjs';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 // Attempt to load Prisma client if available inside the container
 let PrismaClient;
-try {
-  ({ PrismaClient } = await import('../../prisma/generated/core/index.js'));
-} catch (e) {
+// Try multiple potential locations for the generated Prisma client to support
+// both local dev (repo layout) and containerized builds (flattened /app layout).
+const prismaCandidates = [
+  '../../prisma/generated/core/index.js',
+  '../prisma/generated/core/index.js',
+  './prisma/generated/core/index.js',
+  '/app/prisma/generated/core/index.js',
+];
+for (const spec of prismaCandidates) {
+  try {
+    const url = spec.startsWith('/')
+      ? pathToFileURL(spec).href
+      : new URL(spec, import.meta.url).href;
+    ({ PrismaClient } = await import(url));
+    break;
+  } catch {}
+}
+if (!PrismaClient) {
   // In minimal/demo containers the generated client may not be present
-  logger?.warn?.('Prisma client not found; continuing without Prisma. Some features may be unavailable.');
+  logger?.warn?.(
+    'Prisma client not found; continuing without Prisma. Some features may be unavailable.',
+  );
 }
 
 // Keep filename for potential future use
@@ -408,6 +425,7 @@ async function setupInitialData() {
       process.env.DB_VERBOSE_LOGGING === 'true' || process.env.NODE_ENV === 'production';
 
     await setupRolesAndPermissions();
+    await ensureAuthMultiTenantSchemaAndSeed();
     await setupDefaultConfig();
     await setupDefaultAdmin();
     await setupDefaultSlaPolicies();
@@ -430,6 +448,170 @@ async function setupInitialData() {
   } catch (error) {
     logger.error('Error setting up initial data:', error);
     throw error;
+  }
+}
+
+/**
+ * Ensure universal login multi-tenant auth schema exists and seed Nova Inc tenant
+ */
+async function ensureAuthMultiTenantSchemaAndSeed() {
+  try {
+    // Create tenants table (idempotent)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS tenants (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(255) NOT NULL,
+        domain VARCHAR(255) UNIQUE NOT NULL,
+        subdomain VARCHAR(100) UNIQUE,
+        logo_url TEXT,
+        theme_color VARCHAR(7) DEFAULT '#000000',
+        background_image_url TEXT,
+        custom_css TEXT,
+        login_message TEXT,
+        terms_url TEXT,
+        privacy_url TEXT,
+        support_email VARCHAR(255),
+        sso_enabled BOOLEAN DEFAULT false,
+        mfa_required BOOLEAN DEFAULT false,
+        active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Ensure users.tenant_id exists
+    try {
+      await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS tenant_id UUID`);
+    } catch (e) {
+      logger.warn('Could not ensure users.tenant_id column: ' + e.message);
+    }
+
+    // Create SSO configs table (idempotent)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS sso_configs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+        provider VARCHAR(50) NOT NULL,
+        provider_name VARCHAR(100) NOT NULL,
+        enabled BOOLEAN DEFAULT true,
+        saml_entity_id TEXT,
+        saml_sso_url TEXT,
+        saml_slo_url TEXT,
+        saml_certificate TEXT,
+        saml_name_id_format VARCHAR(100),
+        oidc_issuer TEXT,
+        oidc_client_id TEXT,
+        oidc_client_secret_encrypted TEXT,
+        oidc_authorization_url TEXT,
+        oidc_token_url TEXT,
+        oidc_userinfo_url TEXT,
+        oidc_jwks_uri TEXT,
+        oidc_scopes TEXT DEFAULT 'openid profile email',
+        attribute_mappings JSONB,
+        auto_provision BOOLEAN DEFAULT false,
+        default_role_id INTEGER,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(tenant_id, provider)
+      );
+    `);
+
+    // Create auth_states table for SSO state tracking
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS auth_states (
+        state VARCHAR(255) PRIMARY KEY,
+        tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+        redirect_url TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP + INTERVAL '15 minutes')
+      );
+    `);
+
+    // Password reset tokens for local account recovery
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token_hash VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+        used BOOLEAN DEFAULT false,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_password_reset_token_hash ON password_reset_tokens(token_hash);
+      CREATE INDEX IF NOT EXISTS idx_password_reset_user ON password_reset_tokens(user_id);
+    `);
+
+    // Seed Nova Inc tenant if missing
+    const novaName = process.env.NOVA_TENANT_NAME || 'Nova Inc';
+    const novaDomain = process.env.NOVA_TENANT_DOMAIN || 'nova-universe.com';
+    const novaSubdomain = process.env.NOVA_TENANT_SUBDOMAIN || 'nova';
+    const novaTheme = process.env.NOVA_TENANT_THEME || '#1f2937';
+    const novaSupport = process.env.NOVA_TENANT_SUPPORT_EMAIL || 'support@nova-universe.com';
+    const novaSsoEnabled = (process.env.NOVA_TENANT_SSO_ENABLED || 'false') === 'true';
+    const novaMfaRequired = (process.env.NOVA_TENANT_MFA_REQUIRED || 'false') === 'true';
+
+    const existing = await db.query('SELECT id FROM tenants WHERE domain = $1', [novaDomain]);
+    let novaTenantId = existing.rows?.[0]?.id;
+
+    if (!novaTenantId) {
+      const inserted = await db.query(
+        `INSERT INTO tenants (name, domain, subdomain, theme_color, support_email, sso_enabled, mfa_required, active)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,true)
+         ON CONFLICT (domain) DO UPDATE SET 
+           name = EXCLUDED.name,
+           subdomain = EXCLUDED.subdomain,
+           theme_color = EXCLUDED.theme_color,
+           support_email = EXCLUDED.support_email,
+           sso_enabled = EXCLUDED.sso_enabled,
+           mfa_required = EXCLUDED.mfa_required,
+           updated_at = CURRENT_TIMESTAMP
+         RETURNING id`,
+        [novaName, novaDomain, novaSubdomain, novaTheme, novaSupport, novaSsoEnabled, novaMfaRequired],
+      );
+      novaTenantId = inserted.rows[0].id;
+      logger.info(`Seeded tenant '${novaName}' (${novaDomain})`);
+    }
+
+    // Optionally seed SSO config for Nova tenant from environment (only if fully provided)
+    try {
+      const ssoProvider = process.env.NOVA_SSO_PROVIDER; // 'saml' or 'oidc'
+      if (ssoProvider === 'saml') {
+        const entry = process.env.NOVA_SAML_SSO_URL;
+        const issuer = process.env.NOVA_SAML_ENTITY_ID;
+        const cert = process.env.NOVA_SAML_CERT;
+        if (entry && issuer && cert) {
+          await db.query(
+            `INSERT INTO sso_configs (
+              tenant_id, provider, provider_name, enabled,
+              saml_entity_id, saml_sso_url, saml_certificate
+            ) VALUES ($1,$2,$3,true,$4,$5,$6)
+            ON CONFLICT (tenant_id, provider) DO UPDATE SET 
+              provider_name = EXCLUDED.provider_name,
+              enabled = EXCLUDED.enabled,
+              saml_entity_id = EXCLUDED.saml_entity_id,
+              saml_sso_url = EXCLUDED.saml_sso_url,
+              saml_certificate = EXCLUDED.saml_certificate,
+              updated_at = CURRENT_TIMESTAMP`,
+            [novaTenantId, 'saml', process.env.NOVA_SAML_PROVIDER_NAME || 'SAML', issuer, entry, cert],
+          );
+          logger.info('Seeded SAML SSO configuration for Nova tenant');
+        }
+      }
+    } catch (e) {
+      logger.warn('Failed to seed SSO config for Nova tenant: ' + e.message);
+    }
+
+    // Attach default admin to Nova tenant if admin exists without tenant
+    try {
+      await db.query(
+        `UPDATE users SET tenant_id = $1 WHERE email = $2 AND (tenant_id IS NULL OR tenant_id <> $1)`,
+        [novaTenantId, 'admin@novauniverse.com'],
+      );
+    } catch (e) {
+      logger.warn('Could not associate admin to tenant (users table may differ): ' + e.message);
+    }
+  } catch (error) {
+    logger.error('Failed ensuring multi-tenant auth schema/seed:', error);
   }
 }
 
@@ -685,17 +867,7 @@ class DatabaseWrapper {
       }
       return this.db;
     } catch (e) {
-      // Allow degraded mode if configured
-      if (process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development') {
-        return {
-          query: async () => {
-            throw new Error('DB unavailable');
-          },
-          transaction: async () => {
-            throw new Error('DB unavailable');
-          },
-        };
-      }
+      // No degraded/mock mode: always fail fast if DB is unavailable
       throw e;
     }
   }

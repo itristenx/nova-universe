@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QrCode, RefreshCw, CheckCircle, XCircle, Clock, Smartphone } from 'lucide-react';
 import { novaTVService, AuthSession } from '../../services/nova-tv';
+import QRCodeLib from 'qrcode';
 
 const QRAuthentication: React.FC = () => {
   const [authSession, setAuthSession] = useState<AuthSession | null>(null);
@@ -10,6 +11,7 @@ const QRAuthentication: React.FC = () => {
     'pending',
   );
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -29,6 +31,21 @@ const QRAuthentication: React.FC = () => {
     if (authSession) {
       startCountdown();
       startPolling();
+      // Generate QR code image from the provided QR data string
+      (async () => {
+        try {
+          const dataUrl = await QRCodeLib.toDataURL(authSession.qrCode, {
+            errorCorrectionLevel: 'M',
+            margin: 1,
+            width: 256,
+            color: { dark: '#000000', light: '#ffffff' },
+          });
+          setQrDataUrl(dataUrl);
+        } catch (e) {
+          console.error('Failed to generate QR code', e);
+          setQrDataUrl(null);
+        }
+      })();
     }
     return () => {
       if (pollingRef.current) {
@@ -101,9 +118,13 @@ const QRAuthentication: React.FC = () => {
             clearInterval(intervalRef.current);
           }
         }
-      } catch (_error) {
-        console.error('Error checking auth status:', error);
-        // Continue polling - don't stop on network errors
+      } catch (error) {
+        console.error(`[${new Date().toISOString()}] Error checking Nova TV auth status:`, {
+          sessionId: authSession?.sessionId,
+          error: error instanceof Error ? error.message : String(error),
+          pollingActive: true
+        });
+        // Enhanced resilience: Continue polling on network errors but log context
       }
     }, 2000); // Poll every 2 seconds
   };
@@ -173,10 +194,17 @@ const QRAuthentication: React.FC = () => {
                 <div>
                   {/* QR Code Display */}
                   <div className="mb-4 inline-block rounded-lg border-2 border-gray-200 bg-white p-4">
-                    <div className="flex h-48 w-48 items-center justify-center rounded border border-gray-300 bg-gray-100">
-                      <QrCode className="h-32 w-32 text-gray-400" />
-                      {/* In a real implementation, you would render the actual QR code here */}
-                    </div>
+                    {qrDataUrl ? (
+                      <img
+                        src={qrDataUrl}
+                        alt="Nova TV authentication QR"
+                        className="h-48 w-48 rounded border border-gray-300"
+                      />
+                    ) : (
+                      <div className="flex h-48 w-48 items-center justify-center rounded border border-gray-300 bg-gray-100">
+                        <QrCode className="h-32 w-32 text-gray-400" />
+                      </div>
+                    )}
                   </div>
 
                   {/* Timer */}

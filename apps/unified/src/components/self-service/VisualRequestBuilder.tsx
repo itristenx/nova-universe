@@ -344,8 +344,33 @@ export function VisualRequestBuilder({ className, onSave, onPreview }: VisualReq
         },
       };
       setNodes((nds) => nds.concat(newNode));
+      
+      // Set the selected template for visual feedback and provide analytics
+      setSelectedTemplate(template.id);
+      
+      // Analytics tracking for template usage
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'template_used', {
+          event_category: 'workflow_builder',
+          event_label: 'template_selection',
+          template_id: template.id,
+          template_category: template.category,
+          template_label: template.label,
+          workflow_node_count: nodes.length + 1,
+        });
+      }
+      
+      // Enterprise monitoring for workflow complexity
+      if (typeof window !== 'undefined' && (window as any).NovaMonitoring) {
+        (window as any).NovaMonitoring.recordEvent('workflow_template_added', {
+          templateId: template.id,
+          category: template.category,
+          currentNodeCount: nodes.length + 1,
+          workflowComplexity: nodes.length > 5 ? 'complex' : nodes.length > 2 ? 'moderate' : 'simple',
+        });
+      }
     },
-    [setNodes],
+    [setNodes, nodes.length],
   );
 
   const addApprovalNode = useCallback(() => {
@@ -360,7 +385,17 @@ export function VisualRequestBuilder({ className, onSave, onPreview }: VisualReq
       },
     };
     setNodes((nds) => nds.concat(newNode));
-  }, [setNodes]);
+    setSelectedTemplate('approval-step');
+    
+    // Analytics tracking for approval node addition
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'quick_action_used', {
+        event_category: 'workflow_builder',
+        event_label: 'approval_node_added',
+        workflow_node_count: nodes.length + 1,
+      });
+    }
+  }, [setNodes, nodes.length]);
 
   const addFormNode = useCallback(() => {
     const newNode: Node = {
@@ -381,12 +416,33 @@ export function VisualRequestBuilder({ className, onSave, onPreview }: VisualReq
       },
     };
     setNodes((nds) => nds.concat(newNode));
-  }, [setNodes]);
+    setSelectedTemplate('information-form');
+    
+    // Analytics tracking for form node addition
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'quick_action_used', {
+        event_category: 'workflow_builder',
+        event_label: 'form_node_added',
+        workflow_node_count: nodes.length + 1,
+      });
+    }
+  }, [setNodes, nodes.length]);
 
   const clearWorkflow = useCallback(() => {
     setNodes([]);
     setEdges([]);
-  }, [setNodes, setEdges]);
+    setSelectedTemplate(null);
+    
+    // Analytics tracking for workflow clearing
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'workflow_cleared', {
+        event_category: 'workflow_builder',
+        event_label: 'clear_workflow',
+        previous_node_count: nodes.length,
+        previous_edge_count: edges.length,
+      });
+    }
+  }, [setNodes, setEdges, nodes.length, edges.length]);
 
   const handleSave = useCallback(() => {
     onSave?.({ nodes, edges });
@@ -416,6 +472,23 @@ export function VisualRequestBuilder({ className, onSave, onPreview }: VisualReq
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               Drag and drop to build workflows
             </p>
+            {selectedTemplate && (
+              <div className="mt-2 flex items-center gap-2 rounded-md bg-nova-50 px-2 py-1 dark:bg-nova-900/20">
+                <div className="h-2 w-2 rounded-full bg-nova-500"></div>
+                <span className="text-xs font-medium text-nova-700 dark:text-nova-300">
+                  Last used: {serviceTemplates.find(t => t.id === selectedTemplate)?.label}
+                </span>
+                <button
+                  onClick={() => setSelectedTemplate(null)}
+                  className="text-nova-600 hover:text-nova-800 dark:text-nova-400 dark:hover:text-nova-200"
+                  title="Clear selection"
+                >
+                  <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
@@ -480,17 +553,41 @@ export function VisualRequestBuilder({ className, onSave, onPreview }: VisualReq
                           >
                             <button
                               onClick={() => addNode(template)}
-                              className="hover:border-nova-300 dark:hover:border-nova-600 hover:bg-nova-50 dark:hover:bg-nova-900/10 flex w-full items-center gap-3 rounded-lg border border-gray-200 p-3 text-left transition-colors dark:border-gray-700"
+                              className={cn(
+                                'flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors',
+                                selectedTemplate === template.id
+                                  ? 'border-nova-500 bg-nova-50 dark:border-nova-400 dark:bg-nova-900/20'
+                                  : 'border-gray-200 hover:border-nova-300 hover:bg-nova-50 dark:border-gray-700 dark:hover:border-nova-600 dark:hover:bg-nova-900/10'
+                              )}
                             >
-                              <div className="text-nova-600 dark:text-nova-400">{template.icon}</div>
+                              <div className={cn(
+                                'transition-colors',
+                                selectedTemplate === template.id
+                                  ? 'text-nova-700 dark:text-nova-300'
+                                  : 'text-nova-600 dark:text-nova-400'
+                              )}>
+                                {template.icon}
+                              </div>
                               <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                <p className={cn(
+                                  'text-sm font-medium transition-colors',
+                                  selectedTemplate === template.id
+                                    ? 'text-nova-900 dark:text-nova-100'
+                                    : 'text-gray-900 dark:text-white'
+                                )}>
                                   {template.label}
                                 </p>
                                 <p className="text-xs text-gray-600 dark:text-gray-400">
                                   {template.description}
                                 </p>
                               </div>
+                              {selectedTemplate === template.id && (
+                                <div className="text-nova-600 dark:text-nova-400">
+                                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                              )}
                             </button>
                           </motion.div>
                         ))}

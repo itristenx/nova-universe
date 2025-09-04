@@ -48,20 +48,6 @@ class DatabaseFactory {
     this.initializationPromise = (async () => {
       logger.info('🚀 Initializing database connections...');
 
-      // In development mode, immediately create mock database if no real database is configured
-      if (
-        process.env.NODE_ENV === 'development' &&
-        (!process.env.POSTGRES_HOST || process.env.POSTGRES_HOST === 'localhost') &&
-        !process.env.DATABASE_URL &&
-        !process.env.MONGO_ENABLED &&
-        (!process.env.POSTGRES_USER || process.env.POSTGRES_USER === 'nova_user') &&
-        (!process.env.POSTGRES_PASSWORD || process.env.POSTGRES_PASSWORD === 'nova_password')
-      ) {
-        logger.info('🔧 Development mode detected - creating mock database');
-        this.createMockDatabase();
-        return;
-      }
-
       try {
         if (postgresManager) {
           await this.initializePostgreSQL();
@@ -76,19 +62,7 @@ class DatabaseFactory {
         }
         
         if (this.availableDatabases.size === 0) {
-          const allowDegraded =
-            process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development';
-          if (allowDegraded) {
-            logger.warn(
-              '⚠️  No databases available. Continuing in degraded mode (ALLOW_START_WITHOUT_DB or development mode).',
-            );
-            // In development mode, create mock database methods
-            if (process.env.NODE_ENV === 'development') {
-              this.createMockDatabase();
-            }
-          } else {
-            throw new Error('No databases available. At least one database must be configured.');
-          }
+          throw new Error('No databases available. At least one database must be configured.');
         } else {
           this.initialized = true;
           logger.info(
@@ -97,11 +71,7 @@ class DatabaseFactory {
         }
       } catch (error) {
         logger.error('❌ Database initialization failed:', error.message);
-        if (
-          !(process.env.ALLOW_START_WITHOUT_DB === 'true' || process.env.NODE_ENV === 'development')
-        ) {
-          throw error;
-        }
+        throw error;
       } finally {
         this.initializationPromise = null;
       }
@@ -360,80 +330,7 @@ class DatabaseFactory {
    * Create mock database for development mode
    */
   createMockDatabase() {
-    logger.warn('🔧 Creating mock database for development mode.');
-    this.coreDb = {
-      initialize: async () => {
-        logger.info('✅ Mock Core PostgreSQL initialized');
-        this.primaryDb = this.coreDb;
-        this.availableDatabases.add('core_db');
-        return true;
-      },
-      healthCheck: async () => ({ status: 'ok', message: 'Mock Core PostgreSQL is healthy' }),
-      query: async (sql, params) => {
-        logger.info(`Mock Core PostgreSQL query: ${sql} with params: ${params}`);
-        return { rows: [], rowCount: 0 };
-      },
-      close: async () => {
-        logger.info('✅ Mock Core PostgreSQL closed');
-        return true;
-      },
-    };
-    this.authDb = {
-      initialize: async () => {
-        logger.info('✅ Mock Auth PostgreSQL initialized');
-        this.availableDatabases.add('auth_db');
-        return true;
-      },
-      healthCheck: async () => ({ status: 'ok', message: 'Mock Auth PostgreSQL is healthy' }),
-      query: async (sql, params) => {
-        logger.info(`Mock Auth PostgreSQL query: ${sql} with params: ${params}`);
-        return { rows: [], rowCount: 0 };
-      },
-      close: async () => {
-        logger.info('✅ Mock Auth PostgreSQL closed');
-        return true;
-      },
-    };
-    this.auditDb = {
-      initialize: async () => {
-        logger.info('✅ Mock MongoDB audit database initialized');
-        this.availableDatabases.add('audit_db');
-        return true;
-      },
-      healthCheck: async () => ({ status: 'ok', message: 'Mock MongoDB is healthy' }),
-      logAudit: async (action, userId, details) => {
-        logger.info(
-          `Mock MongoDB audit log: Action=${action}, UserId=${userId}, Details=${JSON.stringify(details)}`,
-        );
-      },
-      collection: (name) => {
-        logger.info(`Mock MongoDB collection: ${name}`);
-        return {
-          insertOne: async (doc) => {
-            logger.info(`Mock MongoDB insertOne: ${JSON.stringify(doc)}`);
-            return { insertedId: 'mock_id' };
-          },
-          find: async (filter, options) => {
-            logger.info(
-              `Mock MongoDB find: filter=${JSON.stringify(filter)}, options=${JSON.stringify(options)}`,
-            );
-            return {
-              toArray: async () => [
-                { _id: 'mock_id', ...filter, created_at: new Date(), updated_at: new Date() },
-              ],
-            };
-          },
-        };
-      },
-      close: async () => {
-        logger.info('✅ Mock MongoDB closed');
-        return true;
-      },
-    };
-    this.initialized = true;
-    logger.info(
-      `✅ Mock database initialization complete. Available: ${Array.from(this.availableDatabases).join(', ')}`,
-    );
+    throw new Error('Mock database is disabled. Configure real databases.');
   }
 }
 

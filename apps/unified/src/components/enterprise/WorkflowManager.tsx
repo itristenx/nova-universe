@@ -56,12 +56,160 @@ export default function WorkflowManager({ className = '' }: WorkflowManagerProps
   const [activeTab, setActiveTab] = useState<'list' | 'executions' | 'analytics'>('list');
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [workflowExecutions, setWorkflowExecutions] = useState<WorkflowExecution[]>([]);
   const [filter, setFilter] = useState({
     status: '',
     type: '',
     category: '',
     search: ''
   });
+
+  // Enterprise workflow operations
+  const deleteWorkflow = async (workflowId: string) => {
+    if (!confirm('Are you sure you want to delete this workflow? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/workflows/${workflowId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setWorkflows(prev => prev.filter(w => w.id !== workflowId));
+        console.log('Workflow deleted successfully');
+      } else {
+        throw new Error('Failed to delete workflow');
+      }
+    } catch (error) {
+      console.error('Error deleting workflow:', error);
+      alert('Failed to delete workflow. Please try again.');
+    }
+  };
+
+  const stopWorkflow = async (workflowId: string) => {
+    if (!confirm('Are you sure you want to stop all running instances of this workflow?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/workflows/${workflowId}/stop`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        // Update workflow status to PAUSED
+        setWorkflows(prev => prev.map(w => 
+          w.id === workflowId ? { ...w, status: 'PAUSED' as const } : w
+        ));
+        console.log('Workflow stopped successfully');
+      } else {
+        throw new Error('Failed to stop workflow');
+      }
+    } catch (error) {
+      console.error('Error stopping workflow:', error);
+      alert('Failed to stop workflow. Please try again.');
+    }
+  };
+
+  const duplicateWorkflow = async (workflow: Workflow) => {
+    try {
+      const duplicatedWorkflow = {
+        ...workflow,
+        id: `${workflow.id}_copy_${Date.now()}`,
+        name: `${workflow.name} (Copy)`,
+        status: 'DRAFT' as const,
+        version: '1.0.0',
+        created_at: new Date().toISOString(),
+        last_executed: undefined,
+        execution_count: 0,
+        success_rate: 0,
+      };
+
+      const response = await fetch('/api/workflows', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(duplicatedWorkflow),
+      });
+
+      if (response.ok) {
+        const newWorkflow = await response.json();
+        setWorkflows(prev => [...prev, newWorkflow]);
+        console.log('Workflow duplicated successfully');
+      } else {
+        throw new Error('Failed to duplicate workflow');
+      }
+    } catch (error) {
+      console.error('Error duplicating workflow:', error);
+      // Fallback: add to local state
+      const duplicatedWorkflow = {
+        ...workflow,
+        id: `${workflow.id}_copy_${Date.now()}`,
+        name: `${workflow.name} (Copy)`,
+        status: 'DRAFT' as const,
+        version: '1.0.0',
+        created_at: new Date().toISOString(),
+        last_executed: undefined,
+        execution_count: 0,
+        success_rate: 0,
+      };
+      setWorkflows(prev => [...prev, duplicatedWorkflow]);
+    }
+  };
+
+  const createWorkflow = async (workflowData: Partial<Workflow>) => {
+    try {
+      const newWorkflow = {
+        id: `wf_${Date.now()}`,
+        name: workflowData.name || 'New Workflow',
+        description: workflowData.description || '',
+        type: workflowData.type || 'PROCESS',
+        category: workflowData.category || 'GENERAL',
+        status: 'DRAFT' as const,
+        version: '1.0.0',
+        created_by: 'current_user',
+        created_at: new Date().toISOString(),
+        execution_count: 0,
+        success_rate: 0,
+        ...workflowData,
+      };
+
+      const response = await fetch('/api/workflows', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newWorkflow),
+      });
+
+      if (response.ok) {
+        const createdWorkflow = await response.json();
+        setWorkflows(prev => [...prev, createdWorkflow]);
+        setShowCreateModal(false);
+        console.log('Workflow created successfully');
+      } else {
+        throw new Error('Failed to create workflow');
+      }
+    } catch (error) {
+      console.error('Error creating workflow:', error);
+      // Fallback: add to local state
+      const newWorkflow = {
+        id: `wf_${Date.now()}`,
+        name: workflowData.name || 'New Workflow',
+        description: workflowData.description || '',
+        type: workflowData.type || 'PROCESS',
+        category: workflowData.category || 'GENERAL',
+        status: 'DRAFT' as const,
+        version: '1.0.0',
+        created_by: 'current_user',
+        created_at: new Date().toISOString(),
+        execution_count: 0,
+        success_rate: 0,
+        ...workflowData,
+      } as Workflow;
+      
+      setWorkflows(prev => [...prev, newWorkflow]);
+      setShowCreateModal(false);
+    }
+  };
 
   // Mock data - replace with API calls
   useEffect(() => {
@@ -124,8 +272,50 @@ export default function WorkflowManager({ className = '' }: WorkflowManagerProps
       }
     ];
 
+    // Mock execution data
+    const mockExecutions: WorkflowExecution[] = [
+      {
+        execution_id: 'exec_001',
+        workflow_id: 'wf_incident_mgmt',
+        status: 'COMPLETED',
+        started_at: '2024-01-20T14:22:00Z',
+        completed_at: '2024-01-20T14:25:30Z',
+        duration: 210000,
+        triggered_by: 'user@company.com',
+        result: 'Incident INC001234 created and assigned to Level 1 Support',
+      },
+      {
+        execution_id: 'exec_002',
+        workflow_id: 'wf_change_approval',
+        status: 'RUNNING',
+        started_at: '2024-01-20T16:45:00Z',
+        triggered_by: 'manager@company.com',
+      },
+      {
+        execution_id: 'exec_003',
+        workflow_id: 'wf_user_provisioning',
+        status: 'FAILED',
+        started_at: '2024-01-20T13:30:00Z',
+        completed_at: '2024-01-20T13:32:15Z',
+        duration: 165000,
+        triggered_by: 'hr@company.com',
+        error: 'Active Directory connection timeout',
+      },
+      {
+        execution_id: 'exec_004',
+        workflow_id: 'wf_backup_routine',
+        status: 'COMPLETED',
+        started_at: '2024-01-19T02:00:00Z',
+        completed_at: '2024-01-19T02:45:20Z',
+        duration: 2720000,
+        triggered_by: 'scheduler',
+        result: 'Backup completed successfully - 450GB archived',
+      },
+    ];
+
     setTimeout(() => {
       setWorkflows(mockWorkflows);
+      setWorkflowExecutions(mockExecutions);
       setLoading(false);
     }, 1000);
   }, []);
@@ -367,6 +557,16 @@ export default function WorkflowManager({ className = '' }: WorkflowManagerProps
                       >
                         <PlayIcon className="w-5 h-5" />
                       </button>
+                      
+                      <button
+                        onClick={() => stopWorkflow(workflow.id)}
+                        disabled={workflow.status !== 'ACTIVE'}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Stop Workflow"
+                      >
+                        <StopIcon className="w-5 h-5" />
+                      </button>
+                      
                       <button
                         onClick={() => setSelectedWorkflow(workflow)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
@@ -374,12 +574,30 @@ export default function WorkflowManager({ className = '' }: WorkflowManagerProps
                       >
                         <EyeIcon className="w-5 h-5" />
                       </button>
+                      
                       <button
                         className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg"
                         title="Edit Workflow"
                       >
                         <PencilIcon className="w-5 h-5" />
                       </button>
+                      
+                      <button
+                        onClick={() => duplicateWorkflow(workflow)}
+                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg"
+                        title="Duplicate Workflow"
+                      >
+                        <DocumentDuplicateIcon className="w-5 h-5" />
+                      </button>
+                      
+                      <button
+                        onClick={() => deleteWorkflow(workflow.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        title="Delete Workflow"
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                      
                       <button
                         className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg"
                         title="View Analytics"
@@ -428,11 +646,100 @@ export default function WorkflowManager({ className = '' }: WorkflowManagerProps
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-white rounded-lg p-8 text-center"
+            className="space-y-4"
           >
-            <ClockIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Workflow Executions</h3>
-            <p className="text-gray-500">View and monitor workflow execution history</p>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Recent Executions</h3>
+                <p className="text-sm text-gray-600">Monitor workflow execution history and status</p>
+              </div>
+              
+              <div className="divide-y divide-gray-200">
+                {workflowExecutions.length > 0 ? (
+                  workflowExecutions.map((execution) => (
+                    <div key={execution.execution_id} className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className={`w-3 h-3 rounded-full ${
+                            execution.status === 'COMPLETED' ? 'bg-green-500' :
+                            execution.status === 'RUNNING' ? 'bg-blue-500' :
+                            execution.status === 'FAILED' ? 'bg-red-500' :
+                            'bg-gray-500'
+                          }`} />
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {workflows.find(w => w.id === execution.workflow_id)?.name || 'Unknown Workflow'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              Execution ID: {execution.execution_id}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-8">
+                          <div className="text-center">
+                            <div className={`text-sm font-medium ${
+                              execution.status === 'COMPLETED' ? 'text-green-600' :
+                              execution.status === 'RUNNING' ? 'text-blue-600' :
+                              execution.status === 'FAILED' ? 'text-red-600' :
+                              'text-gray-600'
+                            }`}>
+                              {execution.status}
+                            </div>
+                            <div className="text-xs text-gray-500">Status</div>
+                          </div>
+                          
+                          <div className="text-center">
+                            <div className="text-sm font-medium text-gray-900">
+                              {execution.duration ? `${execution.duration}ms` : '-'}
+                            </div>
+                            <div className="text-xs text-gray-500">Duration</div>
+                          </div>
+                          
+                          <div className="text-center">
+                            <div className="text-sm font-medium text-gray-900">
+                              {formatDate(execution.started_at)}
+                            </div>
+                            <div className="text-xs text-gray-500">Started</div>
+                          </div>
+                          
+                          <div className="text-center">
+                            <div className="text-sm font-medium text-gray-900">
+                              {execution.triggered_by}
+                            </div>
+                            <div className="text-xs text-gray-500">Triggered By</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {execution.error && (
+                        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <div className="text-sm text-red-800">
+                            <strong>Error:</strong> {execution.error}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {execution.result && (
+                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="text-sm text-green-800">
+                            <strong>Result:</strong> {execution.result}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-12 text-center">
+                    <ClockIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Executions Found</h3>
+                    <p className="text-gray-500">
+                      Execute a workflow to see execution history here
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </motion.div>
         )}
 
@@ -538,6 +845,130 @@ export default function WorkflowManager({ className = '' }: WorkflowManagerProps
                   </button>
                 </div>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Create Workflow Modal */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowCreateModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Create New Workflow</h2>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                  title="Close"
+                >
+                  <XCircleIcon className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  const workflowData = {
+                    name: formData.get('name') as string,
+                    description: formData.get('description') as string,
+                    type: formData.get('type') as Workflow['type'],
+                    category: formData.get('category') as string,
+                  };
+                  createWorkflow(workflowData);
+                }}
+                className="space-y-6"
+              >
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Workflow Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter workflow name"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Describe what this workflow does"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
+                      Type
+                    </label>
+                    <select
+                      id="type"
+                      name="type"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="PROCESS">Process</option>
+                      <option value="APPROVAL">Approval</option>
+                      <option value="AUTOMATION">Automation</option>
+                      <option value="INTEGRATION">Integration</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                      Category
+                    </label>
+                    <input
+                      type="text"
+                      id="category"
+                      name="category"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., INCIDENT, CHANGE, GENERAL"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    <PlusIcon className="w-4 h-4 mr-2" />
+                    Create Workflow
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

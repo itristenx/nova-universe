@@ -5,6 +5,7 @@ import { novaTVService, Dashboard } from '../../services/nova-tv';
 import { UnifiedDeviceService } from '../../services/unified-device';
 import { useAuthStore } from '../../stores/auth';
 import toast from 'react-hot-toast';
+import { api } from '../../services/api';
 
 const AdminTVActivation: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -19,6 +20,10 @@ const AdminTVActivation: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [mode, setMode] = useState<'scan' | 'generate'>('scan'); // scan QR or generate activation code
+  const [verifyCode, setVerifyCode] = useState('');
+  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified'>('idle');
+  const [sessionId, setSessionId] = useState('');
+  const [verifiedDeviceId, setVerifiedDeviceId] = useState<string>('');
 
   // If auth is still loading, show loading
   if (isLoading) {
@@ -43,12 +48,21 @@ const AdminTVActivation: React.FC = () => {
     // Get device info from URL params (if coming from QR scan)
     const deviceParam = searchParams.get('device');
     const screenParam = searchParams.get('screen');
+    const codeParam = searchParams.get('code') || '';
+    const sessionParam = searchParams.get('session') || '';
 
     if (deviceParam) {
       // Coming from QR scan
       setMode('scan');
       setDeviceId(deviceParam);
       setScreenSize(screenParam || 'Unknown');
+      // If a code is present (from QR), try verifying immediately
+      if (codeParam) {
+        setVerifyCode(codeParam);
+        void handleVerifyActivation(codeParam, deviceParam);
+      }
+      // If session param is present, store for verify-code flow (nova-tv auth)
+      if (sessionParam) setSessionId(sessionParam);
     } else {
       // Regular admin access - show generation mode
       setMode('generate');
@@ -81,16 +95,78 @@ const AdminTVActivation: React.FC = () => {
     setError(null);
 
     try {
-      // Use the unified device service to activate the device
-      await UnifiedDeviceService.activateDevice(deviceId, selectedDashboard);
+      // Try Nova TV direct assignment first (requires a concrete Nova TV device id)
+      let assigned = false;
+      if (verifiedDeviceId) {
+        try {
+          await novaTVService.assignDashboard(verifiedDeviceId, selectedDashboard);
+          assigned = true;
+          toast.success('Assigned via Nova TV API');
+        } catch (e) {
+          console.warn('Nova TV assignment failed, will try unified route:', e);
+        }
+      }
+
+      // Fallback to unified-device activation using device fingerprint
+      if (!assigned) {
+        await UnifiedDeviceService.activateDevice(deviceId, selectedDashboard);
+        toast.success('Assigned via Unified Device API');
+      }
+
       setSuccess(true);
-      toast.success('TV device activated successfully!');
     } catch (err) {
       console.error('Error activating device:', err);
       setError('Failed to activate TV device');
       toast.error('Failed to activate TV device');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerifyActivation = async (code?: string, fingerprint?: string | null) => {
+    const activationCode = (code || verifyCode).replace(/\D/g, '').slice(0, 6);
+    const deviceFingerprint = (fingerprint ?? deviceId)?.trim();
+    if (!activationCode || !deviceFingerprint) {
+      setError('Enter the 6-digit code and ensure device is set');
+      return;
+    }
+
+    try {
+      setVerificationStatus('verifying');
+      setError(null);
+
+      // Prefer session-based verification if sessionId provided
+      if (sessionId) {
+        await novaTVService.verifyAuthCode(sessionId, activationCode);
+        // Ensure device exists and capture its id by (re)registering
+        const registered = await novaTVService.registerDevice({
+          name: `TV-${(deviceFingerprint || '').slice(-6)}`,
+          deviceFingerprint: deviceFingerprint || '',
+          settings: {},
+        });
+        if (registered?.id) {
+          setVerifiedDeviceId(registered.id);
+        }
+      } else {
+        // Fallback to activation verification with device fingerprint
+        const resp = await api.post('/nova-tv/activations/verify', {
+          code: activationCode,
+          deviceFingerprint,
+        });
+        // Capture device id if returned
+        const device = (resp as any)?.data?.device;
+        if (device?.id) {
+          setVerifiedDeviceId(device.id);
+        }
+      }
+
+      setVerificationStatus('verified');
+      toast.success('Activation code verified. You can assign a dashboard.');
+    } catch (err) {
+      console.error('Verification failed:', err);
+      setVerificationStatus('idle');
+      setError('Invalid or expired activation code');
+      toast.error('Invalid or expired activation code');
     }
   };
 
@@ -202,6 +278,46 @@ const AdminTVActivation: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Code Verification */}
+            <div className="mb-6 rounded-lg border bg-white p-6 shadow-sm">
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-medium text-gray-900">
+                <QrCode className="h-5 w-5 text-gray-600" />
+                Verify Activation Code
+              </h2>
+              <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={7}
+                  placeholder="Enter 6-digit code (e.g., 123-456)"
+                  value={verifyCode}
+                  onChange={(e) => setVerifyCode(e.target.value)}
+                  className="rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={() => handleVerifyActivation()}
+                  disabled={verificationStatus === 'verifying'}
+                  className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-gray-400"
+                >
+                  {verificationStatus === 'verifying' ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4" /> Verify Code
+                    </>
+                  )}
+                </button>
+              </div>
+              {verificationStatus === 'verified' && (
+                <div className="mt-3 rounded-md bg-green-50 p-3 text-sm text-green-700">
+                  Code verified. You may now assign the dashboard.
+                </div>
+              )}
             </div>
 
             {/* Dashboard Selection */}

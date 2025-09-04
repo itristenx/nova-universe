@@ -123,7 +123,12 @@ export default function EnhancedAgentDashboard() {
 
         return transformedMetrics;
       } catch (_error) {
-        console.error('Failed to load dashboard metrics:', error);
+        const errorMessage = _error instanceof Error ? _error.message : String(_error);
+        console.error('Failed to load dashboard metrics:', {
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+          fallbackAction: 'default_metrics'
+        });
         // Return fallback data
         return {
           totalTickets: 0,
@@ -161,7 +166,12 @@ export default function EnhancedAgentDashboard() {
 
         return transformedQueues;
       } catch (_error) {
-        console.error('Failed to load queue stats:', error);
+        const errorMessage = _error instanceof Error ? _error.message : String(_error);
+        console.error('Failed to load queue stats:', {
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+          fallbackAction: 'default_queues'
+        });
         // Return fallback data
         return [
           {
@@ -200,6 +210,13 @@ export default function EnhancedAgentDashboard() {
         const response = await ticketService.getTickets(1, 10, filters);
         return response;
       } catch (_error) {
+        const errorMessage = _error instanceof Error ? _error.message : String(_error);
+        console.error('Failed to load recent tickets:', {
+          error: errorMessage,
+          userId: user?.id,
+          selectedQueue,
+          timestamp: new Date().toISOString()
+        });
         toast.error('Failed to load recent tickets');
         return { data: [], total: 0, page: 1, perPage: 10, totalPages: 0 };
       }

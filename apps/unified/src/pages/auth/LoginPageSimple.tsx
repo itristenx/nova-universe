@@ -48,6 +48,12 @@ export default function LoginPage() {
       toast.success('Welcome back!');
       navigate(from, { replace: true });
     } catch (_error) {
+      const errorMessage = _error instanceof Error ? _error.message : String(_error);
+      console.error('Login failed:', {
+        error: errorMessage,
+        email: data.email,
+        timestamp: new Date().toISOString()
+      });
       toast.error('Login failed. Please check your credentials.');
     }
   };

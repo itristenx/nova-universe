@@ -21,6 +21,7 @@ export function CosmoGreeting({
   className = '' 
 }: CosmoGreetingProps) {
   const [currentGreeting, setCurrentGreeting] = useState('');
+  const [showEncouragement, setShowEncouragement] = useState(false);
 
   // Cosmo's personality-driven greetings based on context
   const greetings = {
@@ -62,6 +63,9 @@ export function CosmoGreeting({
     const contextGreetings = greetings[context];
     const randomGreeting = contextGreetings[Math.floor(Math.random() * contextGreetings.length)];
     setCurrentGreeting(randomGreeting);
+    
+    // Randomly show encouragement messages (20% chance)
+    setShowEncouragement(Math.random() < 0.2);
   }, [context]);
 
   const getPersonalizedGreeting = () => {
@@ -98,6 +102,14 @@ export function CosmoGreeting({
           <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
             {getPersonalizedGreeting()}
           </p>
+          
+          {showEncouragement && (
+            <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+              <p className="text-xs text-yellow-800 dark:text-yellow-300">
+                {encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)]}
+              </p>
+            </div>
+          )}
           
           <div className="mt-3 flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-1">

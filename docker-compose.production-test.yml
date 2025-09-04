@@ -150,8 +150,8 @@ services:
   # Nova API (Backend)
   nova-api:
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile.prod
+      context: .
+      dockerfile: apps/api/Dockerfile.prod
     image: nova-universe/api:latest
     container_name: nova-api
     restart: unless-stopped
@@ -171,6 +171,18 @@ services:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - JWT_SECRET=${JWT_SECRET:-your-super-secure-jwt-secret-key-here}
       - SESSION_SECRET=${SESSION_SECRET:-nova-session-secret-2024}
+      - CORS_ORIGINS=http://localhost:3001,http://localhost:8080
+      - KIOSK_TOKEN=${KIOSK_TOKEN:-demo_kiosk_token}
+      - SCIM_TOKEN=${SCIM_TOKEN:-demo_scim_token}
+      - SMTP_HOST=${SMTP_HOST:-localhost}
+      - SMTP_USER=${SMTP_USER:-demo}
+      - SMTP_PASS=${SMTP_PASS:-demo}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - CORE_DB_PASSWORD=${CORE_DB_PASSWORD:-nova_password}
+      - AUTH_DB_PASSWORD=${AUTH_DB_PASSWORD:-nova_password}
+      - AUDIT_DB_PASSWORD=${AUDIT_DB_PASSWORD:-mongo_secure_pass_2024}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - POSTGRES_SSL=false
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB:-nova_universe}
@@ -208,6 +220,8 @@ services:
     build:
       context: ./apps/unified
       dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: http://localhost:3000
     image: nova-universe/unified:latest
     container_name: nova-unified
     restart: unless-stopped
@@ -221,7 +235,7 @@ services:
       - nova-network
     depends_on:
       nova-api:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:3000']
       interval: 30s
@@ -427,7 +441,7 @@ services:
       ME_CONFIG_BASICAUTH_USERNAME: ${MONGOEXPRESS_USERNAME:-admin}
       ME_CONFIG_BASICAUTH_PASSWORD: ${MONGOEXPRESS_PASSWORD:-admin123}
     ports:
-      - '${MONGOEXPRESS_PORT:-8081}:8081'
+      - '${MONGOEXPRESS_PORT:-8082}:8081'
     networks:
       - nova-network
     depends_on:

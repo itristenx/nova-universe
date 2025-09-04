@@ -87,7 +87,7 @@ export interface ProfileUpdateRequest {
  * multi-factor authentication, and SSO login flows
  */
 class HelixAuthService {
-  private readonly baseUrl = '/v1/helix/login';
+  private readonly baseUrl = '/api/v1/helix/login';
 
   /**
    * Discover tenant and available authentication methods by email
@@ -333,21 +333,32 @@ class HelixAuthService {
   }
 
   /**
-   * Initiate SSO login flow
+   * Initiate SSO login flow (tenant-aware)
    */
-  async initiateSSOLogin(provider: string, state?: string): Promise<{ redirectUrl: string }> {
-    const response = await apiClient.get<{ redirectUrl: string }>(
+  async initiateSSOLogin(
+    provider: string,
+    options?: { tenantId?: string; state?: string; redirectUrl?: string },
+  ): Promise<{ redirectUrl: string }> {
+    const params: Record<string, string | undefined> = {
+      tenant: options?.tenantId,
+      state: options?.state,
+      redirectUrl: options?.redirectUrl,
+    };
+
+    // Use typed client; returns raw JSON body
+    const res = await apiClient.get<{ success?: boolean; data?: { redirectUrl: string }; redirectUrl?: string }>(
       `${this.baseUrl}/sso/initiate/${provider}`,
-      {
-        params: { state },
-      },
+      { params },
     );
 
-    if (!response.success || !response.data) {
-      throw new Error('Failed to initiate SSO login');
+    // Accept either wrapped or direct response shapes
+    if ((res as any)?.data?.redirectUrl) {
+      return (res as any).data;
     }
-
-    return response.data;
+    if ((res as any)?.redirectUrl) {
+      return { redirectUrl: (res as any).redirectUrl };
+    }
+    throw new Error('Failed to initiate SSO login');
   }
 
   /**

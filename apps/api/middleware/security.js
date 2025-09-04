@@ -122,6 +122,9 @@ export function configureCORS() {
       'X-API-Key',
       'X-Client-Version',
       'X-Request-ID',
+      // Allow commonly used caching headers that may trigger preflight in some browsers
+      'Cache-Control',
+      'Pragma',
     ],
 
     exposedHeaders: [

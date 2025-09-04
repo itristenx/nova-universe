@@ -196,11 +196,13 @@ export function usePullToRefresh(
     } finally {
       setIsRefreshing(false);
     }
-  }, [onRefresh, isRefreshing]);
+  }, [onRefresh, isRefreshing, disabled]);
 
   return {
     isRefreshing,
     lastRefresh,
     handleRefresh,
+    threshold, // Expose threshold for external use
+    disabled,
   };
 }

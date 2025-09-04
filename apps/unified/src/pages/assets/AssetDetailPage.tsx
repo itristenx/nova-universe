@@ -237,7 +237,12 @@ export default function AssetDetailPage() {
         const assetData = await assetService.getAsset(id);
         setAsset(assetData);
       } catch (_error) {
-        console.error('Failed to load asset:', error);
+        const errorMessage = _error instanceof Error ? _error.message : String(_error);
+        console.error('Failed to load asset:', {
+          error: errorMessage,
+          assetId: id,
+          timestamp: new Date().toISOString()
+        });
         toast.error('Failed to load asset');
       } finally {
         setIsLoading(false);
@@ -263,6 +268,12 @@ export default function AssetDetailPage() {
       toast.success('Asset deleted successfully');
       navigate('/assets');
     } catch (_error) {
+      const errorMessage = _error instanceof Error ? _error.message : String(_error);
+      console.error('Failed to delete asset:', {
+        error: errorMessage,
+        assetId: asset?.id,
+        timestamp: new Date().toISOString()
+      });
       toast.error('Failed to delete asset');
     } finally {
       setIsDeleting(false);

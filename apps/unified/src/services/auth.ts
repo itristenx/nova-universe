@@ -57,7 +57,7 @@ class AuthService {
    * Login with email and password
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/v1/auth/login', credentials);
+    const response = await apiClient.post<AuthResponse>('/api/auth/login', credentials);
 
     if (response.success && response.data) {
       const { accessToken, refreshToken } = response.data;
@@ -71,7 +71,14 @@ class AuthService {
    * Register new user
    */
   async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/v1/auth/register', data);
+    // API expects snake_case keys for name fields
+    const payload = {
+      email: data.email,
+      first_name: data.firstName,
+      last_name: data.lastName,
+      password: data.password,
+    };
+    const response = await apiClient.post<AuthResponse>('/api/auth/register', payload);
 
     if (response.success && response.data) {
       const { accessToken, refreshToken } = response.data;
@@ -86,7 +93,7 @@ class AuthService {
    */
   async logout(): Promise<void> {
     try {
-      await apiClient.post('/v1/auth/logout');
+      await apiClient.post('/api/auth/logout');
     } catch (_error) {
       // Continue with logout even if API call fails
       console.warn('Logout API call failed:', _error.message || _error);
@@ -99,14 +106,14 @@ class AuthService {
    * Request password reset
    */
   async requestPasswordReset(data: ResetPasswordData): Promise<void> {
-    await apiClient.post('/v1/auth/password/reset', data);
+    await apiClient.post('/api/auth/password/reset', data);
   }
 
   /**
    * Reset password with token
    */
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    await apiClient.post('/v1/auth/password/reset/confirm', {
+    await apiClient.post('/api/auth/password/reset/confirm', {
       token,
       newPassword,
     });
@@ -116,14 +123,14 @@ class AuthService {
    * Change password for authenticated user
    */
   async changePassword(data: ChangePasswordData): Promise<void> {
-    await apiClient.post('/v1/auth/password/change', data);
+    await apiClient.post('/api/auth/password/change', data);
   }
 
   /**
    * Get current user profile
    */
   async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<User>('/v1/auth/me');
+    const response = await apiClient.get<User>('/api/auth/me');
     return response.data!;
   }
 
@@ -131,7 +138,7 @@ class AuthService {
    * Update user profile
    */
   async updateProfile(data: Partial<User>): Promise<User> {
-    const response = await apiClient.patch<User>('/v1/auth/me', data);
+    const response = await apiClient.patch<User>('/api/auth/me', data);
     return response.data!;
   }
 
@@ -139,14 +146,14 @@ class AuthService {
    * Request magic link login
    */
   async requestMagicLink(data: MagicLinkRequest): Promise<void> {
-    await apiClient.post('/v1/auth/magic-link', data);
+    await apiClient.post('/api/auth/magic-link', data);
   }
 
   /**
    * Verify magic link token
    */
   async verifyMagicLink(data: VerifyMagicLinkData): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/v1/auth/magic-link/verify', data);
+    const response = await apiClient.post<AuthResponse>('/api/auth/magic-link/verify', data);
 
     if (response.success && response.data) {
       const { accessToken, refreshToken } = response.data;
@@ -160,7 +167,7 @@ class AuthService {
    * Setup MFA for user
    */
   async setupMfa(): Promise<MfaSetupResponse> {
-    const response = await apiClient.post<MfaSetupResponse>('/v1/auth/mfa/setup');
+    const response = await apiClient.post<MfaSetupResponse>('/api/auth/mfa/setup');
     return response.data!;
   }
 
@@ -168,14 +175,14 @@ class AuthService {
    * Verify MFA setup
    */
   async verifyMfaSetup(code: string): Promise<void> {
-    await apiClient.post('/v1/auth/mfa/setup/verify', { code });
+    await apiClient.post('/api/auth/mfa/setup/verify', { code });
   }
 
   /**
    * Verify MFA during login
    */
   async verifyMfa(data: MfaVerificationData): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/v1/auth/mfa/verify', data);
+    const response = await apiClient.post<AuthResponse>('/api/auth/mfa/verify', data);
 
     if (response.success && response.data) {
       const { accessToken, refreshToken } = response.data;
@@ -189,14 +196,14 @@ class AuthService {
    * Disable MFA
    */
   async disableMfa(password: string): Promise<void> {
-    await apiClient.post('/v1/auth/mfa/disable', { password });
+    await apiClient.post('/api/auth/mfa/disable', { password });
   }
 
   /**
    * Generate new backup codes
    */
   async generateBackupCodes(): Promise<string[]> {
-    const response = await apiClient.post<string[]>('/v1/auth/mfa/backup-codes');
+    const response = await apiClient.post<string[]>('/api/auth/mfa/backup-codes');
     return response.data!;
   }
 
@@ -209,7 +216,7 @@ class AuthService {
       throw new Error('No refresh token available');
     }
 
-    const response = await apiClient.post<AuthResponse>('/v1/auth/refresh', {
+    const response = await apiClient.post<AuthResponse>('/api/auth/refresh', {
       refreshToken,
     });
 

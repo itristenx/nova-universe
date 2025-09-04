@@ -174,8 +174,30 @@ export function testAPIEndpoints() {
     // Approval endpoints
     getApprovalFlows: () => mockApprovalFlows,
     getApprovalInstances: () => mockApprovalInstances,
-    approveInstance: (id, comment) => ({ success: true, message: 'Approved' }),
-    rejectInstance: (id, reason) => ({ success: true, message: 'Rejected' })
+    approveInstance: (id, comment) => {
+      console.log(`Approving instance ${id} with comment: ${comment}`);
+      // Find and update the approval instance
+      const instance = mockApprovalInstances.find(inst => inst.id === id);
+      if (instance) {
+        instance.status = 'APPROVED';
+        instance.approvedAt = new Date().toISOString();
+        instance.approverComment = comment;
+        return { success: true, message: 'Approved', instanceId: id, comment };
+      }
+      return { success: false, message: 'Instance not found', instanceId: id };
+    },
+    rejectInstance: (id, reason) => {
+      console.log(`Rejecting instance ${id} with reason: ${reason}`);
+      // Find and update the approval instance
+      const instance = mockApprovalInstances.find(inst => inst.id === id);
+      if (instance) {
+        instance.status = 'REJECTED';
+        instance.rejectedAt = new Date().toISOString();
+        instance.rejectionReason = reason;
+        return { success: true, message: 'Rejected', instanceId: id, reason };
+      }
+      return { success: false, message: 'Instance not found', instanceId: id };
+    }
   };
   
   // Test workflow APIs

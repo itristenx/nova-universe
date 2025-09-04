@@ -231,6 +231,7 @@ export function AIChatbot() {
         <CosmoAvatar size="md" animate={true} />
         <div className="flex-1">
           <div className="flex items-center gap-2">
+            <ChatBubbleLeftRightIcon className="h-4 w-4 text-blue-600" />
             <h3 className="font-semibold text-gray-900 dark:text-white">{t('chatbot:title')}</h3>
             <AIIndicator type="cosmo" size="sm" />
           </div>

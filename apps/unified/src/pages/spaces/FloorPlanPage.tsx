@@ -169,7 +169,12 @@ export default function FloorPlanPage() {
         }
         setSelectedFloor(initialFloor);
       } catch (_error) {
-        console.error('Failed to fetch floor plans:', error);
+        const errorMessage = _error instanceof Error ? _error.message : String(_error);
+        console.error('Failed to fetch floor plans:', {
+          error: errorMessage,
+          floorParam: searchParams.get('floor'),
+          timestamp: new Date().toISOString()
+        });
         // Keep empty array instead of falling back to mock data
       } finally {
         setIsLoading(false);

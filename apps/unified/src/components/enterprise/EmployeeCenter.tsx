@@ -1024,7 +1024,19 @@ const EmployeeCenter: React.FC<EmployeeCenterProps> = ({
                 <div style={styles.requestMeta}>
                   <div style={styles.metaItem}>
                     <span style={styles.metaLabel}>Priority</span>
-                    <span style={styles.metaValue}>{request.priority}</span>
+                    <span 
+                      style={{
+                        ...styles.metaValue,
+                        color: PRIORITY_COLORS[request.priority as keyof typeof PRIORITY_COLORS],
+                        fontWeight: '600',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        backgroundColor: `${PRIORITY_COLORS[request.priority as keyof typeof PRIORITY_COLORS]}15`,
+                        border: `1px solid ${PRIORITY_COLORS[request.priority as keyof typeof PRIORITY_COLORS]}30`,
+                      }}
+                    >
+                      {request.priority}
+                    </span>
                   </div>
                   <div style={styles.metaItem}>
                     <span style={styles.metaLabel}>Opened</span>

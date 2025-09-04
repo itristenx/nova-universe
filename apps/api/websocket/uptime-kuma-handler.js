@@ -335,12 +335,55 @@ class UptimeKumaWebSocketHandler {
 const uptimeKumaWsHandler = new UptimeKumaWebSocketHandler();
 
 // Express WebSocket handler for Nova clients
-export function handleUptimeKumaWebSocket(ws, _req) {
-  // Add authentication middleware for WebSocket connections
-  // In a real implementation, you'd validate the JWT token from the WebSocket connection
+import jwt from 'jsonwebtoken';
 
-  logger.info('New WebSocket connection for Uptime Kuma events');
-  uptimeKumaWsHandler.addNovaClient(ws);
+export function handleUptimeKumaWebSocket(ws, req) {
+  // Authenticate WebSocket connection using JWT from headers/query
+  try {
+    const authHeader = req?.headers?.authorization || '';
+    const url = req?.url || '';
+    const queryToken = (() => {
+      try {
+        const u = new URL(url, 'http://localhost');
+        return u.searchParams.get('token');
+      } catch {
+        return null;
+      }
+    })();
+    const protocolToken = Array.isArray(req?.headers?.['sec-websocket-protocol'])
+      ? req.headers['sec-websocket-protocol'][0]
+      : req?.headers?.['sec-websocket-protocol'];
+
+    let token = null;
+    if (authHeader.startsWith('Bearer ')) token = authHeader.slice('Bearer '.length);
+    if (!token && queryToken) token = queryToken;
+    if (!token && protocolToken && /^Bearer /.test(protocolToken)) {
+      token = protocolToken.replace(/^Bearer\s+/, '');
+    }
+
+    if (!token) {
+      logger.warn('WebSocket connection rejected: missing token');
+      ws.close(1008, 'Missing authentication token');
+      return;
+    }
+
+    const secret = process.env.JWT_SECRET || 'your-secret-key';
+    try {
+      const decoded = jwt.verify(token, secret);
+      // Optionally, attach decoded user info to the ws for future use
+      ws.user = decoded;
+    } catch (err) {
+      logger.warn('WebSocket connection rejected: invalid token');
+      ws.close(1008, 'Invalid authentication token');
+      return;
+    }
+
+    logger.info('New WebSocket connection for Uptime Kuma events');
+    uptimeKumaWsHandler.addNovaClient(ws);
+  } catch (err) {
+    logger.error('WebSocket auth handling failed:', err);
+    try { ws.close(1011, 'Internal error'); } catch {}
+  }
 }
 
 // Initialize the handler

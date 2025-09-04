@@ -137,7 +137,8 @@ export function EnhancedAppSwitcher({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-        title="Switch application"
+        title={t('switcher.switch_app', 'Switch application')}
+        aria-label={t('switcher.switch_app', 'Switch application')}
       >
         {currentAppData ? (
           <>
@@ -153,7 +154,7 @@ export function EnhancedAppSwitcher({
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-600">
               <span className="text-xs font-bold text-white">N</span>
             </div>
-            <span className="hidden sm:block">Nova Universe</span>
+            <span className="hidden sm:block">{t('switcher.nova_universe', 'Nova Universe')}</span>
           </>
         )}
         <ChevronDownIcon className="h-4 w-4" />
@@ -164,12 +165,14 @@ export function EnhancedAppSwitcher({
           <div className="p-4">
             {/* Header */}
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Applications</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                {t('switcher.title', 'Applications')}
+              </h3>
               {showAdminOptions && (
                 <button
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  title="Manage applications"
-                  aria-label="Manage applications"
+                  title={t('switcher.manage', 'Manage applications')}
+                  aria-label={t('switcher.manage', 'Manage applications')}
                 >
                   <Cog6ToothIcon className="h-4 w-4" />
                 </button>
@@ -190,35 +193,76 @@ export function EnhancedAppSwitcher({
               </div>
             ) : (
               <>
-                {/* Recent Apps Section */}
-                <div className="mb-4">
-                  <div className="mb-2 flex items-center space-x-2">
-                    <ClockIcon className="h-4 w-4 text-gray-500" />
-                    <span className="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                      Recently Used
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {apps.slice(0, 4).map((app) => (
-                      <button
-                        key={`recent-${app.id}`}
-                        onClick={() => handleAppLaunch(app)}
-                        className="group flex items-center space-x-2 rounded-lg p-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <div
-                          className={`h-6 w-6 rounded-md ${app.color} flex flex-shrink-0 items-center justify-center`}
+                {/* Recent Apps Section - Using recentApps variable */}
+                {recentApps.length > 0 && (
+                  <div className="mb-4">
+                    <div className="mb-2 flex items-center space-x-2">
+                      <ClockIcon className="h-4 w-4 text-gray-500" />
+                      <span className="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                        {t('switcher.recent', 'Recently Used')}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {recentApps.slice(0, 4).map((app) => (
+                        <button
+                          key={`recent-${app.id}`}
+                          onClick={() => handleAppLaunch(app)}
+                          className="group flex items-center space-x-2 rounded-lg p-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                          title={t('switcher.launch_app', `Launch ${app.name}`, { appName: app.name })}
                         >
-                          {getAppIcon(app)}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="truncate text-xs font-medium text-gray-900 dark:text-white">
-                            {app.name}
+                          <div
+                            className={`h-6 w-6 rounded-md ${app.color} flex flex-shrink-0 items-center justify-center`}
+                          >
+                            {getAppIcon(app)}
                           </div>
-                        </div>
-                      </button>
-                    ))}
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-xs font-medium text-gray-900 dark:text-white">
+                              {app.name}
+                            </div>
+                            <div className="truncate text-xs text-gray-500 dark:text-gray-400">
+                              {app.type === 'external' && t('switcher.external', 'External')}
+                              {app.type === 'saml' && t('switcher.sso', 'SSO')}
+                              {app.type === 'oauth' && t('switcher.oauth', 'OAuth')}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Suggested Apps for New Users */}
+                {recentApps.length === 0 && favoriteApps.length === 0 && apps.length > 0 && (
+                  <div className="mb-4">
+                    <div className="mb-2 flex items-center space-x-2">
+                      <StarIcon className="h-4 w-4 text-blue-500" />
+                      <span className="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                        {t('switcher.suggested', 'Suggested Apps')}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {apps.slice(0, 4).map((app) => (
+                        <button
+                          key={`suggested-${app.id}`}
+                          onClick={() => handleAppLaunch(app)}
+                          className="group flex items-center space-x-2 rounded-lg p-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                          title={t('switcher.launch_app', `Launch ${app.name}`, { appName: app.name })}
+                        >
+                          <div
+                            className={`h-6 w-6 rounded-md ${app.color} flex flex-shrink-0 items-center justify-center`}
+                          >
+                            {getAppIcon(app)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-xs font-medium text-gray-900 dark:text-white">
+                              {app.name}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Favorites Section */}
                 {favoriteApps.length > 0 && (
@@ -226,7 +270,7 @@ export function EnhancedAppSwitcher({
                     <div className="mb-2 flex items-center space-x-2">
                       <StarIcon className="h-4 w-4 text-yellow-500" />
                       <span className="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                        Favorites
+                        {t('switcher.favorites', 'Favorites')}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -235,6 +279,7 @@ export function EnhancedAppSwitcher({
                           key={app.id}
                           onClick={() => handleAppLaunch(app)}
                           className="group flex items-center space-x-3 rounded-lg p-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                          title={t('switcher.launch_app', `Launch ${app.name}`, { appName: app.name })}
                         >
                           <div
                             className={`h-8 w-8 rounded-md ${app.color} flex flex-shrink-0 items-center justify-center`}
@@ -249,7 +294,19 @@ export function EnhancedAppSwitcher({
                               {app.type === 'external' && (
                                 <span className="inline-flex items-center">
                                   <ArrowTopRightOnSquareIcon className="mr-1 h-3 w-3" />
-                                  External
+                                  {t('switcher.external', 'External')}
+                                </span>
+                              )}
+                              {app.type === 'saml' && (
+                                <span className="inline-flex items-center">
+                                  <ShieldCheckIcon className="mr-1 h-3 w-3" />
+                                  {t('switcher.sso', 'SSO')}
+                                </span>
+                              )}
+                              {app.type === 'oauth' && (
+                                <span className="inline-flex items-center">
+                                  <GlobeAltIcon className="mr-1 h-3 w-3" />
+                                  {t('switcher.oauth', 'OAuth')}
                                 </span>
                               )}
                             </div>
@@ -260,7 +317,8 @@ export function EnhancedAppSwitcher({
                               toggleFavorite(app.id);
                             }}
                             className="opacity-0 transition-opacity group-hover:opacity-100"
-                            aria-label={`${favorites.includes(app.id) ? 'Remove from' : 'Add to'} favorites`}
+                            aria-label={t('switcher.toggle_favorite', `${favorites.includes(app.id) ? 'Remove from' : 'Add to'} favorites`)}
+                            title={t('switcher.toggle_favorite', `${favorites.includes(app.id) ? 'Remove from' : 'Add to'} favorites`)}
                           >
                             <StarIcon className="h-4 w-4 fill-current text-yellow-500" />
                           </button>
@@ -275,7 +333,7 @@ export function EnhancedAppSwitcher({
                   <div className="mb-2 flex items-center space-x-2">
                     <Squares2X2Icon className="h-4 w-4 text-gray-500" />
                     <span className="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                      All Apps
+                      {t('switcher.all_apps', 'All Apps')}
                     </span>
                   </div>
                   <div className="max-h-64 space-y-1 overflow-y-auto">
@@ -284,6 +342,7 @@ export function EnhancedAppSwitcher({
                         key={app.id}
                         onClick={() => handleAppLaunch(app)}
                         className="group flex w-full items-center space-x-3 rounded-lg p-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                        title={t('switcher.launch_app', `Launch ${app.name}`, { appName: app.name })}
                       >
                         <div
                           className={`h-8 w-8 rounded-md ${app.color} flex flex-shrink-0 items-center justify-center`}
@@ -315,7 +374,8 @@ export function EnhancedAppSwitcher({
                             toggleFavorite(app.id);
                           }}
                           className="opacity-0 transition-opacity group-hover:opacity-100"
-                          aria-label={`${favorites.includes(app.id) ? 'Remove from' : 'Add to'} favorites`}
+                          aria-label={t('switcher.toggle_favorite', `${favorites.includes(app.id) ? 'Remove from' : 'Add to'} favorites`)}
+                          title={t('switcher.toggle_favorite', `${favorites.includes(app.id) ? 'Remove from' : 'Add to'} favorites`)}
                         >
                           <StarIcon
                             className={`h-4 w-4 ${favorites.includes(app.id) ? 'fill-current text-yellow-500' : 'text-gray-300'}`}
@@ -333,29 +393,32 @@ export function EnhancedAppSwitcher({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {apps.length} applications available
+                    {t('switcher.app_count', `${apps.length} applications available`, { count: apps.length })}
                   </span>
                   <div className="flex items-center space-x-1">
                     <BuildingOfficeIcon className="h-3 w-3 text-gray-400" />
-                    <span className="text-xs text-gray-400">Enterprise</span>
+                    <span className="text-xs text-gray-400">
+                      {t('switcher.enterprise', 'Enterprise')}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   {showAdminOptions && (
                     <button
                       className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
-                      title="Add new application"
+                      title={t('switcher.add_app', 'Add new application')}
                     >
                       <PlusIcon className="h-3 w-3" />
-                      <span>Add App</span>
+                      <span>{t('switcher.add_app_short', 'Add App')}</span>
                     </button>
                   )}
                   {showAdminOptions && (
                     <Link
                       to="/admin/apps"
                       className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                      title={t('switcher.manage_apps', 'Manage all applications')}
                     >
-                      Manage Apps
+                      {t('switcher.manage_apps_short', 'Manage Apps')}
                     </Link>
                   )}
                 </div>

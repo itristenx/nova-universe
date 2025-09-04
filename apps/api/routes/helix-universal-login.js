@@ -98,70 +98,99 @@ router.post(
       // Discover tenant by domain or email domain
       if (email) {
         const emailDomain = email.split('@')[1];
-
-        // First try to find user and their tenant
-        user = await db.query(
-          `SELECT u.id as user_id, u.name as user_name, u.email, u.tenant_id,
-                t.id as tenant_id, t.name as tenant_name, t.domain, t.subdomain,
-                t.logo_url, t.theme_color, t.background_image_url, t.login_message,
-                t.sso_enabled, t.mfa_required
-         FROM users u LEFT JOIN tenants t ON u.tenant_id = t.id WHERE u.email = $1`,
-          [email],
-        );
-
-        if (user.rows.length > 0) {
-          const row = user.rows[0];
-          tenant = {
-            id: row.tenant_id,
-            name: row.tenant_name,
-            domain: row.domain,
-            subdomain: row.subdomain,
-            logo_url: row.logo_url,
-            theme_color: row.theme_color,
-            background_image_url: row.background_image_url,
-            login_message: row.login_message,
-            sso_enabled: row.sso_enabled,
-            mfa_required: row.mfa_required,
-          };
-        } else {
-          // Try to find tenant by email domain
-          const domainResult = await db.query(
-            'SELECT * FROM tenants WHERE domain = $1 AND active = true',
-            [emailDomain],
+        try {
+          // First try to find user and their tenant
+          user = await db.query(
+            `SELECT u.id as user_id, u.name as user_name, u.email, u.tenant_id,
+                  t.id as tenant_id, t.name as tenant_name, t.domain, t.subdomain,
+                  t.logo_url, t.theme_color, t.background_image_url, t.login_message,
+                  t.sso_enabled, t.mfa_required
+           FROM users u LEFT JOIN tenants t ON u.tenant_id = t.id WHERE u.email = $1`,
+            [email],
           );
-
-          if (domainResult.rows.length > 0) {
-            tenant = domainResult.rows[0];
+          if (user.rows.length > 0) {
+            const row = user.rows[0];
+            tenant = {
+              id: row.tenant_id,
+              name: row.tenant_name,
+              domain: row.domain,
+              subdomain: row.subdomain,
+              logo_url: row.logo_url,
+              theme_color: row.theme_color,
+              background_image_url: row.background_image_url,
+              login_message: row.login_message,
+              sso_enabled: row.sso_enabled,
+              mfa_required: row.mfa_required,
+            };
+          } else {
+            // Try to find tenant by email domain
+            try {
+              const domainResult = await db.query(
+                'SELECT * FROM tenants WHERE domain = $1 AND active = true',
+                [emailDomain],
+              );
+              if (domainResult.rows.length > 0) {
+                tenant = domainResult.rows[0];
+              }
+            } catch (e) {
+              logger.warn('Tenant lookup by email domain failed:', e.message);
+            }
           }
+        } catch (e) {
+          logger.warn('User/tenant lookup failed during discovery:', e.message);
         }
       } else if (domain) {
         // Find tenant by provided domain
-        const domainResult = await db.query(
-          'SELECT * FROM tenants WHERE (domain = $1 OR subdomain = $1) AND active = true',
-          [domain],
-        );
-
-        if (domainResult.rows.length > 0) {
-          tenant = domainResult.rows[0];
+        try {
+          const domainResult = await db.query(
+            'SELECT * FROM tenants WHERE (domain = $1 OR subdomain = $1) AND active = true',
+            [domain],
+          );
+          if (domainResult.rows.length > 0) {
+            tenant = domainResult.rows[0];
+          }
+        } catch (e) {
+          logger.warn('Tenant lookup by provided domain failed:', e.message);
         }
       }
 
       // Fall back to default tenant if no specific tenant found
       if (!tenant) {
-        // Development fallback: Only allow default tenant for known test emails or explicit requests
-        if (process.env.NODE_ENV === 'development' && 
-            (email === 'admin@novauniverse.com' || email === 'admin@example.com' || 
-             email === 'test@novauniverse.com' || email === 'admin@localhost')) {
-          
-          const defaultResult = await db.query(
-            'SELECT * FROM tenants WHERE domain = $1 AND active = true',
-            ['localhost'],
-          );
-
-          if (defaultResult.rows.length > 0) {
-            tenant = defaultResult.rows[0];
-            logger.info(`Development fallback: Using default tenant for ${email}`);
-          } else {
+        // Opt-in demo fallback: allow automatic tenant discovery in demo environments
+        if (process.env.HELIX_DEMO_TENANT === 'true') {
+          tenant = {
+            id: 'demo-tenant',
+            name: 'Demo Organization',
+            domain: 'localhost',
+            subdomain: null,
+            logo_url: null,
+            theme_color: '#1f2937',
+            background_image_url: null,
+            login_message: 'Welcome to the Nova Universe demo',
+            sso_enabled: false,
+            mfa_required: false,
+          };
+          logger.info(`HELIX_DEMO_TENANT enabled: using demo tenant for ${email || domain || 'unknown user'}`);
+        } else if (
+          process.env.NODE_ENV === 'development' &&
+          (email === 'admin@novauniverse.com' ||
+            email === 'admin@example.com' ||
+            email === 'test@novauniverse.com' ||
+            email === 'admin@localhost')
+        ) {
+          try {
+            const defaultResult = await db.query(
+              'SELECT * FROM tenants WHERE domain = $1 AND active = true',
+              ['localhost'],
+            );
+            if (defaultResult.rows.length > 0) {
+              tenant = defaultResult.rows[0];
+              logger.info(`Development fallback: Using default tenant for ${email}`);
+            }
+          } catch (e) {
+            logger.warn('Dev fallback tenant query failed:', e.message);
+          }
+          if (!tenant) {
             return res.status(404).json({
               success: false,
               error: 'No tenant configuration found',
@@ -172,7 +201,7 @@ router.post(
           return res.status(404).json({
             success: false,
             error: 'No tenant found for this email or domain',
-            code: 'TENANT_NOT_FOUND'
+            code: 'TENANT_NOT_FOUND',
           });
         }
       }
@@ -187,36 +216,42 @@ router.post(
         primary: true,
       });
 
-      // Check for SSO configurations
+      // Check for SSO configurations (best-effort; ignore if table missing)
       if (tenant.sso_enabled) {
-        const ssoConfigs = await db.query(
-          'SELECT provider, provider_name, enabled FROM sso_configs WHERE tenant_id = $1 AND enabled = true',
-          [tenant.id],
-        );
-
-        for (const sso of ssoConfigs.rows) {
-          authMethods.push({
-            type: 'sso',
-            provider: sso.provider,
-            name: sso.provider_name,
-            primary: false,
-          });
+        try {
+          const ssoConfigs = await db.query(
+            'SELECT provider, provider_name, enabled FROM sso_configs WHERE tenant_id = $1 AND enabled = true',
+            [tenant.id],
+          );
+          for (const sso of ssoConfigs.rows) {
+            authMethods.push({
+              type: 'sso',
+              provider: sso.provider,
+              name: sso.provider_name,
+              primary: false,
+            });
+          }
+        } catch (e) {
+          logger.warn('SSO configs lookup failed (continuing without SSO):', e.message);
         }
       }
 
       // Check for WebAuthn/Passkey support
       if (user && user.rows.length > 0) {
-        const passkeyResult = await db.query(
-          'SELECT COUNT(*) as count FROM passkeys WHERE user_id = $1',
-          [user.rows[0].user_id],
-        );
-
-        if (parseInt(passkeyResult.rows[0].count) > 0) {
-          authMethods.push({
-            type: 'passkey',
-            name: 'Passkey',
-            primary: false,
-          });
+        try {
+          const passkeyResult = await db.query(
+            'SELECT COUNT(*) as count FROM passkeys WHERE user_id = $1',
+            [user.rows[0].user_id],
+          );
+          if (parseInt(passkeyResult.rows[0].count) > 0) {
+            authMethods.push({
+              type: 'passkey',
+              name: 'Passkey',
+              primary: false,
+            });
+          }
+        } catch (e) {
+          logger.warn('Passkey lookup failed (continuing without passkey):', e.message);
         }
       }
 
@@ -227,33 +262,38 @@ router.post(
         backgroundImage: tenant.background_image_url,
         loginMessage: tenant.login_message,
         organizationName: tenant.name,
+        supportEmail: tenant.support_email || null,
       };
 
-      // Store discovery in session for security
+      // Store discovery in session for security (best-effort in demo)
       const discoveryToken = uuidv4();
-      await db.query(
-        `INSERT INTO auth_audit_logs (
-        tenant_id, event_type, event_category, event_description, 
-        ip_address, user_agent, success, metadata
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [
-          tenant.id,
-          'tenant_discovery',
-          'authentication',
-          `Tenant discovery for ${email || domain}`,
-          req.ip,
-          req.get('User-Agent'),
-          true,
-          JSON.stringify({
-            discoveryToken,
-            email: email || null,
-            domain: domain || null,
-            redirectUrl: redirectUrl || null,
-          }),
-        ],
-      );
+      try {
+        await db.query(
+          `INSERT INTO auth_audit_logs (
+          tenant_id, event_type, event_category, event_description, 
+          ip_address, user_agent, success, metadata
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [
+            tenant.id || null,
+            'tenant_discovery',
+            'authentication',
+            `Tenant discovery for ${email || domain}`,
+            req.ip,
+            req.get('User-Agent'),
+            true,
+            JSON.stringify({
+              discoveryToken,
+              email: email || null,
+              domain: domain || null,
+              redirectUrl: redirectUrl || null,
+            }),
+          ],
+        );
+      } catch (e) {
+        logger.warn('Auth audit log insert failed (demo environments may lack schema):', e.message);
+      }
 
-      res.json({
+      return res.json({
         success: true,
         tenant: {
           id: tenant.id,
@@ -267,11 +307,9 @@ router.post(
         discoveryToken,
       });
     } catch (error) {
-      logger.error('Tenant discovery error:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Internal server error during tenant discovery',
-      });
+      // On any unexpected error, prefer a 404 to allow UI password fallback
+      logger.warn('Tenant discovery non-fatal error (returning 404 to allow fallback):', error.message);
+      return res.status(404).json({ success: false, error: 'No tenant found' });
     }
   },
 );
@@ -687,19 +725,14 @@ router.post(
               });
 
               logger.info(`SMS verification code sent to ${maskedPhone} for user ${userId}`);
+              challengeResponse.message = 'Verification code sent to your phone';
+              challengeResponse.maskedPhone = maskedPhone;
             } else {
-              // Mock SMS sending for development
-              logger.info(
-                `[DEV] SMS verification code ${challengeCode} would be sent to ${maskedPhone}`,
-              );
+              throw new Error('SMS provider not configured');
             }
-
-            challengeResponse.message = 'Verification code sent to your phone';
-            challengeResponse.maskedPhone = maskedPhone;
           } catch (smsError) {
             logger.error('SMS sending failed:', smsError);
-            challengeResponse.message = 'Failed to send SMS verification code';
-            challengeResponse.error = 'SMS delivery failed';
+            return res.status(500).json({ success: false, error: 'SMS provider not configured' });
           }
         } else if (mfaMethod === 'email') {
           // Implement email sending via configured email provider
@@ -710,7 +743,7 @@ router.post(
             // Send email using nodemailer or configured provider
 
             // Use configured SMTP settings
-            const transporter = nodemailer.createTransporter({
+            const transporter = nodemailer.createTransport({
               host: process.env.SMTP_HOST || 'localhost',
               port: process.env.SMTP_PORT || 587,
               secure: process.env.SMTP_SECURE === 'true',
@@ -754,8 +787,7 @@ router.post(
             challengeResponse.maskedEmail = maskedEmail;
           } catch (emailError) {
             logger.error('Email sending failed:', emailError);
-            challengeResponse.message = 'Failed to send email verification code';
-            challengeResponse.error = 'Email delivery failed';
+            return res.status(500).json({ success: false, error: 'Email provider not configured' });
           }
         }
       }
@@ -1123,40 +1155,90 @@ router.post('/logout', authenticateJWT, async (req, res) => {
 router.get('/sso/initiate/:provider', async (req, res) => {
   try {
     const { provider } = req.params;
-    const { tenant, state, redirectUrl } = req.query;
+    const { tenant, redirectUrl } = req.query;
+    let { state } = req.query;
 
-    // Get SSO configuration
-    const ssoConfig = await db.query(
-      'SELECT * FROM sso_configs WHERE tenant_id = $1 AND provider = $2 AND enabled = true',
-      [tenant, provider],
-    );
-
-    if (ssoConfig.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'SSO provider not found or not enabled',
-      });
+    if (!tenant) {
+      return res.status(400).json({ success: false, error: 'Missing tenant parameter' });
     }
 
-    const config = ssoConfig.rows[0];
+    // Try modern sso_configs first
+    let configRow = null;
+    let table = 'sso_configs';
+    try {
+      const ssoConfig = await db.query(
+        'SELECT * FROM sso_configs WHERE tenant_id = $1 AND provider = $2 AND enabled = true',
+        [tenant, provider],
+      );
+      if (ssoConfig.rows.length > 0) {
+        configRow = ssoConfig.rows[0];
+        table = 'sso_configs';
+      }
+    } catch {}
 
-    if (config.provider === 'saml') {
-      const samlUrl = await initiateSAMLLogin(config, state, redirectUrl);
-      logger.info('SAML login initiated', { provider: config.name, state });
-      res.redirect(samlUrl);
-    } else if (config.provider === 'oidc') {
-      const oidcUrl = await initiateOIDCLogin(config, state, redirectUrl);
-      logger.info('OIDC login initiated', { provider: config.name, state });
-      res.redirect(oidcUrl);
-    } else {
-      res.status(400).json({
-        success: false,
-        error: 'Unsupported SSO provider type',
-      });
+    // Fallback to legacy sso_configurations
+    if (!configRow) {
+      try {
+        const legacy = await db.query(
+          'SELECT * FROM sso_configurations WHERE provider = $1 AND enabled = true LIMIT 1',
+          [provider],
+        );
+        if (legacy.rows.length > 0) {
+          configRow = legacy.rows[0];
+          table = 'sso_configurations';
+        }
+      } catch {}
     }
+
+    if (!configRow) {
+      return res.status(404).json({ success: false, error: 'SSO provider not found or not enabled' });
+    }
+
+    // Normalize configuration shape
+    const config = {
+      provider: provider,
+      name: configRow.provider_name || configRow.name || provider,
+      metadata:
+        table === 'sso_configs'
+          ? {
+              entryPoint: configRow.saml_sso_url,
+              sso_url: configRow.saml_sso_url,
+              issuer: configRow.saml_entity_id,
+              callbackUrl: `${process.env.API_BASE_URL}/api/v1/helix/login/sso/callback/${provider}`,
+              cert: configRow.saml_certificate,
+              authorization_endpoint: configRow.oidc_authorization_url,
+              auth_url: configRow.oidc_authorization_url,
+              token_endpoint: configRow.oidc_token_url,
+              userinfo_endpoint: configRow.oidc_userinfo_url,
+              client_id: configRow.oidc_client_id,
+              // client_secret stored encrypted; callback/token exchange path will use appropriate storage
+            }
+          : configRow.configuration || configRow.metadata || {},
+    };
+
+    // Create state if not provided and store for callback verification
+    if (!state) {
+      state = crypto.randomUUID();
+    }
+    try {
+      await db.query(
+        `INSERT INTO auth_states(state, tenant_id, redirect_url, created_at, expires_at)
+         VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '15 minutes')
+         ON CONFLICT (state) DO UPDATE SET tenant_id = EXCLUDED.tenant_id, redirect_url = EXCLUDED.redirect_url, expires_at = CURRENT_TIMESTAMP + INTERVAL '15 minutes'`,
+        [state, tenant, redirectUrl || null],
+      );
+    } catch (e) {
+      logger.warn('Failed to persist auth state (continuing): ' + e.message);
+    }
+
+    // Generate SSO URL
+    const redirect = await generateSSOUrl(config, state, redirectUrl);
+    logger.info('SSO login URL generated', { provider: config.provider, tenant, state });
+
+    return res.json({ success: true, data: { redirectUrl: redirect } });
   } catch (error) {
     logger.error('SSO initiation error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Internal server error during SSO initiation',
     });
@@ -1257,6 +1339,397 @@ router.post('/sso/callback/:provider', async (req, res) => {
       success: false,
       error: 'Internal server error during SSO callback',
     });
+  }
+});
+
+/**
+ * Local user lifecycle endpoints (registration and passwords)
+ */
+
+// Register a new local user (password-based)
+router.post(
+  '/register',
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 8 }),
+    body('firstName').optional().isLength({ max: 100 }),
+    body('lastName').optional().isLength({ max: 100 }),
+    body('tenantId').optional().isUUID(),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+      }
+
+      // Optionally honor ENABLE_REGISTRATION env
+      if ((process.env.ENABLE_REGISTRATION || 'false') !== 'true') {
+        return res.status(403).json({ success: false, error: 'Registration is disabled' });
+      }
+
+      const { email, password, firstName, lastName, tenantId } = req.body;
+
+      // Check if user exists
+      const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+      if (existing.rows.length > 0) {
+        return res.status(409).json({ success: false, error: 'Email already registered' });
+      }
+
+      // Resolve tenant
+      let resolvedTenantId = tenantId;
+      if (!resolvedTenantId) {
+        // Try email domain → tenant, fallback to Nova Inc domain
+        const domain = email.split('@')[1];
+        const t = await db.query('SELECT id FROM tenants WHERE domain = $1', [domain]);
+        if (t.rows.length > 0) {
+          resolvedTenantId = t.rows[0].id;
+        } else {
+          const fallback = await db.query('SELECT id FROM tenants WHERE domain = $1', [
+            process.env.NOVA_TENANT_DOMAIN || 'nova-universe.com',
+          ]);
+          resolvedTenantId = fallback.rows[0]?.id || null;
+        }
+      }
+
+      const hashed = await bcrypt.hash(password, 12);
+      const uuid = crypto.randomUUID();
+      const name = [firstName, lastName].filter(Boolean).join(' ') || email;
+
+      const inserted = await db.query(
+        `INSERT INTO users (uuid, name, email, password_hash, disabled, tenant_id, created_at, updated_at)
+         VALUES ($1,$2,$3,$4,false,$5,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+         RETURNING id, tenant_id`,
+        [uuid, name, email, hashed, resolvedTenantId],
+      );
+
+      const user = { id: inserted.rows[0].id, email, tenant_id: inserted.rows[0].tenant_id };
+
+      await logAuthEvent(
+        user.tenant_id,
+        user.id,
+        'registration',
+        'authentication',
+        'Local user registered',
+        req.ip,
+        req.get('User-Agent'),
+        true,
+        { email },
+      );
+
+      // Issue token for immediate login
+      const token = jwt.sign(
+        { userId: user.id, email: user.email, tenantId: user.tenant_id, roles: ['user'] },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' },
+      );
+
+      return res.json({ success: true, data: { token } });
+    } catch (error) {
+      logger.error('Registration error:', error);
+      return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  },
+);
+
+// Forgot password (send reset link)
+router.post(
+  '/password/forgot',
+  [body('email').isEmail().normalizeEmail()],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+      }
+      const { email } = req.body;
+      const userRes = await db.query('SELECT id, email FROM users WHERE email = $1', [email]);
+      if (userRes.rows.length === 0) {
+        // 200 to avoid user enumeration
+        return res.json({ success: true });
+      }
+      const user = userRes.rows[0];
+      const token = crypto.randomBytes(32).toString('hex');
+      const tokenHash = await bcrypt.hash(token, 10);
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      await db.query(
+        `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, used)
+         VALUES ($1,$2,$3,false)`,
+        [user.id, tokenHash, expiresAt],
+      );
+
+      // Send email via SMTP (required)
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'localhost',
+        port: process.env.SMTP_PORT || 587,
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: process.env.SMTP_USER
+          ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+          : undefined,
+      });
+
+      const appBase = process.env.APP_BASE_URL || process.env.WEB_BASE_URL || 'http://localhost:3002';
+      const resetUrl = `${appBase}/auth/reset-password?token=${token}`;
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || 'noreply@nova-universe.com',
+        to: email,
+        subject: 'Nova Universe - Password Reset',
+        html: `Your password reset link: <a href="${resetUrl}">${resetUrl}</a> (expires in 1 hour)`,
+      });
+
+      return res.json({ success: true });
+    } catch (error) {
+      logger.error('Forgot password error:', error);
+      return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  },
+);
+
+// Reset password
+router.post(
+  '/password/reset',
+  [body('token').isLength({ min: 10 }), body('newPassword').isLength({ min: 8 })],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+      }
+      const { token, newPassword } = req.body;
+
+      // Find valid token by comparing hashes
+      const candidates = await db.query(
+        `SELECT * FROM password_reset_tokens WHERE used = false AND expires_at > CURRENT_TIMESTAMP ORDER BY created_at DESC LIMIT 100`,
+      );
+      let record = null;
+      for (const row of candidates.rows) {
+        if (await bcrypt.compare(token, row.token_hash)) {
+          record = row;
+          break;
+        }
+      }
+      if (!record) {
+        return res.status(400).json({ success: false, error: 'Invalid or expired token' });
+      }
+
+      // Update password
+      const hash = await bcrypt.hash(newPassword, 12);
+      await db.query('UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [
+        hash,
+        record.user_id,
+      ]);
+      await db.query('UPDATE password_reset_tokens SET used = true WHERE id = $1', [record.id]);
+
+      return res.json({ success: true });
+    } catch (error) {
+      logger.error('Reset password error:', error);
+      return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  },
+);
+
+// Change password (authenticated)
+router.post(
+  '/password/change',
+  authenticateJWT,
+  [body('currentPassword').isLength({ min: 1 }), body('newPassword').isLength({ min: 8 })],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+      }
+      const { user } = req;
+      const { currentPassword, newPassword } = req.body;
+
+      const userRes = await db.query('SELECT id, password_hash FROM users WHERE id = $1', [user.userId]);
+      if (userRes.rows.length === 0) {
+        return res.status(404).json({ success: false, error: 'User not found' });
+      }
+      const row = userRes.rows[0];
+      if (!row.password_hash) {
+        return res.status(400).json({ success: false, error: 'Password login is not enabled' });
+      }
+      const ok = await bcrypt.compare(currentPassword, row.password_hash);
+      if (!ok) {
+        return res.status(401).json({ success: false, error: 'Invalid current password' });
+      }
+      const hash = await bcrypt.hash(newPassword, 12);
+      await db.query('UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [
+        hash,
+        row.id,
+      ]);
+      return res.json({ success: true });
+    } catch (error) {
+      logger.error('Change password error:', error);
+      return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  },
+);
+
+/**
+ * Admin: Manage tenant login options (SSO/password/MFA toggles)
+ * Note: In production, protect with authentication/authorization middleware.
+ */
+router.get('/admin/tenant/:tenantId/options', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const result = await db.query(
+      'SELECT id, name, sso_enabled, mfa_required FROM tenants WHERE id = $1',
+      [tenantId],
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Tenant not found' });
+    }
+    const t = result.rows[0];
+    return res.json({
+      success: true,
+      data: {
+        tenantId: t.id,
+        name: t.name,
+        passwordEnabled: true, // password always available
+        ssoEnabled: t.sso_enabled,
+        mfaRequired: t.mfa_required,
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to get tenant login options:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * Admin: Tenant-scoped SSO configuration (SAML/OIDC)
+ */
+router.get('/admin/tenant/:tenantId/sso-configs', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const list = await db.query('SELECT provider, provider_name, enabled FROM sso_configs WHERE tenant_id = $1', [
+      tenantId,
+    ]);
+    return res.json({ success: true, data: list.rows });
+  } catch (error) {
+    logger.error('Failed to list SSO configs:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+router.get('/admin/tenant/:tenantId/sso-configs/saml', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const r = await db.query('SELECT * FROM sso_configs WHERE tenant_id = $1 AND provider = $2', [
+      tenantId,
+      'saml',
+    ]);
+    if (r.rows.length === 0) {
+      return res.json({ success: true, data: null });
+    }
+    const row = r.rows[0];
+    return res.json({
+      success: true,
+      data: {
+        enabled: row.enabled,
+        entryPoint: row.saml_sso_url,
+        issuer: row.saml_entity_id,
+        callbackUrl: `${process.env.API_BASE_URL}/api/v1/helix/login/sso/callback/saml`,
+        cert: row.saml_certificate,
+        signatureAlgorithm: 'sha256',
+        digestAlgorithm: 'sha256',
+        authnContextClassRef:
+          row.saml_name_id_format || 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+        bypassLoginPage: false,
+        groupMirroringEnabled: false,
+        autoProvisionUsers: !!row.auto_provision,
+        defaultUserRole: 'user',
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to get SAML config:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+router.put('/admin/tenant/:tenantId/sso-configs/saml', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const {
+      enabled,
+      entryPoint,
+      issuer,
+      cert,
+      authnContextClassRef,
+      autoProvisionUsers,
+      defaultUserRole,
+    } = req.body || {};
+    const upsert = await db.query(
+      `INSERT INTO sso_configs (
+        tenant_id, provider, provider_name, enabled, saml_entity_id, saml_sso_url, saml_certificate, saml_name_id_format, auto_provision, default_role_id
+      ) VALUES ($1,'saml',$2,$3,$4,$5,$6,$7,$8, NULL)
+      ON CONFLICT (tenant_id, provider) DO UPDATE SET
+        provider_name = EXCLUDED.provider_name,
+        enabled = EXCLUDED.enabled,
+        saml_entity_id = EXCLUDED.saml_entity_id,
+        saml_sso_url = EXCLUDED.saml_sso_url,
+        saml_certificate = EXCLUDED.saml_certificate,
+        saml_name_id_format = EXCLUDED.saml_name_id_format,
+        auto_provision = EXCLUDED.auto_provision,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *`,
+      [tenantId, 'SAML', !!enabled, issuer || null, entryPoint || null, cert || null, authnContextClassRef || null, !!autoProvisionUsers],
+    );
+    return res.json({ success: true, data: upsert.rows[0] });
+  } catch (error) {
+    logger.error('Failed to upsert SAML config:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+router.get('/admin/tenant/:tenantId/saml/metadata', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const base = process.env.API_BASE_URL || 'http://localhost:3000';
+    const entityId = `${base}/api/v1/helix/login/sso/callback/saml`;
+    const ssoUrl = `${base}/api/v1/helix/login/sso/callback/saml`;
+    const metadata = `<?xml version="1.0"?>\n<EntityDescriptor entityID="${entityId}" xmlns="urn:oasis:names:tc:SAML:2.0:metadata">\n  <SPSSODescriptor AuthnRequestsSigned="false" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">\n    <AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="${ssoUrl}" index="1"/>\n  </SPSSODescriptor>\n</EntityDescriptor>`;
+    res.setHeader('Content-Type', 'application/samlmetadata+xml');
+    return res.send(metadata);
+  } catch (error) {
+    logger.error('Failed to generate SAML metadata:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+router.put('/admin/tenant/:tenantId/options', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const { ssoEnabled, mfaRequired } = req.body || {};
+    const result = await db.query(
+      `UPDATE tenants SET 
+          sso_enabled = COALESCE($2, sso_enabled),
+          mfa_required = COALESCE($3, mfa_required),
+          updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1
+       RETURNING id, name, sso_enabled, mfa_required`,
+      [tenantId, ssoEnabled, mfaRequired],
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Tenant not found' });
+    }
+    const t = result.rows[0];
+    return res.json({
+      success: true,
+      data: {
+        tenantId: t.id,
+        name: t.name,
+        passwordEnabled: true,
+        ssoEnabled: t.sso_enabled,
+        mfaRequired: t.mfa_required,
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to update tenant login options:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -1768,25 +2241,40 @@ async function processOIDCResponse(requestBody) {
       throw new Error('Missing authorization code');
     }
 
-    // Get the OIDC configuration for token exchange
+    // Verify state
     const stateData = await verifyStateParameter(state);
     if (!stateData) {
       throw new Error('Invalid state parameter');
     }
 
-    const ssoConfig = await db.query(
-      'SELECT * FROM sso_configurations WHERE tenant_id = $1 AND provider = $2 AND active = true',
-      [stateData.tenantId, 'oidc'],
-    );
-
-    if (ssoConfig.rows.length === 0) {
-      throw new Error('OIDC configuration not found');
+    // Load OIDC configuration (try modern table first)
+    let row = null;
+    try {
+      const modern = await db.query(
+        'SELECT * FROM sso_configs WHERE tenant_id = $1 AND provider = $2 AND enabled = true',
+        [stateData.tenantId, 'oidc'],
+      );
+      if (modern.rows.length > 0) row = modern.rows[0];
+    } catch {}
+    if (!row) {
+      const legacy = await db.query(
+        'SELECT * FROM sso_configurations WHERE provider = $1 AND enabled = true LIMIT 1',
+        ['oidc'],
+      );
+      if (legacy.rows.length > 0) row = legacy.rows[0];
     }
+    if (!row) throw new Error('OIDC configuration not found');
 
-    const config = ssoConfig.rows[0];
+    const md = row.configuration || row.metadata || {
+      token_endpoint: row.oidc_token_url,
+      userinfo_endpoint: row.oidc_userinfo_url,
+      redirect_uri: `${process.env.API_BASE_URL}/api/v1/helix/login/sso/callback/oidc`,
+      client_id: row.oidc_client_id,
+      client_secret: row.oidc_client_secret_encrypted ? decrypt(row.oidc_client_secret_encrypted) : undefined,
+    };
 
     // Exchange authorization code for access token
-    const tokenResponse = await fetch(config.metadata.token_endpoint, {
+    const tokenResponse = await fetch(md.token_endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -1795,9 +2283,9 @@ async function processOIDCResponse(requestBody) {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code: code,
-        redirect_uri: config.metadata.redirect_uri,
-        client_id: config.metadata.client_id,
-        client_secret: config.metadata.client_secret,
+        redirect_uri: md.redirect_uri,
+        client_id: md.client_id,
+        client_secret: md.client_secret,
       }),
     });
 
@@ -1808,7 +2296,7 @@ async function processOIDCResponse(requestBody) {
     const tokens = await tokenResponse.json();
 
     // Get user info from userinfo endpoint
-    const userInfoResponse = await fetch(config.metadata.userinfo_endpoint, {
+    const userInfoResponse = await fetch(md.userinfo_endpoint, {
       headers: {
         Authorization: `Bearer ${tokens.access_token}`,
         Accept: 'application/json',

@@ -169,20 +169,29 @@ export default function EnhancedDeepWorkMode({ onSessionEnd }: Props) {
           }
 
           setAiSuggestions(suggestions);
-        } catch (_error) {
-          console.error('Error generating AI suggestions:', error);
-          // Fallback to basic suggestions
-          setAiSuggestions([
+        } catch (error) {
+          console.error(`[${new Date().toISOString()}] Error generating AI suggestions for deep work session:`, error instanceof Error ? error.message : String(error));
+          // Enhanced fallback with context-aware suggestions based on current session
+          const enhancedFallbackSuggestions = [
             {
-              id: 'basic-1',
-              type: 'resolution',
-              title: 'Focus session active',
-              description:
-                'Take advantage of uninterrupted time to thoroughly investigate this issue',
+              id: 'focus-1',
+              type: 'focus' as const,
+              title: 'Deep focus session active',
+              description: `Maintain concentration on current task. Session duration: ${Math.floor((Date.now() - focusSession.startTime) / 60000)} minutes`,
               confidence: 0.9,
               actionable: true,
             },
-          ]);
+            {
+              id: 'productivity-1', 
+              type: 'productivity' as const,
+              title: 'Productivity optimization',
+              description: 'Consider breaking complex tasks into smaller components for better flow state maintenance',
+              confidence: 0.8,
+              actionable: true,
+            }
+          ];
+          setAiSuggestions(enhancedFallbackSuggestions);
+          console.log(`[${new Date().toISOString()}] Applied enhanced fallback suggestions for deep work optimization`);
         }
       };
 

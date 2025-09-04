@@ -371,10 +371,12 @@ const DeviceManagementPage: React.FC = () => {
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Device Type</label>
                 <select
-                  value={newDeviceData.type}
-                  onChange={(e) =>
-                    setNewDeviceData({ ...newDeviceData, type: e.target.value as DeviceType })
-                  }
+                  value={selectedDeviceType}
+                  onChange={(e) => {
+                    const newType = e.target.value as DeviceType;
+                    setSelectedDeviceType(newType);
+                    setNewDeviceData({ ...newDeviceData, type: newType });
+                  }}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                   aria-label="Select device type"
                 >

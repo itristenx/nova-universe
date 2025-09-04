@@ -346,7 +346,8 @@ const AIAgentManagementPanel: React.FC = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
                         <h3 className="font-medium">{capability.name}</h3>
-                        <Badge variant={capability.isActive ? 'default' : 'secondary'}>
+                        <Badge variant={capability.isActive ? 'default' : 'secondary'} className="flex items-center gap-1">
+                          {capability.isActive && <Shield className="h-3 w-3" />}
                           {capability.isActive ? 'Active' : 'Inactive'}
                         </Badge>
                         <Badge variant="outline">{capability.category}</Badge>
@@ -359,7 +360,10 @@ const AIAgentManagementPanel: React.FC = () => {
                         <span className="text-xs text-gray-500">
                           {capability.workflows} workflows
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          {capability.confidence < 0.7 && (
+                            <AlertCircle className="h-3 w-3 text-yellow-500" />
+                          )}
                           {Math.round(capability.confidence * 100)}% confidence
                         </span>
                       </div>

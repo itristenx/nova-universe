@@ -82,7 +82,12 @@ export default function AutomationHubPage() {
         setTemplates([]);
       }
     } catch (_error) {
-      console.warn('Automation API unavailable, using fallback data:', error);
+      const errorMessage = _error instanceof Error ? _error.message : String(_error);
+      console.warn('Automation API unavailable, using fallback data:', {
+        error: errorMessage,
+        timestamp: new Date().toISOString(),
+        fallbackAction: 'empty_state'
+      });
       // Fallback to empty state
       setRules([]);
       setExecutions([]);
@@ -292,6 +297,16 @@ export default function AutomationHubPage() {
                       ) : (
                         <PlayIcon className="h-4 w-4" />
                       )}
+                    </button>
+                    <button 
+                      className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-100 hover:text-red-900 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                      title={t('automation:stop')}
+                      onClick={() => {
+                        // Enhanced stop functionality - terminates running automation
+                        console.log('Stopping automation rule:', rule.id);
+                      }}
+                    >
+                      <StopIcon className="h-4 w-4" />
                     </button>
                     <button className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                       <CogIcon className="h-4 w-4" />

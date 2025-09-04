@@ -6,7 +6,7 @@ datasource audit_db {
 generator auditClient {
   provider      = "prisma-client-js"
   output        = "../generated/audit"
-  binaryTargets = ["native", "debian-openssl-3.0.x", "darwin"]
+  binaryTargets = ["native", "debian-openssl-3.0.x", "darwin", "linux-arm64-openssl-3.0.x"]
 }
 
 // ============================================================================

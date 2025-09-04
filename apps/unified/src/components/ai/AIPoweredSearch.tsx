@@ -161,12 +161,25 @@ export function AIPoweredSearch({
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>(mockSuggestions);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [filters, setFilters] = useState<any>({});
+  const [showFilters, setShowFilters] = useState(false);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Enhanced filter management
+  const handleFilterChange = useCallback((filterType: string, value: any) => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      [filterType]: value
+    }));
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setFilters({});
+  }, []);
 
   // Auto-focus on mount
   useEffect(() => {
@@ -420,6 +433,7 @@ export function AIPoweredSearch({
           {/* Filters */}
           {enableFilters && (
             <button
+              onClick={() => setShowFilters(!showFilters)}
               className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
               title="Search filters"
             >
@@ -447,6 +461,72 @@ export function AIPoweredSearch({
           </div>
         </div>
       </div>
+
+      {/* Filter Panel */}
+      {showFilters && enableFilters && (
+        <div className="mt-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white">Search Filters</h4>
+            <button
+              onClick={clearFilters}
+              className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              Clear All
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Content Type
+              </label>
+              <select
+                value={filters.type || ''}
+                onChange={(e) => handleFilterChange('type', e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700"
+                aria-label="Filter by content type"
+              >
+                <option value="">All Types</option>
+                <option value="article">Knowledge Base</option>
+                <option value="ticket">Support Ticket</option>
+                <option value="user">User Profile</option>
+                <option value="workflow">Workflow</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Date Range
+              </label>
+              <select
+                value={filters.dateRange || ''}
+                onChange={(e) => handleFilterChange('dateRange', e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700"
+                aria-label="Filter by date range"
+              >
+                <option value="">Any Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Priority
+              </label>
+              <select
+                value={filters.priority || ''}
+                onChange={(e) => handleFilterChange('priority', e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700"
+                aria-label="Filter by priority level"
+              >
+                <option value="">All Priorities</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search Results Dropdown */}
       <AnimatePresence>

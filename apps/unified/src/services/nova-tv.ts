@@ -195,8 +195,8 @@ class NovaTVService {
   }
 
   // Authentication
-  async generateAuthCode(): Promise<AuthSession> {
-    const response = await api.post('/nova-tv/auth/generate-code');
+  async generateAuthCode(params?: { deviceFingerprint?: string }): Promise<AuthSession & { deviceFingerprint?: string | null }>{
+    const response = await api.post('/nova-tv/auth/generate-code', params || {});
     return response.data;
   }
 

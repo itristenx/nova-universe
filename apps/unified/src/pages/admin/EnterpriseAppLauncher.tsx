@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PlusIcon, TrashIcon, ExternalLinkIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, ArrowTopRightOnSquareIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
 import { useRBACStore } from '../../stores/rbacStore';
 import toast from 'react-hot-toast';
@@ -173,7 +173,7 @@ export default function EnterpriseAppLauncher() {
 
       {apps.length === 0 ? (
         <div className="text-center py-12">
-          <ExternalLinkIcon className="mx-auto h-12 w-12 text-gray-400" />
+          <ArrowTopRightOnSquareIcon className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No applications</h3>
           <p className="mt-1 text-sm text-gray-500">
             Get started by adding your first custom application.
@@ -245,7 +245,7 @@ export default function EnterpriseAppLauncher() {
                 onClick={() => launchApp(app)}
                 className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               >
-                <ExternalLinkIcon className="h-4 w-4 mr-2" />
+                <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-2" />
                 Launch App
               </button>
             </div>

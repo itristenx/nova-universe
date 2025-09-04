@@ -69,6 +69,10 @@ class ProductionValidator {
 
   async validateEnvironmentConfiguration() {
     this.log('🔍 Validating environment configuration...');
+    
+    // Use TEST_CONFIG to determine validation scope
+    const validationScope = Object.keys(TEST_CONFIG).filter(key => TEST_CONFIG[key]);
+    this.log(`📋 Validation scope based on TEST_CONFIG: ${validationScope.join(', ')}`);
 
     // Check production environment files
     const envFiles = [
@@ -124,14 +128,16 @@ class ProductionValidator {
                     results.push(`${fullPath}:${index + 1}:${line.trim()}`);
                   }
                 });
-              } catch (error) {
-                // Skip files that can't be read
+              } catch (readError) {
+                // Skip files that can't be read - log for debugging
+                console.debug(`Skipping unreadable file: ${fullPath} - ${readError.message}`);
               }
             }
           }
         }
-      } catch (error) {
-        // Skip directories that can't be read
+      } catch (dirError) {
+        // Skip directories that can't be read - log for debugging
+        console.debug(`Skipping directory: ${dir} - ${dirError.message}`);
       }
     };
     
@@ -202,15 +208,17 @@ class ProductionValidator {
 
     const content = fs.readFileSync(aiFabricPath, 'utf8');
 
-    // Check for industry standards compliance
+    // Check for industry standards compliance using INDUSTRY_STANDARDS
     const complianceChecks = [
-      { standard: 'NIST AI RMF', pattern: 'NIST.*AI.*RMF|AI.*RMF.*compliance' },
-      { standard: 'OWASP AI Security', pattern: 'OWASP.*AI.*Security|AI.*Security.*Top.*10' },
+      { standard: INDUSTRY_STANDARDS.security[1], pattern: 'NIST.*AI.*RMF|AI.*RMF.*compliance' },
+      { standard: INDUSTRY_STANDARDS.security[0], pattern: 'OWASP.*AI.*Security|AI.*Security.*Top.*10' },
       { standard: 'Circuit Breakers', pattern: 'circuitBreakers|circuit.*breaker' },
       { standard: 'Rate Limiting', pattern: 'rateLimits|rate.*limit' },
       { standard: 'Audit Trails', pattern: 'auditLog|audit.*trail' },
       { standard: 'Security Monitoring', pattern: 'securityMonitoring|security.*monitoring' },
     ];
+
+    this.log(`🔍 Validating compliance against standards: ${Object.keys(INDUSTRY_STANDARDS).join(', ')}`);
 
     for (const { standard, pattern } of complianceChecks) {
       const regex = new RegExp(pattern, 'i');
@@ -281,14 +289,20 @@ class ProductionValidator {
 
     const content = fs.readFileSync(monitoringPath, 'utf8');
 
-    // Check for compliance frameworks
-    const complianceFrameworks = ['GDPR', 'CCPA', 'AI Act', 'SOX', 'HIPAA'];
-    const foundFrameworks = complianceFrameworks.filter(framework => content.includes(framework));
+    // Check for compliance frameworks using INDUSTRY_STANDARDS
+    const allFrameworks = [
+      ...INDUSTRY_STANDARDS.privacy,
+      ...INDUSTRY_STANDARDS.compliance,
+      ...INDUSTRY_STANDARDS.governance
+    ];
+    const foundFrameworks = allFrameworks.filter(framework => content.includes(framework));
+
+    this.log(`🔍 Checking for compliance frameworks: ${allFrameworks.join(', ')}`);
 
     if (foundFrameworks.length >= 3) {
       this.success(`Monitoring system supports compliance frameworks: ${foundFrameworks.join(', ')}`);
     } else {
-      this.warning('Monitoring system may be missing compliance framework support');
+      this.warning(`Monitoring system may be missing compliance framework support. Found: ${foundFrameworks.join(', ')}`);
     }
 
     // Check for bias detection

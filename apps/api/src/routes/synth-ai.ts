@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { authenticateToken } from '../middleware/auth';
-import { validateRequest } from '../middleware/validation';
+import { authenticateToken } from '../middleware/auth.js';
+import { validateRequest } from '../middleware/validation.js';
 
 const router = Router();
 
@@ -179,11 +179,21 @@ router.post(
         ['critical', 'high'].includes(i.severity),
       );
 
-      // Determine priority level for technician
+      // Enhanced monitor analysis for technician insights
+      const failingMonitors = monitors.filter((m: any) => m.status === 'down' || m.status === 'degraded');
+      const criticalServicesDown = monitors.filter((m: any) => m.status === 'down' && m.criticality === 'high');
+      const monitorTrends = monitors.map((m: any) => ({
+        name: m.name,
+        uptimePercent: m.uptimePercent || 100,
+        lastDowntime: m.lastDowntime,
+        affectedUsers: m.affectedUsers || 0
+      }));
+
+      // Determine priority level for technician with monitor context
       let priority = 'NORMAL';
-      if (criticalIncidents.length > 0) {
+      if (criticalIncidents.length > 0 || criticalServicesDown.length > 0) {
         priority = 'HIGH';
-      } else if (highPriorityIncidents.length > 1) {
+      } else if (highPriorityIncidents.length > 1 || failingMonitors.length > 2) {
         priority = 'MEDIUM';
       }
 
@@ -194,6 +204,17 @@ router.post(
       if (criticalIncidents.length > 0) {
         recommendedActions.push('Immediately escalate critical incidents to senior technicians');
         escalationSuggestions.push('Contact on-call engineer for critical system failures');
+      }
+
+      // Monitor-based recommendations
+      if (criticalServicesDown.length > 0) {
+        recommendedActions.push('Prioritize restoration of critical services showing down status');
+        escalationSuggestions.push('Initiate emergency response protocol for critical service outages');
+      }
+
+      if (failingMonitors.length > 2) {
+        recommendedActions.push('Investigate potential cascading failure across multiple services');
+        escalationSuggestions.push('Consider activating disaster recovery procedures');
       }
 
       if (activeIncidents.length > 5) {
@@ -222,6 +243,11 @@ router.post(
       const insights = {
         priority,
         incidentCount: activeIncidents.length,
+        monitoringSummary: {
+          failingMonitors: failingMonitors.length,
+          criticalServicesDown: criticalServicesDown.length,
+          trends: monitorTrends.slice(0, 5) // Top 5 monitored services
+        },
         recommendedActions: recommendedActions.slice(0, 5),
         escalationSuggestions: escalationSuggestions.slice(0, 3),
         generatedAt: new Date().toISOString(),

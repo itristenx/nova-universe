@@ -573,6 +573,60 @@ const styles = {
     marginBottom: '24px',
     border: '1px solid #fecaca',
   },
+  // New styles for execution log display
+  executionLogSection: {
+    marginTop: '16px',
+  },
+  executionLogTitle: {
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#6b7280',
+    marginBottom: '8px',
+  },
+  executionLogContainer: {
+    maxHeight: '120px',
+    overflowY: 'auto' as const,
+  },
+  executionLogEntry: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '6px',
+    margin: '2px 0',
+    borderRadius: '4px',
+  },
+  executionLogIcon: {
+    fontSize: '16px',
+  },
+  executionLogContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+  executionLogStepName: {
+    fontSize: '12px',
+    fontWeight: '500',
+    color: '#374151',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap' as const,
+  },
+  executionLogAction: {
+    fontSize: '11px',
+    color: '#6b7280',
+  },
+  executionLogStatus: {
+    fontSize: '10px',
+    padding: '2px 6px',
+    borderRadius: '8px',
+    color: 'white',
+    fontWeight: '500',
+  },
+  executionLogMore: {
+    fontSize: '11px',
+    color: '#6b7280',
+    textAlign: 'center' as const,
+    marginTop: '4px',
+  },
 };
 
 const WorkflowAutomationDashboard: React.FC<WorkflowAutomationProps> = ({
@@ -1144,6 +1198,50 @@ const WorkflowAutomationDashboard: React.FC<WorkflowAutomationProps> = ({
                   }}
                 />
               </div>
+
+              {/* Enhanced execution log display using ACTION_ICONS */}
+              {execution.execution_log && execution.execution_log.length > 0 && (
+                <div style={styles.executionLogSection}>
+                  <div style={styles.executionLogTitle}>
+                    Recent Actions
+                  </div>
+                  <div style={styles.executionLogContainer}>
+                    {execution.execution_log.slice(-3).map((logEntry, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          ...styles.executionLogEntry,
+                          backgroundColor: logEntry.status === 'COMPLETED' ? '#f0fdf4' : logEntry.status === 'FAILED' ? '#fef2f2' : '#f8fafc',
+                          borderLeft: `3px solid ${logEntry.status === 'COMPLETED' ? '#10b981' : logEntry.status === 'FAILED' ? '#ef4444' : '#6b7280'}`,
+                        }}
+                      >
+                        <span style={styles.executionLogIcon}>
+                          {ACTION_ICONS[logEntry.action as keyof typeof ACTION_ICONS] || '⚙️'}
+                        </span>
+                        <div style={styles.executionLogContent}>
+                          <div style={styles.executionLogStepName}>
+                            {logEntry.step_name}
+                          </div>
+                          <div style={styles.executionLogAction}>
+                            {logEntry.action.replace(/_/g, ' ')} • {logEntry.duration_ms}ms
+                          </div>
+                        </div>
+                        <div style={{
+                          ...styles.executionLogStatus,
+                          backgroundColor: logEntry.status === 'COMPLETED' ? '#10b981' : logEntry.status === 'FAILED' ? '#ef4444' : '#6b7280',
+                        }}>
+                          {logEntry.status}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {execution.execution_log.length > 3 && (
+                    <div style={styles.executionLogMore}>
+                      +{execution.execution_log.length - 3} more steps
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div style={styles.workflowMeta}>
                 <div style={styles.metaItem}>

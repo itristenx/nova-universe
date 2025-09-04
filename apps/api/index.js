@@ -19,7 +19,8 @@ import websocketRouter from './routes/websocket.js';
 import helpscoutRouter from './routes/helpscout.js';
 import analyticsRouter from './routes/analytics.js';
 import monitoringRouter from './routes/monitoring.js';
-import aiFabricRouter from './routes/ai-fabric.js';
+// Defer loading heavy AI Fabric until explicitly enabled to keep demo startup light
+let aiFabricRouter = null;
 import mcpServerRouter from './routes/mcp-server.js';
 import setupRouter from './routes/setup.js';
 import coreRouter from './routes/core.js';
@@ -700,7 +701,9 @@ if (process.env.DEBUG_CORS === 'true') {
 // Apply security middleware
 app.use(securityHeaders());
 app.use(requestLogger);
+// CORS for all routes and preflight handling
 app.use(configureCORS());
+app.options('*', configureCORS());
 app.use(sanitizeInput);
 
 // Add performance monitoring middleware
@@ -2441,7 +2444,17 @@ v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
 // v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI - TEMPORARILY DISABLED
 // v1Router.use('/nova-rag', novaRAGRouter); // Nova RAG with RBAC and Synth Integration - TEMPORARILY DISABLED
 v1Router.use('/spaces', spacesRouter);
-v1Router.use('/ai-fabric', aiFabricRouter);
+if (process.env.ENABLE_AI_COMPONENTS === 'true') {
+  try {
+    const mod = await import('./routes/ai-fabric.js');
+    aiFabricRouter = mod.default || mod;
+    v1Router.use('/ai-fabric', aiFabricRouter);
+  } catch (e) {
+    logger.warn('AI Fabric routes disabled (failed to load):', e.message);
+  }
+} else {
+  logger.info('AI Fabric routes disabled (ENABLE_AI_COMPONENTS not true)');
+}
 v1Router.use('/setup', setupRouter);
 v1Router.use('/comms', commsRouter); // Nova Comms - Slack integration
 v1Router.use('/nova-tv', novaTVRouter); // Nova TV - Channel Management
@@ -2476,7 +2489,9 @@ app.use('/api/monitoring', monitoringRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/tickets', ticketLimiter, ticketsRouter);
 app.use('/api/spaces', spacesRouter);
-app.use('/api/ai-fabric', aiFabricRouter);
+if (aiFabricRouter) {
+  app.use('/api/ai-fabric', aiFabricRouter);
+}
 // app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework - TEMPORARILY DISABLED
 app.use('/api/setup', setupRouter);
 app.use('/api/nova-tv', novaTVRouter);
@@ -2591,9 +2606,12 @@ if (
         logger.warn('Failed to start Slack app:', slackError.message);
       }
 
-      // Initialize Nova RAG systems
+      // Initialize Nova RAG systems (optional heavy components)
       try {
-        logger.info('🧠 Initializing Nova RAG systems...');
+        if (process.env.FAST_BOOT === 'true') {
+          logger.info('⏭️  FAST_BOOT enabled: skipping AI/RAG initialization');
+        } else {
+          logger.info('🧠 Initializing Nova RAG systems...');
         
         // Import available RAG components
         let ragComponents = {};
@@ -2689,8 +2707,9 @@ if (
         }
         
         const activeComponents = Object.keys(ragComponents).length;
-        logger.info(`🎯 Nova RAG systems initialized successfully (${activeComponents} components active)`);
-        logger.info('✅ Full RAG functionality available - no TypeScript limitations');
+          logger.info(`🎯 Nova RAG systems initialized successfully (${activeComponents} components active)`);
+          logger.info('✅ Full RAG functionality available - no TypeScript limitations');
+        }
       } catch (ragError) {
         logger.error('Failed to initialize Nova RAG systems:', ragError);
         logger.warn('Nova RAG functionality will be limited');

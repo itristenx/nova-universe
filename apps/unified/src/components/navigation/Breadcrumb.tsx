@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRightIcon, HomeIcon } from '@heroicons/react/24/outline';
 import { useTranslation } from 'react-i18next';
+import { useBreadcrumbStore } from '../../stores/breadcrumb';
 
 interface BreadcrumbItem {
   label: string;
@@ -146,14 +147,23 @@ export function Breadcrumb({ items, separator }: BreadcrumbProps) {
 export function useBreadcrumb() {
   const location = useLocation();
   const { t } = useTranslation('navigation');
+  const setItems = useBreadcrumbStore((s) => s.setItems);
+  const itemsFromStore = useBreadcrumbStore((s) => s.items);
 
   const setBreadcrumb = (items: BreadcrumbItem[]) => {
-    // In a real implementation, this would update a global state
-    // For now, we'll just return the items
+    // Update global breadcrumb store
+    setItems(items.map((i) => ({ label: i.label, path: i.href })));
     return items;
   };
 
   const getCurrentBreadcrumb = (): BreadcrumbItem[] => {
+    if (itemsFromStore && itemsFromStore.length > 0) {
+      return itemsFromStore.map((i, idx) => ({
+        label: i.label,
+        href: i.path,
+        current: idx === itemsFromStore.length - 1,
+      }));
+    }
     const routeBreadcrumbs = getRouteBreadcrumbs(t);
     return routeBreadcrumbs[location.pathname] || generateBreadcrumbsFromPath(location.pathname);
   };

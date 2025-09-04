@@ -3,6 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
+const useExternalServer = !!process.env.TEST_BASE_URL;
+
 export default defineConfig({
   testDir: './tests',
   /* Run tests in files in parallel */
@@ -77,12 +79,14 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  webServer: useExternalServer
+    ? undefined
+    : {
+        command: 'npm run dev',
+        url: 'http://localhost:5173',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120 * 1000,
+      },
 
   /* Global setup and teardown */
   globalSetup: require.resolve('./tests/global-setup.ts'),

@@ -479,8 +479,13 @@ export function BookingEngine({
               return (
                 <div
                   key={`${space.id}-${slot}`}
-                  className={`booking-slot ${isAvailable ? 'available' : 'occupied'} ${booking ? 'has-booking' : ''}`}
+                  className={`booking-slot ${isAvailable ? 'available' : 'occupied'} ${booking ? 'has-booking' : ''} ${selectedTimeSlot === slot ? 'selected-time-slot' : ''}`}
                   onClick={() => isAvailable && handleBookSpace(space, slot)}
+                  style={{
+                    backgroundColor: selectedTimeSlot === slot && isAvailable ? '#e3f2fd' : undefined,
+                    border: selectedTimeSlot === slot && isAvailable ? '2px solid #1976d2' : undefined,
+                    borderRadius: selectedTimeSlot === slot && isAvailable ? '8px' : undefined,
+                  }}
                 >
                   {booking ? (
                     <div className="booking-info">

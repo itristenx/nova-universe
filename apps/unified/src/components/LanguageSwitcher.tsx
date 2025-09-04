@@ -117,7 +117,7 @@ export default function LanguageSwitcher({
             />
 
             {/* Dropdown */}
-            <div className="absolute right-0 z-20 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+            <div className={`absolute z-20 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800 ${rtl ? 'left-0' : 'right-0'}`}>
               <div className="py-1" role="menu">
                 {languages.map((language) => (
                   <button
@@ -154,8 +154,9 @@ export default function LanguageSwitcher({
         <select
           value={currentLanguage.code}
           onChange={(e) => handleLanguageChange(e.target.value)}
-          className={`cursor-pointer appearance-none rounded border-none bg-transparent pr-6 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white ${getSizeClasses()} `}
+          className={`cursor-pointer appearance-none rounded border-none bg-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white ${rtl ? 'pl-6' : 'pr-6'} ${getSizeClasses()} `}
           aria-label={t('language.switcher.title')}
+          dir={rtl ? 'rtl' : 'ltr'}
         >
           {languages.map((language) => (
             <option key={language.code} value={language.code}>
@@ -164,7 +165,7 @@ export default function LanguageSwitcher({
           ))}
         </select>
         <ChevronDownIcon
-          className={`absolute top-1/2 right-0 -translate-y-1/2 transform ${getIconSize()} pointer-events-none`}
+          className={`absolute top-1/2 -translate-y-1/2 transform ${getIconSize()} pointer-events-none ${rtl ? 'left-0' : 'right-0'}`}
         />
       </div>
     );
@@ -179,7 +180,8 @@ export default function LanguageSwitcher({
         onClick={() => setIsOpen(!isOpen)}
         className={`inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 ${getSizeClasses()} `}
         aria-label={t('language.switcher.title')}
-        aria-expanded={isOpen ? 'true' : 'false'}
+        aria-expanded={isOpen}
+        dir={rtl ? 'rtl' : 'ltr'}
       >
         {showIcon && <LanguageIcon className={getIconSize()} />}
         {showFlag && <span className="text-lg">{currentLanguage.flag}</span>}
@@ -197,7 +199,7 @@ export default function LanguageSwitcher({
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} aria-hidden="true" />
 
           {/* Dropdown */}
-          <div className="absolute right-0 z-20 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+          <div className={`absolute z-20 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800 ${rtl ? 'left-0' : 'right-0'}`}>
             <div className="p-1" role="menu">
               <div className="px-3 py-2 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                 {t('language.switcher.title')}

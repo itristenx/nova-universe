@@ -508,7 +508,7 @@ class UnifiedMonitoringService {
   // LEGACY METHODS - Maintained for backward compatibility
   // ========================================================================
 
-  async getServices(filters?: {
+  async getServicesLegacy(filters?: {
     status?: string;
     labels?: Record<string, string>;
     escalation_policy_id?: string;
@@ -537,7 +537,7 @@ class UnifiedMonitoringService {
     }
   }
 
-  async createService(service: Omit<NovaService, 'id' | 'created_at' | 'updated_at'>): Promise<NovaService> {
+  async createServiceLegacy(service: Omit<NovaService, 'id' | 'created_at' | 'updated_at'>): Promise<NovaService> {
     try {
       const response = await apiClient.post('/api/v2/monitoring/services', service);
       return (response as any).data.data;
@@ -547,7 +547,7 @@ class UnifiedMonitoringService {
     }
   }
 
-  async updateService(id: string, updates: Partial<NovaService>): Promise<NovaService> {
+  async updateServiceLegacy(id: string, updates: Partial<NovaService>): Promise<NovaService> {
     try {
       const response = await apiClient.patch(`/api/v2/monitoring/services/${id}`, updates);
       return (response as any).data.data;
@@ -557,7 +557,7 @@ class UnifiedMonitoringService {
     }
   }
 
-  async deleteService(id: string): Promise<void> {
+  async deleteServiceLegacy(id: string): Promise<void> {
     try {
       await apiClient.delete(`/api/v2/monitoring/services/${id}`);
     } catch (error) {

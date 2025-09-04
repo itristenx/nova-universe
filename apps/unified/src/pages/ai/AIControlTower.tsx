@@ -123,7 +123,7 @@ export default function AIControlTower() {
     }
   };
 
-  const handleModelAction = async (modelId: string, action: 'start' | 'stop' | 'restart') => {
+  const handleModelAction = async (modelId: string, action: 'start' | 'stop' | 'restart' | 'pause') => {
     try {
       await api.post(`/api/v2/ai-fabric/models/${modelId}/${action}`);
       await loadDashboardData();
@@ -176,8 +176,8 @@ export default function AIControlTower() {
           </button>
 
           <button className="btn btn-primary flex items-center gap-2">
-            <Cog6ToothIcon className="h-4 w-4" />
-            Settings
+            <AdjustmentsHorizontalIcon className="h-4 w-4" />
+            {t('ai.controlTower.settings', 'Advanced Settings')}
           </button>
         </div>
       </div>
@@ -224,6 +224,18 @@ export default function AIControlTower() {
                 <p className="text-2xl font-bold text-gray-900">
                   {(metrics.errorRate * 100).toFixed(1)}%
                 </p>
+                <div className="flex items-center mt-1">
+                  {metrics.errorRate <= 0.01 ? (
+                    <>
+                      <ArrowTrendingDownIcon className="h-4 w-4 text-green-600 mr-1" />
+                      <span className="text-sm text-green-600">{t('ai.metrics.improving', 'Improving')}</span>
+                    </>
+                  ) : metrics.errorRate <= 0.05 ? (
+                    <span className="text-sm text-yellow-600">{t('ai.metrics.stable', 'Stable')}</span>
+                  ) : (
+                    <span className="text-sm text-red-600">{t('ai.metrics.attention', 'Needs Attention')}</span>
+                  )}
+                </div>
               </div>
               <ExclamationTriangleIcon
                 className={`h-8 w-8 ${metrics.errorRate > 0.05 ? 'text-red-600' : 'text-green-600'}`}
@@ -430,14 +442,25 @@ export default function AIControlTower() {
                     </div>
 
                     <div className="ml-4 flex items-center gap-2">
-                      {model.status === 'active' ? (
-                        <button
-                          onClick={() => handleModelAction(model.id, 'stop')}
-                          className="rounded-lg p-2 text-red-600 hover:bg-red-50"
-                          title="Stop Model"
-                        >
-                          <StopIcon className="h-4 w-4" />
-                        </button>
+                      {model.status === 'active' || model.status === 'training' ? (
+                        <>
+                          <button
+                            onClick={() => handleModelAction(model.id, 'stop')}
+                            className="rounded-lg p-2 text-red-600 hover:bg-red-50"
+                            title="Stop Model"
+                          >
+                            <StopIcon className="h-4 w-4" />
+                          </button>
+                          {model.status === 'training' && (
+                            <button
+                              onClick={() => handleModelAction(model.id, 'pause')}
+                              className="rounded-lg p-2 text-yellow-600 hover:bg-yellow-50"
+                              title="Pause Training"
+                            >
+                              <PauseIcon className="h-4 w-4" />
+                            </button>
+                          )}
+                        </>
                       ) : (
                         <button
                           onClick={() => handleModelAction(model.id, 'start')}

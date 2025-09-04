@@ -47,8 +47,8 @@ export default function LanguageSwitcher({ className = '' }: LanguageSwitcherPro
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} aria-hidden="true" />
-          <div className="absolute top-full right-0 z-20 mt-1 w-48 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+          <div className={`fixed inset-0 z-10`} onClick={() => setIsOpen(false)} aria-hidden="true" />
+          <div className={`absolute top-full z-20 mt-1 w-48 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 ${rtl ? 'left-0' : 'right-0'}`}>
             <div className="py-1">
               {languages.map((language) => (
                 <button

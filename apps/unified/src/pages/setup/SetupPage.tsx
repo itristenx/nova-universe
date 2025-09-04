@@ -24,7 +24,12 @@ export const SetupPage: React.FC = () => {
           }
         }
       } catch (error) {
-        console.log('Setup status check failed, proceeding with setup');
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.log('Setup status check failed, proceeding with setup:', {
+          error: errorMessage,
+          userId: user?.id,
+          timestamp: new Date().toISOString()
+        });
       } finally {
         setIsLoading(false);
       }

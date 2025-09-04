@@ -1000,9 +1000,11 @@ router.post('/activations/verify', async (req, res) => {
 
 router.post('/auth/generate-code', async (req, res) => {
   try {
+    const { deviceFingerprint } = req.body || {};
     const sessionId = uuid();
     const sixDigitCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const qrCode = `nova-tv://auth?session=${sessionId}&code=${sixDigitCode}`;
+    const baseUrl = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host').replace(/\/api$/, '')}` || 'http://localhost:3000';
+    const qrCode = `${baseUrl}/admin/tv-activate?session=${encodeURIComponent(sessionId)}&code=${encodeURIComponent(sixDigitCode)}${deviceFingerprint ? `&device=${encodeURIComponent(deviceFingerprint)}` : ''}`;
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
     const authSession = {
@@ -1011,6 +1013,7 @@ router.post('/auth/generate-code', async (req, res) => {
       sixDigitCode,
       expiresAt: expiresAt.toISOString(),
       isVerified: false,
+      deviceFingerprint: deviceFingerprint || null,
     };
 
     mockData.authSessions.set(sessionId, authSession);
@@ -1049,6 +1052,7 @@ router.post('/auth/verify-code', async (req, res) => {
       user,
       availableDashboards,
       sessionToken: 'mock-session-token',
+      deviceFingerprint: session.deviceFingerprint || null,
     });
   } catch (error) {
     logger.error('Error verifying code:', error);

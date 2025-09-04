@@ -157,7 +157,33 @@ export default function EnhancedUserDashboard() {
           setStats(data.stats);
           setRecentActivity(data.activity);
           setRecommendations(data.recommendations);
+          
+          // Enhanced notification system - success notification
+          setNotifications(prev => [
+            {
+              id: `success-${Date.now()}`,
+              title: 'Dashboard Updated',
+              message: 'Successfully loaded latest dashboard data',
+              type: 'success',
+              timestamp: new Date().toLocaleTimeString(),
+              read: false,
+            },
+            ...prev.slice(0, 4), // Keep only recent notifications
+          ]);
         } else {
+          // Enhanced notification system - API failure notification
+          setNotifications(prev => [
+            {
+              id: `warning-${Date.now()}`,
+              title: 'API Service Unavailable',
+              message: 'Dashboard operating with cached data',
+              type: 'warning',
+              timestamp: new Date().toLocaleTimeString(),
+              read: false,
+            },
+            ...prev.slice(0, 4),
+          ]);
+          
           // Fallback to default stats if API fails
           setStats({
             totalTickets: 15,
@@ -168,8 +194,45 @@ export default function EnhancedUserDashboard() {
           setRecentActivity([]);
           setRecommendations([]);
         }
-      } catch (_error) {
-        console.warn('Dashboard API unavailable, using fallback data:', error);
+      } catch (apiError) {
+        const errorMessage = apiError instanceof Error ? apiError.message : 'Unknown API error';
+        console.warn('Dashboard API unavailable, using fallback data:', errorMessage);
+        
+        // Enhanced error handling with user notification
+        let notificationType: 'error' | 'warning' = 'error';
+        let notificationTitle = 'System Error';
+        let notificationMessage = 'Dashboard operating in fallback mode';
+        
+        if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
+          console.info('Network issue detected, dashboard operating in offline mode');
+          notificationType = 'warning';
+          notificationTitle = 'Network Issue';
+          notificationMessage = 'Operating in offline mode with cached data';
+        } else if (errorMessage.includes('unauthorized') || errorMessage.includes('403')) {
+          console.warn('Authentication issue detected, user may need to re-login');
+          notificationType = 'error';
+          notificationTitle = 'Authentication Required';
+          notificationMessage = 'Please refresh your session or re-login';
+        } else {
+          console.error('Unexpected dashboard API error:', apiError);
+          notificationType = 'error';
+          notificationTitle = 'Service Error';
+          notificationMessage = 'Dashboard service temporarily unavailable';
+        }
+        
+        // Enhanced notification system - error notification with categorization
+        setNotifications(prev => [
+          {
+            id: `${notificationType}-${Date.now()}`,
+            title: notificationTitle,
+            message: notificationMessage,
+            type: notificationType,
+            timestamp: new Date().toLocaleTimeString(),
+            read: false,
+          },
+          ...prev.slice(0, 4),
+        ]);
+        
         // Fallback to default stats
         setStats({
           totalTickets: 15,
@@ -227,7 +290,40 @@ export default function EnhancedUserDashboard() {
       {/* Welcome Header */}
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 text-white">
         <div className="relative z-10">
-          <h1 className="mb-2 text-3xl font-bold">Welcome back!</h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <UserIcon className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">Welcome back!</h1>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                // Manual refresh functionality with enhanced user feedback
+                setLoading(true);
+                setNotifications(prev => [
+                  {
+                    id: `refresh-${Date.now()}`,
+                    title: 'Dashboard Refresh',
+                    message: 'Manually refreshing dashboard data...',
+                    type: 'info',
+                    timestamp: new Date().toLocaleTimeString(),
+                    read: false,
+                  },
+                  ...prev.slice(0, 4),
+                ]);
+                // Trigger data reload (useEffect dependency)
+                window.location.reload();
+              }}
+              className="flex items-center space-x-1 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
+              disabled={loading}
+            >
+              <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </button>
+          </div>
           <p className="text-blue-100">Here's what's happening with your requests and services.</p>
         </div>
         <div className="absolute top-4 right-4 opacity-20">

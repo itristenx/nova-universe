@@ -58,8 +58,89 @@ export default function TicketsPage() {
     setIsSearching(true);
     try {
       await searchTickets(query);
-    } catch (_error) {
-      toast.error('Search failed');
+    } catch (error) {
+      // Comprehensive error handling for ticket search
+      const errorMessage = error instanceof Error ? error.message : 'Unknown search error';
+      const searchContext = {
+        query: query,
+        queryLength: query.length,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        userId: 'current-user', // TODO: Get from auth context
+        searchType: 'ticket_search',
+        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+        stackTrace: error instanceof Error ? error.stack : undefined,
+      };
+
+      // Log comprehensive error details
+      console.error('🔍 Ticket Search Error:', {
+        error: errorMessage,
+        context: searchContext,
+        severity: 'medium',
+        category: 'search_functionality',
+        impact: 'user_experience',
+        timestamp: Date.now(),
+      });
+
+      // Analytics tracking for search failures
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'search_error', {
+          event_category: 'ticket_management',
+          event_label: 'search_failure',
+          search_term: query,
+          error_message: errorMessage,
+          custom_parameter_1: searchContext.searchType,
+          custom_parameter_2: searchContext.errorType,
+        });
+      }
+
+      // Enhanced user feedback with actionable suggestions
+      const userMessage = errorMessage.includes('network') || errorMessage.includes('timeout')
+        ? 'Search temporarily unavailable. Please check your connection and try again.'
+        : errorMessage.includes('rate limit') || errorMessage.includes('too many')
+        ? 'Search rate limit exceeded. Please wait a moment before searching again.'
+        : errorMessage.includes('invalid') || errorMessage.includes('malformed')
+        ? 'Invalid search query format. Please check your search terms and try again.'
+        : `Search failed: ${errorMessage}. Please try a different search term.`;
+
+      toast.error(userMessage, {
+        duration: 5000,
+        position: 'top-right',
+        style: {
+          background: '#FEF2F2',
+          color: '#DC2626',
+          border: '1px solid #FECACA',
+        },
+      });
+
+      // Enterprise monitoring and alerting
+      if (typeof window !== 'undefined' && (window as any).NovaMonitoring) {
+        (window as any).NovaMonitoring.recordError('ticket_search_failure', {
+          error: errorMessage,
+          context: searchContext,
+          severity: 'medium',
+          requiresAttention: query.length > 50, // Flag complex queries
+        });
+      }
+
+      // Optional: Send error to external monitoring service
+      if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
+        try {
+          fetch('/api/errors/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'ticket_search_error',
+              error: errorMessage,
+              context: searchContext,
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {}); // Silent fail for error reporting
+        } catch (reportingError) {
+          console.warn('Failed to report search error:', reportingError);
+        }
+      }
     } finally {
       setIsSearching(false);
     }
@@ -85,8 +166,93 @@ export default function TicketsPage() {
       await bulkUpdateTickets(selectedTickets, { status });
       toast.success(`Updated ${selectedTickets.length} tickets`);
       clearSelectedTickets();
-    } catch (_error) {
-      toast.error('Failed to update tickets');
+    } catch (error) {
+      // Comprehensive error handling for bulk status updates
+      const errorMessage = error instanceof Error ? error.message : 'Unknown bulk update error';
+      const updateContext = {
+        selectedTicketCount: selectedTickets.length,
+        targetStatus: status,
+        ticketIds: selectedTickets.slice(0, 10), // Limit to first 10 for logging
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        userId: 'current-user', // TODO: Get from auth context
+        operationType: 'bulk_status_update',
+        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+        stackTrace: error instanceof Error ? error.stack : undefined,
+      };
+
+      // Log comprehensive error details
+      console.error('📝 Bulk Status Update Error:', {
+        error: errorMessage,
+        context: updateContext,
+        severity: 'high',
+        category: 'bulk_operations',
+        impact: 'data_integrity',
+        timestamp: Date.now(),
+      });
+
+      // Analytics tracking for bulk operation failures
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'bulk_operation_error', {
+          event_category: 'ticket_management',
+          event_label: 'bulk_status_update_failure',
+          ticket_count: selectedTickets.length,
+          target_status: status,
+          error_message: errorMessage,
+          custom_parameter_1: updateContext.operationType,
+          custom_parameter_2: updateContext.errorType,
+        });
+      }
+
+      // Enhanced user feedback with actionable suggestions
+      const userMessage = errorMessage.includes('permission') || errorMessage.includes('unauthorized')
+        ? 'Insufficient permissions to update these tickets. Please contact your administrator.'
+        : errorMessage.includes('network') || errorMessage.includes('timeout')
+        ? 'Update failed due to connection issues. Please try again.'
+        : errorMessage.includes('conflict') || errorMessage.includes('locked')
+        ? 'Some tickets are currently being edited by other users. Please try again in a moment.'
+        : errorMessage.includes('validation') || errorMessage.includes('invalid')
+        ? `Invalid status "${status}" for selected tickets. Please refresh and try again.`
+        : `Failed to update ${selectedTickets.length} tickets: ${errorMessage}`;
+
+      toast.error(userMessage, {
+        duration: 6000,
+        position: 'top-right',
+        style: {
+          background: '#FEF2F2',
+          color: '#DC2626',
+          border: '1px solid #FECACA',
+        },
+      });
+
+      // Enterprise monitoring and alerting
+      if (typeof window !== 'undefined' && (window as any).NovaMonitoring) {
+        (window as any).NovaMonitoring.recordError('bulk_status_update_failure', {
+          error: errorMessage,
+          context: updateContext,
+          severity: 'high',
+          requiresAttention: selectedTickets.length > 10, // Flag large bulk operations
+        });
+      }
+
+      // Optional: Send error to external monitoring service
+      if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
+        try {
+          fetch('/api/errors/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'bulk_status_update_error',
+              error: errorMessage,
+              context: updateContext,
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {}); // Silent fail for error reporting
+        } catch (reportingError) {
+          console.warn('Failed to report bulk update error:', reportingError);
+        }
+      }
     }
   };
 
@@ -100,8 +266,95 @@ export default function TicketsPage() {
       await bulkUpdateTickets(selectedTickets, { assigneeId });
       toast.success(`Assigned ${selectedTickets.length} tickets`);
       clearSelectedTickets();
-    } catch (_error) {
-      toast.error('Failed to assign tickets');
+    } catch (error) {
+      // Comprehensive error handling for bulk ticket assignment
+      const errorMessage = error instanceof Error ? error.message : 'Unknown bulk assignment error';
+      const assignContext = {
+        selectedTicketCount: selectedTickets.length,
+        assigneeId: assigneeId,
+        ticketIds: selectedTickets.slice(0, 10), // Limit to first 10 for logging
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        userId: 'current-user', // TODO: Get from auth context
+        operationType: 'bulk_assignment',
+        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+        stackTrace: error instanceof Error ? error.stack : undefined,
+      };
+
+      // Log comprehensive error details
+      console.error('👤 Bulk Assignment Error:', {
+        error: errorMessage,
+        context: assignContext,
+        severity: 'high',
+        category: 'bulk_operations',
+        impact: 'workflow_management',
+        timestamp: Date.now(),
+      });
+
+      // Analytics tracking for bulk assignment failures
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'bulk_operation_error', {
+          event_category: 'ticket_management',
+          event_label: 'bulk_assignment_failure',
+          ticket_count: selectedTickets.length,
+          assignee_id: assigneeId,
+          error_message: errorMessage,
+          custom_parameter_1: assignContext.operationType,
+          custom_parameter_2: assignContext.errorType,
+        });
+      }
+
+      // Enhanced user feedback with actionable suggestions
+      const userMessage = errorMessage.includes('permission') || errorMessage.includes('unauthorized')
+        ? 'Insufficient permissions to assign these tickets. Please contact your administrator.'
+        : errorMessage.includes('network') || errorMessage.includes('timeout')
+        ? 'Assignment failed due to connection issues. Please try again.'
+        : errorMessage.includes('not found') || errorMessage.includes('invalid assignee')
+        ? 'Selected assignee is no longer available. Please refresh and try again.'
+        : errorMessage.includes('conflict') || errorMessage.includes('locked')
+        ? 'Some tickets are currently being edited by other users. Please try again in a moment.'
+        : errorMessage.includes('capacity') || errorMessage.includes('workload')
+        ? 'Assignee has reached maximum ticket capacity. Please choose a different assignee.'
+        : `Failed to assign ${selectedTickets.length} tickets: ${errorMessage}`;
+
+      toast.error(userMessage, {
+        duration: 6000,
+        position: 'top-right',
+        style: {
+          background: '#FEF2F2',
+          color: '#DC2626',
+          border: '1px solid #FECACA',
+        },
+      });
+
+      // Enterprise monitoring and alerting
+      if (typeof window !== 'undefined' && (window as any).NovaMonitoring) {
+        (window as any).NovaMonitoring.recordError('bulk_assignment_failure', {
+          error: errorMessage,
+          context: assignContext,
+          severity: 'high',
+          requiresAttention: selectedTickets.length > 5, // Flag bulk assignments
+        });
+      }
+
+      // Optional: Send error to external monitoring service
+      if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
+        try {
+          fetch('/api/errors/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'bulk_assignment_error',
+              error: errorMessage,
+              context: assignContext,
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {}); // Silent fail for error reporting
+        } catch (reportingError) {
+          console.warn('Failed to report bulk assignment error:', reportingError);
+        }
+      }
     }
   };
 
@@ -122,8 +375,96 @@ export default function TicketsPage() {
     try {
       await bulkDeleteTickets(selectedTickets);
       toast.success(`Deleted ${selectedTickets.length} tickets`);
-    } catch (_error) {
-      toast.error('Failed to delete tickets');
+    } catch (error) {
+      // Comprehensive error handling for bulk ticket deletion
+      const errorMessage = error instanceof Error ? error.message : 'Unknown bulk deletion error';
+      const deleteContext = {
+        selectedTicketCount: selectedTickets.length,
+        ticketIds: selectedTickets.slice(0, 10), // Limit to first 10 for logging
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        userId: 'current-user', // TODO: Get from auth context
+        operationType: 'bulk_deletion',
+        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+        stackTrace: error instanceof Error ? error.stack : undefined,
+        confirmationGiven: true, // User confirmed the deletion
+      };
+
+      // Log comprehensive error details - high severity for data loss operations
+      console.error('🗑️ Bulk Deletion Error:', {
+        error: errorMessage,
+        context: deleteContext,
+        severity: 'critical',
+        category: 'bulk_operations',
+        impact: 'data_loss_prevention',
+        timestamp: Date.now(),
+      });
+
+      // Analytics tracking for bulk deletion failures
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'bulk_operation_error', {
+          event_category: 'ticket_management',
+          event_label: 'bulk_deletion_failure',
+          ticket_count: selectedTickets.length,
+          error_message: errorMessage,
+          custom_parameter_1: deleteContext.operationType,
+          custom_parameter_2: deleteContext.errorType,
+        });
+      }
+
+      // Enhanced user feedback with recovery suggestions
+      const userMessage = errorMessage.includes('permission') || errorMessage.includes('unauthorized')
+        ? 'Insufficient permissions to delete these tickets. Please contact your administrator.'
+        : errorMessage.includes('network') || errorMessage.includes('timeout')
+        ? 'Deletion failed due to connection issues. Please verify your connection and try again.'
+        : errorMessage.includes('constraint') || errorMessage.includes('referenced')
+        ? 'Some tickets cannot be deleted as they are referenced by other records. Please archive them instead.'
+        : errorMessage.includes('not found') || errorMessage.includes('already deleted')
+        ? 'Some tickets have already been deleted by another user. Please refresh the page.'
+        : errorMessage.includes('locked') || errorMessage.includes('in use')
+        ? 'Some tickets are currently being modified. Please try again in a moment.'
+        : `Failed to delete ${selectedTickets.length} tickets: ${errorMessage}. Your data is safe.`;
+
+      toast.error(userMessage, {
+        duration: 8000, // Longer duration for critical operations
+        position: 'top-right',
+        style: {
+          background: '#FEF2F2',
+          color: '#DC2626',
+          border: '1px solid #FECACA',
+        },
+      });
+
+      // Enterprise monitoring and alerting - critical for deletion failures
+      if (typeof window !== 'undefined' && (window as any).NovaMonitoring) {
+        (window as any).NovaMonitoring.recordError('bulk_deletion_failure', {
+          error: errorMessage,
+          context: deleteContext,
+          severity: 'critical',
+          requiresAttention: true, // Always flag deletion failures
+          alertTeam: true,
+        });
+      }
+
+      // Optional: Send error to external monitoring service with high priority
+      if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
+        try {
+          fetch('/api/errors/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'bulk_deletion_error',
+              error: errorMessage,
+              context: deleteContext,
+              priority: 'high',
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {}); // Silent fail for error reporting
+        } catch (reportingError) {
+          console.warn('Failed to report bulk deletion error:', reportingError);
+        }
+      }
     }
   };
 
@@ -133,8 +474,97 @@ export default function TicketsPage() {
       // Export with current filters
       // await ticketService.exportTickets(format, filters)
       toast.success(`Exporting tickets as ${format.toUpperCase()}`);
-    } catch (_error) {
-      toast.error('Export failed');
+    } catch (error) {
+      // Comprehensive error handling for ticket export
+      const errorMessage = error instanceof Error ? error.message : 'Unknown export error';
+      const exportContext = {
+        exportFormat: format,
+        filtersActive: Object.keys(filters).length > 0,
+        filterDetails: filters,
+        ticketCount: tickets.length,
+        searchQuery: searchQuery,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        userId: 'current-user', // TODO: Get from auth context
+        operationType: 'ticket_export',
+        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+        stackTrace: error instanceof Error ? error.stack : undefined,
+      };
+
+      // Log comprehensive error details
+      console.error('📊 Export Error:', {
+        error: errorMessage,
+        context: exportContext,
+        severity: 'medium',
+        category: 'data_export',
+        impact: 'reporting_functionality',
+        timestamp: Date.now(),
+      });
+
+      // Analytics tracking for export failures
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'export_error', {
+          event_category: 'ticket_management',
+          event_label: 'export_failure',
+          export_format: format,
+          ticket_count: tickets.length,
+          error_message: errorMessage,
+          custom_parameter_1: exportContext.operationType,
+          custom_parameter_2: exportContext.errorType,
+        });
+      }
+
+      // Enhanced user feedback with format-specific suggestions
+      const userMessage = errorMessage.includes('permission') || errorMessage.includes('unauthorized')
+        ? 'Insufficient permissions to export tickets. Please contact your administrator.'
+        : errorMessage.includes('size') || errorMessage.includes('too large')
+        ? `Export file too large for ${format.toUpperCase()} format. Try applying filters to reduce the dataset.`
+        : errorMessage.includes('network') || errorMessage.includes('timeout')
+        ? 'Export failed due to connection issues. Please try again.'
+        : errorMessage.includes('format') || errorMessage.includes('unsupported')
+        ? `${format.toUpperCase()} export is currently unavailable. Please try a different format.`
+        : errorMessage.includes('storage') || errorMessage.includes('disk')
+        ? 'Export temporarily unavailable due to server storage issues. Please try again later.'
+        : `Failed to export as ${format.toUpperCase()}: ${errorMessage}. Please try again.`;
+
+      toast.error(userMessage, {
+        duration: 5000,
+        position: 'top-right',
+        style: {
+          background: '#FEF2F2',
+          color: '#DC2626',
+          border: '1px solid #FECACA',
+        },
+      });
+
+      // Enterprise monitoring and alerting
+      if (typeof window !== 'undefined' && (window as any).NovaMonitoring) {
+        (window as any).NovaMonitoring.recordError('ticket_export_failure', {
+          error: errorMessage,
+          context: exportContext,
+          severity: 'medium',
+          requiresAttention: tickets.length > 1000, // Flag large export failures
+        });
+      }
+
+      // Optional: Send error to external monitoring service
+      if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
+        try {
+          fetch('/api/errors/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'ticket_export_error',
+              error: errorMessage,
+              context: exportContext,
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {}); // Silent fail for error reporting
+        } catch (reportingError) {
+          console.warn('Failed to report export error:', reportingError);
+        }
+      }
     }
   };
 
@@ -168,6 +598,8 @@ export default function TicketsPage() {
               }}
               className="btn btn-secondary"
               defaultValue=""
+              aria-label="Export tickets format selection"
+              title="Choose export format for tickets"
             >
               <option value="" disabled>
                 <DocumentArrowDownIcon className="h-4 w-4" />

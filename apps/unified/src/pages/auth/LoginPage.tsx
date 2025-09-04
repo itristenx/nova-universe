@@ -113,8 +113,25 @@ export default function LoginPage() {
       });
 
       toast.success(t('auth:login.organizationFound', { organization: tenantData.tenant.name }));
-    } catch (_error) {
-      toast.error(error instanceof Error ? error.message : t('auth:login.discoveryFailed'));
+    } catch (discoveryError) {
+      console.error('Tenant discovery failed:', discoveryError);
+      
+      // Enhanced error handling for tenant discovery
+      const errorMessage = discoveryError instanceof Error ? discoveryError.message : 'Unknown discovery error';
+      
+      if (errorMessage.includes('not found') || errorMessage.includes('404')) {
+        toast.error(t('auth:login.organizationNotFound'));
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        toast.error(t('auth:login.networkError'));
+      } else if (errorMessage.includes('rate limit')) {
+        toast.error(t('auth:login.rateLimitExceeded'));
+      } else {
+        toast.error(errorMessage.includes('error') ? errorMessage : t('auth:login.discoveryFailed'));
+      }
+
+      // Fallback: allow legacy login without tenant discovery (demo/dev)
+      loginForm.setValue('email', data.email);
+      setLoginStep({ step: 'auth' });
     } finally {
       setIsDiscovering(false);
     }
@@ -122,43 +139,63 @@ export default function LoginPage() {
 
   // Handle authentication
   const handleLoginSubmit = async (data: LoginFormData) => {
-    if (!loginStep.tenantData) {
-      toast.error(t('auth:login.tenantDiscoveryRequired'));
-      return;
-    }
-
     try {
       clearError();
-
-      const response = await helixAuthService.authenticate({
-        discoveryToken: loginStep.tenantData.discoveryToken,
-        email: data.email,
-        password: data.password,
-        authMethod: 'password',
-        rememberMe: data.rememberMe,
-      });
-
-      if (response.requiresMFA && response.tempSessionId) {
-        // Move to MFA step
-        setLoginStep({
-          step: 'mfa',
-          tenantData: loginStep.tenantData,
-          mfaToken: response.tempSessionId,
-        });
-      } else if (response.user) {
-        // Complete login via auth store
-        await loginWithHelix({
+      if (loginStep.tenantData) {
+        // Helix path when discovery succeeded
+        const response = await helixAuthService.authenticate({
           discoveryToken: loginStep.tenantData.discoveryToken,
           email: data.email,
           password: data.password,
+          authMethod: 'password',
           rememberMe: data.rememberMe,
         });
 
+        if (response.requiresMFA && response.tempSessionId) {
+          setLoginStep({ step: 'mfa', tenantData: loginStep.tenantData, mfaToken: response.tempSessionId });
+          return;
+        }
+
+        if (response.user) {
+          await loginWithHelix({
+            discoveryToken: loginStep.tenantData.discoveryToken,
+            email: data.email,
+            password: data.password,
+            rememberMe: data.rememberMe,
+          });
+          toast.success(t('auth:login.welcomeBack'));
+          navigate(from, { replace: true });
+          return;
+        }
+      }
+
+      // Legacy path (no tenant data or Helix not configured)
+      await useAuthStore.getState().login(data.email, data.password, data.rememberMe);
+      if (useAuthStore.getState().isAuthenticated) {
         toast.success(t('auth:login.welcomeBack'));
         navigate(from, { replace: true });
+        return;
       }
-    } catch (_error) {
-      toast.error(t('auth:login.loginFailed'));
+      throw new Error('Login failed');
+    } catch (authError) {
+      console.error('Authentication failed:', authError);
+      
+      // Enhanced authentication error handling
+      const errorMessage = authError instanceof Error ? authError.message : 'Unknown auth error';
+      
+      if (errorMessage.includes('invalid credentials') || errorMessage.includes('unauthorized')) {
+        toast.error(t('auth:login.invalidCredentials'));
+      } else if (errorMessage.includes('account locked') || errorMessage.includes('locked')) {
+        toast.error(t('auth:login.accountLocked'));
+      } else if (errorMessage.includes('account disabled') || errorMessage.includes('inactive')) {
+        toast.error(t('auth:login.accountDisabled'));
+      } else if (errorMessage.includes('mfa required') || errorMessage.includes('2fa')) {
+        toast.error(t('auth:login.mfaRequired'));
+      } else if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
+        toast.error(t('auth:login.networkError'));
+      } else {
+        toast.error(t('auth:login.loginFailed'));
+      }
     }
   };
 
@@ -196,8 +233,24 @@ export default function LoginPage() {
         toast.success(t('auth:login.welcomeBack'));
         navigate(from, { replace: true });
       }
-    } catch (_error) {
-      toast.error(t('auth:mfa.invalidCode'));
+    } catch (mfaError) {
+      console.error('MFA verification failed:', mfaError);
+      
+      // Enhanced MFA error handling
+      const errorMessage = mfaError instanceof Error ? mfaError.message : 'Unknown MFA error';
+      
+      if (errorMessage.includes('invalid code') || errorMessage.includes('incorrect')) {
+        toast.error(t('auth:mfa.invalidCode'));
+      } else if (errorMessage.includes('expired') || errorMessage.includes('timeout')) {
+        toast.error(t('auth:mfa.codeExpired'));
+      } else if (errorMessage.includes('attempts') || errorMessage.includes('locked')) {
+        toast.error(t('auth:mfa.tooManyAttempts'));
+      } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
+        toast.error(t('auth:mfa.networkError'));
+      } else {
+        toast.error(t('auth:mfa.invalidCode'));
+      }
+      
       setMfaCode('');
     }
   };
@@ -207,10 +260,28 @@ export default function LoginPage() {
     if (!loginStep.tenantData) return;
 
     try {
-      const ssoData = await helixAuthService.initiateSSOLogin(provider);
+      const ssoData = await helixAuthService.initiateSSOLogin(provider, {
+        tenantId: loginStep.tenantData.tenant.id,
+        redirectUrl: window.location.origin,
+      });
       window.location.href = ssoData.redirectUrl;
-    } catch (_error) {
-      toast.error(t('auth:login.ssoInitiateFailed'));
+    } catch (ssoError) {
+      console.error('SSO initiation failed:', ssoError);
+      
+      // Enhanced SSO error handling
+      const errorMessage = ssoError instanceof Error ? ssoError.message : 'Unknown SSO error';
+      
+      if (errorMessage.includes('not configured') || errorMessage.includes('unavailable')) {
+        toast.error(t('auth:sso.notConfigured', { provider }));
+      } else if (errorMessage.includes('redirect') || errorMessage.includes('url')) {
+        toast.error(t('auth:sso.redirectFailed'));
+      } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
+        toast.error(t('auth:sso.networkError'));
+      } else if (errorMessage.includes('unauthorized') || errorMessage.includes('permission')) {
+        toast.error(t('auth:sso.unauthorized'));
+      } else {
+        toast.error(t('auth:login.ssoInitiateFailed'));
+      }
     }
   };
 
@@ -506,7 +577,11 @@ export default function LoginPage() {
               <>
                 {t('auth:login.needHelp')}{' '}
                 <a
-                  href="mailto:support@nova-universe.com"
+                  href={
+                    `mailto:${
+                      loginStep.tenantData?.branding?.supportEmail || 'support@nova-universe.com'
+                    }`
+                  }
                   className="text-nova-600 hover:text-nova-500 dark:text-nova-400 dark:hover:text-nova-300 font-medium"
                 >
                   {t('auth:login.contactSupport')}

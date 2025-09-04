@@ -4,6 +4,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { logger } from '../logger.js';
+import db from '../db.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import _nodemailer from 'nodemailer';
 import fetch from 'node-fetch';
@@ -481,11 +482,36 @@ router.post(
       logger.info('Setup completed by user:', userId);
       logger.info('Setup data:', JSON.stringify(setupData, null, 2));
 
-      // In a real implementation, you would:
-      // 1. Store configuration in database
-      // 2. Update environment variables
-      // 3. Initialize services
-      // 4. Mark setup as complete
+      // Persist configuration in database
+      // Upsert each provided config key under a namespaced prefix
+      const entries = Object.entries(setupData || {});
+      for (const [key, value] of entries) {
+        const namespacedKey = `setup.${key}`;
+        await db.run(
+          `INSERT INTO config (key, value, value_type, category, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+           ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
+          [namespacedKey, JSON.stringify(value ?? null), 'json', 'setup'],
+        );
+      }
+
+      // Mark setup as complete with metadata
+      await db.run(
+        `INSERT INTO config (key, value, value_type, category, created_at, updated_at)
+         VALUES ($1, $2, 'json', 'setup', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
+        [
+          'setup.completed',
+          JSON.stringify({ completedAt: new Date().toISOString(), byUserId: userId || null }),
+        ],
+      );
+
+      // Optionally initialize dependent services (best-effort, non-blocking)
+      try {
+        await initializeOptionalServices(setupData);
+      } catch (e) {
+        logger.warn('Service initialization skipped/failed:', e?.message || e);
+      }
 
       res.json({
         success: true,
@@ -502,3 +528,13 @@ router.post(
 );
 
 export default router;
+
+// Best-effort initialization of dependent services after setup
+async function initializeOptionalServices(setupData) {
+  // Example: warm up prisma/db and cache some config
+  try {
+    await db.query('SELECT 1');
+  } catch {}
+  // Additional service initializations could be added here based on setupData
+  return true;
+}

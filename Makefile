@@ -18,6 +18,10 @@ help:
 	@echo "Docker Management:"
 	@echo "  docker-up      Start core database services"
 	@echo "  docker-full    Start all services (full profile)"
+	@echo "  docker-demo    Start same-origin demo (nginx + UI + API)"
+	@echo "  prod           Start production stack (nginx + API + UI)"
+	@echo "  prod-migrate   Run Prisma DB migrations (all schemas)"
+	@echo "  test:ui:prod   Run Playwright UI tests against nginx"
 	@echo "  docker-down    Stop all services"
 	@echo "  docker-logs    View service logs"
 	@echo "  docker-status  Check service status"
@@ -60,6 +64,42 @@ docker-up:
 docker-full:
 	@echo "🐳 Starting all services (full profile)..."
 	docker-compose --profile full up -d
+
+# Same-origin demo via nginx (recommended local experience)
+docker-demo:
+	@echo "🐳 Starting same-origin demo (nginx + UI + API)..."
+	docker compose -f docker-compose.prod.yml --profile demo up -d --build nova-api nova-unified nginx-demo
+	@echo "🌐 Open http://localhost:8080"
+
+docker-demo-down:
+	@echo "🐳 Stopping same-origin demo..."
+	docker compose -f docker-compose.prod.yml --profile demo down
+
+docker-demo-logs:
+	@echo "📋 Following demo logs (Ctrl+C to stop)..."
+	docker compose -f docker-compose.prod.yml --profile demo logs -f
+
+docker-demo-status:
+	@echo "🔍 Demo service status:"
+	docker compose -f docker-compose.prod.yml --profile demo ps
+
+# Production targets
+prod-migrate:
+	@echo "🔧 Running production DB migrations in nova-api container..."
+	docker compose -f docker-compose.prod.yml run --rm nova-api bash -lc "./scripts/migrate-all.sh"
+
+prod:
+	@echo "🚀 Starting production stack (nginx + API + UI)..."
+	docker compose -f docker-compose.prod.yml up -d --build nginx nova-api nova-unified
+	@echo "🌐 Open http://localhost (or your domain via TLS)"
+
+# UI e2e tests against nginx
+test:ui:prod:
+	@echo "🧪 Running Playwright UI tests against nginx..."
+	cd apps/unified && \
+	if command -v pnpm >/dev/null 2>&1; then pnpm install; else npm install; fi && \
+	npx playwright install --with-deps && \
+	TEST_BASE_URL=http://localhost npx playwright test --reporter=list
 
 docker-down:
 	@echo "🐳 Stopping all services..."
@@ -119,3 +159,7 @@ quickstart:
 	@echo "2. Run: make dev"
 	@echo "3. Visit: http://localhost:5173"
 	@echo "4. Run setup wizard at: http://localhost:5173/setup"
+seed-admin:
+	@echo "🔑 Seeding admin user (admin@example.com) in nova-api container..."
+	docker compose -f docker-compose.prod.yml run --rm nova-api node create-admin.js admin@example.com 'Admin123!' 'Administrator'
+	@echo "➡️  Change this password immediately in production"

@@ -179,9 +179,11 @@ const DashboardBuilder: React.FC = () => {
 
       // Show success message (you could add a toast notification here)
       alert('Dashboard saved successfully!');
-    } catch (_error) {
-      console.error('Error saving dashboard:', error);
-      alert('Failed to save dashboard. Please try again.');
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] Error saving Nova TV dashboard:`, error instanceof Error ? error.message : String(error));
+      // Enhanced error feedback with dashboard context
+      const dashboardInfo = dashboard.name ? `"${dashboard.name}"` : 'current dashboard';
+      alert(`Failed to save ${dashboardInfo}. Please verify your content configuration and try again.`);
     } finally {
       setLoading(false);
     }

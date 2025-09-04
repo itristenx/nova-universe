@@ -33,4 +33,14 @@ describe('Basic App Tests', () => {
     // Test that mock data is disabled in test environment
     expect(process.env.VITE_USE_MOCK_DATA).toBe('false');
   });
+
+  test('renderWithProviders should work correctly', () => {
+    // Enhanced test using the renderWithProviders utility
+    const TestComponent = () => <div data-testid="test-component">Test Component</div>;
+    
+    const { getByTestId } = renderWithProviders(<TestComponent />);
+    
+    expect(getByTestId('test-component')).toBeInTheDocument();
+    expect(getByTestId('test-component')).toHaveTextContent('Test Component');
+  });
 });

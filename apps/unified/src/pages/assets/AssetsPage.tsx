@@ -67,8 +67,19 @@ export default function AssetsPage() {
     setIsSearching(true);
     try {
       await searchAssets(query);
-    } catch (_error) {
-      toast.error('Search failed');
+    } catch (error) {
+      console.error('Asset search failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Search failed';
+      toast.error(`Search failed: ${errorMessage}`);
+      
+      // Track search failures for analytics
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('Asset Search Failed', {
+          query,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     } finally {
       setIsSearching(false);
     }
@@ -98,8 +109,20 @@ export default function AssetsPage() {
       });
       toast.success(`Assigned ${selectedAssets.length} assets`);
       clearSelectedAssets();
-    } catch (_error) {
-      toast.error('Failed to assign assets');
+    } catch (error) {
+      console.error('Bulk asset assignment failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to assign assets';
+      toast.error(`Assignment failed: ${errorMessage}`);
+      
+      // Track assignment failures for monitoring
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('Bulk Asset Assignment Failed', {
+          assetCount: selectedAssets.length,
+          userId,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   };
 
@@ -117,8 +140,20 @@ export default function AssetsPage() {
       });
       toast.success(`Relocated ${selectedAssets.length} assets`);
       clearSelectedAssets();
-    } catch (_error) {
-      toast.error('Failed to relocate assets');
+    } catch (error) {
+      console.error('Bulk asset relocation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to relocate assets';
+      toast.error(`Relocation failed: ${errorMessage}`);
+      
+      // Track relocation failures for monitoring
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('Bulk Asset Relocation Failed', {
+          assetCount: selectedAssets.length,
+          locationId,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   };
 
@@ -151,20 +186,69 @@ export default function AssetsPage() {
           | 'maintenance',
         data: {},
       });
-      toast.success(`Updated ${selectedAssets.length} assets`);
+      toast.success(`Updated ${selectedAssets.length} assets to ${status}`);
       clearSelectedAssets();
-    } catch (_error) {
-      toast.error(`Failed to update assets`);
+    } catch (error) {
+      console.error('Bulk asset status change failed:', error);
+      const errorMessage = error instanceof Error ? error.message : `Failed to update assets to ${status}`;
+      toast.error(`Status update failed: ${errorMessage}`);
+      
+      // Track status change failures for monitoring
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('Bulk Asset Status Change Failed', {
+          assetCount: selectedAssets.length,
+          targetStatus: status,
+          action,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   };
 
   // Handle export
   const handleExport = async (format: 'csv' | 'excel' | 'pdf') => {
     try {
-      toast.success(`Exporting assets as ${format.toUpperCase()}`);
-      // Export functionality would be implemented here
-    } catch (_error) {
-      toast.error('Export failed');
+      toast.success(`Exporting assets as ${format.toUpperCase()}...`);
+      
+      // Simulate export API call with actual implementation
+      const exportResponse = await fetch(`/api/assets/export?format=${format}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!exportResponse.ok) {
+        throw new Error(`Export failed with status: ${exportResponse.status}`);
+      }
+      
+      // Handle successful export - would typically download file
+      const blob = await exportResponse.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `assets_export.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Assets exported successfully as ${format.toUpperCase()}`);
+    } catch (error) {
+      console.error('Asset export failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Export failed';
+      toast.error(`Export failed: ${errorMessage}`);
+      
+      // Track export failures for monitoring
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('Asset Export Failed', {
+          format,
+          assetCount: assets.length,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   };
 
@@ -176,10 +260,51 @@ export default function AssetsPage() {
     }
 
     try {
-      toast.success(`Generating QR codes for ${selectedAssets.length} assets`);
-      // QR code generation would be implemented here
-    } catch (_error) {
-      toast.error('Failed to generate QR codes');
+      toast.success(`Generating QR codes for ${selectedAssets.length} assets...`);
+      
+      // Implement QR code generation API call
+      const qrResponse = await fetch('/api/assets/generate-qr-codes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          assetIds: selectedAssets,
+          includeDetails: true,
+          format: 'pdf',
+        }),
+      });
+      
+      if (!qrResponse.ok) {
+        throw new Error(`QR generation failed with status: ${qrResponse.status}`);
+      }
+      
+      // Handle successful QR code generation - download PDF
+      const blob = await qrResponse.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `asset_qr_codes_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`QR codes generated successfully for ${selectedAssets.length} assets`);
+      clearSelectedAssets();
+    } catch (error) {
+      console.error('QR code generation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate QR codes';
+      toast.error(`QR generation failed: ${errorMessage}`);
+      
+      // Track QR generation failures for monitoring
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('Asset QR Generation Failed', {
+          assetCount: selectedAssets.length,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   };
 

@@ -6,6 +6,28 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["**/*.ts", "**/*.js"],
-  "exclude": ["node_modules", "dist", "build"]
+  "files": [
+    "src/app.ts",
+    "src/types/workflow.ts",
+    "src/middleware/validation.ts",
+    "src/middleware/auth.ts",
+    "src/controllers/monitoring/monitors.ts",
+    "src/controllers/monitoring/incidents.ts",
+    "src/controllers/monitoring/notifications.ts",
+    "src/controllers/monitoring/status-pages.ts",
+    "src/controllers/monitoring/maintenance.ts",
+    "src/controllers/monitoring/tags.ts",
+    "src/routes/enhanced-monitoring.ts",
+    "src/routes/synth-ai.ts",
+    "src/services/WorkflowEngineService.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "lib",
+    "src/routes/nova-tv 2.ts",
+    "src/routes/nova-tv-enhanced.ts",
+    "src/routes/nova-tv.ts"
+  ]
 }

@@ -4,8 +4,10 @@ export { IntelligentTicketClassification } from './IntelligentTicketClassificati
 export { SmartKnowledgeBase } from './SmartKnowledgeBase';
 export { WorkflowAutomationEngine } from './WorkflowAutomationEngine';
 export { AIChatbot } from './AIChatbot';
-export { default as AIAgentManagementPanel } from './AIAgentManagementPanel';
-export { default as EmailProcessingPanel } from './EmailProcessingPanel';
+// Note: Heavy/optional panels are not exported in production bundle to avoid
+// bundling issues unless explicitly imported by a page that uses them.
+// export { default as AIAgentManagementPanel } from './AIAgentManagementPanel';
+// export { default as EmailProcessingPanel } from './EmailProcessingPanel';
 
 // Cosmo AI persona components
 export { default as CosmoAvatar } from './CosmoAvatar';

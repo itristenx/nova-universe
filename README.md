@@ -170,6 +170,59 @@ Nova Universe configures itself during setup. For advanced configuration:
 
 ---
 
+## Run With Docker (Full Stack)
+
+Quickest way to bring up API, UI, and core dependencies locally:
+
+1) Optional: copy env template and adjust as needed
+
+- `cp .env.example .env`
+
+2) Build and start the full stack
+
+- `docker compose -f docker-compose.production-test.yml up -d --build`
+
+3) Open the apps
+
+- API health: `http://localhost:3000/api/health`
+- Unified UI: `http://localhost:3001`
+
+4) Stop everything
+
+- `docker compose -f docker-compose.production-test.yml down`
+
+Notes:
+
+- The compose file builds the API and UI images. UI is built with `VITE_API_URL=http://localhost:3000` so it talks to the API directly.
+- Infrastructure services include Postgres, MongoDB, Redis, Elasticsearch, Uptime-Kuma, Prometheus, Grafana, and GoAlert.
+- If ports are in use, adjust host ports in `docker-compose.production-test.yml`.
+
+---
+
+## Same-Origin Demo (Recommended)
+
+Serve UI and API behind a single origin with nginx to avoid CORS and match production topology:
+
+1) Start demo services
+
+- `make docker-demo`
+
+2) Open the app
+
+- UI + API (same origin): `http://localhost:8080`
+
+3) Stop demo services
+
+- `make docker-demo-down`
+
+Notes:
+
+- The demo uses `nginx/nginx.demo.conf` to proxy `/api` to the API container and serve the UI from the unified container.
+- UI is built without `VITE_API_URL`, so it uses same-origin `/api` automatically.
+- This mirrors an industry-standard production layout and avoids CORS entirely during local development.
+
+---
+
 ## Production Deployment
 
 **Quick production setup:**
@@ -600,3 +653,26 @@ Additional features planned for future releases:
 ## License
 
 See [LICENSE](LICENSE) file for details.
+### Quick start (local production stack)
+
+1) Run DB migrations:
+
+- `make prod-migrate`
+
+2) Start nginx + API + UI:
+
+- `make prod`
+
+3) Open the app:
+
+- `http://localhost` (or your configured domain with TLS)
+
+4) Run UI E2E tests against nginx (optional):
+
+- `make test:ui:prod`
+
+Notes:
+
+- Provide real secrets (JWT, SESSION, SMTP, tokens) via your environment or `.env.production`.
+- Postgres SSL should be enabled and configured for your managed DB (update compose/env accordingly).
+- For AI/RAG features, unset `FAST_BOOT` and set `ENABLE_AI_COMPONENTS=true` after provisioning dependencies.

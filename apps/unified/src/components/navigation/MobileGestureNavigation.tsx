@@ -329,6 +329,7 @@ export function MobileGestureNavigation({
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="absolute right-0 bottom-0 left-0 max-h-[80vh] overflow-y-auto rounded-t-xl bg-white dark:bg-gray-900"
               onClick={(e) => e.stopPropagation()}
+              onPan={handlePanGesture}
             >
               <div className="p-6">
                 {/* Header */}

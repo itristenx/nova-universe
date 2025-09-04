@@ -131,7 +131,11 @@ const communicationService = {
         updatedAt: new Date(Date.now() - 300000).toISOString(),
       }));
     } catch (_error) {
-      console.error('Error fetching communication channels:', error);
+      const errorMessage = _error instanceof Error ? _error.message : String(_error);
+      console.error('Error fetching communication channels:', {
+        error: errorMessage,
+        timestamp: new Date().toISOString()
+      });
       toast.error('Failed to load team channels');
       return [];
     }
@@ -225,8 +229,15 @@ const communicationService = {
         createdAt: new Date().toISOString(),
       };
     } catch (_error) {
-      console.error('Error creating escalation:', error);
-      throw error;
+      const errorMessage = _error instanceof Error ? _error.message : String(_error);
+      console.error('Error creating escalation:', {
+        error: errorMessage,
+        fromUserId,
+        toUserId,
+        reason,
+        timestamp: new Date().toISOString()
+      });
+      throw _error;
     }
   },
 };
@@ -265,7 +276,11 @@ export default function EnhancedCommunicationHub() {
         const response = await userService.getUsers(1, 50, { isActive: true });
         return response.data.filter((user) => user.isActive);
       } catch (_error) {
-        console.error('Error loading users for escalation:', error);
+        const errorMessage = _error instanceof Error ? _error.message : String(_error);
+        console.error('Error loading users for escalation:', {
+          error: errorMessage,
+          timestamp: new Date().toISOString()
+        });
         return [];
       }
     },

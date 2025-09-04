@@ -10,15 +10,17 @@ services:
     profiles:
       - production
     ports:
-      - '80:80'
-      - '443:443'
+      - '${NGINX_HTTP_PORT:-80}:80'
+      - '${NGINX_HTTPS_PORT:-443}:443'
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./logs/nginx:/var/log/nginx
     depends_on:
-      - nova-api
-      - nova-unified
+      nova-api:
+        condition: service_healthy
+      nova-unified:
+        condition: service_healthy
     networks:
       - nova-network
     healthcheck:
@@ -37,6 +39,8 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+      - ENABLE_AI_COMPONENTS=false
+      - FAST_BOOT=true
       - POSTGRES_SSL=false
       - API_PORT=3000
       - DATABASE_URL=${DATABASE_URL}
@@ -63,8 +67,8 @@ services:
       - GOALERT_PROXY_ENABLED=${GOALERT_PROXY_ENABLED:-true}
       - GOALERT_API_BASE=${GOALERT_API_BASE:-http://nova-goalert:8081}
       - GOALERT_API_KEY=${GOALERT_API_KEY:-}
-      - KIOSK_TOKEN=${KIOSK_TOKEN:-demo_kiosk_token}
-      - SCIM_TOKEN=${SCIM_TOKEN:-demo_scim_token}
+      - KIOSK_TOKEN=${KIOSK_TOKEN:-kiosk_local_placeholder}
+      - SCIM_TOKEN=${SCIM_TOKEN:-scim_local_placeholder}
       - SMTP_HOST=${SMTP_HOST:-localhost}
       - SMTP_USER=${SMTP_USER:-demo}
       - SMTP_PASS=${SMTP_PASS:-demo}
@@ -77,8 +81,9 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     # Expose for demo connectivity from browser
-    ports:
-      - '3000:3000'
+    # Expose only inside the Docker network; nginx terminates at :80/:443
+    # ports:
+    #   - '3000:3000'
     volumes:
       - ./logs/api:/app/logs
       - ./uploads:/app/uploads
@@ -133,8 +138,9 @@ services:
     environment:
       - NODE_ENV=production
       # Leave VITE_API_URL unset to use same-origin /api via nginx-demo
-    ports:
-      - '3001:3000'
+    # Expose only internally; nginx serves the UI to clients
+    # ports:
+    #   - '3001:3000'
     networks:
       - nova-network
     healthcheck:
@@ -173,8 +179,10 @@ services:
       - ./nginx/nginx.demo.conf:/etc/nginx/nginx.conf:ro
       - ./logs/nginx:/var/log/nginx
     depends_on:
-      - nova-api
-      - nova-unified-static
+      nova-api:
+        condition: service_healthy
+      nova-unified:
+        condition: service_started
     networks:
       - nova-network
     healthcheck:

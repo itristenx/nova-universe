@@ -61,6 +61,8 @@ export default function MobileLayout({
       {/* Main content area */}
       <main
         className={`w-full overflow-auto ${showBottomNav ? 'pb-16' : 'pb-4'} px-safe pt-safe`}
+        role="main"
+        aria-label={t('app:layout.mainContent')}
         style={{
           height: '100%',
           paddingBottom: showBottomNav

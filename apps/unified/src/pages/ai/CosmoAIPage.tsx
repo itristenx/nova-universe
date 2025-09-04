@@ -146,7 +146,12 @@ export default function CosmoAIPage() {
         setConversationHistory([]);
       }
     } catch (_error) {
-      console.warn('Cosmo AI conversation API unavailable, using fallback data:', error);
+      const errorMessage = _error instanceof Error ? _error.message : String(_error);
+      console.warn('Cosmo AI conversation API unavailable, using fallback data:', {
+        error: errorMessage,
+        timestamp: new Date().toISOString(),
+        fallbackAction: 'empty_conversation_history'
+      });
       // Fallback to empty state
       setConversationHistory([]);
     }
@@ -235,7 +240,13 @@ export default function CosmoAIPage() {
         throw new Error('API not available');
       }
     } catch (_error) {
-      console.warn('AI API not available, providing fallback response:', error);
+      const errorMessage = _error instanceof Error ? _error.message : String(_error);
+      console.warn('AI API not available, providing fallback response:', {
+        error: errorMessage,
+        userInput: inputValue,
+        timestamp: new Date().toISOString(),
+        fallbackAction: 'generated_response'
+      });
 
       // Fallback response logic
       const assistantMessage: Message = {

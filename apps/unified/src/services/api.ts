@@ -7,8 +7,12 @@ import {
   type ApiService,
 } from './api-config';
 
-// API configuration with versioning support
-const API_BASE_URL = '/api'; // Use relative URL to go through Vite proxy
+// API configuration with environment-aware base URL
+// In production, prefer absolute API origin via VITE_API_URL to avoid relying on a proxy.
+// In development, a relative path works with Vite dev proxy.
+const API_ORIGIN = (import.meta.env?.VITE_API_URL ? String(import.meta.env.VITE_API_URL) : '').replace(/\/$/, '');
+const API_PREFIX = '/api';
+const API_BASE_URL = API_ORIGIN; // requests should include paths like `/api/...`
 const API_TIMEOUT = 30000;
 
 // Validate API usage in development
@@ -34,36 +38,73 @@ class TokenManager {
   private static readonly ACCESS_TOKEN_KEY = 'nova_access_token';
   private static readonly REFRESH_TOKEN_KEY = 'nova_refresh_token';
   private static readonly TOKEN_EXPIRY_KEY = 'nova_token_expiry';
+  private static useSession = false;
+
+  // Allow auth store to switch storage type (remember me vs session)
+  static setStorage(storage: 'local' | 'session') {
+    const targetIsSession = storage === 'session';
+    if (this.useSession === targetIsSession) return;
+    const currentStorage = this.getStorage();
+    const targetStorage = targetIsSession ? window.sessionStorage : window.localStorage;
+    const access = currentStorage.getItem(this.ACCESS_TOKEN_KEY);
+    const refresh = currentStorage.getItem(this.REFRESH_TOKEN_KEY);
+    const expiry = currentStorage.getItem(this.TOKEN_EXPIRY_KEY);
+    // Move tokens
+    if (access) targetStorage.setItem(this.ACCESS_TOKEN_KEY, access);
+    if (refresh) targetStorage.setItem(this.REFRESH_TOKEN_KEY, refresh);
+    if (expiry) targetStorage.setItem(this.TOKEN_EXPIRY_KEY, expiry);
+    // Clear from previous storage
+    currentStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    currentStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    currentStorage.removeItem(this.TOKEN_EXPIRY_KEY);
+    this.useSession = targetIsSession;
+  }
+
+  static getTokenKeys(): string[] {
+    return [this.ACCESS_TOKEN_KEY, this.REFRESH_TOKEN_KEY, this.TOKEN_EXPIRY_KEY];
+  }
+
+  private static getStorage(): Storage {
+    if (typeof window === 'undefined') return {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+      clear: () => {},
+      key: () => null,
+      length: 0,
+    } as unknown as Storage;
+    return this.useSession ? window.sessionStorage : window.localStorage;
+  }
 
   static getAccessToken(): string | null {
-    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+    return this.getStorage().getItem(this.ACCESS_TOKEN_KEY);
   }
 
   static setAccessToken(token: string): void {
-    localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+    this.getStorage().setItem(this.ACCESS_TOKEN_KEY, token);
   }
 
   static getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    return this.getStorage().getItem(this.REFRESH_TOKEN_KEY);
   }
 
   static setRefreshToken(token: string): void {
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+    this.getStorage().setItem(this.REFRESH_TOKEN_KEY, token);
   }
 
   static getTokenExpiry(): number | null {
-    const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
+    const expiry = this.getStorage().getItem(this.TOKEN_EXPIRY_KEY);
     return expiry ? parseInt(expiry, 10) : null;
   }
 
   static setTokenExpiry(expiry: number): void {
-    localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiry.toString());
+    this.getStorage().setItem(this.TOKEN_EXPIRY_KEY, expiry.toString());
   }
 
   static clearTokens(): void {
-    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
+    this.getStorage().removeItem(this.ACCESS_TOKEN_KEY);
+    this.getStorage().removeItem(this.REFRESH_TOKEN_KEY);
+    this.getStorage().removeItem(this.TOKEN_EXPIRY_KEY);
   }
 
   static setTokens(accessToken: string, refreshToken?: string, expiresIn?: number): void {
@@ -119,7 +160,8 @@ api.interceptors.response.use(
       try {
         const refreshToken = TokenManager.getRefreshToken();
         if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+          const url = `${API_ORIGIN}${API_PREFIX}/auth/refresh`;
+          const response = await axios.post(url, {
             refreshToken,
           });
 

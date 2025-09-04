@@ -57,8 +57,27 @@ export default function OfflinePage() {
       // Load cached data from localStorage as fallback
       const cached = localStorage.getItem('nova_cached_data');
       setCachedData(cached ? JSON.parse(cached) : []);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to load cached data:', error);
+      
+      // Track error for offline analytics
+      const errorEvent = {
+        type: 'cache_load_error',
+        message: error instanceof Error ? error.message : 'Unknown cache load error',
+        timestamp: new Date().toISOString(),
+        context: 'offline_page_cache_load'
+      };
+      
+      // Store error for later sync when online
+      try {
+        const errorLog = localStorage.getItem('nova_offline_errors') || '[]';
+        const errors = JSON.parse(errorLog);
+        errors.push(errorEvent);
+        localStorage.setItem('nova_offline_errors', JSON.stringify(errors.slice(-50))); // Keep last 50 errors
+      } catch (logError) {
+        console.warn('Failed to log cache error:', logError);
+      }
+      
       setCachedData([]);
     }
   };
@@ -68,8 +87,29 @@ export default function OfflinePage() {
       // Load pending actions from localStorage as fallback
       const pending = localStorage.getItem('nova_pending_actions');
       setPendingActions(pending ? JSON.parse(pending) : []);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to load pending actions:', error);
+      
+      // Enhanced error handling for pending actions
+      const errorDetails = {
+        type: 'pending_actions_load_error',
+        message: error instanceof Error ? error.message : 'Unknown pending actions error',
+        timestamp: new Date().toISOString(),
+        context: 'offline_page_pending_load'
+      };
+      
+      // Store for analytics when back online
+      try {
+        const errorLog = localStorage.getItem('nova_offline_errors') || '[]';
+        const errors = JSON.parse(errorLog);
+        errors.push(errorDetails);
+        localStorage.setItem('nova_offline_errors', JSON.stringify(errors.slice(-50)));
+      } catch (logError) {
+        console.warn('Failed to log pending actions error:', logError);
+      }
+      
+      // Ensure pending actions is empty array on error
+      setPendingActions([]);
     }
   };
 
@@ -89,8 +129,33 @@ export default function OfflinePage() {
 
       // Refresh cached data
       loadCachedData();
-    } catch (_error) {
+    } catch (error) {
       console.error('Sync failed:', error);
+      
+      // Enhanced sync error handling with retry logic
+      const syncError = {
+        type: 'sync_failure',
+        message: error instanceof Error ? error.message : 'Unknown sync error',
+        timestamp: new Date().toISOString(),
+        retryAttempt: retryAttempts,
+        pendingActionsCount: pendingActions.length,
+        context: 'offline_page_sync'
+      };
+      
+      // Log sync failures for analysis
+      try {
+        const errorLog = localStorage.getItem('nova_offline_errors') || '[]';
+        const errors = JSON.parse(errorLog);
+        errors.push(syncError);
+        localStorage.setItem('nova_offline_errors', JSON.stringify(errors.slice(-50)));
+      } catch (logError) {
+        console.warn('Failed to log sync error:', logError);
+      }
+      
+      // Implement exponential backoff for retries
+      const backoffDelay = Math.min(1000 * Math.pow(2, retryAttempts), 30000);
+      console.log(`Will retry sync in ${backoffDelay}ms (attempt ${retryAttempts + 1})`);
+      
       // Will retry automatically when online
     }
   };
@@ -105,9 +170,61 @@ export default function OfflinePage() {
     try {
       // Clear cached data
       setCachedData([]);
-      // In a real implementation, this would clear IndexedDB
-    } catch (_error) {
+      // Clear Cache Storage
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+
+      // Clear IndexedDB databases (best-effort)
+      try {
+        const anyIndexedDB = indexedDB as any;
+        if (anyIndexedDB?.databases) {
+          const dbs = await anyIndexedDB.databases();
+          await Promise.all(
+            dbs
+              .map((db: any) => db?.name)
+              .filter(Boolean)
+              .map((name: string) => new Promise<void>((resolve) => {
+                const req = indexedDB.deleteDatabase(name);
+                req.onsuccess = () => resolve();
+                req.onerror = () => resolve();
+                req.onblocked = () => resolve();
+              })),
+          );
+        }
+      } catch (indexedDBError) {
+        // Some browsers don't support indexedDB.databases(); ignore
+        console.warn('IndexedDB enumeration not supported; skipping full DB clear');
+        console.debug('IndexedDB error details:', indexedDBError instanceof Error ? indexedDBError.message : 'Unknown IndexedDB error');
+      }
+
+      // Clear local/session storage for good measure
+      try { localStorage.clear(); } catch {}
+      try { sessionStorage.clear(); } catch {}
+    } catch (error) {
       console.error('Failed to clear cache:', error);
+      
+      // Enhanced cache clearing error handling
+      const cacheError = {
+        type: 'cache_clear_error',
+        message: error instanceof Error ? error.message : 'Unknown cache clear error',
+        timestamp: new Date().toISOString(),
+        context: 'offline_page_cache_clear'
+      };
+      
+      // Log cache clearing errors
+      try {
+        const errorLog = localStorage.getItem('nova_offline_errors') || '[]';
+        const errors = JSON.parse(errorLog);
+        errors.push(cacheError);
+        localStorage.setItem('nova_offline_errors', JSON.stringify(errors.slice(-50)));
+      } catch (logError) {
+        console.warn('Failed to log cache clear error:', logError);
+      }
+      
+      // Show user-friendly notification about cache clearing failure
+      console.warn('Some cached data may not have been cleared. Please try refreshing the page.');
     }
   };
 

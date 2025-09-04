@@ -68,6 +68,12 @@ export default function VerifyEmailPage() {
           });
         }
       } catch (_error) {
+        const errorMessage = _error instanceof Error ? _error.message : String(_error);
+        console.error('Email verification failed:', {
+          error: errorMessage,
+          token,
+          timestamp: new Date().toISOString()
+        });
         setVerificationResult({
           success: false,
           message: 'An error occurred while verifying your email. Please try again later.',
@@ -93,6 +99,11 @@ export default function VerifyEmailPage() {
 
       toast.success('Verification email sent! Please check your inbox.');
     } catch (_error) {
+      const errorMessage = _error instanceof Error ? _error.message : String(_error);
+      console.error('Failed to resend verification email:', {
+        error: errorMessage,
+        timestamp: new Date().toISOString()
+      });
       toast.error('Failed to send verification email. Please try again later.');
     } finally {
       setIsResending(false);

@@ -51,25 +51,22 @@ const passwordHash = bcrypt.hashSync(password, 12); // Increase salt rounds for 
 
 (async () => {
   try {
-    // Try to update existing admin (is_default = true)
-    const updateRes = await db.query(
-      'UPDATE users SET "password_hash" = $1 WHERE email = $2 AND "is_default" = true',
-      [passwordHash, email],
-    );
-    if (updateRes.rowCount > 0) {
-      console.log(`✅ Updated existing admin user: ${email}`);
-      await assignAdminRole();
-      return;
+    // Upsert by email (no is_default column in minimal schema)
+    const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (existing.rows && existing.rows.length > 0) {
+      await db.query('UPDATE users SET "password_hash" = $1, name = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3', [passwordHash, name, existing.rows[0].id]);
+      console.log(`✅ Updated existing user: ${email}`);
+    } else {
+      const userId = uuidv4();
+      const now = new Date().toISOString();
+      await db.query(
+        'INSERT INTO users (uuid, name, email, "password_hash", disabled, created_at, updated_at) VALUES ($1, $2, $3, $4, FALSE, $5, $6)',
+        [userId, name, email, passwordHash, now, now],
+      );
+      console.log(`✅ Created user: ${email}`);
     }
-    // If not found, insert new admin
-    const userId = uuidv4();
-    const now = new Date().toISOString();
-    await db.query(
-      'INSERT INTO users (uuid, name, email, "password_hash", "is_default", "created_at", "updated_at") VALUES ($1, $2, $3, $4, true, $5, $6)',
-      [userId, name, email, passwordHash, now, now],
-    );
-    console.log(`✅ Created new admin user: ${email}`);
-    await assignAdminRole(userId);
+    // Role assignment optional — skip if roles schema not present
+    try { await assignAdminRole(); } catch (e) { console.warn('Skipping role assignment:', e.message); }
   } catch (err) {
     console.error('❌ Error creating/updating admin user:', err);
     process.exit(1);

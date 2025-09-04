@@ -17,8 +17,15 @@ const NovaTVDashboard: React.FC = () => {
       const filters = selectedDepartment !== 'all' ? { department: selectedDepartment } : {};
       const data = await novaTVService.getDashboards(filters);
       setDashboards(data);
-    } catch (_error) {
-      // Handle error silently, show user-friendly message
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] Error loading Nova TV dashboards:`, {
+        filters: selectedDepartment !== 'all' ? { department: selectedDepartment } : {},
+        error: error instanceof Error ? error.message : String(error)
+      });
+      // Enhanced fallback: Keep existing dashboards if available
+      if (dashboards.length === 0) {
+        setDashboards([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -28,8 +35,13 @@ const NovaTVDashboard: React.FC = () => {
     try {
       await novaTVService.updateDashboard(id, { isActive: !isActive });
       loadDashboards();
-    } catch (_error) {
-      // Handle error silently
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] Error toggling Nova TV dashboard:`, {
+        dashboardId: id,
+        targetState: !isActive,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      alert('Failed to update dashboard status. Please try again.');
     }
   };
 
@@ -40,8 +52,13 @@ const NovaTVDashboard: React.FC = () => {
         await novaTVService.duplicateDashboard(id, newName);
         loadDashboards();
       }
-    } catch (_error) {
-      console.error('Error duplicating dashboard:', error);
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] Error duplicating Nova TV dashboard:`, {
+        sourceDashboardId: id,
+        sourceName: name,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      alert(`Failed to duplicate "${name}". Please try again.`);
     }
   };
 
@@ -50,8 +67,13 @@ const NovaTVDashboard: React.FC = () => {
       try {
         await novaTVService.deleteDashboard(id);
         loadDashboards();
-      } catch (_error) {
-        console.error('Error deleting dashboard:', error);
+      } catch (error) {
+        console.error(`[${new Date().toISOString()}] Error deleting Nova TV dashboard:`, {
+          dashboardId: id,
+          dashboardName: name,
+          error: error instanceof Error ? error.message : String(error)
+        });
+        alert(`Failed to delete "${name}". Please try again.`);
       }
     }
   };

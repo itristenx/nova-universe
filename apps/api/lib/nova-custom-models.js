@@ -760,11 +760,18 @@ export class NovaCustomModels extends EventEmitter {
             }
         }
         const confidence = Math.min(0.95, 0.7 + maxScore * 0.05);
+        
+        // Enhanced confidence calculation incorporating model accuracy
+        const adjustedConfidence = Math.min(0.98, confidence * modelAccuracy);
+        const qualityScore = modelAccuracy > 0.9 ? 'high' : modelAccuracy > 0.7 ? 'medium' : 'low';
+        
         const subcategory = subcategories[bestCategory][Math.floor(Math.random() * subcategories[bestCategory].length)];
         const prediction = {
             category: bestCategory,
             subcategory,
-            confidence_score: confidence,
+            confidence_score: adjustedConfidence,
+            model_quality: qualityScore,
+            model_accuracy: modelAccuracy,
             suggested_assignment: this.suggestAssignment(bestCategory, subcategory),
             estimated_effort: this.estimateEffort(bestCategory, subcategory),
             related_articles: await this.findRelatedKnowledge(bestCategory, inputText),
@@ -814,20 +821,39 @@ export class NovaCustomModels extends EventEmitter {
         const recentIncidentRisk = recentIncidents > 2 ? 0.8 : recentIncidents > 0 ? 0.4 : 0.1;
         const overallRisk = (cpuRisk + memoryRisk + diskRisk + networkRisk + historicalRisk + recentIncidentRisk) / 6;
         const incidentProbability = Math.min(0.99, overallRisk + Math.random() * 0.1);
+        
+        // Apply prediction threshold to determine if we should make a prediction
+        const shouldPredict = incidentProbability >= predictionThreshold;
+        const finalProbability = shouldPredict ? incidentProbability : 0.0;
+        const predictionQuality = shouldPredict ? 'reliable' : 'below_threshold';
+        
         const prediction = {
-            incident_probability: incidentProbability,
-            risk_level: incidentProbability > 0.7 ? 'high' : incidentProbability > 0.4 ? 'medium' : 'low',
-            predicted_time_to_incident: incidentProbability > 0.7 ? '2-6 hours' : '12-24 hours',
-            affected_services: ['Email Service', 'Web Portal'],
-            recommended_actions: [
+            incident_probability: finalProbability,
+            prediction_threshold: predictionThreshold,
+            prediction_quality: predictionQuality,
+            meets_threshold: shouldPredict,
+            risk_level: shouldPredict 
+                ? (finalProbability > 0.7 ? 'high' : finalProbability > 0.4 ? 'medium' : 'low')
+                : 'insufficient_data',
+            predicted_time_to_incident: shouldPredict 
+                ? (finalProbability > 0.7 ? '2-6 hours' : '12-24 hours')
+                : 'unable_to_predict',
+            affected_services: shouldPredict ? ['Email Service', 'Web Portal'] : [],
+            recommended_actions: shouldPredict ? [
                 'Monitor system resources closely',
                 'Prepare incident response team',
                 'Review capacity planning',
+            ] : [
+                'Continue normal monitoring',
+                'Collect more data for better predictions'
             ],
-            preventive_measures: [
+            preventive_measures: shouldPredict ? [
                 'Scale infrastructure',
                 'Optimize resource usage',
                 'Implement load balancing',
+            ] : [
+                'Maintain current monitoring',
+                'Review prediction model parameters'
             ],
         };
         const explanation = {
@@ -1825,35 +1851,49 @@ export class NovaCustomModels extends EventEmitter {
      */
     async processNovaWorkflowOptimization(request, model) {
         const inputData = request.input;
+        
+        // Apply model-specific optimization parameters
+        const modelConfidence = model.performance?.accuracy || 0.85;
+        const modelComplexity = model.configuration?.complexity || 'standard';
+        const modelTrainingData = model.performance?.training_samples || 1000;
+        
         // Analyze Nova-specific workflow patterns
         const workflowAnalysis = await this.analyzeNovaWorkflowPatterns(inputData);
-        // Generate optimization recommendations based on Nova data
+        // Generate optimization recommendations based on Nova data and model capabilities
         const prediction = {
             workflow_type: workflowAnalysis.workflowType,
+            model_info: {
+                model_id: model.id,
+                model_version: model.version,
+                training_quality: modelConfidence > 0.9 ? 'high' : 'standard',
+                complexity_level: modelComplexity
+            },
             optimization_recommendations: [
                 {
                     action: 'automation_opportunity',
                     description: 'Based on Nova historical data, this step can be automated',
-                    confidence: 0.89,
+                    confidence: Math.min(0.95, 0.89 * modelConfidence),
                     estimated_time_savings: '15 minutes',
-                    implementation_effort: 'low',
+                    implementation_effort: modelComplexity === 'advanced' ? 'low' : 'medium',
                 },
                 {
                     action: 'resource_optimization',
                     description: 'Nova monitoring data suggests optimal resource allocation',
-                    confidence: 0.92,
+                    confidence: Math.min(0.98, 0.92 * modelConfidence),
                     estimated_cost_savings: '$200/month',
                     implementation_effort: 'medium',
                 },
             ],
             performance_prediction: {
                 expected_completion_time: workflowAnalysis.estimatedTime,
-                success_probability: 0.94,
+                success_probability: Math.min(0.99, 0.94 * modelConfidence),
                 risk_factors: workflowAnalysis.riskFactors,
+                model_reliability: modelTrainingData > 5000 ? 'high' : 'standard'
             },
             nova_insights: {
                 similar_workflows_processed: 156,
                 average_success_rate: 0.91,
+                training_data_samples: modelTrainingData,
                 best_practices_applied: [
                     'Nova standard approval process',
                     'Nova automated validation',
@@ -1861,7 +1901,7 @@ export class NovaCustomModels extends EventEmitter {
                 ],
             },
         };
-        const confidence = 0.91; // High confidence due to Nova-specific training
+        const confidence = Math.min(0.95, 0.91 * modelConfidence); // Confidence adjusted by model quality
         const explanation = {
             reasoning: 'Optimization based on Nova operational patterns and historical workflow data',
             key_factors: [
@@ -1890,12 +1930,32 @@ export class NovaCustomModels extends EventEmitter {
      * Analyze Nova-specific workflow patterns
      */
     async analyzeNovaWorkflowPatterns(inputData) {
-        // This would analyze patterns specific to Nova operations
+        // Analyze patterns specific to Nova operations using input data
+        const workflowKeywords = (inputData.description || '').toLowerCase().split(/\s+/);
+        const isServiceRequest = workflowKeywords.some(word => 
+            ['request', 'service', 'access', 'account', 'provision'].includes(word)
+        );
+        const isIncident = workflowKeywords.some(word =>
+            ['incident', 'outage', 'error', 'failure', 'down'].includes(word)  
+        );
+        const isChange = workflowKeywords.some(word =>
+            ['change', 'update', 'modify', 'configure'].includes(word)
+        );
+        
+        const workflowType = isIncident ? 'incident' : isChange ? 'change' : isServiceRequest ? 'service_request' : 'general';
+        const priority = inputData.priority || 'medium';
+        const complexity = workflowKeywords.length > 50 ? 0.8 : workflowKeywords.length > 20 ? 0.6 : 0.4;
+        
         return {
-            workflowType: 'service_request', // Determined from Nova patterns
-            estimatedTime: '2.5 hours', // Based on Nova historical data
-            riskFactors: ['approval_delay', 'resource_contention'],
-            complexityScore: 0.6,
+            workflowType,
+            estimatedTime: priority === 'high' ? '1.5 hours' : priority === 'low' ? '4 hours' : '2.5 hours',
+            riskFactors: priority === 'high' ? ['time_pressure', 'visibility'] : ['approval_delay', 'resource_contention'],
+            complexityScore: complexity,
+            inputAnalysis: {
+                keywordCount: workflowKeywords.length,
+                priority,
+                detectedType: workflowType
+            },
             novaOptimizations: [
                 'parallel_processing',
                 'automated_validation',

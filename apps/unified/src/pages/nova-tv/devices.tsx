@@ -17,8 +17,15 @@ const DeviceManagement: React.FC = () => {
       const filters = selectedStatus !== 'all' ? { connectionStatus: selectedStatus } : {};
       const data = await novaTVService.getDevices(filters);
       setDevices(data);
-    } catch (_error) {
-      console.error('Error loading devices:', error);
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] Error loading Nova TV devices with filters:`, {
+        filters: selectedStatus !== 'all' ? { connectionStatus: selectedStatus } : {},
+        error: error instanceof Error ? error.message : String(error)
+      });
+      // Enhanced fallback - keep existing devices if available
+      if (devices.length === 0) {
+        setDevices([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -29,8 +36,13 @@ const DeviceManagement: React.FC = () => {
       try {
         await novaTVService.revokeDevice(id);
         loadDevices();
-      } catch (_error) {
-        console.error('Error revoking device:', error);
+      } catch (error) {
+        console.error(`[${new Date().toISOString()}] Error revoking Nova TV device access:`, {
+          deviceId: id,
+          deviceName: name,
+          error: error instanceof Error ? error.message : String(error)
+        });
+        alert(`Failed to revoke access for "${name}". Please try again.`);
       }
     }
   };

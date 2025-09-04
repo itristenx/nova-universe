@@ -62,8 +62,23 @@ export default function TicketDetailPage() {
     try {
       await updateTicket(currentTicket.id, { status });
       toast.success(`Ticket ${status}`);
-    } catch (_error) {
-      toast.error('Failed to update ticket status');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Failed to update ticket status:', error);
+      
+      // Enhanced error handling with user feedback
+      if (errorMessage.includes('permission')) {
+        toast.error('You do not have permission to update this ticket status');
+      } else if (errorMessage.includes('network')) {
+        toast.error('Network error: Please check your connection and try again');
+      } else if (errorMessage.includes('validation')) {
+        toast.error('Invalid status value. Please refresh and try again');
+      } else {
+        toast.error(`Failed to update ticket status: ${errorMessage}`);
+      }
+      
+      // Track error for analytics
+      console.warn(`Status update failed for ticket ${currentTicket.id}: ${errorMessage}`);
     }
   };
 
@@ -73,8 +88,23 @@ export default function TicketDetailPage() {
     try {
       await updateTicket(currentTicket.id, { priority });
       toast.success('Priority updated');
-    } catch (_error) {
-      toast.error('Failed to update priority');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Failed to update ticket priority:', error);
+      
+      // Enhanced priority update error handling
+      if (errorMessage.includes('permission')) {
+        toast.error('You do not have permission to change ticket priority');
+      } else if (errorMessage.includes('invalid')) {
+        toast.error('Invalid priority level selected');
+      } else if (errorMessage.includes('conflict')) {
+        toast.error('Priority conflict detected. Please refresh and try again');
+      } else {
+        toast.error(`Failed to update priority: ${errorMessage}`);
+      }
+      
+      // Log priority change attempt for audit trail
+      console.warn(`Priority update failed for ticket ${currentTicket.id} from ${currentTicket.priority} to ${priority}: ${errorMessage}`);
     }
   };
 
@@ -84,8 +114,25 @@ export default function TicketDetailPage() {
     try {
       await updateTicket(currentTicket.id, { assigneeId });
       toast.success('Ticket assigned');
-    } catch (_error) {
-      toast.error('Failed to assign ticket');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Failed to assign ticket:', error);
+      
+      // Enhanced assignment error handling
+      if (errorMessage.includes('permission')) {
+        toast.error('You do not have permission to assign this ticket');
+      } else if (errorMessage.includes('not found')) {
+        toast.error('Selected assignee not found. Please refresh and try again');
+      } else if (errorMessage.includes('capacity')) {
+        toast.error('Assignee has reached maximum ticket capacity');
+      } else if (errorMessage.includes('availability')) {
+        toast.error('Selected assignee is not available for new assignments');
+      } else {
+        toast.error(`Failed to assign ticket: ${errorMessage}`);
+      }
+      
+      // Track assignment attempts for workload analysis
+      console.warn(`Assignment failed for ticket ${currentTicket.id} to user ${assigneeId}: ${errorMessage}`);
     }
   };
 
@@ -101,8 +148,25 @@ export default function TicketDetailPage() {
       await deleteTicket(currentTicket.id);
       toast.success('Ticket deleted');
       navigate('/tickets');
-    } catch (_error) {
-      toast.error('Failed to delete ticket');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Failed to delete ticket:', error);
+      
+      // Enhanced deletion error handling
+      if (errorMessage.includes('permission')) {
+        toast.error('You do not have permission to delete this ticket');
+      } else if (errorMessage.includes('referenced')) {
+        toast.error('Cannot delete ticket: it is referenced by other records');
+      } else if (errorMessage.includes('active')) {
+        toast.error('Cannot delete active ticket. Please close it first');
+      } else if (errorMessage.includes('network')) {
+        toast.error('Network error: Please check your connection and try again');
+      } else {
+        toast.error(`Failed to delete ticket: ${errorMessage}`);
+      }
+      
+      // Log deletion attempts for audit trail
+      console.warn(`Deletion failed for ticket ${currentTicket.id} (${currentTicket.title}): ${errorMessage}`);
       setIsDeleting(false);
     }
   };
