@@ -37,6 +37,7 @@ async function loadCommands() {
     { name: 'setup', file: './commands/setup.js', export: 'setupCommand' },
     { name: 'service', file: './commands/service.js', export: 'serviceCommand' },
     { name: 'user', file: './commands/user.js', export: 'userCommand' },
+    { name: 'tenant', file: './commands/tenant.js', export: 'tenantCommand' },
     { name: 'config', file: './commands/config.js', export: 'configCommand' },
     { name: 'backup', file: './commands/backup.js', export: 'backupCommand' },
     { name: 'dev', file: './commands/dev.js', export: 'devCommand' },
@@ -90,6 +91,8 @@ ${chalk.cyan('Examples:')}
   ${chalk.gray('$')} nova setup                    ${chalk.dim('# Interactive setup wizard')}
   ${chalk.gray('$')} nova service start            ${chalk.dim('# Start all services')}
   ${chalk.gray('$')} nova user create              ${chalk.dim('# Create a new user')}
+  ${chalk.gray('$')} nova tenant create            ${chalk.dim('# Create a new tenant')}
+  ${chalk.gray('$')} nova tenant create-admin      ${chalk.dim('# Create tenant admin')}
   ${chalk.gray('$')} nova config get DATABASE_URL  ${chalk.dim('# Get configuration value')}
   ${chalk.gray('$')} nova backup create --all      ${chalk.dim('# Create full backup')}
   ${chalk.gray('$')} nova dev start                ${chalk.dim('# Start development environment')}
@@ -101,6 +104,7 @@ ${chalk.cyan('Command Categories:')}
   ${chalk.yellow('Setup:')}      setup
   ${chalk.yellow('Services:')}   service, health, logs
   ${chalk.yellow('Users:')}      user
+  ${chalk.yellow('Tenants:')}    tenant
   ${chalk.yellow('Config:')}     config
   ${chalk.yellow('Data:')}       backup
   ${chalk.yellow('Development:')} dev
