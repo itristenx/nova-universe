@@ -93,58 +93,101 @@ router.get('/', authenticateJWT, checkPermission('workflows:read'), async (req, 
   try {
     const { status, type, category } = req.query;
     
-    // TODO: Replace with database-backed workflows
-    let workflows = [
-      {
-        id: 'wf_incident_mgmt',
-        name: 'Incident Management',
-        description: 'Automated incident handling and escalation',
-        type: 'PROCESS',
-        category: 'INCIDENT',
-        status: 'ACTIVE',
-        version: '1.2.0',
-        created_by: 'admin',
-        created_at: new Date().toISOString(),
-        last_executed: new Date(Date.now() - 3600000).toISOString(),
-        execution_count: 156,
-        success_rate: 94.5
-      },
-      {
-        id: 'wf_change_approval',
-        name: 'Change Approval Process',
-        description: 'Multi-level change approval workflow',
-        type: 'APPROVAL',
-        category: 'CHANGE',
-        status: 'ACTIVE',
-        version: '2.1.0',
-        created_by: 'admin',
-        created_at: new Date(Date.now() - 86400000).toISOString(),
-        last_executed: new Date(Date.now() - 1800000).toISOString(),
-        execution_count: 89,
-        success_rate: 98.9
-      },
-      {
-        id: 'wf_user_provisioning',
-        name: 'User Provisioning',
-        description: 'Automated user account and access management',
-        type: 'AUTOMATION',
-        category: 'IAM',
-        status: 'ACTIVE',
-        version: '1.0.0',
-        created_by: 'admin',
-        created_at: new Date(Date.now() - 172800000).toISOString(),
-        last_executed: new Date(Date.now() - 900000).toISOString(),
-        execution_count: 234,
-        success_rate: 96.2
-      }
-    ];
+    // Replace with database-backed workflows
+    const db = await import('../db.js').then(module => module.default);
+    
+    let query = `
+      SELECT 
+        id,
+        name,
+        description,
+        trigger_conditions,
+        steps,
+        version,
+        active,
+        created_by,
+        created_at,
+        updated_at,
+        (
+          SELECT COUNT(*) 
+          FROM approval_instances ai 
+          WHERE ai.workflow_id = aw.id
+        ) as execution_count,
+        (
+          SELECT 
+            CASE 
+              WHEN COUNT(*) = 0 THEN 0
+              ELSE (COUNT(CASE WHEN status = 'approved' THEN 1 END) * 100.0 / COUNT(*))
+            END
+          FROM approval_instances ai 
+          WHERE ai.workflow_id = aw.id
+        ) as success_rate,
+        (
+          SELECT MAX(created_at)
+          FROM approval_instances ai 
+          WHERE ai.workflow_id = aw.id
+        ) as last_executed
+      FROM approval_workflows aw
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    
+    // Add filters
+    if (status) {
+      query += ` AND active = ?`;
+      params.push(status === 'ACTIVE');
+    }
+    
+    if (category) {
+      query += ` AND trigger_conditions->>'category' = ?`;
+      params.push(category);
+    }
+    
+    query += ` ORDER BY created_at DESC`;
+    
+    const workflows = await new Promise((resolve, reject) => {
+      db.all(query, params, (err, rows) => {
+        if (err) {
+          logger.error('Error fetching workflows:', err);
+          reject(err);
+        } else {
+          resolve(rows || []);
+        }
+      });
+    });
+    
+    // Transform database rows to expected format
+    const transformedWorkflows = workflows.map(row => ({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      type: 'APPROVAL', // Based on approval_workflows table
+      category: row.trigger_conditions?.category || 'GENERAL',
+      status: row.active ? 'ACTIVE' : 'INACTIVE',
+      version: `1.${row.version || 0}.0`,
+      created_by: row.created_by,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      last_executed: row.last_executed,
+      execution_count: parseInt(row.execution_count || 0),
+      success_rate: parseFloat(row.success_rate || 0),
+      trigger_conditions: row.trigger_conditions,
+      steps: row.steps
+    }));
 
-    // Apply filters
-    if (status) workflows = workflows.filter(w => w.status === status.toUpperCase());
-    if (type) workflows = workflows.filter(w => w.type === type.toUpperCase());
-    if (category) workflows = workflows.filter(w => w.category === category.toUpperCase());
+    // Apply additional filters on transformed data
+    let filteredWorkflows = transformedWorkflows;
+    if (type) {
+      filteredWorkflows = filteredWorkflows.filter(w => w.type === type.toUpperCase());
+    }
 
-    res.json([]);
+    res.json({
+      success: true,
+      workflows: filteredWorkflows,
+      total: filteredWorkflows.length,
+      filters: { status, type, category }
+    });
   } catch (err) {
     logger.error('Error fetching workflows:', err);
     res.status(500).json({ error: 'Failed to fetch workflows' });

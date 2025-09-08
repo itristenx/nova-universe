@@ -2296,7 +2296,105 @@ async function loadConversationFromDatabase(conversationId, userId) {
     throw new Error('User does not have access to this conversation');
   }
 
-  return null; // TODO: Implement actual database query
+  // Implement actual database query
+  logger.info(`Querying database for conversation ${conversationId}`);
+  
+  try {
+    // Import database connection
+    const db = await import('../db.js').then(module => module.default);
+    
+    // Query for conversation thread with user access check
+    const conversation = await new Promise((resolve, reject) => {
+      db.get(`
+        SELECT 
+          ect.id,
+          ect.thread_id as conversationId,
+          ect.subject_normalized as subject,
+          ect.participants,
+          ect.message_count,
+          ect.status,
+          ect.priority,
+          ect.last_activity_at,
+          ect.created_at,
+          ect.customer_id,
+          u.name as customer_name,
+          u.email as customer_email
+        FROM email_conversation_threads ect
+        LEFT JOIN users u ON ect.customer_id = u.id
+        WHERE ect.thread_id = $1 
+        AND (ect.customer_id = $2 OR $2 IN (
+          SELECT ur.user_id FROM user_roles ur 
+          JOIN roles r ON ur.role_id = r.id 
+          WHERE r.name IN ('admin', 'agent', 'support')
+        ))
+      `, [conversationId, userId], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    if (!conversation) {
+      logger.warn(`Conversation ${conversationId} not found or access denied for user ${userId}`);
+      return null;
+    }
+
+    // Get recent messages in the conversation
+    const messages = await new Promise((resolve, reject) => {
+      db.all(`
+        SELECT 
+          id,
+          from_address,
+          to_addresses,
+          subject,
+          body_text,
+          body_html,
+          received_at,
+          status,
+          priority
+        FROM email_communications 
+        WHERE conversation_id = $1 
+        ORDER BY received_at DESC 
+        LIMIT 20
+      `, [conversationId], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows || []);
+      });
+    });
+
+    // Return conversation with messages
+    const result = {
+      id: conversation.conversationId,
+      subject: conversation.subject,
+      participants: conversation.participants || [],
+      messageCount: conversation.message_count || 0,
+      status: conversation.status || 'active',
+      priority: conversation.priority || 'normal',
+      customer: conversation.customer_id ? {
+        id: conversation.customer_id,
+        name: conversation.customer_name,
+        email: conversation.customer_email
+      } : null,
+      messages: messages.map(msg => ({
+        id: msg.id,
+        from: msg.from_address,
+        to: msg.to_addresses,
+        subject: msg.subject,
+        body: msg.body_text || msg.body_html,
+        timestamp: msg.received_at,
+        status: msg.status,
+        priority: msg.priority
+      })),
+      createdAt: conversation.created_at,
+      lastActivity: conversation.last_activity_at
+    };
+
+    logger.info(`Successfully loaded conversation ${conversationId} with ${messages.length} messages`);
+    return result;
+    
+  } catch (error) {
+    logger.error(`Failed to load conversation ${conversationId}:`, error);
+    throw new Error(`Database query failed: ${error.message}`);
+  }
 }
 
 async function validateUserConversationAccess(userId, conversationId) {

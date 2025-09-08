@@ -321,9 +321,46 @@ router.post('/email/verify', async (req, res) => {
     if (!token || typeof token !== 'string' || token.length < 8) {
       return res.status(400).json({ success: false, error: 'Invalid token' });
     }
-    // TODO: Implement real token verification against DB, then mark user email verified
+    // Implement real token verification against DB, then mark user email verified
     logger.info('Email verification request received', { email, len: token.length });
-    return res.json({ success: true });
+    
+    // Find user with matching email and verification token
+    const user = await new Promise((resolve, reject) => {
+      db.get(
+        'SELECT id, email, email_verification_token, email_verification_expires_at FROM users WHERE email = $1 AND email_verification_token = $2',
+        [email, token],
+        (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        }
+      );
+    });
+
+    if (!user) {
+      logger.warn('Invalid email verification attempt', { email, tokenLen: token.length });
+      return res.status(400).json({ success: false, error: 'Invalid verification token' });
+    }
+
+    // Check if token has expired (1 hour expiry)
+    if (user.email_verification_expires_at && new Date() > new Date(user.email_verification_expires_at)) {
+      logger.warn('Expired email verification token', { email, userId: user.id });
+      return res.status(400).json({ success: false, error: 'Verification token has expired' });
+    }
+
+    // Mark email as verified and clear verification token
+    await new Promise((resolve, reject) => {
+      db.run(
+        'UPDATE users SET email_verified = TRUE, email_verification_token = NULL, email_verification_expires_at = NULL WHERE id = $1',
+        [user.id],
+        (err) => {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+
+    logger.info('Email verification successful', { email, userId: user.id });
+    return res.json({ success: true, message: 'Email verified successfully' });
   } catch (error) {
     logger.error('Email verification failed:', error);
     return res.status(500).json({ success: false, error: 'Verification failed' });
@@ -336,9 +373,93 @@ router.post('/email/resend', async (req, res) => {
     if (!email || typeof email !== 'string') {
       return res.status(400).json({ success: false, error: 'Email required' });
     }
-    // TODO: Implement real email send with token generation/persistence
+    // Implement real email send with token generation/persistence
     logger.info('Resend verification email requested', { email });
-    return res.json({ success: true });
+    
+    // Find user by email
+    const user = await new Promise((resolve, reject) => {
+      db.get(
+        'SELECT id, email, email_verified FROM users WHERE email = $1',
+        [email],
+        (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        }
+      );
+    });
+
+    if (!user) {
+      // Don't reveal if user doesn't exist for security
+      logger.info('Email verification resend requested for non-existent user', { email });
+      return res.json({ success: true, message: 'If the email exists, verification link has been sent' });
+    }
+
+    if (user.email_verified) {
+      logger.info('Email verification resend requested for already verified email', { email, userId: user.id });
+      return res.json({ success: true, message: 'Email is already verified' });
+    }
+
+    // Generate secure verification token
+    const crypto = await import('crypto');
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+    // Store token in database
+    await new Promise((resolve, reject) => {
+      db.run(
+        'UPDATE users SET email_verification_token = $1, email_verification_expires_at = $2 WHERE id = $3',
+        [verificationToken, expiresAt.toISOString(), user.id],
+        (err) => {
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+
+    // Send verification email
+    try {
+      const nodemailer = await import('nodemailer');
+      
+      if (!process.env.SMTP_HOST) {
+        logger.warn('SMTP not configured - verification email cannot be sent', { email, userId: user.id });
+        return res.json({ success: true, message: 'Email verification is not configured on this system' });
+      }
+
+      const transporter = nodemailer.createTransporter({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '587', 10),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      });
+
+      const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+      
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || 'noreply@novauniverse.local',
+        to: email,
+        subject: 'Verify your Nova Universe account',
+        text: `Please verify your email address by visiting: ${verifyUrl}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Verify Your Email Address</h2>
+            <p>Please verify your Nova Universe account by clicking the link below:</p>
+            <p><a href="${verifyUrl}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email Address</a></p>
+            <p>This link will expire in 1 hour.</p>
+            <p>If you didn't request this verification, you can safely ignore this email.</p>
+          </div>
+        `
+      });
+
+      logger.info('Email verification sent successfully', { email, userId: user.id });
+    } catch (mailError) {
+      logger.error('Failed to send verification email', { error: mailError.message, email, userId: user.id });
+      return res.status(500).json({ success: false, error: 'Failed to send verification email' });
+    }
+
+    return res.json({ success: true, message: 'Verification email sent successfully' });
   } catch (error) {
     logger.error('Resend verification failed:', error);
     return res.status(500).json({ success: false, error: 'Resend failed' });

@@ -216,10 +216,66 @@ export class NovaRAGDataConnectors extends EventEmitter {
                             dataClassification: 'knowledge',
                         },
                     };
-                    // RBAC context
+                    // Extract tenantId from user or article context
+                    let tenantId = 'default';
+                    
+                    try {
+                        if (article.author_id) {
+                            // Query user to get their tenant information
+                            const userTenant = await new Promise((resolve) => {
+                                this.db.get(
+                                    'SELECT tenant_id FROM users WHERE id = $1',
+                                    [article.author_id],
+                                    (err, row) => {
+                                        if (err || !row) {
+                                            resolve(null);
+                                        } else {
+                                            resolve(row.tenant_id);
+                                        }
+                                    }
+                                );
+                            });
+                            
+                            if (userTenant) {
+                                tenantId = userTenant;
+                            }
+                        }
+                        
+                        // Fallback: check if article has direct tenant association
+                        if (tenantId === 'default' && article.tenant_id) {
+                            tenantId = article.tenant_id;
+                        }
+                        
+                        // Fallback: derive from author email domain if available
+                        if (tenantId === 'default' && article.author_email) {
+                            const emailDomain = article.author_email.split('@')[1];
+                            if (emailDomain) {
+                                const domainTenant = await new Promise((resolve) => {
+                                    this.db.get(
+                                        'SELECT id FROM tenants WHERE domain = $1',
+                                        [emailDomain],
+                                        (err, row) => {
+                                            if (err || !row) {
+                                                resolve(null);
+                                            } else {
+                                                resolve(row.id);
+                                            }
+                                        }
+                                    );
+                                });
+                                
+                                if (domainTenant) {
+                                    tenantId = domainTenant;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        this.logger.warn('Failed to extract tenant ID, using default', { error: error.message });
+                    }
+                    
                     const rbacContext = connector.config.rbacEnabled ? {
                         userId: article.author_id || 'system',
-                        tenantId: 'default', // TODO: Extract from user or article
+                        tenantId,
                         departmentId: 'knowledge_management',
                         securityClassification: 'internal',
                     } : undefined;
@@ -367,10 +423,90 @@ export class NovaRAGDataConnectors extends EventEmitter {
                             department: this.getDepartmentFromTicket(ticket),
                         },
                     };
-                    // RBAC context
+                    // Extract tenantId from ticket or user context
+                    let tenantId = 'default';
+                    
+                    try {
+                        // First try to get tenant from assigned user
+                        if (ticket.assigned_to_user_id) {
+                            const assignedUserTenant = await new Promise((resolve) => {
+                                this.db.get(
+                                    'SELECT tenant_id FROM users WHERE id = $1',
+                                    [ticket.assigned_to_user_id],
+                                    (err, row) => {
+                                        if (err || !row) {
+                                            resolve(null);
+                                        } else {
+                                            resolve(row.tenant_id);
+                                        }
+                                    }
+                                );
+                            });
+                            
+                            if (assignedUserTenant) {
+                                tenantId = assignedUserTenant;
+                            }
+                        }
+                        
+                        // Fallback: try to get tenant from ticket submitter
+                        if (tenantId === 'default' && ticket.user_id) {
+                            const submitterTenant = await new Promise((resolve) => {
+                                this.db.get(
+                                    'SELECT tenant_id FROM users WHERE id = $1',
+                                    [ticket.user_id],
+                                    (err, row) => {
+                                        if (err || !row) {
+                                            resolve(null);
+                                        } else {
+                                            resolve(row.tenant_id);
+                                        }
+                                    }
+                                );
+                            });
+                            
+                            if (submitterTenant) {
+                                tenantId = submitterTenant;
+                            }
+                        }
+                        
+                        // Fallback: check if ticket has direct tenant association
+                        if (tenantId === 'default' && ticket.tenant_id) {
+                            tenantId = ticket.tenant_id;
+                        }
+                        
+                        // Fallback: derive from submitter email domain if available
+                        if (tenantId === 'default' && ticket.submitter_email) {
+                            const emailDomain = ticket.submitter_email.split('@')[1];
+                            if (emailDomain) {
+                                const domainTenant = await new Promise((resolve) => {
+                                    this.db.get(
+                                        'SELECT id FROM tenants WHERE domain = $1',
+                                        [emailDomain],
+                                        (err, row) => {
+                                            if (err || !row) {
+                                                resolve(null);
+                                            } else {
+                                                resolve(row.id);
+                                            }
+                                        }
+                                    );
+                                });
+                                
+                                if (domainTenant) {
+                                    tenantId = domainTenant;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        this.logger.warn('Failed to extract tenant ID from ticket, using default', { 
+                            ticketId: ticket.id, 
+                            error: error.message 
+                        });
+                    }
+                    
                     const rbacContext = connector.config.rbacEnabled ? {
                         userId: ticket.assigned_to_user_id || ticket.user_id || 'system',
-                        tenantId: 'default', // TODO: Extract from ticket or user
+                        tenantId,
                         departmentId: this.getDepartmentFromTicket(ticket),
                         securityClassification: ticket.confidentiality_level || 'internal',
                     } : undefined;

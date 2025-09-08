@@ -7,6 +7,7 @@
 import express from 'express';
 import { logger } from '../logger.js';
 import { NovaSpacesService } from '../lib/nova-spaces-service.js';
+import { authenticateJWT } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -189,10 +190,17 @@ router.get('/:id', ensureServiceReady, async (req, res) => {
  * POST /api/v1/spaces
  * Create a new space with full validation
  */
-router.post('/', ensureServiceReady, async (req, res) => {
+router.post('/', authenticateJWT, ensureServiceReady, async (req, res) => {
   try {
-    // TODO: Add authentication middleware and get userId from req.user
-    const userId = req.user?.id || 'system';
+    // Get userId from authenticated user
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Authentication required' 
+      });
+    }
+    
     const result = await novaSpacesService.createSpace(req.body, userId);
 
     if (!result.success) {
