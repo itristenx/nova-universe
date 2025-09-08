@@ -151,21 +151,23 @@ export class NovaLocalAI extends EventEmitter {
   /**
    * Create a new AI model
    */
-  async createModel(
-    name: string,
-    type: NovaModel['type'],
-    config: TrainingConfig,
-  ): Promise<string> {
-    const modelId = createHash('sha256')
-      .update(`${name}-${type}-${Date.now()}`)
+  async createModel(config: {
+    id: string;
+    name: string;
+    type: NovaModel['type'];
+    version: string;
+    metadata?: any;
+  }): Promise<string> {
+    const modelId = config.id || createHash('sha256')
+      .update(`${config.name}-${config.type}-${Date.now()}`)
       .digest('hex')
       .substring(0, 16);
 
     const model: NovaModel = {
       id: modelId,
-      name,
-      version: '1.0.0',
-      type,
+      name: config.name,
+      version: config.version || '1.0.0',
+      type: config.type,
       status: 'training',
       trainingData: {
         samples: 0,
@@ -173,7 +175,7 @@ export class NovaLocalAI extends EventEmitter {
         lastUpdated: new Date(),
       },
       modelPath: path.join(this.modelsPath, 'production', modelId),
-      metadata: { config },
+      metadata: config.metadata || {},
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -184,12 +186,19 @@ export class NovaLocalAI extends EventEmitter {
     await aiMonitoringSystem.recordAuditEvent({
       type: 'model_created',
       userId: 'system',
-      details: { modelId, name, type },
+      details: { modelId, name: config.name, type: config.type },
       riskLevel: 'low',
     });
 
     this.emit('modelCreated', model);
     return modelId;
+  }
+
+  /**
+   * List all models
+   */
+  async listModels(): Promise<NovaModel[]> {
+    return Array.from(this.models.values());
   }
 
   /**

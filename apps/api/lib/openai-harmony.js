@@ -752,7 +752,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
             modelPerformance: {
                 latency: 150 + Math.random() * 50, // ms
                 throughput: 10 + Math.random() * 5, // requests/sec
-                accuracy: evaluations.reduce((sum, eval) => sum + eval.results.overallScore, 0) /
+                accuracy: evaluations.reduce((sum, evaluation) => sum + evaluation.results.overallScore, 0) /
                     evaluations.length || 0,
                 reliability: 0.95 + Math.random() * 0.05,
             },

@@ -1918,6 +1918,97 @@ export class NovaCustomModels extends EventEmitter {
     );
   }
 
+  /**
+   * Predict incident likelihood and characteristics
+   */
+  async predictIncident(request: {
+    input: any;
+    context?: any;
+    options?: any;
+  }): Promise<{
+    prediction: any;
+    confidence: number;
+    explanation?: any;
+  }> {
+    const modelRequest: NovaModelRequest = {
+      modelId: 'incident_predictor',
+      input: request.input,
+      context: request.context || {
+        userId: 'system',
+        timestamp: new Date().toISOString(),
+      },
+      options: request.options || {},
+    };
+
+    try {
+      const response = await this.processRequest(modelRequest);
+      return {
+        prediction: response.prediction,
+        confidence: response.confidence,
+        explanation: response.explanation,
+      };
+    } catch (error) {
+      console.error('Incident prediction failed:', error);
+      // Return fallback prediction
+      return {
+        prediction: {
+          likelihood: 'medium',
+          severity: 'minor',
+          timeframe: '24h',
+          type: 'service_degradation',
+        },
+        confidence: 0.5,
+        explanation: {
+          reasoning: 'Fallback prediction due to model unavailability',
+          factors: ['default_assessment'],
+        },
+      };
+    }
+  }
+
+  /**
+   * Process ticket classification (public interface)
+   */
+  async processTicketClassification(ticketData: any): Promise<{
+    prediction: any;
+    confidence: number;
+    explanation?: any;
+  }> {
+    const modelRequest: NovaModelRequest = {
+      modelId: 'ticket_classifier', 
+      input: ticketData,
+      context: {
+        userId: 'system',
+        timestamp: new Date().toISOString(),
+      },
+      options: { explainability: true },
+    };
+
+    try {
+      const response = await this.processRequest(modelRequest);
+      return {
+        prediction: response.prediction,
+        confidence: response.confidence,
+        explanation: response.explanation,
+      };
+    } catch (error) {
+      console.error('Ticket classification failed:', error);
+      // Return fallback classification
+      return {
+        prediction: {
+          category: 'Service Request',
+          subcategory: 'General',
+          priority: 'Medium',
+        },
+        confidence: 0.5,
+        explanation: {
+          reasoning: 'Fallback classification due to model unavailability',
+          factors: ['default_assessment'],
+        },
+      };
+    }
+  }
+
   private calculateBusinessImpact(ticket: any): number {
     let impact = 0.5; // Base impact
 
