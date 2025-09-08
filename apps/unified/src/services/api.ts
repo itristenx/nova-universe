@@ -7,17 +7,43 @@ import {
   type ApiService,
 } from './api-config';
 
-// API configuration with environment-aware base URL
-// In production, prefer absolute API origin via VITE_API_URL to avoid relying on a proxy.
-// In development, a relative path works with Vite dev proxy.
+// Enhanced API configuration with retry logic
 const API_ORIGIN = (import.meta.env?.VITE_API_URL ? String(import.meta.env.VITE_API_URL) : '').replace(/\/$/, '');
 const API_PREFIX = '/api';
 const API_BASE_URL = API_ORIGIN; // requests should include paths like `/api/...`
 const API_TIMEOUT = 30000;
+const RETRY_ATTEMPTS = 3;
+const RETRY_DELAY = 1000; // Base delay in ms
 
 // Validate API usage in development
 if (process.env.NODE_ENV === 'development') {
   validateApiUsage();
+}
+
+// Enhanced retry configuration for different request types
+interface RetryConfig {
+  attempts: number;
+  delay: number;
+  backoffFactor: number;
+  retryCondition: (error: any) => boolean;
+}
+
+const DEFAULT_RETRY_CONFIG: RetryConfig = {
+  attempts: RETRY_ATTEMPTS,
+  delay: RETRY_DELAY,
+  backoffFactor: 2,
+  retryCondition: (error) => {
+    // Retry on network errors and 5xx server errors, but not on 4xx client errors
+    return !error.response || (error.response.status >= 500 && error.response.status < 600);
+  },
+};
+
+// Helper function for exponential backoff with jitter
+function getRetryDelay(attempt: number, baseDelay: number, backoffFactor: number): number {
+  const exponentialDelay = baseDelay * Math.pow(backoffFactor, attempt);
+  // Add jitter to prevent thundering herd
+  const jitter = Math.random() * 0.1 * exponentialDelay;
+  return exponentialDelay + jitter;
 }
 
 // Create axios instance with enhanced configuration
@@ -29,9 +55,15 @@ const api: AxiosInstance = axios.create({
     Accept: 'application/json',
     'X-Client': 'Nova-Universe-UI',
     'X-Client-Version': '2.0.0', // UI version
+    'X-Request-ID': '', // Will be set per request
   },
   withCredentials: true, // Enable cookies for session management
 });
+
+// Generate unique request ID for tracing
+function generateRequestId(): string {
+  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
 
 // Enhanced token management
 class TokenManager {
@@ -139,9 +171,24 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Add unique request ID for tracing
+    const requestId = generateRequestId();
+    config.headers['X-Request-ID'] = requestId;
+    
+    // Log request in development
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(`API Request [${requestId}]:`, {
+        method: config.method?.toUpperCase(),
+        url: config.url,
+        headers: config.headers,
+      });
+    }
+    
     return config;
   },
   (error) => {
+    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   },
 );
@@ -149,24 +196,45 @@ api.interceptors.request.use(
 // Response interceptor for handling auth errors and token refresh
 api.interceptors.response.use(
   (response: AxiosResponse) => {
+    // Log successful response in development
+    if (process.env.NODE_ENV === 'development') {
+      const requestId = response.config.headers['X-Request-ID'];
+      console.debug(`API Response [${requestId}]:`, {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.config.url,
+      });
+    }
     return response;
   },
   async (error) => {
     const originalRequest = error.config;
+    const requestId = originalRequest?.headers?.['X-Request-ID'] || 'unknown';
 
+    // Log error in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`API Error [${requestId}]:`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        message: error.message,
+        url: originalRequest?.url,
+      });
+    }
+
+    // Handle 401 Unauthorized with token refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
         const refreshToken = TokenManager.getRefreshToken();
-        if (refreshToken) {
+        if (refreshToken && !TokenManager.isTokenExpired()) {
           const url = `${API_ORIGIN}${API_PREFIX}/auth/refresh`;
           const response = await axios.post(url, {
             refreshToken,
           });
 
-          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-          TokenManager.setTokens(accessToken, newRefreshToken);
+          const { accessToken, refreshToken: newRefreshToken, expiresIn } = response.data.data;
+          TokenManager.setTokens(accessToken, newRefreshToken, expiresIn);
 
           // Retry original request with new token
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -174,17 +242,32 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         // Refresh failed, redirect to login
+        console.warn('Token refresh failed, redirecting to login:', refreshError);
         TokenManager.clearTokens();
-        window.location.href = '/auth/login';
+        
+        // Only redirect if we're in a browser environment
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/login';
+        }
         return Promise.reject(refreshError);
       }
+    }
+
+    // Handle rate limiting (429) with exponential backoff
+    if (error.response?.status === 429 && !originalRequest._rateLimitRetry) {
+      originalRequest._rateLimitRetry = true;
+      const retryAfter = error.response.headers['retry-after'];
+      const delay = retryAfter ? parseInt(retryAfter) * 1000 : 2000;
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return api(originalRequest);
     }
 
     return Promise.reject(error);
   },
 );
 
-// Generic API client class
+// Generic API client class with enhanced error handling and retries
 class ApiClient {
   private instance: AxiosInstance;
 
@@ -192,9 +275,49 @@ class ApiClient {
     this.instance = axiosInstance;
   }
 
-  async get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  // Retry mechanism for failed requests
+  private async retryRequest<T>(
+    requestFn: () => Promise<AxiosResponse<T>>,
+    retryConfig: RetryConfig = DEFAULT_RETRY_CONFIG,
+  ): Promise<AxiosResponse<T>> {
+    let lastError: any;
+
+    for (let attempt = 0; attempt <= retryConfig.attempts; attempt++) {
+      try {
+        return await requestFn();
+      } catch (error) {
+        lastError = error;
+
+        // Don't retry on the last attempt or if retry condition is not met
+        if (attempt === retryConfig.attempts || !retryConfig.retryCondition(error)) {
+          throw error;
+        }
+
+        // Calculate delay with exponential backoff
+        const delay = getRetryDelay(attempt, retryConfig.delay, retryConfig.backoffFactor);
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`Request failed, retrying in ${delay}ms (attempt ${attempt + 1}/${retryConfig.attempts}):`, error.message);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+
+    throw lastError;
+  }
+
+  async get<T = unknown>(
+    url: string, 
+    config?: AxiosRequestConfig,
+    retryConfig?: Partial<RetryConfig>
+  ): Promise<ApiResponse<T>> {
     try {
-      const response = await this.instance.get<ApiResponse<T>>(url, config);
+      const finalRetryConfig = { ...DEFAULT_RETRY_CONFIG, ...retryConfig };
+      const response = await this.retryRequest(
+        () => this.instance.get<ApiResponse<T>>(url, config),
+        finalRetryConfig
+      );
       return response.data;
     } catch (_error) {
       throw this.handleError(_error);
@@ -310,29 +433,147 @@ class ApiClient {
 
   private handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
-      const message = error.response?.data?.message || error.message || 'An error occurred';
       const status = error.response?.status;
-      const code = error.response?.data?.code || error.code;
+      const data = error.response?.data;
+      const message = data?.message || error.message || 'An error occurred';
+      const code = data?.code || error.code;
+      const requestId = error.config?.headers?.['X-Request-ID'];
 
-      return new ApiError(message, status, code, error.response?.data);
+      // Enhanced error information for different status codes
+      const errorInfo: any = {
+        message,
+        status,
+        code,
+        requestId,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Add specific context based on status code
+      switch (status) {
+        case 400:
+          errorInfo.userMessage = 'The request was invalid. Please check your input and try again.';
+          errorInfo.details = data?.validation_errors || data?.details;
+          break;
+        case 401:
+          errorInfo.userMessage = 'You are not authorized. Please log in and try again.';
+          break;
+        case 403:
+          errorInfo.userMessage = 'You do not have permission to perform this action.';
+          break;
+        case 404:
+          errorInfo.userMessage = 'The requested resource was not found.';
+          break;
+        case 409:
+          errorInfo.userMessage = 'There was a conflict with your request. The resource may have been modified.';
+          break;
+        case 422:
+          errorInfo.userMessage = 'The data provided could not be processed.';
+          errorInfo.details = data?.validation_errors || data?.details;
+          break;
+        case 429:
+          errorInfo.userMessage = 'Too many requests. Please wait a moment before trying again.';
+          errorInfo.retryAfter = error.response?.headers?.['retry-after'];
+          break;
+        case 500:
+          errorInfo.userMessage = 'An internal server error occurred. Please try again later.';
+          break;
+        case 502:
+        case 503:
+        case 504:
+          errorInfo.userMessage = 'The service is temporarily unavailable. Please try again later.';
+          break;
+        default:
+          errorInfo.userMessage = 'An unexpected error occurred. Please try again.';
+      }
+
+      return new ApiError(message, status, code, errorInfo);
     }
 
-    return new Error('Network error occurred');
+    // Network or other non-HTTP errors
+    return new ApiError(
+      'Network error occurred',
+      undefined,
+      'NETWORK_ERROR',
+      {
+        userMessage: 'Unable to connect to the server. Please check your internet connection.',
+        timestamp: new Date().toISOString(),
+      }
+    );
   }
 }
 
-// Custom API Error class
+// Enhanced Custom API Error class with industry-standard error information
 export class ApiError extends Error {
   public status?: number;
   public code?: string;
   public details?: unknown;
+  public requestId?: string;
+  public timestamp?: string;
+  public userMessage?: string;
+  public retryAfter?: string;
+  public isRetryable?: boolean;
 
-  constructor(message: string, status?: number, code?: string, details?: unknown) {
+  constructor(message: string, status?: number, code?: string, details?: any) {
     super(message);
     this.name = 'ApiError';
+    
     if (status !== undefined) this.status = status;
     if (code !== undefined) this.code = code;
-    this.details = details;
+    if (details) {
+      this.details = details.details || details;
+      this.requestId = details.requestId;
+      this.timestamp = details.timestamp;
+      this.userMessage = details.userMessage;
+      this.retryAfter = details.retryAfter;
+    }
+
+    // Determine if error is retryable based on status code
+    this.isRetryable = !status || status >= 500 || status === 429;
+    
+    // Maintain proper stack trace
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ApiError);
+    }
+  }
+
+  // Get user-friendly error message
+  getUserMessage(): string {
+    return this.userMessage || this.message || 'An unexpected error occurred';
+  }
+
+  // Check if error indicates network connectivity issues
+  isNetworkError(): boolean {
+    return this.code === 'NETWORK_ERROR' || !this.status;
+  }
+
+  // Check if error indicates authentication issues
+  isAuthError(): boolean {
+    return this.status === 401 || this.status === 403;
+  }
+
+  // Check if error indicates client-side issues (4xx)
+  isClientError(): boolean {
+    return this.status ? this.status >= 400 && this.status < 500 : false;
+  }
+
+  // Check if error indicates server-side issues (5xx)
+  isServerError(): boolean {
+    return this.status ? this.status >= 500 : false;
+  }
+
+  // Serialize error for logging
+  toJSON(): object {
+    return {
+      name: this.name,
+      message: this.message,
+      status: this.status,
+      code: this.code,
+      requestId: this.requestId,
+      timestamp: this.timestamp,
+      userMessage: this.userMessage,
+      isRetryable: this.isRetryable,
+      stack: this.stack,
+    };
   }
 }
 

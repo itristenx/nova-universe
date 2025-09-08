@@ -3,6 +3,15 @@ import winston from 'winston';
 
 // Initialize Prisma client for enterprise database
 const prismaPromise = getCoreClient();
+let prisma = null;
+
+// Initialize prisma client
+prismaPromise.then(client => {
+  prisma = client;
+  logger.info('Enterprise platform database client initialized');
+}).catch(error => {
+  logger.error('Failed to initialize enterprise platform database client:', error);
+});
 
 // Logger configuration
 const logger = winston.createLogger({
@@ -17,6 +26,20 @@ const logger = winston.createLogger({
     new winston.transports.Console(),
   ],
 });
+
+// Helper function to ensure prisma client is available
+async function ensurePrismaClient() {
+  if (!prisma) {
+    try {
+      prisma = await prismaPromise;
+      return prisma;
+    } catch (error) {
+      logger.error('Failed to get prisma client:', error);
+      throw new Error('Database client not available');
+    }
+  }
+  return prisma;
+}
 
 /**
  * Nova Enterprise Platform Service
@@ -264,6 +287,8 @@ class NovaEnterprisePlatform {
   async createIncident(incidentData) {
     try {
       logger.info('Creating new incident', { incidentData });
+      
+      const prismaClient = await ensurePrismaClient();
 
       // Generate incident number
       const incidentNumber = await this.generateIncidentNumber();
@@ -271,7 +296,7 @@ class NovaEnterprisePlatform {
       // Calculate priority based on urgency and impact
       const priority = this.calculatePriority(incidentData.urgency, incidentData.impact);
 
-      const incident = await prisma.incident.create({
+      const incident = await prismaClient.incident.create({
         data: {
           ...incidentData,
           number: incidentNumber,

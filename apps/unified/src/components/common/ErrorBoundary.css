@@ -1,0 +1,125 @@
+/* Error Boundary Styles */
+.error-boundary {
+  @apply min-h-screen flex items-center justify-center bg-gray-50 px-4;
+}
+
+.error-boundary__container {
+  @apply max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center;
+}
+
+.error-boundary__icon {
+  @apply flex justify-center mb-6;
+}
+
+.error-boundary__title {
+  @apply text-2xl font-bold text-gray-900 mb-4;
+}
+
+.error-boundary__message {
+  @apply text-gray-600 mb-6 leading-relaxed;
+}
+
+.error-boundary__actions {
+  @apply flex flex-col sm:flex-row gap-3 justify-center mb-6;
+}
+
+.error-boundary__retry-btn {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+.error-boundary__reload-btn {
+  @apply bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+}
+
+.error-boundary__details {
+  @apply mt-6 text-left bg-gray-100 rounded-md overflow-hidden;
+}
+
+.error-boundary__details-summary {
+  @apply bg-gray-200 px-4 py-2 font-medium text-gray-700 cursor-pointer hover:bg-gray-300 transition-colors duration-200;
+}
+
+.error-boundary__details-content {
+  @apply p-4 space-y-4;
+}
+
+.error-boundary__details-content h4 {
+  @apply font-medium text-gray-900 text-sm;
+}
+
+.error-boundary__details-content pre {
+  @apply bg-gray-800 text-green-400 p-3 rounded text-xs overflow-x-auto font-mono;
+}
+
+/* Loading state for API requests */
+.api-loading {
+  @apply flex items-center justify-center p-4;
+}
+
+.api-loading__spinner {
+  @apply animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full;
+}
+
+.api-loading__text {
+  @apply ml-3 text-gray-600;
+}
+
+/* Network status indicator */
+.network-status {
+  @apply fixed top-4 right-4 z-50 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300;
+}
+
+.network-status--online {
+  @apply bg-green-100 text-green-800 border border-green-200;
+}
+
+.network-status--offline {
+  @apply bg-red-100 text-red-800 border border-red-200;
+}
+
+.network-status--reconnecting {
+  @apply bg-yellow-100 text-yellow-800 border border-yellow-200;
+}
+
+/* API error toast styles */
+.api-error-toast {
+  @apply bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative;
+}
+
+.api-error-toast__title {
+  @apply font-medium text-sm;
+}
+
+.api-error-toast__message {
+  @apply text-sm mt-1;
+}
+
+.api-error-toast__close {
+  @apply absolute top-0 bottom-0 right-0 px-4 py-3 text-red-700 hover:text-red-900 focus:outline-none;
+}
+
+/* Retry button for failed API calls */
+.api-retry-btn {
+  @apply inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200;
+}
+
+.api-retry-btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* API connection status bar */
+.connection-status {
+  @apply w-full h-1 transition-all duration-500;
+}
+
+.connection-status--connected {
+  @apply bg-green-500;
+}
+
+.connection-status--disconnected {
+  @apply bg-red-500;
+}
+
+.connection-status--reconnecting {
+  @apply bg-yellow-500 animate-pulse;
+}

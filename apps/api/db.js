@@ -861,15 +861,10 @@ class DatabaseWrapper {
   }
 
   async ensureReady() {
-    try {
-      if (!this.db) {
-        this.db = await initializeDatabase();
-      }
-      return this.db;
-    } catch (e) {
-      // No degraded/mock mode: always fail fast if DB is unavailable
-      throw e;
+    if (!this.db) {
+      this.db = await initializeDatabase();
     }
+    return this.db;
   }
 
   // Modern async methods

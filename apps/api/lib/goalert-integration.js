@@ -754,11 +754,11 @@ export class NovaGoAlertIntegration extends EventEmitter {
     }
     startSyncLoop() {
         this.syncInterval = setInterval(async () => {
-            await this.syncWithGoAlert();
+            await this.syncWithGoAlertStatus();
         }, this.config.syncInterval);
         logger.info('GoAlert sync loop started');
     }
-    async syncWithGoAlert() {
+    async syncWithGoAlertStatus() {
         try {
             // Sync alert statuses
             await this.syncAlertStatuses();
@@ -1245,7 +1245,7 @@ export class NovaGoAlertIntegration extends EventEmitter {
     // Helper methods for AI event handling
     async createAlertFromIncident(incident) {
         try {
-            const serviceId = this.getServiceIdForComponent(incident.component);
+            const serviceId = this.getAIServiceIdForComponent(incident.component);
             await this.createAlert({
                 serviceId,
                 summary: incident.summary,
@@ -1269,7 +1269,7 @@ export class NovaGoAlertIntegration extends EventEmitter {
     }
     async createAlertFromSecurityEvent(alert) {
         try {
-            const serviceId = this.getServiceIdForComponent('ai-security');
+            const serviceId = this.getAIServiceIdForComponent('ai-security');
             await this.createAlert({
                 serviceId,
                 summary: `AI Security Alert: ${alert.alertType}`,
@@ -1293,7 +1293,7 @@ export class NovaGoAlertIntegration extends EventEmitter {
     }
     async createAlertFromBiasEvent(biasMetric) {
         try {
-            const serviceId = this.getServiceIdForComponent('ai-performance');
+            const serviceId = this.getAIServiceIdForComponent('ai-performance');
             await this.createAlert({
                 serviceId,
                 summary: `AI Bias Alert: ${biasMetric.model}`,
@@ -1318,7 +1318,7 @@ export class NovaGoAlertIntegration extends EventEmitter {
     }
     async createAlertFromDriftEvent(driftMetric) {
         try {
-            const serviceId = this.getServiceIdForComponent('ai-performance');
+            const serviceId = this.getAIServiceIdForComponent('ai-performance');
             await this.createAlert({
                 serviceId,
                 summary: `AI Model Drift Alert: ${driftMetric.model}`,
@@ -1376,7 +1376,7 @@ export class NovaGoAlertIntegration extends EventEmitter {
             return false;
         }
     }
-    getServiceIdForComponent(component) {
+    getAIServiceIdForComponent(component) {
         // Map AI components to GoAlert service IDs
         const componentServiceMap = {
             'ai-fabric-core': 'ai-fabric-core',

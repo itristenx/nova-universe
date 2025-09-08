@@ -467,12 +467,13 @@ export class SecureGPTOSSIntegration extends EventEmitter {
                 case 'sensitive':
                     filteredContent = await this.flagSensitive(filteredContent, request);
                     break;
-                case 'harmful':
+                case 'harmful': {
                     const isHarmful = await this.detectHarmful(filteredContent);
                     if (isHarmful && filter.action === 'block') {
                         throw new Error('Response blocked: harmful content detected');
                     }
                     break;
+                }
             }
         }
         return {
