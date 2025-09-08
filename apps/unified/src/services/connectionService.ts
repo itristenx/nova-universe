@@ -19,6 +19,8 @@ export interface ConnectionOptions {
   healthEndpoint: string;
   retryInterval: number;
   maxRetryInterval: number;
+  maxJitter?: number;
+  maxBackoffExponent?: number;
 }
 
 class ConnectionService {
@@ -37,6 +39,8 @@ class ConnectionService {
     healthEndpoint: '/api/health',
     retryInterval: 1000, // 1 second for retry attempts during failures
     maxRetryInterval: 10000, // Max 10 seconds between retries
+    maxJitter: 1000, // Max 1 second of jitter to prevent thundering herd
+    maxBackoffExponent: 6, // Cap exponential backoff at 2^6 = 64x multiplier
   };
 
   private listeners: Set<(status: ConnectionStatus) => void> = new Set();
@@ -127,13 +131,16 @@ class ConnectionService {
     
     // Calculate retry delay with exponential backoff, capped at maxRetryInterval
     const baseDelay = this.options.retryInterval;
+    const maxBackoffExponent = this.options.maxBackoffExponent ?? 6;
+    const maxJitter = this.options.maxJitter ?? 1000;
+    
     const backoffDelay = Math.min(
-      baseDelay * Math.pow(2, Math.min(this.status.retryCount - 1, 6)), // Cap at 2^6 = 64x multiplier
+      baseDelay * Math.pow(2, Math.min(Math.max(this.status.retryCount - 1, 0), maxBackoffExponent)), // Ensure first retry uses full base delay and cap exponent
       this.options.maxRetryInterval
     );
     
     // Add some jitter to avoid thundering herd
-    const jitter = Math.random() * 1000;
+    const jitter = Math.random() * maxJitter;
     const delay = backoffDelay + jitter;
     
     this.retryTimeout = setTimeout(() => {
@@ -299,13 +306,19 @@ class ConnectionService {
   }
 
   /**
-   * Get retry with exponential backoff
+   * Get retry delay with exponential backoff and jitter
    */
   public getRetryDelay(): number {
-    const baseDelay = 1000; // 1 second
-    const maxDelay = 30000; // 30 seconds
-    const delay = Math.min(baseDelay * Math.pow(2, this.status.retryCount), maxDelay);
-    return delay + Math.random() * 1000; // Add jitter
+    const baseDelay = this.options.retryInterval;
+    const maxBackoffExponent = this.options.maxBackoffExponent ?? 6;
+    const maxJitter = this.options.maxJitter ?? 1000;
+    
+    const backoffDelay = Math.min(
+      baseDelay * Math.pow(2, Math.min(Math.max(this.status.retryCount - 1, 0), maxBackoffExponent)),
+      this.options.maxRetryInterval
+    );
+    
+    return backoffDelay + Math.random() * maxJitter;
   }
 
   /**
