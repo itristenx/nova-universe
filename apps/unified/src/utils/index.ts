@@ -641,7 +641,6 @@ export const env = {
   apiUrl: getEnvVar('VITE_API_URL', 'http://localhost:8080'),
   wsUrl: getEnvVar('VITE_WS_URL', 'ws://localhost:8080'),
   devTools: getEnvVar('VITE_DEV_TOOLS') === 'true',
-  useMockData: getEnvVar('VITE_USE_MOCK_DATA') === 'true' && process.env.NODE_ENV !== 'production',
   profileUpdatesEnabled: getEnvVar('VITE_PROFILE_UPDATES_ENABLED') === 'true',
   enabledFeatures: getEnvVar('VITE_ENABLED_FEATURES')?.split(',') || [],
 };
@@ -677,38 +676,4 @@ export const withProductionErrorHandling = async <T>(
   }
 };
 
-/**
- * Handle API operations with graceful fallback to mock data
- * @deprecated Use withProductionErrorHandling in production
- */
-export const withMockFallback = async <T>(
-  apiCall: () => Promise<T>,
-  mockData: T,
-  fallbackMessage?: string,
-): Promise<T> => {
-  // In production, this should never use mock data
-  if (env.useMockData && process.env.NODE_ENV !== 'production') {
-    console.info(fallbackMessage || 'Using mock data (development mode)');
-    return Promise.resolve(mockData);
-  }
 
-  try {
-    return await apiCall();
-  } catch (error) {
-    if (process.env.NODE_ENV === 'production') {
-      // In production, throw the error instead of falling back to mock data
-      console.error('Production API call failed:', {
-        error: error instanceof Error ? error.message : String(error),
-        timestamp: new Date().toISOString()
-      });
-      throw error;
-    } else {
-      // Only fall back to mock data in development
-      console.warn('API call failed, falling back to mock data:', {
-        error: error instanceof Error ? error.message : String(error),
-        timestamp: new Date().toISOString()
-      });
-      return mockData;
-    }
-  }
-};

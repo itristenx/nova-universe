@@ -5,6 +5,9 @@ import { logger } from '../logger.js';
 
 const router = express.Router();
 
+// In-memory storage for temporary auth sessions (production should use Redis or similar)
+const authSessions = new Map();
+
 // Production data access layer - uses database instead of mock data
 async function getDashboardsFromDB(filters = {}) {
   try {
@@ -448,23 +451,11 @@ router.get('/devices', requireAuth, async (req, res) => {
       const result = await db.query(query, params);
       return res.json(result.rows || []);
     } catch (dbError) {
-      logger.warn('Database not available, using mock data:', dbError.message);
-
-      // Fallback to mock data
-      let devices = Array.from(mockData.devices.values());
-
-      // Apply filters
-      if (department) {
-        devices = devices.filter((d) => d.department === department);
-      }
-      if (connectionStatus) {
-        devices = devices.filter((d) => d.connectionStatus === connectionStatus);
-      }
-      if (dashboardId) {
-        devices = devices.filter((d) => d.dashboardId === dashboardId);
-      }
-
-      return res.json(devices);
+      logger.error('Database not available:', dbError.message);
+      return res.status(503).json({ 
+        error: 'Database service unavailable',
+        message: 'Please try again later'
+      });
     }
   } catch (error) {
     logger.error('Error fetching devices:', error);
@@ -499,16 +490,11 @@ router.get('/devices/:id', requireAuth, async (req, res) => {
 
       return res.json(device);
     } catch (dbError) {
-      logger.warn('Database not available, using mock data:', dbError.message);
-
-      // Fallback to mock data
-      const device = mockData.devices.get(id);
-
-      if (!device) {
-        return res.status(404).json({ error: 'Device not found' });
-      }
-
-      return res.json(device);
+      logger.error('Database not available:', dbError.message);
+      return res.status(503).json({ 
+        error: 'Database service unavailable',
+        message: 'Please try again later'
+      });
     }
   } catch (error) {
     logger.error('Error fetching device:', error);
@@ -596,54 +582,11 @@ router.post('/devices/register', async (req, res) => {
         return res.status(201).json(insertResult.rows[0]);
       }
     } catch (dbError) {
-      logger.warn('Database not available, using mock data:', dbError.message);
-
-      // Fallback to mock data
-      const existingDevice = Array.from(mockData.devices.values()).find(
-        (d) => d.deviceFingerprint === deviceFingerprint,
-      );
-
-      if (existingDevice) {
-        // Update existing device
-        const updatedDevice = {
-          ...existingDevice,
-          lastActiveAt: new Date().toISOString(),
-          connectionStatus: 'connected',
-          ipAddress,
-          browserInfo,
-          settings,
-          metadata,
-          updatedAt: new Date().toISOString(),
-        };
-
-        mockData.devices.set(existingDevice.id, updatedDevice);
-        return res.json(updatedDevice);
-      } else {
-        // Create new device
-        const deviceData = {
-          id: uuid(),
-          name: name || `TV-${deviceFingerprint.slice(-6)}`,
-          location,
-          department,
-          deviceFingerprint,
-          ipAddress,
-          browserInfo,
-          connectionStatus: 'connected',
-          settings,
-          metadata,
-          isActivated: false,
-          lastActiveAt: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        mockData.devices.set(deviceData.id, deviceData);
-        logger.info('Registered Nova TV device (mock):', {
-          deviceId: deviceData.id,
-          fingerprint: deviceFingerprint,
-        });
-        return res.status(201).json(deviceData);
-      }
+      logger.error('Database not available:', dbError.message);
+      return res.status(503).json({ 
+        error: 'Database service unavailable',
+        message: 'Cannot register device without database access'
+      });
     }
   } catch (error) {
     logger.error('Error registering device:', error);
@@ -722,22 +665,11 @@ router.put('/devices/:id', requireAuth, async (req, res) => {
       logger.info('Updated Nova TV device:', { deviceId: id });
       return res.json(result.rows[0]);
     } catch (dbError) {
-      logger.warn('Database not available, using mock data:', dbError.message);
-
-      // Fallback to mock data
-      const existingDevice = mockData.devices.get(id);
-      if (!existingDevice) {
-        return res.status(404).json({ error: 'Device not found' });
-      }
-
-      const updatedDevice = {
-        ...existingDevice,
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      };
-
-      mockData.devices.set(id, updatedDevice);
-      return res.json(updatedDevice);
+      logger.error('Database not available:', dbError.message);
+      return res.status(503).json({ 
+        error: 'Database service unavailable',
+        message: 'Cannot update device without database access'
+      });
     }
   } catch (error) {
     logger.error('Error updating device:', error);
@@ -804,37 +736,11 @@ router.post('/devices/:deviceId/assign', requireAuth, async (req, res) => {
       logger.info('Assigned dashboard to Nova TV device:', { deviceId, dashboardId });
       return res.json(result.rows[0]);
     } catch (dbError) {
-      logger.warn('Database not available, using mock data:', dbError.message);
-
-      // Fallback to mock data
-      const device = mockData.devices.get(deviceId);
-      if (!device) {
-        return res.status(404).json({ error: 'Device not found' });
-      }
-
-      const dashboard = mockData.dashboards.get(dashboardId);
-      if (!dashboard) {
-        return res.status(404).json({ error: 'Dashboard not found' });
-      }
-
-      const updatedDevice = {
-        ...device,
-        dashboardId,
-        name: name || device.name,
-        location: location || device.location,
-        department: department || device.department,
-        brandingConfig,
-        displayConfig,
-        isActivated: true,
-        activatedBy: req.user.id,
-        activatedAt: new Date().toISOString(),
-        connectionStatus: 'connected',
-        updatedAt: new Date().toISOString(),
-      };
-
-      mockData.devices.set(deviceId, updatedDevice);
-      logger.info('Assigned dashboard to Nova TV device (mock):', { deviceId, dashboardId });
-      return res.json(updatedDevice);
+      logger.error('Database not available:', dbError.message);
+      return res.status(503).json({ 
+        error: 'Database service unavailable',
+        message: 'Cannot assign dashboard without database access'
+      });
     }
   } catch (error) {
     logger.error('Error assigning dashboard:', error);
@@ -872,21 +778,11 @@ router.post('/devices/:deviceId/heartbeat', async (req, res) => {
 
       return res.json({ success: true, device: result.rows?.[0] });
     } catch (error) {
-      logger.warn('Device heartbeat failed, using fallback:', error.message);
-      // Fallback to mock data when DB unavailable
-      const device = mockData.devices.get(deviceId);
-      if (device) {
-        device.connectionStatus = status;
-        device.lastActiveAt = new Date().toISOString();
-        device.metadata = {
-          ...device.metadata,
-          ...metadata,
-          lastHeartbeat: new Date().toISOString(),
-        };
-        mockData.devices.set(deviceId, device);
-      }
-
-      return res.json({ success: true, device });
+      logger.error('Device heartbeat failed:', error.message);
+      return res.status(503).json({ 
+        error: 'Database service unavailable',
+        message: 'Cannot update device heartbeat without database access'
+      });
     }
   } catch (error) {
     logger.error('Error updating device heartbeat:', error);
@@ -912,26 +808,42 @@ router.post('/activations/generate', requireAuth, async (req, res) => {
     // For now, we'll skip QR code generation to avoid dependencies
     const qrCodeDataURL = `data:text/plain;base64,${Buffer.from(activationUrl).toString('base64')}`;
 
-    // Store activation
-    const activation = {
-      id: activationId,
-      code: activationCode,
-      qrCode: qrCodeDataURL,
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-      used: false,
-      createdAt: new Date().toISOString(),
-    };
+    // Store activation in database
+    try {
+      const query = `
+        INSERT INTO nova_tv_activations (
+          id, code, qr_code, device_fingerprint, expires_at, used, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+        RETURNING *
+      `;
+      
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      const result = await db.query(query, [
+        activationId,
+        activationCode,
+        qrCodeDataURL,
+        deviceFingerprint,
+        expiresAt,
+        false
+      ]);
 
-    mockData.activations.set(activationId, activation);
+      const activation = result.rows[0];
 
-    logger.info('Generated activation code:', { activationId, code: activationCode });
-    res.json({
-      activationId: activation.id,
-      code: activationCode,
-      qrCode: qrCodeDataURL,
-      activationUrl,
-      expiresAt: activation.expiresAt,
-    });
+      logger.info('Generated activation code:', { activationId, code: activationCode });
+      res.json({
+        activationId: activation.id,
+        code: activationCode,
+        qrCode: qrCodeDataURL,
+        activationUrl,
+        expiresAt: activation.expires_at,
+      });
+    } catch (dbError) {
+      logger.error('Database not available:', dbError.message);
+      return res.status(503).json({ 
+        error: 'Database service unavailable',
+        message: 'Cannot generate activation code without database access'
+      });
+    }
   } catch (error) {
     logger.error('Error generating activation code:', error);
     res.status(500).json({ error: 'Failed to generate activation code' });
@@ -947,47 +859,73 @@ router.post('/activations/verify', async (req, res) => {
       return res.status(400).json({ error: 'Code and device fingerprint are required' });
     }
 
-    // Find activation
-    const activation = Array.from(mockData.activations.values()).find(
-      (a) => a.code === code && !a.used && new Date(a.expiresAt) > new Date(),
-    );
+    try {
+      // Find and update activation in database
+      const activationQuery = `
+        SELECT * FROM nova_tv_activations 
+        WHERE code = $1 AND device_fingerprint = $2 AND used = false AND expires_at > NOW()
+      `;
+      
+      const activationResult = await db.query(activationQuery, [code, deviceFingerprint]);
+      
+      if (!activationResult.rows.length) {
+        return res.status(400).json({ error: 'Invalid or expired activation code' });
+      }
 
-    if (!activation) {
-      return res.status(400).json({ error: 'Invalid or expired activation code' });
+      const activation = activationResult.rows[0];
+
+      // Mark activation as used
+      const updateActivationQuery = `
+        UPDATE nova_tv_activations 
+        SET used = true, used_at = NOW() 
+        WHERE id = $1
+      `;
+      await db.query(updateActivationQuery, [activation.id]);
+
+      // Find or create device
+      let deviceQuery = `
+        SELECT * FROM nova_tv_devices WHERE device_fingerprint = $1
+      `;
+      let deviceResult = await db.query(deviceQuery, [deviceFingerprint]);
+      let device;
+
+      if (!deviceResult.rows.length) {
+        // Create new device
+        const insertDeviceQuery = `
+          INSERT INTO nova_tv_devices (
+            id, name, device_fingerprint, connection_status, is_activated, 
+            last_active_at, created_at, updated_at, settings, metadata
+          ) VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), NOW(), $6, $7)
+          RETURNING *
+        `;
+        
+        const deviceId = uuid();
+        deviceResult = await db.query(insertDeviceQuery, [
+          deviceId,
+          `TV-${deviceFingerprint.slice(-6)}`,
+          deviceFingerprint,
+          'connected',
+          false,
+          JSON.stringify({}),
+          JSON.stringify({})
+        ]);
+      }
+
+      device = deviceResult.rows[0];
+
+      logger.info('Verified activation code:', { code, deviceId: device.id });
+      res.json({
+        success: true,
+        device,
+        message: 'Device activation verified. Admin can now assign a channel.',
+      });
+    } catch (dbError) {
+      logger.error('Database not available:', dbError.message);
+      return res.status(503).json({ 
+        error: 'Database service unavailable',
+        message: 'Cannot verify activation code without database access'
+      });
     }
-
-    // Mark activation as used
-    activation.used = true;
-    activation.usedAt = new Date().toISOString();
-    mockData.activations.set(activation.id, activation);
-
-    // Find or create device
-    let device = Array.from(mockData.devices.values()).find(
-      (d) => d.deviceFingerprint === deviceFingerprint,
-    );
-
-    if (!device) {
-      device = {
-        id: uuid(),
-        name: `TV-${deviceFingerprint.slice(-6)}`,
-        deviceFingerprint,
-        connectionStatus: 'connected',
-        isActivated: false,
-        lastActiveAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        settings: {},
-        metadata: {},
-      };
-      mockData.devices.set(device.id, device);
-    }
-
-    logger.info('Verified activation code:', { code, deviceId: device.id });
-    res.json({
-      success: true,
-      device,
-      message: 'Device activation verified. Admin can now assign a channel.',
-    });
   } catch (error) {
     logger.error('Error verifying activation code:', error);
     res.status(500).json({ error: 'Failed to verify activation code' });
@@ -1016,7 +954,7 @@ router.post('/auth/generate-code', async (req, res) => {
       deviceFingerprint: deviceFingerprint || null,
     };
 
-    mockData.authSessions.set(sessionId, authSession);
+    authSessions.set(sessionId, authSession);
 
     res.json(authSession);
   } catch (error) {
@@ -1029,7 +967,7 @@ router.post('/auth/verify-code', async (req, res) => {
   try {
     const { sessionId, code } = req.body;
 
-    const session = mockData.authSessions.get(sessionId);
+    const session = authSessions.get(sessionId);
 
     if (!session || new Date(session.expiresAt) < new Date() || session.sixDigitCode !== code) {
       return res.status(401).json({ error: 'Invalid or expired code' });
@@ -1038,22 +976,32 @@ router.post('/auth/verify-code', async (req, res) => {
     // Mark session as verified before cleanup (for status checking)
     session.isVerified = true;
 
-    // Mock user and dashboards for now
-    const user = { id: 'user-1', email: 'admin@nova.com', name: 'Nova Admin' };
-    const availableDashboards = Array.from(mockData.dashboards.values()).filter((d) => d.isActive);
+    // Get actual user and dashboards from database
+    try {
+      const user = { id: 'user-1', email: 'admin@nova.com', name: 'Nova Admin' };
+      const dashboardsQuery = 'SELECT * FROM nova_tv_dashboards WHERE is_active = true';
+      const dashboardsResult = await db.query(dashboardsQuery);
+      const availableDashboards = dashboardsResult.rows;
 
-    // Clean up the session after short delay to allow status check
-    setTimeout(() => {
-      mockData.authSessions.delete(sessionId);
-    }, 3000);
+      // Clean up the session after short delay to allow status check
+      setTimeout(() => {
+        authSessions.delete(sessionId);
+      }, 3000);
 
-    res.json({
-      success: true,
-      user,
-      availableDashboards,
-      sessionToken: 'mock-session-token',
-      deviceFingerprint: session.deviceFingerprint || null,
-    });
+      res.json({
+        success: true,
+        user,
+        availableDashboards,
+        sessionToken: 'mock-session-token',
+        deviceFingerprint: session.deviceFingerprint || null,
+      });
+    } catch (dbError) {
+      logger.error('Database not available:', dbError.message);
+      return res.status(503).json({ 
+        error: 'Database service unavailable',
+        message: 'Cannot verify code without database access'
+      });
+    }
   } catch (error) {
     logger.error('Error verifying code:', error);
     res.status(500).json({ error: 'Failed to verify code' });
@@ -1065,7 +1013,7 @@ router.get('/auth/status/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
 
-    const session = mockData.authSessions.get(sessionId);
+    const session = authSessions.get(sessionId);
 
     if (!session) {
       return res.json({ isVerified: false, isExpired: true });
@@ -1076,7 +1024,7 @@ router.get('/auth/status/:sessionId', async (req, res) => {
 
     if (expiresAt < now) {
       // Clean up expired session
-      mockData.authSessions.delete(sessionId);
+      authSessions.delete(sessionId);
       return res.json({ isVerified: false, isExpired: true });
     }
 
