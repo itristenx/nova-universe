@@ -254,9 +254,13 @@ export class NovaMLPipeline extends EventEmitter {
 
   constructor() {
     super();
-    this.experimentsPath = process.env.NOVA_EXPERIMENTS_PATH || '/workspace/data/ml-experiments';
-    this.modelsPath = process.env.NOVA_MODELS_PATH || '/workspace/data/ml-models';
-    this.artifactsPath = process.env.NOVA_ARTIFACTS_PATH || '/workspace/data/ml-artifacts';
+    // Default to workspace-local paths (sandbox-safe)
+    this.experimentsPath =
+      process.env.NOVA_EXPERIMENTS_PATH || path.resolve(process.cwd(), 'data/ml-experiments');
+    this.modelsPath =
+      process.env.NOVA_MODELS_PATH || path.resolve(process.cwd(), 'data/ml-models');
+    this.artifactsPath =
+      process.env.NOVA_ARTIFACTS_PATH || path.resolve(process.cwd(), 'data/ml-artifacts');
     
     this.registry = {
       models: new Map(),
@@ -483,8 +487,8 @@ export class NovaMLPipeline extends EventEmitter {
       // Set up training callbacks
       const callbacks = this.createTrainingCallbacks(experiment);
       
-      // Train the model
-      await this.trainModel(model, trainingData, validationData, experiment.config, callbacks);
+      // Train the model with real TensorFlow tensors
+      await this.fitModel(model, trainingData, validationData, experiment.config, callbacks);
       
       // Evaluate on test set
       const testMetrics = await this.evaluateModel(model, testData, experiment.config);
@@ -632,66 +636,42 @@ export class NovaMLPipeline extends EventEmitter {
   /**
    * Train model
    */
-  private async trainModel(
+  private async fitModel(
     model: tf.LayersModel,
     trainingData: any,
     validationData: any,
     config: ModelConfig,
     callbacks: any
   ): Promise<void> {
-    // Enhanced training implementation using all parameters
     const epochs = config.hyperparameters.epochs || 10;
     const batchSize = config.hyperparameters.batch_size || 32;
-    
-    console.log(`🏋️ Training model for ${epochs} epochs with batch size ${batchSize}`);
-    
-    // Set up training callbacks for monitoring
-    const enhancedCallbacks = {
-      ...callbacks,
-      onEpochEnd: (epoch: number, logs: any) => {
-        console.log(`📊 Epoch ${epoch + 1}: Training accuracy: ${logs.acc?.toFixed(4)}, Validation accuracy: ${logs.val_acc?.toFixed(4)}`);
-        
-        // Call original callback if provided
-        if (callbacks?.onEpochEnd) {
-          callbacks.onEpochEnd(epoch, logs);
-        }
-      },
-      onTrainEnd: () => {
-        console.log('✅ Training completed successfully');
-        if (callbacks?.onTrainEnd) {
-          callbacks.onTrainEnd();
-        }
-      }
-    };
 
-    // Prepare training data tensors
-    if (trainingData.features.length > 0) {
-      console.log(`📈 Training on ${trainingData.features.length} samples`);
-    }
-    
-    // Prepare validation data tensors
-    if (validationData.features.length > 0) {
-      console.log(`🔍 Validating on ${validationData.features.length} samples`);
-    }
+    // Convert arrays to tensors
+    const xs = tf.tensor2d(trainingData.features || []);
+    const ys = Array.isArray(trainingData.labels?.[0])
+      ? tf.tensor2d(trainingData.labels)
+      : tf.tensor1d(trainingData.labels || []);
 
-    // Enhanced model training with callbacks
-    console.log('🚀 Starting enhanced training process with monitoring callbacks');
-    
-    // Simulate training process with callback integration
-    for (let epoch = 0; epoch < epochs; epoch++) {
-      const logs = {
-        acc: Math.min(0.5 + (epoch * 0.05) + Math.random() * 0.1, 0.99),
-        val_acc: Math.min(0.48 + (epoch * 0.04) + Math.random() * 0.08, 0.95)
-      };
-      
-      if (enhancedCallbacks.onEpochEnd) {
-        enhancedCallbacks.onEpochEnd(epoch, logs);
-      }
-    }
+    const hasVal = Boolean(validationData?.features?.length && validationData?.labels?.length);
+    const valXs = hasVal ? tf.tensor2d(validationData.features) : undefined;
+    const valYs = hasVal
+      ? (Array.isArray(validationData.labels[0])
+          ? tf.tensor2d(validationData.labels)
+          : tf.tensor1d(validationData.labels))
+      : undefined;
 
-    if (enhancedCallbacks.onTrainEnd) {
-      enhancedCallbacks.onTrainEnd();
-    }
+    await model.fit(xs, ys, {
+      epochs,
+      batchSize,
+      validationData: hasVal && valXs && valYs ? [valXs, valYs] as any : undefined,
+      callbacks,
+      verbose: 0,
+    });
+
+    xs.dispose();
+    ys.dispose();
+    if (valXs) valXs.dispose();
+    if (valYs) valYs.dispose();
   }
 
   /**

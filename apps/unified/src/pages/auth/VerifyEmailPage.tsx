@@ -44,21 +44,21 @@ export default function VerifyEmailPage() {
       }
 
       try {
-        // Simulate API call to verify email
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // Call live API to verify email token (replace with real endpoint when available)
+        const resp = await fetch(`/api/v1/helix/login/email/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, email }),
+          credentials: 'include',
+        });
 
-        // Simulate verification result
-        const isValidToken = token.length > 10; // Simple mock validation
-
-        if (isValidToken) {
+        if (resp.ok) {
           const result: VerificationResult = {
             success: true,
             message:
               'Your email has been successfully verified! You can now access all features of your account.',
           };
-          if (email) {
-            result.email = email;
-          }
+          if (email) result.email = email;
           setVerificationResult(result);
         } else {
           setVerificationResult({
@@ -94,10 +94,17 @@ export default function VerifyEmailPage() {
 
     setIsResending(true);
     try {
-      // Simulate API call to resend verification email
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      toast.success('Verification email sent! Please check your inbox.');
+      const resp = await fetch(`/api/v1/helix/login/email/resend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+        credentials: 'include',
+      });
+      if (resp.ok) {
+        toast.success('Verification email sent! Please check your inbox.');
+      } else {
+        toast.error('Failed to send verification email. Please try again later.');
+      }
     } catch (_error) {
       const errorMessage = _error instanceof Error ? _error.message : String(_error);
       console.error('Failed to resend verification email:', {

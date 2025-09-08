@@ -576,40 +576,14 @@ router.post('/bookings/:id/meeting', ensureServiceReady, async (req, res) => {
 // LEGACY ENDPOINTS (for backward compatibility)
 // =====================================
 
-// Keep some mock endpoints for backward compatibility during transition
-const mockSpaceMetrics = {
-  totalSpaces: 145,
-  availableSpaces: 67,
-  occupiedSpaces: 72,
-  maintenanceSpaces: 6,
-  utilizationRate: 74.5,
-  peakOccupancyTime: '2:00 PM',
-  averageBookingDuration: 90,
-  mostPopularSpaces: [
-    { spaceId: '1', name: 'Conference Room A', bookingCount: 23 },
-    { spaceId: '2', name: 'Focus Pod 3', bookingCount: 18 },
-    { spaceId: '3', name: 'Meeting Room B', bookingCount: 15 },
-  ],
-  lastUpdated: new Date().toISOString(),
-};
+// Legacy mock endpoints removed; use live endpoints only
 
 /**
  * GET /api/v1/spaces/metrics/legacy
  * Legacy metrics endpoint for backward compatibility
  */
 router.get('/metrics/legacy', async (req, res) => {
-  try {
-    res.json({
-      success: true,
-      data: mockSpaceMetrics,
-    });
-  } catch (error) {
-    logger.error('Error fetching legacy metrics:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch metrics',
-    });
-  }
+  return res.status(501).json({ success: false, error: 'Legacy metrics not implemented' });
 });
 
 export default router;

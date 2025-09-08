@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { cn } from '@utils/index';
 import toast from 'react-hot-toast';
 import { samlConfigService, type SAMLConfig, type SAMLTestResult } from '@services/samlConfig';
+import { useAuthStore } from '@stores/auth';
 
 // Simple icon components to avoid React 19 compatibility issues
 const ShieldIcon = ({ className }: { className?: string }) => (
@@ -192,6 +193,8 @@ const XIcon = ({ className }: { className?: string }) => (
 type TestResult = SAMLTestResult;
 
 export default function SAMLConfigurationPage() {
+  const { user } = useAuthStore();
+  const tenantId = user?.tenantId || '';
   const [activeTab, setActiveTab] = useState<'configuration' | 'testing' | 'metadata'>(
     'configuration',
   );
@@ -233,7 +236,8 @@ export default function SAMLConfigurationPage() {
   const loadConfig = async () => {
     setIsLoading(true);
     try {
-      const data = await samlConfigService.getConfig();
+      if (!tenantId) return;
+      const data = await samlConfigService.getConfig(tenantId);
       setConfig(data);
     } catch {
       toast.error('Failed to load SAML configuration');
@@ -245,7 +249,8 @@ export default function SAMLConfigurationPage() {
   const saveConfig = async () => {
     setIsSaving(true);
     try {
-      await samlConfigService.update(config);
+      if (!tenantId) throw new Error('No tenant context');
+      await samlConfigService.update(tenantId, config);
       toast.success('SAML configuration saved successfully');
     } catch {
       toast.error('Failed to save SAML configuration');
@@ -258,7 +263,7 @@ export default function SAMLConfigurationPage() {
     setIsTesting(true);
     setTestResult(null);
     try {
-      const result = await samlConfigService.test();
+      const result = tenantId ? await samlConfigService.test(tenantId) : { success: false, message: 'No tenant' } as any;
       setTestResult(result);
       if (result.success) {
         toast.success(result.message);
@@ -279,7 +284,8 @@ export default function SAMLConfigurationPage() {
 
   const loadMetadata = async () => {
     try {
-      const data = await samlConfigService.getMetadata();
+      if (!tenantId) return;
+      const data = await samlConfigService.getMetadata(tenantId);
       setMetadata(data);
     } catch {
       toast.error('Failed to load SAML metadata');

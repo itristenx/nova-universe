@@ -28,7 +28,7 @@ export class OpenAIHarmonyIntegration extends EventEmitter {
             encryptionEnabled: true,
             ...config,
         };
-        this.dataPath = process.env.HARMONY_DATA_PATH || '/workspace/data/harmony';
+        this.dataPath = process.env.HARMONY_DATA_PATH || path.resolve(process.cwd(), 'data/harmony');
         this.initialize();
     }
     /**

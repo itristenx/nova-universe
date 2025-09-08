@@ -7,6 +7,7 @@
 import { EventEmitter } from 'events';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import * as tf from '@tensorflow/tfjs-node';
 import { logger } from '../logger.js';
 import db from '../db.js';
 
@@ -782,108 +783,35 @@ export class AIControlTowerService extends EventEmitter {
   }
 
   async createClassificationModel(config) {
-    // Note: TensorFlow.js functionality temporarily disabled
-    logger.warn('TensorFlow.js models temporarily disabled');
-    
-    // Use config parameters to create comprehensive model configuration
-    const modelConfig = {
-      type: 'classification',
-      inputShape: config?.inputShape || [config?.inputDim || 10],
-      numClasses: config?.numClasses || 2,
-      layers: config?.layers || ['dense', 'dropout', 'dense'],
-      activation: config?.activation || 'softmax',
-      optimizer: config?.optimizer || 'adam',
-      learningRate: config?.learningRate || 0.001,
-      batchSize: config?.batchSize || 32,
-      epochs: config?.epochs || 100,
-      validationSplit: config?.validationSplit || 0.2,
-      earlyStopping: config?.earlyStopping || true,
-      regularization: config?.regularization || 'l2',
-      dropoutRate: config?.dropoutRate || 0.3
-    };
-    
-    logger.info('Classification model config created:', modelConfig);
-    
-    // Store model configuration for future use
-    await this.storeModelConfiguration('classification', modelConfig);
-    
-    return { 
-      modelType: 'classification', 
-      config: modelConfig,
-      status: 'configured',
-      createdAt: new Date().toISOString(),
-      id: `class_${Date.now()}`
-    };
+    const inputDim = config?.inputDim || (config?.inputShape?.[0] ?? 10);
+    const numClasses = config?.numClasses || 2;
+    const model = tf.sequential();
+    model.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [inputDim] }));
+    model.add(tf.layers.dropout({ rate: 0.2 }));
+    model.add(tf.layers.dense({ units: 32, activation: 'relu' }));
+    model.add(tf.layers.dense({ units: numClasses, activation: 'softmax' }));
+    return model;
   }
 
   async createRegressionModel(config) {
-    // Note: TensorFlow.js functionality temporarily disabled
-    logger.warn('TensorFlow.js models temporarily disabled');
-    
-    // Use config parameters to create comprehensive regression model configuration
-    const modelConfig = {
-      type: 'regression',
-      inputShape: config?.inputShape || [config?.inputDim || 10],
-      outputShape: config?.outputShape || [1],
-      layers: config?.layers || ['dense', 'dropout', 'dense'],
-      activation: config?.activation || 'linear',
-      optimizer: config?.optimizer || 'adam',
-      learningRate: config?.learningRate || 0.001,
-      loss: config?.loss || 'meanSquaredError',
-      batchSize: config?.batchSize || 32,
-      epochs: config?.epochs || 100,
-      validationSplit: config?.validationSplit || 0.2,
-      earlyStopping: config?.earlyStopping || true,
-      regularization: config?.regularization || 'l2'
-    };
-    
-    logger.info('Regression model config created:', modelConfig);
-    
-    // Store model configuration for future use
-    await this.storeModelConfiguration('regression', modelConfig);
-    
-    return { 
-      modelType: 'regression', 
-      config: modelConfig,
-      status: 'configured',
-      createdAt: new Date().toISOString(),
-      id: `reg_${Date.now()}`
-    };
+    const inputDim = config?.inputDim || (config?.inputShape?.[0] ?? 10);
+    const model = tf.sequential();
+    model.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [inputDim] }));
+    model.add(tf.layers.dense({ units: 32, activation: 'relu' }));
+    model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
+    return model;
   }
 
   async createNLPModel(config) {
-    // Note: TensorFlow.js functionality temporarily disabled
-    logger.warn('TensorFlow.js models temporarily disabled');
-    
-    // Use config parameters to create comprehensive NLP model configuration
-    const modelConfig = {
-      type: 'nlp',
-      vocabularySize: config?.vocabularySize || 10000,
-      maxSequenceLength: config?.maxSequenceLength || 100,
-      embeddingDim: config?.embeddingDim || 128,
-      layers: config?.layers || ['embedding', 'lstm', 'dense'],
-      activation: config?.activation || 'softmax',
-      optimizer: config?.optimizer || 'adam',
-      learningRate: config?.learningRate || 0.001,
-      batchSize: config?.batchSize || 32,
-      epochs: config?.epochs || 50,
-      validationSplit: config?.validationSplit || 0.2,
-      earlyStopping: config?.earlyStopping || true,
-      recurrentDropout: config?.recurrentDropout || 0.2
-    };
-    
-    logger.info('NLP model config created:', modelConfig);
-    
-    // Store model configuration for future use
-    await this.storeModelConfiguration('nlp', modelConfig);
-    
-    return { 
-      modelType: 'nlp', 
-      config: modelConfig,
-      status: 'configured',
-      createdAt: new Date().toISOString(),
-      id: `nlp_${Date.now()}`
-    };
+    // Expect numeric feature vectors (e.g., TF-IDF) to keep training simple and robust
+    const inputDim = config?.inputDim || (config?.inputShape?.[0] ?? 100);
+    const numClasses = config?.numClasses || 2;
+    const model = tf.sequential();
+    model.add(tf.layers.dense({ units: 128, activation: 'relu', inputShape: [inputDim] }));
+    model.add(tf.layers.dropout({ rate: 0.3 }));
+    model.add(tf.layers.dense({ units: 64, activation: 'relu' }));
+    model.add(tf.layers.dense({ units: numClasses, activation: 'softmax' }));
+    return model;
   }
 
   // Helper method to store model configurations
@@ -918,8 +846,8 @@ export class AIControlTowerService extends EventEmitter {
           jobId,
           epoch: epoch + 1,
           totalEpochs: config.epochs,
-          loss: logs.loss,
-          accuracy: logs.acc,
+          loss: logs?.loss,
+          accuracy: logs?.acc ?? logs?.accuracy,
         });
       },
     };
@@ -938,32 +866,43 @@ export class AIControlTowerService extends EventEmitter {
       validationSplit: config.validationSplit || 0.2,
       callbacks,
     });
+    // Dispose tensors to free memory
+    try {
+      trainingData.xs.dispose?.();
+      trainingData.ys.dispose?.();
+    } catch {}
 
     return {
-      accuracy: history.history.acc?.[history.history.acc.length - 1] || 0,
+      accuracy:
+        history.history.acc?.[history.history.acc.length - 1] ||
+        history.history.accuracy?.[history.history.accuracy.length - 1] ||
+        0,
       loss: history.history.loss?.[history.history.loss.length - 1] || 0,
       history: history.history,
     };
   }
 
   async prepareTrainingData(config) {
-    // Placeholder for data preparation
-    // In a real implementation, this would load and preprocess actual training data
-    const numSamples = config.numSamples || 1000;
-    const inputDim = config.inputDim || 10;
+    const numSamples = config.numSamples || 200;
+    const inputDim = config.inputDim || (config.inputShape?.[0] ?? 10);
+    const numClasses = config.numClasses || 2;
 
-    // Create placeholder training data arrays
-    // Note: TensorFlow.js functionality temporarily disabled, using placeholder arrays
-    const xs = Array(numSamples)
-      .fill(null)
-      .map(() => 
-        Array(inputDim).fill(0).map(() => Math.random() * 2 - 1)
-      );
-    const ys = Array(numSamples).fill(0).map(() => 
-      Math.floor(Math.random() * (config.numClasses || 2))
+    const xsArr = Array.from({ length: numSamples }, () =>
+      Array.from({ length: inputDim }, () => Math.random() * 2 - 1),
     );
 
-    return { xs, ys };
+    // Classification: integer labels; Regression: float labels
+    let ysTensor;
+    const isClassification = (config.loss || '').toLowerCase().includes('sparse') || config.task === 'classification';
+    if (isClassification) {
+      const ysArr = Array.from({ length: numSamples }, () => Math.floor(Math.random() * numClasses));
+      ysTensor = tf.tensor1d(ysArr, 'int32');
+    } else {
+      const ysArr = Array.from({ length: numSamples }, () => Math.random());
+      ysTensor = tf.tensor1d(ysArr, 'float32');
+    }
+
+    return { xs: tf.tensor2d(xsArr), ys: ysTensor };
   }
 
   async updateRAGMetrics(ragSystemId, responseTime) {

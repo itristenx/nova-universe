@@ -90,7 +90,7 @@ const communicationService = {
       const usersResponse = await userService.getUsers(1, 20, {});
       const activeUsers = usersResponse.data.filter((user) => user.isActive);
 
-      // Create mock team channels based on departments
+      // TODO: Load team channels from API
       const departments = [...new Set(activeUsers.map((user) => user.department).filter(Boolean))];
 
       return departments.map((dept, index) => ({

@@ -219,8 +219,8 @@ async function generateSystemAlerts() {
       });
     }
 
-    // Check error rate (mock for now)
-    const errorRate = Math.random() * 10; // Mock error rate
+    // Check error rate (requires real metrics source)
+    const errorRate = 0;
     if (errorRate > ALERT_THRESHOLDS.ERROR_RATE_HIGH) {
       alerts.push({
         id: `error-rate-${now.getTime()}`,

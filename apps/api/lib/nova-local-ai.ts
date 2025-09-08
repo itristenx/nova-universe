@@ -99,7 +99,9 @@ export class NovaLocalAI extends EventEmitter {
 
   constructor() {
     super();
-    this.modelsPath = process.env.NOVA_AI_MODELS_PATH || '/workspace/data/ai-models';
+    // Store models inside the repository workspace by default (sandbox-safe)
+    this.modelsPath =
+      process.env.NOVA_AI_MODELS_PATH || path.resolve(process.cwd(), 'data/ai-models');
     this.initializeDirectory();
     this.loadExistingModels();
     this.startContinuousLearning();
@@ -427,26 +429,16 @@ export class NovaLocalAI extends EventEmitter {
     data: TrainingData,
     config: TrainingConfig,
   ): Promise<tf.LayersModel> {
+    // Use a dense architecture that accepts numeric feature vectors (avoids
+    // sequence/embedding shape mismatches when features are numeric arrays).
     const inputShape = data.features[0].length;
-    const vocabSize = Math.max(...data.features.flat()) + 1;
-    const embeddingDim = 128;
 
     const model = tf.sequential({
       layers: [
-        tf.layers.embedding({
-          inputDim: vocabSize,
-          outputDim: embeddingDim,
-          inputLength: inputShape,
-        }),
-        tf.layers.globalAveragePooling1d(),
-        tf.layers.dense({
-          units: 64,
-          activation: 'relu',
-        }),
-        tf.layers.dense({
-          units: 1,
-          activation: 'sigmoid',
-        }),
+        tf.layers.dense({ inputShape: [inputShape], units: 128, activation: 'relu' }),
+        tf.layers.dropout({ rate: 0.3 }),
+        tf.layers.dense({ units: 64, activation: 'relu' }),
+        tf.layers.dense({ units: 1, activation: 'sigmoid' }),
       ],
     });
 
@@ -466,27 +458,15 @@ export class NovaLocalAI extends EventEmitter {
     data: TrainingData,
     config: TrainingConfig,
   ): Promise<tf.LayersModel> {
+    // Use a dense regression model to match 2D training tensors (samples x features)
     const inputShape = data.features[0].length;
 
     const model = tf.sequential({
       layers: [
-        tf.layers.lstm({
-          units: 50,
-          returnSequences: true,
-          inputShape: [inputShape, 1],
-        }),
-        tf.layers.lstm({
-          units: 50,
-          returnSequences: false,
-        }),
-        tf.layers.dense({
-          units: 25,
-          activation: 'relu',
-        }),
-        tf.layers.dense({
-          units: 1,
-          activation: 'linear',
-        }),
+        tf.layers.dense({ inputShape: [inputShape], units: 128, activation: 'relu' }),
+        tf.layers.dropout({ rate: 0.2 }),
+        tf.layers.dense({ units: 64, activation: 'relu' }),
+        tf.layers.dense({ units: 1, activation: 'linear' }),
       ],
     });
 

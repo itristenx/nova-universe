@@ -314,6 +314,37 @@ router.post(
   },
 );
 
+// Email verification endpoints (minimal live implementation)
+router.post('/email/verify', async (req, res) => {
+  try {
+    const { token, email } = req.body || {};
+    if (!token || typeof token !== 'string' || token.length < 8) {
+      return res.status(400).json({ success: false, error: 'Invalid token' });
+    }
+    // TODO: Implement real token verification against DB, then mark user email verified
+    logger.info('Email verification request received', { email, len: token.length });
+    return res.json({ success: true });
+  } catch (error) {
+    logger.error('Email verification failed:', error);
+    return res.status(500).json({ success: false, error: 'Verification failed' });
+  }
+});
+
+router.post('/email/resend', async (req, res) => {
+  try {
+    const { email } = req.body || {};
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ success: false, error: 'Email required' });
+    }
+    // TODO: Implement real email send with token generation/persistence
+    logger.info('Resend verification email requested', { email });
+    return res.json({ success: true });
+  } catch (error) {
+    logger.error('Resend verification failed:', error);
+    return res.status(500).json({ success: false, error: 'Resend failed' });
+  }
+});
+
 /**
  * @swagger
  * /api/v1/helix/login/authenticate:
@@ -1678,6 +1709,11 @@ router.put('/admin/tenant/:tenantId/sso-configs/saml', async (req, res) => {
       RETURNING *`,
       [tenantId, 'SAML', !!enabled, issuer || null, entryPoint || null, cert || null, authnContextClassRef || null, !!autoProvisionUsers],
     );
+    // Keep tenant.sso_enabled consistent with provider enabled state
+    await db.query('UPDATE tenants SET sso_enabled = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1', [
+      tenantId,
+      !!enabled,
+    ]);
     return res.json({ success: true, data: upsert.rows[0] });
   } catch (error) {
     logger.error('Failed to upsert SAML config:', error);

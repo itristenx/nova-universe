@@ -448,23 +448,8 @@ router.get('/devices', requireAuth, async (req, res) => {
       const result = await db.query(query, params);
       return res.json(result.rows || []);
     } catch (dbError) {
-      logger.warn('Database not available, using mock data:', dbError.message);
-
-      // Fallback to mock data
-      let devices = Array.from(mockData.devices.values());
-
-      // Apply filters
-      if (department) {
-        devices = devices.filter((d) => d.department === department);
-      }
-      if (connectionStatus) {
-        devices = devices.filter((d) => d.connectionStatus === connectionStatus);
-      }
-      if (dashboardId) {
-        devices = devices.filter((d) => d.dashboardId === dashboardId);
-      }
-
-      return res.json(devices);
+      logger.error('Database error fetching devices:', dbError.message);
+      return res.status(500).json({ error: 'Failed to fetch devices' });
     }
   } catch (error) {
     logger.error('Error fetching devices:', error);
@@ -499,16 +484,8 @@ router.get('/devices/:id', requireAuth, async (req, res) => {
 
       return res.json(device);
     } catch (dbError) {
-      logger.warn('Database not available, using mock data:', dbError.message);
-
-      // Fallback to mock data
-      const device = mockData.devices.get(id);
-
-      if (!device) {
-        return res.status(404).json({ error: 'Device not found' });
-      }
-
-      return res.json(device);
+      logger.error('Database error fetching device:', dbError.message);
+      return res.status(500).json({ error: 'Failed to fetch device' });
     }
   } catch (error) {
     logger.error('Error fetching device:', error);
@@ -596,54 +573,8 @@ router.post('/devices/register', async (req, res) => {
         return res.status(201).json(insertResult.rows[0]);
       }
     } catch (dbError) {
-      logger.warn('Database not available, using mock data:', dbError.message);
-
-      // Fallback to mock data
-      const existingDevice = Array.from(mockData.devices.values()).find(
-        (d) => d.deviceFingerprint === deviceFingerprint,
-      );
-
-      if (existingDevice) {
-        // Update existing device
-        const updatedDevice = {
-          ...existingDevice,
-          lastActiveAt: new Date().toISOString(),
-          connectionStatus: 'connected',
-          ipAddress,
-          browserInfo,
-          settings,
-          metadata,
-          updatedAt: new Date().toISOString(),
-        };
-
-        mockData.devices.set(existingDevice.id, updatedDevice);
-        return res.json(updatedDevice);
-      } else {
-        // Create new device
-        const deviceData = {
-          id: uuid(),
-          name: name || `TV-${deviceFingerprint.slice(-6)}`,
-          location,
-          department,
-          deviceFingerprint,
-          ipAddress,
-          browserInfo,
-          connectionStatus: 'connected',
-          settings,
-          metadata,
-          isActivated: false,
-          lastActiveAt: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        mockData.devices.set(deviceData.id, deviceData);
-        logger.info('Registered Nova TV device (mock):', {
-          deviceId: deviceData.id,
-          fingerprint: deviceFingerprint,
-        });
-        return res.status(201).json(deviceData);
-      }
+      logger.error('Database error registering device:', dbError.message);
+      return res.status(500).json({ error: 'Failed to register device' });
     }
   } catch (error) {
     logger.error('Error registering device:', error);
@@ -722,22 +653,8 @@ router.put('/devices/:id', requireAuth, async (req, res) => {
       logger.info('Updated Nova TV device:', { deviceId: id });
       return res.json(result.rows[0]);
     } catch (dbError) {
-      logger.warn('Database not available, using mock data:', dbError.message);
-
-      // Fallback to mock data
-      const existingDevice = mockData.devices.get(id);
-      if (!existingDevice) {
-        return res.status(404).json({ error: 'Device not found' });
-      }
-
-      const updatedDevice = {
-        ...existingDevice,
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      };
-
-      mockData.devices.set(id, updatedDevice);
-      return res.json(updatedDevice);
+      logger.error('Database error updating device:', dbError.message);
+      return res.status(500).json({ error: 'Failed to update device' });
     }
   } catch (error) {
     logger.error('Error updating device:', error);
@@ -804,37 +721,8 @@ router.post('/devices/:deviceId/assign', requireAuth, async (req, res) => {
       logger.info('Assigned dashboard to Nova TV device:', { deviceId, dashboardId });
       return res.json(result.rows[0]);
     } catch (dbError) {
-      logger.warn('Database not available, using mock data:', dbError.message);
-
-      // Fallback to mock data
-      const device = mockData.devices.get(deviceId);
-      if (!device) {
-        return res.status(404).json({ error: 'Device not found' });
-      }
-
-      const dashboard = mockData.dashboards.get(dashboardId);
-      if (!dashboard) {
-        return res.status(404).json({ error: 'Dashboard not found' });
-      }
-
-      const updatedDevice = {
-        ...device,
-        dashboardId,
-        name: name || device.name,
-        location: location || device.location,
-        department: department || device.department,
-        brandingConfig,
-        displayConfig,
-        isActivated: true,
-        activatedBy: req.user.id,
-        activatedAt: new Date().toISOString(),
-        connectionStatus: 'connected',
-        updatedAt: new Date().toISOString(),
-      };
-
-      mockData.devices.set(deviceId, updatedDevice);
-      logger.info('Assigned dashboard to Nova TV device (mock):', { deviceId, dashboardId });
-      return res.json(updatedDevice);
+      logger.error('Database error assigning dashboard:', dbError.message);
+      return res.status(500).json({ error: 'Failed to assign dashboard' });
     }
   } catch (error) {
     logger.error('Error assigning dashboard:', error);
@@ -872,21 +760,8 @@ router.post('/devices/:deviceId/heartbeat', async (req, res) => {
 
       return res.json({ success: true, device: result.rows?.[0] });
     } catch (error) {
-      logger.warn('Device heartbeat failed, using fallback:', error.message);
-      // Fallback to mock data when DB unavailable
-      const device = mockData.devices.get(deviceId);
-      if (device) {
-        device.connectionStatus = status;
-        device.lastActiveAt = new Date().toISOString();
-        device.metadata = {
-          ...device.metadata,
-          ...metadata,
-          lastHeartbeat: new Date().toISOString(),
-        };
-        mockData.devices.set(deviceId, device);
-      }
-
-      return res.json({ success: true, device });
+      logger.error('Device heartbeat DB error:', error.message);
+      return res.status(500).json({ error: 'Failed to update device heartbeat' });
     }
   } catch (error) {
     logger.error('Error updating device heartbeat:', error);
@@ -901,96 +776,80 @@ router.post('/devices/:deviceId/heartbeat', async (req, res) => {
 // Generate activation code/QR for admin to scan
 router.post('/activations/generate', requireAuth, async (req, res) => {
   try {
-    const { deviceFingerprint } = req.body;
-
-    // Generate unique codes
+    const { deviceFingerprint } = req.body || {};
     const activationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const activationId = uuid();
-    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const activationUrl = `${baseUrl}/admin/tv-activate?device=${deviceFingerprint}&code=${activationCode}`;
-
-    // For now, we'll skip QR code generation to avoid dependencies
+    const baseUrl = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host').replace(/\/api$/, '')}` || 'http://localhost:3000';
+    const activationUrl = `${baseUrl}/admin/tv-activate?device=${encodeURIComponent(deviceFingerprint || '')}&code=${activationCode}`;
     const qrCodeDataURL = `data:text/plain;base64,${Buffer.from(activationUrl).toString('base64')}`;
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    // Store activation
-    const activation = {
-      id: activationId,
-      code: activationCode,
-      qrCode: qrCodeDataURL,
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-      used: false,
-      createdAt: new Date().toISOString(),
-    };
+    await db.query(
+      `INSERT INTO nova_tv_activations (id, code, qr_code, expires_at, used, created_at)
+       VALUES ($1, $2, $3, $4, false, NOW())`,
+      [activationId, activationCode, qrCodeDataURL, expiresAt],
+    );
 
-    mockData.activations.set(activationId, activation);
-
-    logger.info('Generated activation code:', { activationId, code: activationCode });
-    res.json({
-      activationId: activation.id,
+    return res.json({
+      activationId,
       code: activationCode,
       qrCode: qrCodeDataURL,
       activationUrl,
-      expiresAt: activation.expiresAt,
+      expiresAt,
     });
   } catch (error) {
     logger.error('Error generating activation code:', error);
-    res.status(500).json({ error: 'Failed to generate activation code' });
+    return res.status(500).json({ error: 'Failed to generate activation code' });
   }
 });
 
 // Verify activation code (called by TV)
 router.post('/activations/verify', async (req, res) => {
   try {
-    const { code, deviceFingerprint } = req.body;
-
+    const { code, deviceFingerprint } = req.body || {};
     if (!code || !deviceFingerprint) {
       return res.status(400).json({ error: 'Code and device fingerprint are required' });
     }
 
-    // Find activation
-    const activation = Array.from(mockData.activations.values()).find(
-      (a) => a.code === code && !a.used && new Date(a.expiresAt) > new Date(),
+    const actRes = await db.query(
+      `SELECT * FROM nova_tv_activations WHERE code = $1 AND used = false AND expires_at > NOW() LIMIT 1`,
+      [code],
     );
-
+    const activation = actRes.rows?.[0];
     if (!activation) {
       return res.status(400).json({ error: 'Invalid or expired activation code' });
     }
 
-    // Mark activation as used
-    activation.used = true;
-    activation.usedAt = new Date().toISOString();
-    mockData.activations.set(activation.id, activation);
-
-    // Find or create device
-    let device = Array.from(mockData.devices.values()).find(
-      (d) => d.deviceFingerprint === deviceFingerprint,
+    // Find or create device by fingerprint
+    let device = null;
+    const devRes = await db.query(
+      `SELECT * FROM nova_tv_devices WHERE device_fingerprint = $1 LIMIT 1`,
+      [deviceFingerprint],
     );
-
-    if (!device) {
-      device = {
-        id: uuid(),
-        name: `TV-${deviceFingerprint.slice(-6)}`,
-        deviceFingerprint,
-        connectionStatus: 'connected',
-        isActivated: false,
-        lastActiveAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        settings: {},
-        metadata: {},
-      };
-      mockData.devices.set(device.id, device);
+    if (devRes.rows?.[0]) {
+      device = devRes.rows[0];
+    } else {
+      const deviceId = uuid();
+      const name = `TV-${deviceFingerprint.slice(-6)}`;
+      await db.query(
+        `INSERT INTO nova_tv_devices (id, name, device_fingerprint, connection_status, last_active_at, created_at, updated_at)
+         VALUES ($1, $2, $3, 'connected', NOW(), NOW(), NOW())`,
+        [deviceId, name, deviceFingerprint],
+      );
+      const newRes = await db.query(`SELECT * FROM nova_tv_devices WHERE id = $1`, [deviceId]);
+      device = newRes.rows?.[0];
     }
 
-    logger.info('Verified activation code:', { code, deviceId: device.id });
-    res.json({
-      success: true,
-      device,
-      message: 'Device activation verified. Admin can now assign a channel.',
-    });
+    // Mark activation as used and link device
+    await db.query(
+      `UPDATE nova_tv_activations SET used = true, used_at = NOW(), device_id = $2 WHERE id = $1`,
+      [activation.id, device.id],
+    );
+
+    return res.json({ success: true, device, message: 'Device activation verified.' });
   } catch (error) {
     logger.error('Error verifying activation code:', error);
-    res.status(500).json({ error: 'Failed to verify activation code' });
+    return res.status(500).json({ error: 'Failed to verify activation code' });
   }
 });
 
@@ -1005,58 +864,50 @@ router.post('/auth/generate-code', async (req, res) => {
     const sixDigitCode = Math.floor(100000 + Math.random() * 900000).toString();
     const baseUrl = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host').replace(/\/api$/, '')}` || 'http://localhost:3000';
     const qrCode = `${baseUrl}/admin/tv-activate?session=${encodeURIComponent(sessionId)}&code=${encodeURIComponent(sixDigitCode)}${deviceFingerprint ? `&device=${encodeURIComponent(deviceFingerprint)}` : ''}`;
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    const authSession = {
-      sessionId,
-      qrCode,
-      sixDigitCode,
-      expiresAt: expiresAt.toISOString(),
-      isVerified: false,
-      deviceFingerprint: deviceFingerprint || null,
-    };
+    await db.query(
+      `INSERT INTO nova_tv_auth_sessions (session_id, qr_code, six_digit_code, expires_at, is_used, device_id, created_at)
+       VALUES ($1, $2, $3, $4, false, $5, NOW())`,
+      [sessionId, qrCode, sixDigitCode, expiresAt, null],
+    );
 
-    mockData.authSessions.set(sessionId, authSession);
-
-    res.json(authSession);
+    return res.json({ sessionId, qrCode, sixDigitCode, expiresAt });
   } catch (error) {
     logger.error('Error generating auth code:', error);
-    res.status(500).json({ error: 'Failed to generate auth code' });
+    return res.status(500).json({ error: 'Failed to generate auth code' });
   }
 });
 
 router.post('/auth/verify-code', async (req, res) => {
   try {
-    const { sessionId, code } = req.body;
+    const { sessionId, code } = req.body || {};
+    if (!sessionId || !code) return res.status(400).json({ error: 'Invalid request' });
 
-    const session = mockData.authSessions.get(sessionId);
+    const sRes = await db.query(
+      `SELECT * FROM nova_tv_auth_sessions WHERE session_id = $1 LIMIT 1`,
+      [sessionId],
+    );
+    const session = sRes.rows?.[0];
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (session.is_used) return res.status(400).json({ error: 'Code already used' });
+    if (new Date(session.expires_at) < new Date()) return res.status(400).json({ error: 'Code expired' });
+    if (session.six_digit_code !== code) return res.status(401).json({ error: 'Invalid code' });
 
-    if (!session || new Date(session.expiresAt) < new Date() || session.sixDigitCode !== code) {
-      return res.status(401).json({ error: 'Invalid or expired code' });
-    }
+    await db.query(
+      `UPDATE nova_tv_auth_sessions SET is_used = true, used_at = NOW() WHERE session_id = $1`,
+      [sessionId],
+    );
 
-    // Mark session as verified before cleanup (for status checking)
-    session.isVerified = true;
+    // Return available active dashboards for selection
+    const dRes = await db.query(
+      `SELECT id, name, department FROM nova_tv_dashboards WHERE is_active = true ORDER BY created_at DESC LIMIT 50`,
+    );
 
-    // Mock user and dashboards for now
-    const user = { id: 'user-1', email: 'admin@nova.com', name: 'Nova Admin' };
-    const availableDashboards = Array.from(mockData.dashboards.values()).filter((d) => d.isActive);
-
-    // Clean up the session after short delay to allow status check
-    setTimeout(() => {
-      mockData.authSessions.delete(sessionId);
-    }, 3000);
-
-    res.json({
-      success: true,
-      user,
-      availableDashboards,
-      sessionToken: 'mock-session-token',
-      deviceFingerprint: session.deviceFingerprint || null,
-    });
+    return res.json({ success: true, availableDashboards: dRes.rows || [], sessionToken: uuid() });
   } catch (error) {
-    logger.error('Error verifying code:', error);
-    res.status(500).json({ error: 'Failed to verify code' });
+    logger.error('Auth verify-code error:', error);
+    return res.status(500).json({ error: 'Failed to verify code' });
   }
 });
 
@@ -1064,107 +915,109 @@ router.post('/auth/verify-code', async (req, res) => {
 router.get('/auth/status/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
-
-    const session = mockData.authSessions.get(sessionId);
-
-    if (!session) {
-      return res.json({ isVerified: false, isExpired: true });
-    }
-
-    const now = new Date();
-    const expiresAt = new Date(session.expiresAt);
-
-    if (expiresAt < now) {
-      // Clean up expired session
-      mockData.authSessions.delete(sessionId);
-      return res.json({ isVerified: false, isExpired: true });
-    }
-
-    // Check if session has been verified (we could track this in session.isVerified)
-    res.json({
-      isVerified: session.isVerified || false,
-      isExpired: false,
-    });
+    const sRes = await db.query(
+      `SELECT session_id, expires_at, is_used FROM nova_tv_auth_sessions WHERE session_id = $1 LIMIT 1`,
+      [sessionId],
+    );
+    const session = sRes.rows?.[0];
+    if (!session) return res.json({ isVerified: false, isExpired: true });
+    const expired = new Date(session.expires_at) < new Date();
+    return res.json({ isVerified: !!session.is_used, isExpired: expired });
   } catch (error) {
-    logger.error('Error checking auth status:', error);
-    res.status(500).json({ error: 'Failed to check auth status' });
+    logger.error('Auth status error:', error);
+    return res.status(500).json({ error: 'Failed to check auth status' });
   }
 });
 
 router.post('/auth/refresh', async (req, res) => {
-  try {
-    // Mock token refresh
-    res.json({
-      accessToken: 'new-access-token',
-      refreshToken: 'new-refresh-token',
-    });
-  } catch (error) {
-    logger.error('Error refreshing token:', error);
-    res.status(500).json({ error: 'Failed to refresh token' });
-  }
+  return res.status(501).json({ error: 'Auth refresh not implemented' });
 });
 
 // Live data integration routes
 router.get('/live-data/tickets', requireAuth, async (req, res) => {
   try {
-    // Mock ticket metrics
-    const metrics = {
-      openTickets: 23,
-      ticketsToday: 8,
-      avgResponseTime: '2.5 hours',
-      criticalTickets: 3,
-      departmentBreakdown: {
-        IT: 12,
-        HR: 5,
-        Finance: 4,
-        Operations: 2,
-      },
-      recentTickets: [
-        {
-          id: 'TK-001',
-          title: 'Email server issues',
-          priority: 'high',
-          department: 'IT',
-          createdAt: new Date().toISOString(),
-        },
-      ],
-    };
+    const { department } = req.query;
+    const where = [];
+    const params = [];
+    if (department) {
+      where.push(`department = $${params.length + 1}`);
+      params.push(department);
+    }
+    const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
-    res.json(metrics);
+    const totalRes = await db.query(`SELECT COUNT(*) FROM tickets ${whereClause}`, params);
+    const openRes = await db.query(
+      `SELECT COUNT(*) FROM tickets ${whereClause}${whereClause ? ' AND' : ' WHERE'} status = 'open'`,
+      params,
+    );
+    const criticalRes = await db.query(
+      `SELECT COUNT(*) FROM tickets ${whereClause}${whereClause ? ' AND' : ' WHERE'} priority = 'critical'`,
+      params,
+    );
+    const recentRes = await db.query(
+      `SELECT id, title, priority, department, created_at FROM tickets ${whereClause} ORDER BY created_at DESC LIMIT 5`,
+      params,
+    );
+    const breakdownRes = await db.query(
+      `SELECT COALESCE(category, 'Uncategorized') AS category, COUNT(*) FROM tickets ${whereClause} GROUP BY category ORDER BY COUNT(*) DESC LIMIT 10`,
+      params,
+    );
+
+    return res.json({
+      openTickets: parseInt(openRes.rows?.[0]?.count || '0'),
+      ticketsToday: 0,
+      avgResponseTime: null,
+      criticalTickets: parseInt(criticalRes.rows?.[0]?.count || '0'),
+      departmentBreakdown: Object.fromEntries(breakdownRes.rows.map((r) => [r.category, parseInt(r.count)])),
+      recentTickets: recentRes.rows.map((r) => ({ id: r.id, title: r.title, priority: r.priority, department: r.department, createdAt: r.created_at })),
+      total: parseInt(totalRes.rows?.[0]?.count || '0'),
+    });
   } catch (error) {
-    logger.error('Error fetching ticket metrics:', error);
-    res.status(500).json({ error: 'Failed to fetch ticket metrics' });
+    logger.error('Live ticket metrics error:', error);
+    return res.status(500).json({ error: 'Failed to fetch ticket metrics' });
   }
 });
 
 router.get('/live-data/assets', requireAuth, async (req, res) => {
   try {
-    // Mock asset metrics
-    const metrics = {
-      totalAssets: 156,
-      assetsInUse: 134,
-      assetsUnderMaintenance: 8,
-      criticalAssets: 3,
-      departmentBreakdown: {
-        IT: 45,
-        HR: 23,
-        Finance: 34,
-        Operations: 54,
-      },
-      recentCheckouts: [
-        {
-          id: 'AS-001',
-          name: 'Laptop Dell XPS',
-          checkedOutBy: 'John Doe',
-          checkedOutAt: new Date().toISOString(),
-        },
-      ],
-    };
+    const { department } = req.query;
+    const where = [];
+    const params = [];
+    if (department) {
+      where.push(`department = $${params.length + 1}`);
+      params.push(department);
+    }
+    const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
-    res.json(metrics);
+    const totalRes = await db.query(`SELECT COUNT(*) FROM inventory_assets ${whereClause}`, params);
+    const inUseRes = await db.query(
+      `SELECT COUNT(*) FROM inventory_assets ${whereClause}${whereClause ? ' AND' : ' WHERE'} status = 'IN_USE'`,
+      params,
+    );
+    const maintenanceRes = await db.query(
+      `SELECT COUNT(*) FROM inventory_assets ${whereClause}${whereClause ? ' AND' : ' WHERE'} status = 'MAINTENANCE'`,
+      params,
+    );
+    const criticalRes = await db.query(
+      `SELECT COUNT(*) FROM inventory_assets ${whereClause}${whereClause ? ' AND' : ' WHERE'} status = 'CRITICAL'`,
+      params,
+    );
+    const breakdownRes = await db.query(
+      `SELECT COALESCE(department, 'Unassigned') AS department, COUNT(*) FROM inventory_assets ${whereClause} GROUP BY department ORDER BY COUNT(*) DESC LIMIT 10`,
+      params,
+    );
+
+    return res.json({
+      totalAssets: parseInt(totalRes.rows?.[0]?.count || '0'),
+      assetsInUse: parseInt(inUseRes.rows?.[0]?.count || '0'),
+      assetsUnderMaintenance: parseInt(maintenanceRes.rows?.[0]?.count || '0'),
+      criticalAssets: parseInt(criticalRes.rows?.[0]?.count || '0'),
+      departmentBreakdown: Object.fromEntries(breakdownRes.rows.map((r) => [r.department, parseInt(r.count)])),
+      recentCheckouts: [],
+    });
   } catch (error) {
-    logger.error('Error fetching asset metrics:', error);
-    res.status(500).json({ error: 'Failed to fetch asset metrics' });
+    logger.error('Live asset metrics error:', error);
+    return res.status(500).json({ error: 'Failed to fetch asset metrics' });
   }
 });
 

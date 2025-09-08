@@ -93,7 +93,7 @@ router.get('/', authenticateJWT, checkPermission('workflows:read'), async (req, 
   try {
     const { status, type, category } = req.query;
     
-    // For demo purposes, return mock workflows - replace with database query
+    // TODO: Replace with database-backed workflows
     let workflows = [
       {
         id: 'wf_incident_mgmt',
@@ -144,7 +144,7 @@ router.get('/', authenticateJWT, checkPermission('workflows:read'), async (req, 
     if (type) workflows = workflows.filter(w => w.type === type.toUpperCase());
     if (category) workflows = workflows.filter(w => w.category === category.toUpperCase());
 
-    res.json(workflows);
+    res.json([]);
   } catch (err) {
     logger.error('Error fetching workflows:', err);
     res.status(500).json({ error: 'Failed to fetch workflows' });

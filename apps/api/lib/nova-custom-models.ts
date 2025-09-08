@@ -149,7 +149,9 @@ export class NovaCustomModels extends EventEmitter {
 
   constructor() {
     super();
-    this.modelsPath = process.env.NOVA_CUSTOM_MODELS_PATH || '/workspace/data/nova-models';
+    // Keep models under the workspace by default (sandbox-safe)
+    this.modelsPath =
+      process.env.NOVA_CUSTOM_MODELS_PATH || path.resolve(process.cwd(), 'data/nova-models');
     this.initialize();
   }
 
@@ -2171,16 +2173,54 @@ export class NovaCustomModels extends EventEmitter {
     if (!model) return;
 
     try {
-      // In production, load actual TensorFlow model
       console.log(`Loading Nova model ${modelId} into memory...`);
 
-      // Simulate model loading
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // If a saved model exists on disk, load it; otherwise create a minimal model per type.
+      const candidateDir = path.join(this.modelsPath, model.type, modelId);
+      let tfModel: tf.LayersModel | null = null;
+      try {
+        tfModel = await tf.loadLayersModel(`file://${candidateDir}/model.json`);
+      } catch {
+        // Build minimal architecture based on model type
+        const inputDim = 50;
+        switch (model.type) {
+          case 'ticket_classifier': {
+            const m = tf.sequential();
+            m.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [inputDim] }));
+            m.add(tf.layers.dense({ units: 12, activation: 'softmax' }));
+            tfModel = m;
+            break;
+          }
+          case 'incident_predictor': {
+            const m = tf.sequential();
+            m.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [inputDim] }));
+            m.add(tf.layers.dense({ units: 1, activation: 'sigmoid' }));
+            tfModel = m;
+            break;
+          }
+          case 'knowledge_extractor':
+          case 'auto_resolver':
+          case 'sentiment_analyzer':
+          case 'priority_scorer': {
+            const m = tf.sequential();
+            m.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [inputDim] }));
+            m.add(tf.layers.dense({ units: 4, activation: 'softmax' }));
+            tfModel = m;
+            break;
+          }
+          default: {
+            const m = tf.sequential();
+            m.add(tf.layers.dense({ units: 32, activation: 'relu', inputShape: [inputDim] }));
+            m.add(tf.layers.dense({ units: 1, activation: 'linear' }));
+            tfModel = m;
+          }
+        }
+      }
 
-      // Create mock TensorFlow model
-      const mockModel = {} as tf.LayersModel;
-      this.loadedModels.set(modelId, mockModel);
-
+      if (!tfModel) {
+        throw new Error('Unable to create or load model');
+      }
+      this.loadedModels.set(modelId, tfModel);
       console.log(`Nova model ${modelId} loaded successfully`);
     } catch (error) {
       console.error(`Failed to load model ${modelId}:`, error);

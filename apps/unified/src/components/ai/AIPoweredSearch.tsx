@@ -55,8 +55,8 @@ interface AIPoweredSearchProps {
   maxResults?: number;
 }
 
-// Mock data for demonstration
-const mockSuggestions: SearchSuggestion[] = [
+// Default suggestions (static UI hints)
+const defaultSuggestions: SearchSuggestion[] = [
   {
     id: 'reset-password',
     text: 'How to reset my password',
@@ -94,55 +94,7 @@ const mockSuggestions: SearchSuggestion[] = [
   },
 ];
 
-const mockResults: SearchResult[] = [
-  {
-    id: '1',
-    type: 'article',
-    title: 'How to Reset Your Password',
-    description:
-      'Step-by-step guide to reset your password using the self-service portal or contacting IT support.',
-    url: '/kb/password-reset',
-    score: 0.95,
-    metadata: {
-      category: 'Account Management',
-      tags: ['password', 'security', 'account'],
-      lastUpdated: '2024-01-15',
-      author: 'IT Support Team',
-    },
-    highlight: {
-      title: true,
-      description: true,
-      content: ['You can reset your <mark>password</mark> from the login screen...'],
-    },
-  },
-  {
-    id: '2',
-    type: 'ticket',
-    title: 'Password Reset Request - John Doe',
-    description: 'Open ticket for password reset assistance. Last updated 2 hours ago.',
-    url: '/tickets/TKT-12345',
-    score: 0.87,
-    metadata: {
-      category: 'Support Request',
-      status: 'In Progress',
-      lastUpdated: '2024-01-20',
-      author: 'John Doe',
-    },
-  },
-  {
-    id: '3',
-    type: 'workflow',
-    title: 'Account Password Reset Workflow',
-    description: 'Automated workflow for processing password reset requests with approval steps.',
-    url: '/workflows/password-reset',
-    score: 0.78,
-    metadata: {
-      category: 'Automation',
-      tags: ['workflow', 'password', 'automation'],
-      lastUpdated: '2024-01-10',
-    },
-  },
-];
+// No local mock results; queries hit live API
 
 export function AIPoweredSearch({
   className,
@@ -158,7 +110,7 @@ export function AIPoweredSearch({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>(mockSuggestions);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>(defaultSuggestions);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [filters, setFilters] = useState<any>({});
   const [showFilters, setShowFilters] = useState(false);
@@ -212,23 +164,30 @@ export function AIPoweredSearch({
 
       setIsLoading(true);
 
-      // Simulate API call with delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Filter mock results based on query
-      const filteredResults = mockResults
-        .filter(
-          (result) =>
-            result.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            result.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            result.metadata.tags?.some((tag) =>
-              tag.toLowerCase().includes(searchQuery.toLowerCase()),
-            ),
-        )
-        .slice(0, maxResults)
-        .sort((a, b) => b.score - a.score);
-
-      setResults(filteredResults);
+      try {
+        const params = new URLSearchParams({ q: searchQuery, size: String(maxResults || 20) });
+        const resp = await fetch(`/api/v1/search/tickets?${params.toString()}`, {
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (!resp.ok) throw new Error(`Search failed: ${resp.status}`);
+        const data = await resp.json();
+        const hits = Array.isArray(data.results) ? data.results : [];
+        const mapped: SearchResult[] = hits.map((hit: any) => ({
+          id: hit.id || hit._id || String(Math.random()),
+          type: 'ticket',
+          title: hit.title || hit.subject || 'Ticket',
+          description: hit.description || hit.summary || '',
+          url: hit.url || (hit.id ? `/tickets/${hit.id}` : '#'),
+          score: hit._score || 0,
+          metadata: hit.metadata || {},
+          highlight: hit.highlight || undefined,
+        }));
+        setResults(mapped);
+      } catch (e) {
+        console.error('Search error', e);
+        setResults([]);
+      }
       setIsLoading(false);
       onSearch?.(searchQuery, filters);
     },
@@ -303,7 +262,7 @@ export function AIPoweredSearch({
     setSelectedIndex(-1);
 
     // Filter suggestions based on input
-    const filteredSuggestions = mockSuggestions.filter((suggestion) =>
+    const filteredSuggestions = defaultSuggestions.filter((suggestion) =>
       suggestion.text.toLowerCase().includes(value.toLowerCase()),
     );
     setSuggestions(filteredSuggestions);

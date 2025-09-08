@@ -496,25 +496,7 @@ router.get('/playlists', async (req, res) => {
       });
     } catch (error) {
       console.error('Database query failed:', error);
-      // Fallback to mock data if database fails
-      const playlists = [
-        {
-          id: 'playlist-1',
-          name: 'Corporate Announcements',
-          description: 'Daily corporate announcements and updates',
-          dashboardId: dashboardId || 'dashboard-1',
-          isActive: true,
-          itemCount: 5,
-          totalDuration: 300,
-          lastUpdated: new Date(),
-        },
-      ];
-
-      res.json({
-        success: true,
-        data: playlists,
-        warning: 'Database query failed - showing mock data',
-      });
+      return res.status(500).json({ success: false, error: 'Failed to fetch playlists' });
     }
   } catch (error) {
     console.error('Get playlists error:', error);

@@ -39,7 +39,8 @@ export class NovaSynthConnector extends IConnector {
         throw new Error('Configuration is required for Nova Synth connector');
       }
 
-      this.config = config;
+      // Enforce live mode only
+      this.config = { ...config, mockMode: false };
 
       // Validate Nova Synth-specific configuration
       this.validateNovaSynthConfig(config);
@@ -60,13 +61,8 @@ export class NovaSynthConnector extends IConnector {
         },
       });
 
-      // Add mock response interceptors for testing
-      if (config.mockMode) {
-        this.setupMockInterceptors();
-      } else {
-        // Setup request/response interceptors for monitoring
-        this.setupInterceptors(config);
-      }
+      // Always use real interceptors; disable mock mode
+      this.setupInterceptors(config);
 
       // Initialize transformation rules
       await this.loadTransformationRules();

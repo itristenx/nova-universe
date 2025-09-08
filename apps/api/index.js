@@ -48,7 +48,7 @@ import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
 // import aiAgentRouter from './routes/ai-agent.js'; // Nova AI Agent Framework - TEMPORARILY DISABLED
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
-import novaTVRouter from './routes/nova-tv.js'; // Nova TV - Channel Management
+import novaTVRouter from './routes/nova-tv-prisma.js'; // Nova TV - Channel Management (Prisma-backed)
 import emailActionsRouter from './routes/email-actions.js'; // Enhanced Email Actions for Workflows
 import customerActivityRouter from './routes/customer-activity.js'; // Customer Activity & Email Communication Tracking
 // Service Catalog API routes
@@ -1647,64 +1647,23 @@ app.post('/api/login-test', (req, res) => {
 // Working login endpoint for development
 app.post('/api/login-dev', (req, res) => {
   console.log('Dev login endpoint hit with body:', req.body);
-  
-  if (DISABLE_AUTH) {
-    // Simple mock token for development
-    const mockToken = 'dev-token-12345';
-    return res.json({
-      success: true,
-      token: mockToken,
-      user: {
-        id: 1,
-        name: 'Development User',
-        email: req.body.email || 'admin@example.com',
-        roles: ['admin']
-      }
-    });
-  }
-  
-  res.status(401).json({ error: 'Auth required in production' });
+  // Disable dev mock login; always require real auth
+  return res.status(401).json({ error: 'Authentication required' });
 });
 
 // Login endpoint for admin UI and frontend
 app.post('/api/login', (req, res) => {
   console.log('Login endpoint hit with body:', req.body);
   
-  // If auth is disabled, provide a mock response for development
-  if (DISABLE_AUTH) {
-    // Simple mock token for development
-    const mockToken = 'dev-token-12345';
-    return res.json({
-      success: true,
-      token: mockToken,
-      user: {
-        id: 1,
-        name: 'Development User',
-        email: req.body.email || 'admin@example.com',
-        roles: ['admin']
-      }
-    });
-  }
-
+  // Always require real auth
+  
   // For production mode, return auth required message
   res.status(401).json({ error: 'Authentication required in production mode' });
 });
 
 // Current user profile endpoint
 app.get('/api/me', ensureAuth, (req, res) => {
-  // If auth is disabled, return a mock user
-  if (DISABLE_AUTH) {
-    return res.json({
-      success: true,
-      user: {
-        id: 1,
-        name: 'Development User',
-        email: 'admin@example.com',
-        roles: ['admin'],
-        permissions: ['*']
-      }
-    });
-  }
+  // No mock user; require valid auth
 
   // Return current authenticated user
   if (req.user) {

@@ -287,46 +287,19 @@ export class EnhancedNotificationIntegration {
   }
 
   /**
-   * Helper: Get users by roles (mock implementation)
+   * Helper: Get users by roles
    */
   static async getUsersByRoles(roles) {
-    // This would typically query your user management system
-    // For now, return mock data - implement based on your user system
-    try {
-      // Mock implementation - replace with actual user lookup
-      return [
-        {
-          id: 'user1',
-          email: 'technician@nova.local',
-          name: 'Technical Support',
-          roles: ['technician']
-        },
-        {
-          id: 'user2', 
-          email: 'manager@nova.local',
-          name: 'Support Manager',
-          roles: ['manager', 'technician']
-        }
-      ].filter(user => user.roles.some(role => roles.includes(role)));
-    } catch (error) {
-      logger.error('Error getting users by roles:', error);
-      return [];
-    }
+    // Implement via real user service; placeholder throws until implemented
+    throw new Error('getUsersByRoles not implemented');
   }
 
   /**
-   * Helper: Get ticket by ID (mock implementation)
+   * Helper: Get ticket by ID
    */
   static async getTicketById(ticketId) {
-    try {
-      // This would typically query your ticket system
-      // Mock implementation - replace with actual ticket lookup
-      const ticketService = await import('./enhanced-ticket.service.js');
-      return await ticketService.TicketService.getTicketById(ticketId);
-    } catch (error) {
-      logger.error('Error getting ticket by ID:', error);
-      return null;
-    }
+    const ticketService = await import('./enhanced-ticket.service.js');
+    return await ticketService.TicketService.getTicketById(ticketId);
   }
 }
 

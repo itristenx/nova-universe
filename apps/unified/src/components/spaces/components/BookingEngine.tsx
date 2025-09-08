@@ -111,56 +111,7 @@ export function BookingEngine({
     endDate: '',
   });
 
-  // Mock data - would come from API
-  const mockSpaces: Space[] = [
-    {
-      id: 'space-001',
-      name: 'Conference Room A',
-      type: 'conference_room',
-      capacity: 8,
-      amenities: ['projector', 'wifi', 'whiteboard'],
-      building: 'Main',
-      floor: '1st',
-      hourlyRate: 50,
-    },
-    {
-      id: 'space-002',
-      name: 'Focus Room 1',
-      type: 'focus_room',
-      capacity: 2,
-      amenities: ['wifi', 'privacy'],
-      building: 'Main',
-      floor: '2nd',
-      hourlyRate: 25,
-    },
-    {
-      id: 'space-003',
-      name: 'Hot Desk 5',
-      type: 'hot_desk',
-      capacity: 1,
-      amenities: ['wifi', 'monitor'],
-      building: 'North',
-      floor: '1st',
-      hourlyRate: 15,
-    },
-  ];
-
-  const mockBookings: SpaceBooking[] = [
-    {
-      id: 'booking-001',
-      spaceId: 'space-001',
-      spaceName: 'Conference Room A',
-      title: 'Team Standup',
-      attendeeCount: 6,
-      startTime: new Date(2024, 0, 15, 9, 0),
-      endTime: new Date(2024, 0, 15, 10, 0),
-      organizer: { id: 'user-1', name: 'John Doe', email: 'john@company.com' },
-      attendees: [],
-      status: 'confirmed',
-      amenities: ['projector', 'wifi'],
-      notes: 'Weekly team standup meeting',
-    },
-  ];
+  // Removed mock spaces and bookings; integrate with live API in future iteration
 
   const timeSlots = [
     '08:00',
@@ -195,13 +146,47 @@ export function BookingEngine({
   ];
 
   useEffect(() => {
-    // Initialize with mock data
-    setBookings(mockBookings);
-    setAvailableSpaces(mockSpaces);
-    if (spaceId) {
-      const space = mockSpaces.find((s) => s.id === spaceId);
-      setSelectedSpace(space || null);
-    }
+    let aborted = false;
+    const load = async () => {
+      try {
+        // Fetch spaces
+        const spacesResp = await fetch(`/api/v1/spaces?limit=100`, { credentials: 'include' });
+        if (spacesResp.ok) {
+          const spacesData = await spacesResp.json();
+          const list = Array.isArray(spacesData.data) ? spacesData.data : (spacesData.results || []);
+          if (!aborted) setAvailableSpaces(list as any);
+          if (!aborted && spaceId) {
+            const found = (list as any[]).find((s) => s.id === spaceId);
+            setSelectedSpace((found || null) as any);
+          }
+        } else {
+          if (!aborted) {
+            setAvailableSpaces([]);
+            setSelectedSpace(null);
+          }
+        }
+
+        // Fetch bookings
+        const bookingsResp = await fetch(`/api/v1/spaces/bookings?limit=100`, { credentials: 'include' });
+        if (bookingsResp.ok) {
+          const bookingsData = await bookingsResp.json();
+          const list = Array.isArray(bookingsData.data) ? bookingsData.data : (bookingsData.results || []);
+          if (!aborted) setBookings(list as any);
+        } else {
+          if (!aborted) setBookings([]);
+        }
+      } catch (_e) {
+        if (!aborted) {
+          setAvailableSpaces([]);
+          setSelectedSpace(null);
+          setBookings([]);
+        }
+      }
+    };
+    load();
+    return () => {
+      aborted = true;
+    };
   }, [spaceId]);
 
   const isTimeSlotAvailable = (timeSlot: string, space: Space): boolean => {

@@ -597,17 +597,8 @@ const AssetManagementDashboard: React.FC<AssetManagementDashboardProps> = ({
         setCategories(assetCategories);
         
       } catch (dbError) {
-        logger.warn('Database connection fallback to mock data', { error: dbError });
-        
-        // Fallback to mock data for demonstration
-        enterpriseAssets = await generateMockAssetData();
-        
-        // Set default categories on fallback
-        assetCategories = [
-          { id: '1', name: 'Computers', code: 'COMP', created_at: '', updated_at: '' },
-          { id: '2', name: 'Servers', code: 'SERV', created_at: '', updated_at: '' },
-        ];
-        setCategories(assetCategories);
+        logger.error('Database connection error', { error: dbError });
+        throw dbError;
       }
 
       // Process and enhance asset data with security context
@@ -680,55 +671,7 @@ const AssetManagementDashboard: React.FC<AssetManagementDashboardProps> = ({
   }, [currentUser, hasPermission, auditLogger, assetApiRateLimit]);
 
   // Generate mock asset data for demonstration
-  const generateMockAssetData = async (): Promise<Asset[]> => {
-    return [
-      {
-        id: '1',
-        asset_tag: 'LAPTOP-001',
-        name: 'Dell Latitude 7420',
-        description: 'Employee laptop',
-        category_id: '1',
-        category: { id: '1', name: 'Computers', code: 'COMP', created_at: '', updated_at: '' },
-        model: 'Latitude 7420',
-        manufacturer: 'Dell',
-        location: 'New York Office',
-        cost: 1500,
-        lifecycle_stage: 'OPERATIONAL',
-        operational_status: 'OPERATIONAL',
-        risk_score: 3,
-        owner_id: '1',
-        owner: {
-          id: '1',
-          email: 'john@company.com',
-          first_name: 'John',
-          last_name: 'Doe',
-          created_at: '',
-          updated_at: '',
-        },
-        department: 'Engineering',
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01',
-      },
-      {
-        id: '2',
-        asset_tag: 'SERVER-001',
-        name: 'Production Server',
-        description: 'Main application server',
-        category_id: '2',
-        category: { id: '2', name: 'Servers', code: 'SERV', created_at: '', updated_at: '' },
-        model: 'PowerEdge R750',
-        manufacturer: 'Dell',
-        location: 'Data Center',
-        cost: 15000,
-        lifecycle_stage: 'OPERATIONAL',
-        operational_status: 'UNDER_MAINTENANCE',
-        risk_score: 7,
-        department: 'IT Operations',
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01',
-      },
-    ] as Asset[];
-  };
+  // Removed mock asset generator
 
   // Generate comprehensive dashboard analytics
   const generateDashboardAnalytics = async (assets: Asset[]): Promise<AssetDashboardData> => {

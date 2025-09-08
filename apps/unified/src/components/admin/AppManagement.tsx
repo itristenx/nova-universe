@@ -19,12 +19,19 @@ import {
   type CustomApp,
   type AppAssignment,
 } from '@services/enhancedAppSwitcher';
+<<<<<<< Updated upstream
 import { useRBACStore } from '../../stores/rbacStore';
 
 export function AppManagement() {
   const { t } = useTranslation(['admin']);
   const { currentUser } = useRBACStore();
   const { addNotification } = useNotifications();
+=======
+import toast from 'react-hot-toast';
+
+export function AppManagement() {
+  const { t } = useTranslation(['admin', 'common']);
+>>>>>>> Stashed changes
   const [apps, setApps] = useState<CustomApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -55,13 +62,18 @@ export function AppManagement() {
       setLoading(true);
       const allApps = await enhancedAppSwitcherService.getAllApps();
       setApps(allApps);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to load apps:', error);
-      addNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to load applications',
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load applications';
+      toast.error(`${t('admin:appManagement.errors.loadFailed')}: ${errorMessage}`);
+      
+      // Track loading failures for monitoring
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('App Management Load Failed', {
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -71,29 +83,52 @@ export function AppManagement() {
     try {
       const appAssignments = await enhancedAppSwitcherService.getAppAssignments(appId);
       setAssignments(appAssignments);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to load assignments:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load app assignments';
+      toast.error(`${t('admin:appManagement.errors.assignmentLoadFailed')}: ${errorMessage}`);
+      
+      // Track assignment loading failures
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('App Assignment Load Failed', {
+          appId,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   };
 
   const handleCreateApp = async () => {
     try {
+<<<<<<< Updated upstream
       await enhancedAppSwitcherService.createCustomApp(formData, currentUser?.id);
       addNotification({
         type: 'success',
         title: 'Success',
         message: 'Application created successfully',
       });
+=======
+      await enhancedAppSwitcherService.createCustomApp(formData);
+      toast.success(t('admin:appManagement.success.created'));
+>>>>>>> Stashed changes
       setShowCreateModal(false);
       resetForm();
       loadApps();
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to create app:', error);
-      addNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to create application',
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create application';
+      toast.error(`${t('admin:appManagement.errors.createFailed')}: ${errorMessage}`);
+      
+      // Track app creation failures
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('App Creation Failed', {
+          appName: formData.name,
+          appType: formData.type,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   };
 
@@ -102,22 +137,25 @@ export function AppManagement() {
 
     try {
       await enhancedAppSwitcherService.updateCustomApp(selectedApp.id, formData);
-      addNotification({
-        type: 'success',
-        title: 'Success',
-        message: 'Application updated successfully',
-      });
+      toast.success(t('admin:appManagement.success.updated'));
       setShowEditModal(false);
       setSelectedApp(null);
       resetForm();
       loadApps();
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to update app:', error);
-      addNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to update application',
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update application';
+      toast.error(`${t('admin:appManagement.errors.updateFailed')}: ${errorMessage}`);
+      
+      // Track app update failures
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('App Update Failed', {
+          appId: selectedApp.id,
+          appName: formData.name,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   };
 
@@ -126,21 +164,24 @@ export function AppManagement() {
 
     try {
       await enhancedAppSwitcherService.deleteCustomApp(selectedApp.id);
-      addNotification({
-        type: 'success',
-        title: 'Success',
-        message: 'Application deleted successfully',
-      });
+      toast.success(t('admin:appManagement.success.deleted'));
       setShowDeleteModal(false);
       setSelectedApp(null);
       loadApps();
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to delete app:', error);
-      addNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to delete application',
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete application';
+      toast.error(`${t('admin:appManagement.errors.deleteFailed')}: ${errorMessage}`);
+      
+      // Track app deletion failures
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('App Deletion Failed', {
+          appId: selectedApp.id,
+          appName: selectedApp.name,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   };
 

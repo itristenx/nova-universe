@@ -2,38 +2,136 @@ import { describe, test, beforeEach } from 'node:test';
 import assert from 'node:assert';
 import { SLAMatrixService } from '../services/sla-matrix.service.js';
 
-// Mock the logger to avoid import issues
+// Enhanced mock logger with comprehensive testing support
 const mockLogger = {
-  info: () => {},
-  error: () => {},
-  warn: () => {},
+  info: (message, data) => {
+    // Enhanced logging for test debugging and audit trails
+    console.log(`[TEST-INFO] ${new Date().toISOString()} - ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  },
+  error: (message, data) => {
+    // Enhanced error logging for comprehensive test failure analysis
+    console.error(`[TEST-ERROR] ${new Date().toISOString()} - ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  },
+  warn: (message, data) => {
+    // Enhanced warning logging for test validation issues
+    console.warn(`[TEST-WARN] ${new Date().toISOString()} - ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  },
+  debug: (message, data) => {
+    // Enhanced debug logging for detailed test analysis
+    console.debug(`[TEST-DEBUG] ${new Date().toISOString()} - ${message}`, data ? JSON.stringify(data, null, 2) : '');
+  }
 };
 
 describe('SLA Matrix Service', () => {
+  
+  // Enhanced test setup with comprehensive initialization
+  beforeEach(() => {
+    // Comprehensive test environment setup with enhanced logging
+    mockLogger.info('Setting up SLA Matrix Service test environment', {
+      testSuite: 'SLA-Matrix-Service',
+      timestamp: new Date().toISOString(),
+      environment: 'test',
+      initializationPhase: 'beforeEach-setup'
+    });
+    
+    // Reset any global state or configurations
+    process.env.NODE_ENV = 'test';
+    
+    // Enhanced test data preparation
+    const testContext = {
+      defaultMatrix: SLAMatrixService.getDefaultMatrix?.() || 'not-available',
+      supportedImpactLevels: ['critical', 'high', 'medium', 'low'],
+      supportedUrgencyLevels: ['critical', 'high', 'medium', 'low'],
+      expectedPriorityRange: [1, 2, 3, 4]
+    };
+    
+    mockLogger.info('Test environment initialized successfully', {
+      context: testContext,
+      readiness: 'ready',
+      timestamp: new Date().toISOString()
+    });
+  });
+  
   describe('Priority Matrix Calculation', () => {
     test('should calculate priority correctly using default matrix', () => {
+      mockLogger.info('Starting priority matrix calculation test', {
+        testType: 'priority-calculation',
+        matrixType: 'default',
+        testCases: 4
+      });
+      
       // Critical Impact, Critical Urgency = Critical (1)
-      assert.strictEqual(SLAMatrixService.calculatePriority(1, 1), 1);
+      const result1 = SLAMatrixService.calculatePriority(1, 1);
+      assert.strictEqual(result1, 1);
+      mockLogger.debug('Priority calculation verified', { impact: 1, urgency: 1, result: result1, expected: 1 });
       
       // Critical Impact, High Urgency = Critical (1)
-      assert.strictEqual(SLAMatrixService.calculatePriority(1, 2), 1);
+      const result2 = SLAMatrixService.calculatePriority(1, 2);
+      assert.strictEqual(result2, 1);
+      mockLogger.debug('Priority calculation verified', { impact: 1, urgency: 2, result: result2, expected: 1 });
       
       // High Impact, Critical Urgency = Critical (1)
-      assert.strictEqual(SLAMatrixService.calculatePriority(2, 1), 1);
+      const result3 = SLAMatrixService.calculatePriority(2, 1);
+      assert.strictEqual(result3, 1);
+      mockLogger.debug('Priority calculation verified', { impact: 2, urgency: 1, result: result3, expected: 1 });
       
       // Low Impact, Low Urgency = Low (4)
-      assert.strictEqual(SLAMatrixService.calculatePriority(4, 4), 4);
+      const result4 = SLAMatrixService.calculatePriority(4, 4);
+      assert.strictEqual(result4, 4);
+      mockLogger.debug('Priority calculation verified', { impact: 4, urgency: 4, result: result4, expected: 4 });
+      
+      mockLogger.info('Priority matrix calculation test completed successfully', {
+        testsPassed: 4,
+        totalAssertions: 4,
+        status: 'success'
+      });
     });
 
     test('should handle string inputs correctly', () => {
-      assert.strictEqual(SLAMatrixService.calculatePriority('critical', 'critical'), 1);
-      assert.strictEqual(SLAMatrixService.calculatePriority('medium', 'low'), 4);
-      assert.strictEqual(SLAMatrixService.calculatePriority('low', 'medium'), 4);
+      mockLogger.info('Starting string input handling test', {
+        testType: 'string-input-validation',
+        inputTypes: ['string-critical', 'string-medium', 'string-low']
+      });
+      
+      const result1 = SLAMatrixService.calculatePriority('critical', 'critical');
+      assert.strictEqual(result1, 1);
+      mockLogger.debug('String input verified', { impact: 'critical', urgency: 'critical', result: result1, expected: 1 });
+      
+      const result2 = SLAMatrixService.calculatePriority('medium', 'low');
+      assert.strictEqual(result2, 4);
+      mockLogger.debug('String input verified', { impact: 'medium', urgency: 'low', result: result2, expected: 4 });
+      
+      const result3 = SLAMatrixService.calculatePriority('low', 'medium');
+      assert.strictEqual(result3, 4);
+      mockLogger.debug('String input verified', { impact: 'low', urgency: 'medium', result: result3, expected: 4 });
+      
+      mockLogger.info('String input handling test completed successfully', {
+        testsPassed: 3,
+        stringConversionSupported: true,
+        status: 'success'
+      });
     });
 
     test('should default to low priority for invalid inputs', () => {
-      assert.strictEqual(SLAMatrixService.calculatePriority('invalid', 'invalid'), 4);
-      assert.strictEqual(SLAMatrixService.calculatePriority(null, undefined), 4);
+      mockLogger.info('Starting invalid input handling test', {
+        testType: 'invalid-input-validation',
+        errorHandling: 'graceful-degradation'
+      });
+      
+      const result1 = SLAMatrixService.calculatePriority('invalid', 'invalid');
+      assert.strictEqual(result1, 4);
+      mockLogger.debug('Invalid input handled gracefully', { impact: 'invalid', urgency: 'invalid', result: result1, expected: 4 });
+      
+      const result2 = SLAMatrixService.calculatePriority(null, undefined);
+      assert.strictEqual(result2, 4);
+      mockLogger.debug('Null/undefined input handled gracefully', { impact: null, urgency: undefined, result: result2, expected: 4 });
+      
+      mockLogger.info('Invalid input handling test completed successfully', {
+        testsPassed: 2,
+        errorHandling: 'verified',
+        defaultBehavior: 'low-priority-fallback',
+        status: 'success'
+      });
     });
   });
 

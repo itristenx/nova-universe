@@ -100,8 +100,8 @@ router.get('/dashboard', authenticateJWT, async (req, res) => {
           `SELECT COUNT(*) as articles FROM knowledge_base_articles WHERE created_at >= ${timeFilter}`,
         )
         .catch(() => ({ rows: [{ articles: 0 }] })),
-      // System uptime (mock for now)
-      Promise.resolve({ rows: [{ uptime: 99.9 }] }),
+      // System uptime (placeholder; replace with real monitoring source)
+      Promise.resolve({ rows: [{ uptime: 0 }] }),
     ]);
 
     // Performance Metrics

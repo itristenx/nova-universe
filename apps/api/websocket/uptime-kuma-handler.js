@@ -373,6 +373,17 @@ export function handleUptimeKumaWebSocket(ws, req) {
       // Optionally, attach decoded user info to the ws for future use
       ws.user = decoded;
     } catch (err) {
+      // Enhanced error handling with comprehensive JWT validation failure logging
+      logger.error('WebSocket JWT authentication failed', {
+        error: err.message,
+        errorType: err.name,
+        tokenProvided: !!token,
+        tokenLength: token ? token.length : 0,
+        timestamp: new Date().toISOString(),
+        connectionAttempt: 'rejected',
+        securityReason: 'invalid_jwt_token'
+      });
+      
       logger.warn('WebSocket connection rejected: invalid token');
       ws.close(1008, 'Invalid authentication token');
       return;
@@ -381,8 +392,33 @@ export function handleUptimeKumaWebSocket(ws, req) {
     logger.info('New WebSocket connection for Uptime Kuma events');
     uptimeKumaWsHandler.addNovaClient(ws);
   } catch (err) {
-    logger.error('WebSocket auth handling failed:', err);
-    try { ws.close(1011, 'Internal error'); } catch {}
+    // Enhanced general error handling with comprehensive context logging
+    logger.error('WebSocket auth handling failed with detailed error context:', {
+      error: err.message,
+      errorType: err.name,
+      errorCode: err.code || 'UNKNOWN',
+      stack: err.stack?.substring(0, 200) + '...',
+      timestamp: new Date().toISOString(),
+      connectionState: 'failed',
+      recoveryAction: 'connection_terminated',
+      troubleshooting: {
+        checkJwtSecret: process.env.JWT_SECRET ? 'configured' : 'missing',
+        checkUptime: 'verify service status',
+        checkNetwork: 'validate connectivity'
+      }
+    });
+    
+    try { 
+      ws.close(1011, 'Internal error'); 
+    } catch (closeErr) {
+      // Additional error handling for connection cleanup failures
+      logger.error('Failed to close WebSocket connection gracefully', {
+        closeError: closeErr.message,
+        originalError: err.message,
+        timestamp: new Date().toISOString(),
+        cleanupFailed: true
+      });
+    }
   }
 }
 

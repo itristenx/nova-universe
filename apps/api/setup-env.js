@@ -173,7 +173,7 @@ RATE_LIMIT_MAX_REQUESTS=100
 ALLOW_START_WITHOUT_DB=true
 
 # Enable mock database for development
-MOCK_DB_ENABLED=true
+MOCK_DB_ENABLED=false
 
 # Debug database connections
 DEBUG_DB_CONNECTION=true

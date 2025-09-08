@@ -618,18 +618,163 @@ Meanwhile, here's some general information that might be helpful:
     }
 
     try {
-      // Use ML Pipeline to classify intent
+      // Enhanced intent detection with context-aware analysis
+      const contextualFeatures = this.extractContextualFeatures(context);
+      const timestamp = new Date().toISOString();
+      
+      // Log comprehensive context analysis for audit and debugging
+      logger.info(`Intent detection initiated: ${timestamp}`, {
+        query: query.substring(0, 100) + '...',
+        contextType: context?.type || 'unknown',
+        userPreferences: context?.user?.preferences || {},
+        sessionContext: context?.session || {},
+        organizationalContext: context?.organization || {},
+        historicalPatterns: context?.history || []
+      });
+
+      // Use ML Pipeline with enhanced contextual data
       const result = await novaMLPipeline.predictWithCosmoPersonality(
         this.intentClassifier.id,
         query,
-        { context: 'intent_detection' }
+        { 
+          context: 'intent_detection',
+          contextualData: contextualFeatures,
+          userContext: context?.user || {},
+          sessionMetadata: context?.session || {},
+          organizationalSettings: context?.organization || {},
+          timestamp
+        }
       );
 
-      return result.prediction || 'unknown';
+      // Enhanced result processing with context validation
+      const detectedIntent = result.prediction || 'unknown';
+      const confidence = result.confidence || 0;
+      
+      // Context-aware intent refinement
+      const refinedIntent = this.refineIntentWithContext(detectedIntent, context, confidence);
+      
+      logger.info(`Intent detection completed: ${timestamp}`, {
+        originalIntent: detectedIntent,
+        refinedIntent,
+        confidence,
+        contextualInfluence: context?.influence || 'none',
+        processingTime: Date.now() - new Date(timestamp).getTime()
+      });
+
+      return refinedIntent;
     } catch (error) {
-      logger.warn('Intent detection failed:', error.message);
+      logger.error('Intent detection failed with context analysis:', {
+        error: error.message,
+        query: query.substring(0, 50) + '...',
+        contextAvailable: !!context,
+        contextKeys: context ? Object.keys(context) : [],
+        timestamp: new Date().toISOString()
+      });
       return 'unknown';
     }
+  }
+
+  /**
+   * Extract contextual features for enhanced intent detection
+   */
+  private extractContextualFeatures(context: any): Record<string, any> {
+    if (!context) {
+      return {
+        hasContext: false,
+        featureCount: 0,
+        extractedAt: new Date().toISOString()
+      };
+    }
+
+    const features = {
+      hasContext: true,
+      userType: context.user?.type || 'unknown',
+      sessionDuration: context.session?.duration || 0,
+      organizationSize: context.organization?.size || 'unknown',
+      previousInteractions: Array.isArray(context.history) ? context.history.length : 0,
+      deviceType: context.device?.type || 'unknown',
+      timeOfDay: new Date().getHours(),
+      urgencyLevel: context.urgency || 'normal',
+      contextComplexity: this.calculateContextComplexity(context),
+      featureCount: Object.keys(context).length,
+      extractedAt: new Date().toISOString()
+    };
+
+    return features;
+  }
+
+  /**
+   * Calculate context complexity score for analysis
+   */
+  private calculateContextComplexity(context: any): number {
+    let complexity = 0;
+    
+    if (context.user) complexity += 2;
+    if (context.session) complexity += 1;
+    if (context.organization) complexity += 3;
+    if (context.history && Array.isArray(context.history)) {
+      complexity += Math.min(context.history.length, 10);
+    }
+    if (context.preferences) complexity += 2;
+    
+    return complexity;
+  }
+
+  /**
+   * Refine intent detection results based on contextual analysis
+   */
+  private refineIntentWithContext(detectedIntent: string, context: any, confidence: number): string {
+    if (!context || confidence < 0.5) {
+      return detectedIntent;
+    }
+
+    // Context-based intent refinement rules
+    const contextualRefinements = {
+      'question': this.refineQuestionIntent(context),
+      'request': this.refineRequestIntent(context),
+      'complaint': this.refineComplaintIntent(context),
+      'urgent': this.refineUrgentIntent(context),
+      'information': this.refineInformationIntent(context)
+    };
+
+    const refinement = contextualRefinements[detectedIntent];
+    if (refinement) {
+      return refinement;
+    }
+
+    // Default enhancement based on context urgency
+    if (context.urgency === 'high' && !detectedIntent.includes('urgent')) {
+      return `urgent_${detectedIntent}`;
+    }
+
+    return detectedIntent;
+  }
+
+  private refineQuestionIntent(context: any): string {
+    if (context.user?.type === 'technical') return 'technical_question';
+    if (context.organization?.size === 'enterprise') return 'enterprise_question';
+    return 'question';
+  }
+
+  private refineRequestIntent(context: any): string {
+    if (context.urgency === 'high') return 'urgent_request';
+    if (context.session?.duration > 300) return 'complex_request';
+    return 'request';
+  }
+
+  private refineComplaintIntent(context: any): string {
+    if (context.history?.length > 3) return 'escalated_complaint';
+    return 'complaint';
+  }
+
+  private refineUrgentIntent(context: any): string {
+    if (context.organization?.tier === 'enterprise') return 'enterprise_urgent';
+    return 'urgent';
+  }
+
+  private refineInformationIntent(context: any): string {
+    if (context.user?.preferences?.detailed === true) return 'detailed_information';
+    return 'information';
   }
 
   private async adaptPersonality(synthQuery: SynthQuery): Promise<PersonalityAdaptation> {
@@ -879,24 +1024,199 @@ Meanwhile, here's some general information that might be helpful:
   }
 
   private buildStepByStepGuide(chunks: any[], synthQuery: SynthQuery): string {
-    // Extract actionable steps from chunks
+    // Extract actionable steps from chunks with enhanced context awareness
     const steps: string[] = [];
+    const contextualModifiers = this.getContextualModifiers(synthQuery);
+    const timestamp = new Date().toISOString();
     
+    // Log comprehensive step building process for audit
+    logger.info(`Building step-by-step guide: ${timestamp}`, {
+      chunkCount: chunks.length,
+      userContext: synthQuery.context,
+      urgency: synthQuery.context.urgency || 'medium',
+      module: synthQuery.context.module,
+      requestType: synthQuery.context.requestType || 'unknown',
+      userExpertiseLevel: synthQuery.context.userExpertiseLevel || 'intermediate'
+    });
+
+    // Enhanced step extraction with context-aware processing
     chunks.forEach((chunk, index) => {
       if (chunk.content.toLowerCase().includes('step') || 
           chunk.content.toLowerCase().includes('first') ||
           chunk.content.toLowerCase().includes('then')) {
-        steps.push(`${index + 1}. ${this.extractKeySentence(chunk.content)}`);
+        
+        const baseStep = this.extractKeySentence(chunk.content);
+        const enhancedStep = this.enhanceStepWithContext(baseStep, synthQuery, index + 1);
+        steps.push(`${index + 1}. ${enhancedStep}`);
       }
     });
 
+    // Context-aware fallback steps based on synthQuery analysis
     if (steps.length === 0) {
-      return `1. ${this.extractKeySentence(chunks[0]?.content || 'No specific steps available')}\n2. If that doesn't resolve the issue, please check the related documentation\n3. Contact support if the problem persists`;
+      const fallbackSteps = this.generateContextualFallbackSteps(chunks, synthQuery);
+      steps.push(...fallbackSteps);
     }
 
-    return steps.join('\n');
+    // Add contextual modifiers based on synthQuery data
+    const enhancedSteps = steps.map(step => {
+      return this.applyContextualEnhancements(step, contextualModifiers, synthQuery);
+    });
+
+    // Add closing context based on synthQuery urgency and user type
+    const closingContext = this.generateClosingContext(synthQuery);
+    enhancedSteps.push(closingContext);
+
+    const finalGuide = enhancedSteps.join('\n');
+    
+    logger.info(`Step-by-step guide completed: ${timestamp}`, {
+      originalStepCount: steps.length,
+      enhancedStepCount: enhancedSteps.length,
+      contextualModifiersApplied: contextualModifiers.length,
+      userGuidanceLevel: synthQuery.context.userExpertiseLevel || 'intermediate',
+      processingTime: Date.now() - new Date(timestamp).getTime()
+    });
+
+    return finalGuide;
   }
 
+  /**
+   * Get contextual modifiers based on synthQuery analysis
+   */
+  private getContextualModifiers(synthQuery: SynthQuery): string[] {
+    const modifiers: string[] = [];
+    
+    if (synthQuery.context.urgency === 'high') modifiers.push('urgent');
+    if (synthQuery.context.module === 'technical') modifiers.push('technical');
+    if (synthQuery.context.requestType === 'troubleshooting') modifiers.push('troubleshooting');
+    if (synthQuery.context.intent === 'guidance') modifiers.push('guided');
+    
+    return modifiers;
+  }
+
+  /**
+   * Enhance individual steps with contextual information
+   */
+  private enhanceStepWithContext(step: string, synthQuery: SynthQuery, stepNumber: number): string {
+    let enhancedStep = step;
+    
+    // Add urgency indicators for high priority requests
+    if (synthQuery.context.urgency === 'high') {
+      enhancedStep = `[URGENT] ${enhancedStep}`;
+    }
+    
+    // Add technical context for technical modules
+    if (synthQuery.context.module === 'technical' || synthQuery.context.module === 'IT') {
+      enhancedStep += ` (Technical validation required)`;
+    }
+    
+    // Add timing context for first steps
+    if (stepNumber === 1 && synthQuery.context.urgency === 'high') {
+      enhancedStep += ` - Complete this step immediately`;
+    }
+    
+    return enhancedStep;
+  }
+
+  /**
+   * Generate contextual fallback steps when no specific steps are found
+   */
+  private generateContextualFallbackSteps(chunks: any[], synthQuery: SynthQuery): string[] {
+    const fallbackSteps: string[] = [];
+    
+    const primaryContent = chunks[0]?.content || 'No specific information available';
+    const baseStep = this.extractKeySentence(primaryContent);
+    
+    fallbackSteps.push(`1. ${baseStep}`);
+    
+    // Context-specific fallback steps
+    if (synthQuery.context.urgency === 'high') {
+      fallbackSteps.push('2. If this doesn\'t resolve the urgent issue, escalate immediately to our support team');
+      fallbackSteps.push('3. Document any error messages or symptoms for rapid resolution');
+    } else if (synthQuery.context.module === 'technical') {
+      fallbackSteps.push('2. Verify technical requirements and dependencies');
+      fallbackSteps.push('3. Check system logs for additional context');
+      fallbackSteps.push('4. Contact technical support if the problem persists');
+    } else {
+      fallbackSteps.push('2. If that doesn\'t resolve the issue, please check the related documentation');
+      fallbackSteps.push('3. Contact support if the problem persists');
+    }
+    
+    return fallbackSteps;
+  }
+
+  /**
+   * Apply contextual enhancements to steps based on modifiers
+   */
+  private applyContextualEnhancements(step: string, modifiers: string[], synthQuery: SynthQuery): string {
+    let enhancedStep = step;
+    
+    // Apply modifier-based enhancements
+    if (modifiers.includes('urgent')) {
+      enhancedStep = enhancedStep.replace(/\b(check|review|consider)\b/gi, 'immediately $1');
+    }
+    
+    if (modifiers.includes('technical')) {
+      enhancedStep += ' (Ensure proper technical validation)';
+    }
+    
+    if (modifiers.includes('troubleshooting')) {
+      enhancedStep += ' - Document results for troubleshooting analysis';
+    }
+
+    // Enhanced context-aware enhancements using synthQuery data
+    const userContext = synthQuery.context;
+    
+    // Add user-specific enhancements based on synthQuery context
+    if (userContext.userId && enhancedStep.toLowerCase().includes('contact')) {
+      enhancedStep = enhancedStep.replace(/contact/, `contact (Reference: User ${userContext.userId.substring(0, 8)}...)`);
+    }
+    
+    // Add tenant-specific context
+    if (userContext.tenantId && userContext.urgency === 'high') {
+      enhancedStep += ` [Tenant Priority: ${userContext.tenantId.substring(0, 8)}...]`;
+    }
+    
+    // Add module-specific enhancements
+    if (userContext.module && userContext.module !== 'general') {
+      enhancedStep += ` (${userContext.module} module context)`;
+    }
+    
+    // Add session continuity for complex requests
+    if (userContext.sessionId && modifiers.includes('troubleshooting')) {
+      enhancedStep += ` [Session: ${userContext.sessionId.substring(0, 8)}...]`;
+    }
+    
+    // Add conversation continuity
+    if (userContext.conversationId && enhancedStep.toLowerCase().includes('additional')) {
+      enhancedStep += ` (Conversation context maintained: ${userContext.conversationId.substring(0, 8)}...)`;
+    }
+    
+    return enhancedStep;
+  }
+
+  /**
+   * Generate closing context based on synthQuery characteristics
+   */
+  private generateClosingContext(synthQuery: SynthQuery): string {
+    const contextElements: string[] = [];
+    
+    if (synthQuery.context.urgency === 'high') {
+      contextElements.push('⚡ This is marked as high urgency - prioritize completion of these steps');
+    }
+    
+    if (synthQuery.context.module) {
+      contextElements.push(`📋 Module context: ${synthQuery.context.module}`);
+    }
+    
+    if (synthQuery.context.requestType) {
+      contextElements.push(`🎯 Request type: ${synthQuery.context.requestType}`);
+    }
+    
+    contextElements.push('💬 If you need additional assistance, please don\'t hesitate to ask');
+    
+    return `\n${contextElements.join('\n')}`;
+  }
+  
   private buildAdditionalInfo(chunks: any[]): string {
     if (chunks.length <= 1) return '';
     

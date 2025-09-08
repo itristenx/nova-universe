@@ -66,51 +66,6 @@ export function PredictiveAnalyticsDashboard() {
         setMetrics(metrics);
       } catch (_error) {
         console.error('Failed to fetch predictive analytics:', _error);
-        // Set fallback mock data on error
-        setInsights([
-          {
-            id: 'user-trend',
-            type: 'trend',
-            title: 'User Activity Spike Expected',
-            description: 'AI predicts 35% increase in user activity next week',
-            confidence: 87,
-            impact: 'medium',
-            timeline: 'Next 7 days',
-            action: 'Scale Resources'
-          },
-          {
-            id: 'server-health',
-            type: 'prediction',
-            title: 'Server Performance Alert',
-            description: 'Database server may reach capacity limits',
-            confidence: 92,
-            impact: 'high',
-            timeline: 'Next 3 days',
-            action: 'Optimize Database'
-          }
-        ]);
-        setMetrics([
-          {
-            id: 'users',
-            title: 'Active Users',
-            value: '2,847',
-            change: 12.5,
-            trend: 'up',
-            prediction: 'Expected to grow 15% next week',
-            icon: UserGroupIcon,
-            color: 'text-blue-600'
-          },
-          {
-            id: 'servers',
-            title: 'Server Health',
-            value: '96.2%',
-            change: -1.2,
-            trend: 'down',
-            prediction: 'May need attention soon',
-            icon: ServerIcon,
-            color: 'text-green-600'
-          }
-        ]);
       } finally {
         setIsLoading(false);
       }

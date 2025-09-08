@@ -3,30 +3,93 @@ import assert from 'node:assert';
 import { SLAMatrixService } from '../services/sla-matrix.service.js';
 
 describe('VIP Priority Boost System', () => {
+  
+  // Enhanced test setup with comprehensive VIP system initialization
+  beforeEach(() => {
+    // Comprehensive VIP priority boost test environment setup
+    console.log(`[VIP-TEST-SETUP] ${new Date().toISOString()} - Initializing VIP Priority Boost test environment`);
+    
+    // Reset any global VIP configurations to ensure clean test state
+    process.env.NODE_ENV = 'test';
+    process.env.VIP_BOOST_ENABLED = 'true';
+    
+    // Initialize VIP test context with comprehensive configuration
+    const vipTestContext = {
+      supportedVipTiers: ['standard', 'priority', 'gold', 'platinum'],
+      boostLevels: {
+        standard: 0,
+        priority: 1,
+        gold: 1,
+        platinum: 2
+      },
+      maxPriorityLevel: 1, // Critical priority
+      minPriorityLevel: 4, // Low priority
+      testCases: {
+        nonVip: { boost: 0, expectBoost: false },
+        standardVip: { boost: 0, expectBoost: false },
+        priorityVip: { boost: 1, expectBoost: true },
+        goldVip: { boost: 1, expectBoost: true },
+        platinumVip: { boost: 2, expectBoost: true }
+      }
+    };
+    
+    // Log comprehensive test initialization details
+    console.log(`[VIP-TEST-SETUP] Test context initialized:`, JSON.stringify(vipTestContext, null, 2));
+    
+    // Validate VIP boost service availability and configuration
+    try {
+      const serviceAvailable = typeof SLAMatrixService.applyVipPriorityBoost === 'function';
+      console.log(`[VIP-TEST-SETUP] VIP Priority Boost service available: ${serviceAvailable ? '✅' : '❌'}`);
+      
+      if (serviceAvailable) {
+        // Test basic service functionality
+        const testBoost = SLAMatrixService.applyVipPriorityBoost(4, false, null);
+        console.log(`[VIP-TEST-SETUP] Service validation test result:`, testBoost);
+      }
+    } catch (error) {
+      console.error(`[VIP-TEST-SETUP] Service validation failed:`, error.message);
+    }
+    
+    // Setup complete confirmation
+    console.log(`[VIP-TEST-SETUP] ${new Date().toISOString()} - VIP Priority Boost test environment ready`);
+  });
+  
   describe('VIP Priority Boost Calculation', () => {
     test('should not boost priority for non-VIP users', () => {
+      console.log('[VIP-TEST] Testing non-VIP user priority (no boost expected)');
+      
       const result = SLAMatrixService.applyVipPriorityBoost(4, false, null);
       
       assert.strictEqual(result.finalPriority, 4);
       assert.strictEqual(result.boosted, false);
       assert.strictEqual(result.boostReason, null);
+      
+      console.log(`[VIP-TEST] Non-VIP test passed: priority=${result.finalPriority}, boosted=${result.boosted}`);
     });
 
     test('should boost priority by 1 for regular VIP users', () => {
+      console.log('[VIP-TEST] Testing regular VIP user priority boost');
+      
       const result = SLAMatrixService.applyVipPriorityBoost(4, true, 'priority');
       
       assert.strictEqual(result.finalPriority, 3); // Low becomes Medium
       assert.strictEqual(result.boosted, true);
       assert.strictEqual(result.boostReason, 'VIP Status (+1 level)');
       assert.strictEqual(result.originalPriority, 4);
+      
+      console.log(`[VIP-TEST] Regular VIP test passed: ${result.originalPriority} → ${result.finalPriority} (${result.boostReason})`);
     });
 
     test('should boost priority by 1 for gold VIP users', () => {
+      console.log('[VIP-TEST] Testing gold VIP user priority boost');
+      
       const result = SLAMatrixService.applyVipPriorityBoost(3, true, 'gold');
       
       assert.strictEqual(result.finalPriority, 2); // Medium becomes High
       assert.strictEqual(result.boosted, true);
       assert.strictEqual(result.boostReason, 'Gold VIP Status (+1 level)');
+      
+      console.log(`[VIP-TEST] Gold VIP test passed: Medium → High (${result.boostReason})`);
     });
 
     test('should boost priority by 2 for executive VIP users', () => {

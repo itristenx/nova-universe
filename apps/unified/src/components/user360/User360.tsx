@@ -115,9 +115,30 @@ export function User360({ userId: propUserId, className = '' }: User360Props) {
         setTrainingRecords(trainingRecordsData);
         setConversationSessions(conversationSessionsData);
       } catch (apiError) {
-        console.warn('API unavailable, using mock data:', apiError);
-
-        // Mock data for development/demo
+        console.error('User360 API error:', apiError);
+        // Clear or set minimal error state without mock data
+        setProfile(undefined as any);
+        setAssets([]);
+        setSecurityAlerts([]);
+        setInteractions([]);
+        setInteractionStats({
+          totalInteractions: 0,
+          inboundInteractions: 0,
+          outboundInteractions: 0,
+          aiGeneratedInteractions: 0,
+          systemInteractions: 0,
+          avgResponseTime: 0,
+          pendingResponses: 0,
+          escalatedSessions: 0,
+          timeframe: '7d',
+          satisfaction: { avgScore: 0, totalRatings: 0 },
+        });
+        setTickets([]);
+        setActivityLogs([]);
+        setTrainingRecords([]);
+        setConversationSessions([]);
+        setError('Failed to load user data');
+        return;
         const mockProfile: User360Profile = {
           id: userId,
           helix_uid: userId,

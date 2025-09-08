@@ -105,7 +105,7 @@ class NovaSynthProductionConfig {
       development: {
         debug: true,
         logLevel: 'debug',
-        mockMode: true,
+        mockMode: false,
         rateLimiting: { requestsPerMinute: 100 },
         monitoring: { healthCheckInterval: 60000 },
       },

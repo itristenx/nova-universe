@@ -29,30 +29,9 @@ const SimpleWorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationPro
     try {
       // TODO: Implement actual API call to WorkflowEngineService
       console.log('Loading workflow:', id);
-      // For now, create a mock workflow
-      const mockWorkflow: Workflow = {
-        id,
-        name: 'Sample Workflow',
-        description: 'A sample workflow for testing',
-        version: '1.0.0',
-        status: WorkflowStatus.DRAFT,
-        type: WorkflowType.PROCESS,
-        category: 'automation',
-        tags: ['sample', 'test'],
-        canvas: {},
-        trigger: undefined,
-        variables: {},
-        settings: {},
-        createdBy: 'system',
-        updatedBy: undefined,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        publishedAt: undefined,
-        archivedAt: undefined,
-        nodes: [],
-        connections: [],
-      };
-      setCurrentWorkflow(mockWorkflow);
+      // No mock workflow; require live backend
+      setError('Workflow loading not implemented');
+      setCurrentWorkflow(undefined as any);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load workflow');
     } finally {
@@ -82,8 +61,7 @@ const SimpleWorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationPro
     try {
       // TODO: Implement actual API call to WorkflowEngineService
       console.log('Executing workflow:', id);
-      // Show success message
-      alert('Workflow execution started!');
+      setError('Workflow execution not implemented');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to execute workflow');
     } finally {
@@ -98,16 +76,7 @@ const SimpleWorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationPro
       try {
         // TODO: Implement actual API call to WorkflowEngineService
         console.log('Publishing workflow:', id);
-        if (currentWorkflow) {
-          setCurrentWorkflow({
-            ...currentWorkflow,
-            status: WorkflowStatus.PUBLISHED,
-            publishedAt: new Date(),
-            updatedAt: new Date(),
-          });
-        }
-        // Show success message
-        alert('Workflow published successfully!');
+        setError('Workflow publish not implemented');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to publish workflow');
       } finally {
