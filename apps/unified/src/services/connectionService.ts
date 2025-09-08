@@ -17,6 +17,10 @@ export interface ConnectionOptions {
   maxRetries: number;
   timeout: number;
   healthEndpoint: string;
+  retryInterval: number;
+  maxRetryInterval: number;
+  maxJitter?: number;
+  maxBackoffExponent?: number;
 }
 
 class ConnectionService {
@@ -29,14 +33,19 @@ class ConnectionService {
   };
 
   private options: ConnectionOptions = {
-    checkInterval: 5000, // 5 seconds
+    checkInterval: 5000, // 5 seconds for normal monitoring
     maxRetries: 3,
     timeout: 5000,
     healthEndpoint: '/api/health',
+    retryInterval: 1000, // 1 second for retry attempts during failures
+    maxRetryInterval: 10000, // Max 10 seconds between retries
+    maxJitter: 1000, // Max 1 second of jitter to prevent thundering herd
+    maxBackoffExponent: 6, // Cap exponential backoff at 2^6 = 64x multiplier
   };
 
   private listeners: Set<(status: ConnectionStatus) => void> = new Set();
   private checkInterval?: NodeJS.Timeout;
+  private retryTimeout?: NodeJS.Timeout;
   private isChecking = false;
 
   constructor() {
@@ -72,6 +81,7 @@ class ConnectionService {
     this.status.isAPIConnected = false;
     this.status.quality = 'offline';
     this.status.retryCount = 0;
+    this.clearRetryTimeout(); // Clear any pending retries when offline
     this.notifyListeners();
   }
 
@@ -110,6 +120,44 @@ class ConnectionService {
       clearInterval(this.checkInterval);
       this.checkInterval = undefined;
     }
+    this.clearRetryTimeout();
+  }
+
+  /**
+   * Start retry timeout for aggressive retries during failures
+   */
+  private startRetryTimeout() {
+    this.clearRetryTimeout();
+    
+    // Calculate retry delay with exponential backoff, capped at maxRetryInterval
+    const baseDelay = this.options.retryInterval;
+    const maxBackoffExponent = this.options.maxBackoffExponent ?? 6;
+    const maxJitter = this.options.maxJitter ?? 1000;
+    
+    const backoffDelay = Math.min(
+      baseDelay * Math.pow(2, Math.min(Math.max(this.status.retryCount - 1, 0), maxBackoffExponent)), // Ensure first retry uses full base delay and cap exponent
+      this.options.maxRetryInterval
+    );
+    
+    // Add some jitter to avoid thundering herd
+    const jitter = Math.random() * maxJitter;
+    const delay = backoffDelay + jitter;
+    
+    this.retryTimeout = setTimeout(() => {
+      if (!this.status.isAPIConnected && this.status.isOnline) {
+        this.checkAPIConnection();
+      }
+    }, delay);
+  }
+
+  /**
+   * Clear retry timeout
+   */
+  private clearRetryTimeout() {
+    if (this.retryTimeout) {
+      clearTimeout(this.retryTimeout);
+      this.retryTimeout = undefined;
+    }
   }
 
   /**
@@ -143,6 +191,7 @@ class ConnectionService {
         this.status.retryCount = 0;
         this.status.latency = latency;
         this.status.quality = this.getConnectionQuality(latency);
+        this.clearRetryTimeout(); // Clear any pending retries
       } else {
         this.handleConnectionFailure();
       }
@@ -166,6 +215,11 @@ class ConnectionService {
     this.status.retryCount++;
     this.status.quality = 'offline';
     this.status.latency = undefined;
+    
+    // Start retry timeout for more aggressive retries
+    if (this.status.isOnline) {
+      this.startRetryTimeout();
+    }
   }
 
   /**
@@ -209,8 +263,8 @@ class ConnectionService {
   public subscribe(callback: (status: ConnectionStatus) => void): () => void {
     this.listeners.add(callback);
 
-    // Immediately call with current status
-    callback(this.status);
+    // Immediately call with current status (create a copy)
+    callback({ ...this.status });
 
     return () => {
       this.listeners.delete(callback);
@@ -221,7 +275,9 @@ class ConnectionService {
    * Notify all listeners of status change
    */
   private notifyListeners() {
-    this.listeners.forEach((callback) => callback(this.status));
+    // Create a new object to ensure React detects the change
+    const statusCopy = { ...this.status };
+    this.listeners.forEach((callback) => callback(statusCopy));
   }
 
   /**
@@ -250,13 +306,19 @@ class ConnectionService {
   }
 
   /**
-   * Get retry with exponential backoff
+   * Get retry delay with exponential backoff and jitter
    */
   public getRetryDelay(): number {
-    const baseDelay = 1000; // 1 second
-    const maxDelay = 30000; // 30 seconds
-    const delay = Math.min(baseDelay * Math.pow(2, this.status.retryCount), maxDelay);
-    return delay + Math.random() * 1000; // Add jitter
+    const baseDelay = this.options.retryInterval;
+    const maxBackoffExponent = this.options.maxBackoffExponent ?? 6;
+    const maxJitter = this.options.maxJitter ?? 1000;
+    
+    const backoffDelay = Math.min(
+      baseDelay * Math.pow(2, Math.min(Math.max(this.status.retryCount - 1, 0), maxBackoffExponent)),
+      this.options.maxRetryInterval
+    );
+    
+    return backoffDelay + Math.random() * maxJitter;
   }
 
   /**
@@ -264,6 +326,7 @@ class ConnectionService {
    */
   public destroy() {
     this.stopMonitoring();
+    this.clearRetryTimeout();
     window.removeEventListener('online', this.handleOnline.bind(this));
     window.removeEventListener('offline', this.handleOffline.bind(this));
     document.removeEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
