@@ -359,8 +359,9 @@ router.get('/analytics/interaction-trends', async (req, res) => {
       data: {
         trends: {
           current: stats,
-          // TODO: Add historical data and trend calculations
-          growth: 0,
+          // Add historical data and trend calculations
+          historical: await userInteractionService.getHistoricalTrends(timeframe, groupBy),
+          growth: await userInteractionService.calculateGrowthRate(timeframe),
           timeframe,
           groupBy
         }

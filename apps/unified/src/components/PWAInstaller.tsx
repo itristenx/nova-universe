@@ -47,12 +47,10 @@ export default function PWAInstaller({ showDelay = 5000, className = '' }: PWAIn
       }
     }
 
-    // Register service worker (temporarily disabled for development)
-    // TODO: Create service worker file or implement proper PWA setup
-    /*
+    // Register service worker for PWA functionality
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register('/sw.js')
+        .register('/service-worker.js')
         .then((registration) => {
           console.log('PWA: Service worker registered successfully');
 
@@ -75,7 +73,6 @@ export default function PWAInstaller({ showDelay = 5000, className = '' }: PWAIn
           console.error('PWA: Service worker registration failed:', error);
         });
     }
-    */
 
     // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {

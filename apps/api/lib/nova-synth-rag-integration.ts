@@ -260,7 +260,9 @@ export class NovaSynthRAGIntegration extends EventEmitter {
       }
 
       // Adapt personality based on context
+      const personalityStartTime = Date.now();
       const adaptedPersonality = await this.adaptPersonality(synthQuery);
+      const personalityAdaptationTime = Date.now() - personalityStartTime;
 
       // Get conversation context if available
       const conversationContext = this.config.enableConversationMemory ?
@@ -272,11 +274,57 @@ export class NovaSynthRAGIntegration extends EventEmitter {
         query: this.enhanceQueryWithContext(synthQuery, conversationContext),
         context: {
           userId: synthQuery.context.userId,
+          // Extract user roles and security clearance from user context
+          let userRoles: string[] = [];
+          let securityClearance = 'standard';
+          
+          try {
+            if (synthQuery.context.userId) {
+              // Query user roles
+              const roles = await new Promise<any[]>((resolve) => {
+                db.all(`
+                  SELECT r.name as role_name, r.description, p.name as permission_name
+                  FROM user_roles ur
+                  JOIN roles r ON ur.role_id = r.id
+                  LEFT JOIN role_permissions rp ON r.id = rp.role_id  
+                  LEFT JOIN permissions p ON rp.permission_id = p.id
+                  WHERE ur.user_id = $1
+                `, [synthQuery.context.userId], (err: any, rows: any[]) => {
+                  if (err || !rows) {
+                    resolve([]);
+                  } else {
+                    resolve(rows);
+                  }
+                });
+              });
+              
+              if (roles && roles.length > 0) {
+                userRoles = [...new Set(roles.map(r => r.role_name).filter(Boolean))];
+                
+                // Determine security clearance based on roles
+                if (userRoles.includes('admin') || userRoles.includes('security_admin')) {
+                  securityClearance = 'admin';
+                } else if (userRoles.includes('manager') || userRoles.includes('supervisor')) {
+                  securityClearance = 'elevated';  
+                } else if (userRoles.includes('agent') || userRoles.includes('support')) {
+                  securityClearance = 'standard';
+                } else {
+                  securityClearance = 'basic';
+                }
+              }
+            }
+          } catch (error: any) {
+            logger.warn('Failed to extract user roles and clearance, using defaults', {
+              userId: synthQuery.context.userId,
+              error: error.message
+            });
+          }
+
           tenantId: synthQuery.context.tenantId,
           module: synthQuery.context.module,
           sessionId: synthQuery.context.sessionId,
-          userRoles: [], // TODO: Extract from user context
-          securityClearance: 'standard', // TODO: Extract from user context
+          userRoles,
+          securityClearance,
         },
         filters: {
           ...synthQuery.filters,
@@ -353,7 +401,7 @@ export class NovaSynthRAGIntegration extends EventEmitter {
           processingTime: Date.now() - startTime,
           ragRetrievalTime: ragEndTime - ragStartTime,
           responseGenerationTime: responseEndTime - responseStartTime,
-          personalityAdaptationTime: 0, // TODO: Measure adaptation time
+          personalityAdaptationTime, // Measured adaptation time
           timestamp: new Date(),
         },
       };

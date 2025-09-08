@@ -917,6 +917,150 @@ class UserInteractionService extends EventEmitter {
   /**
    * Shutdown service
    */
+  /**
+   * Get historical trend data for interactions
+   */
+  async getHistoricalTrends(timeframe = '30d', groupBy = 'day') {
+    try {
+      const startDate = this.getTimeframeStartDate(timeframe);
+      
+      // Define grouping SQL based on groupBy parameter
+      let dateGrouping;
+      let dateFormat;
+      
+      switch (groupBy) {
+        case 'hour':
+          dateGrouping = "DATE_TRUNC('hour', timestamp)";
+          dateFormat = '%Y-%m-%d %H:00:00';
+          break;
+        case 'week':
+          dateGrouping = "DATE_TRUNC('week', timestamp)";
+          dateFormat = '%Y-%m-%d (Week)';
+          break;
+        case 'month':
+          dateGrouping = "DATE_TRUNC('month', timestamp)";
+          dateFormat = '%Y-%m-01';
+          break;
+        default: // day
+          dateGrouping = "DATE_TRUNC('day', timestamp)";
+          dateFormat = '%Y-%m-%d';
+          break;
+      }
+      
+      // Get user360 prisma client
+      const user360Prisma = await user360PrismaPromise;
+      
+      // Raw SQL query for better performance with date grouping
+      const historicalData = await user360Prisma.$queryRaw`
+        SELECT 
+          ${dateGrouping} as period,
+          COUNT(*) as total_interactions,
+          COUNT(CASE WHEN channel = 'EMAIL' THEN 1 END) as email_interactions,
+          COUNT(CASE WHEN channel IN ('WEB_CHAT', 'MOBILE_CHAT') THEN 1 END) as chat_interactions,
+          COUNT(CASE WHEN is_ai_generated = true THEN 1 END) as ai_interactions,
+          AVG(CASE WHEN response_time_seconds IS NOT NULL THEN response_time_seconds END) as avg_response_time,
+          COUNT(DISTINCT user_id) as unique_users,
+          COUNT(CASE WHEN satisfaction_score IS NOT NULL THEN satisfaction_score END) as satisfaction_responses,
+          AVG(satisfaction_score) as avg_satisfaction
+        FROM user_interactions 
+        WHERE timestamp >= ${startDate}
+        GROUP BY ${dateGrouping}
+        ORDER BY period ASC
+      `;
+      
+      return historicalData.map(row => ({
+        period: row.period,
+        totalInteractions: Number(row.total_interactions),
+        emailInteractions: Number(row.email_interactions),
+        chatInteractions: Number(row.chat_interactions),
+        aiInteractions: Number(row.ai_interactions),
+        avgResponseTime: row.avg_response_time ? Number(row.avg_response_time) : null,
+        uniqueUsers: Number(row.unique_users),
+        avgSatisfaction: row.avg_satisfaction ? Number(row.avg_satisfaction) : null,
+        satisfactionResponses: Number(row.satisfaction_responses)
+      }));
+      
+    } catch (error) {
+      logger.error('Error getting historical trends:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate growth rate for interactions over specified timeframe
+   */
+  async calculateGrowthRate(timeframe = '30d') {
+    try {
+      const user360Prisma = await user360PrismaPromise;
+      
+      // Calculate periods for comparison
+      const currentPeriodStart = this.getTimeframeStartDate(timeframe);
+      const timeframeDays = this.getTimeframeDays(timeframe);
+      const previousPeriodStart = new Date(currentPeriodStart);
+      previousPeriodStart.setDate(previousPeriodStart.getDate() - timeframeDays);
+      
+      // Get interaction counts for both periods
+      const [currentPeriodCount, previousPeriodCount] = await Promise.all([
+        user360Prisma.userInteraction.count({
+          where: { 
+            timestamp: { 
+              gte: currentPeriodStart 
+            } 
+          }
+        }),
+        user360Prisma.userInteraction.count({
+          where: { 
+            timestamp: { 
+              gte: previousPeriodStart,
+              lt: currentPeriodStart
+            } 
+          }
+        })
+      ]);
+      
+      // Calculate growth rate percentage
+      if (previousPeriodCount === 0) {
+        return currentPeriodCount > 0 ? 100 : 0; // 100% growth if previous was 0 and current > 0
+      }
+      
+      const growthRate = ((currentPeriodCount - previousPeriodCount) / previousPeriodCount) * 100;
+      
+      return {
+        currentPeriod: currentPeriodCount,
+        previousPeriod: previousPeriodCount,
+        growthRate: Math.round(growthRate * 100) / 100, // Round to 2 decimal places
+        trend: growthRate > 0 ? 'up' : growthRate < 0 ? 'down' : 'stable'
+      };
+      
+    } catch (error) {
+      logger.error('Error calculating growth rate:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Helper method to get number of days from timeframe string
+   */
+  getTimeframeDays(timeframe) {
+    const match = timeframe.match(/(\d+)([hdwmy])/);
+    if (!match) return 7; // Default to 7 days
+    
+    const [, num, unit] = match;
+    const number = parseInt(num);
+    
+    switch (unit) {
+      case 'h': return Math.ceil(number / 24);
+      case 'd': return number;
+      case 'w': return number * 7;
+      case 'm': return number * 30;
+      case 'y': return number * 365;
+      default: return 7;
+    }
+  }
+
+  /**
+   * Shutdown the service
+   */
   async shutdown() {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);

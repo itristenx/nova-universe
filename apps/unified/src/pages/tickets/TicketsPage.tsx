@@ -9,6 +9,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useTicketStore } from '@stores/tickets';
+import { useAuthStore } from '@stores/auth';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
 import { TicketTable } from '@components/tickets/TicketTable';
 import { TicketFilters } from '@components/tickets/TicketFilters';
@@ -18,6 +19,7 @@ import { cn, formatNumber } from '@utils/index';
 import toast from 'react-hot-toast';
 
 export default function TicketsPage() {
+  const { user } = useAuthStore();
   const {
     tickets,
     selectedTickets,
@@ -67,7 +69,7 @@ export default function TicketsPage() {
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
         url: window.location.href,
-        userId: 'current-user', // TODO: Get from auth context
+        userId: user?.id || 'anonymous', // Get from auth context
         searchType: 'ticket_search',
         errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
         stackTrace: error instanceof Error ? error.stack : undefined,
@@ -176,7 +178,7 @@ export default function TicketsPage() {
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
         url: window.location.href,
-        userId: 'current-user', // TODO: Get from auth context
+        userId: user?.id || 'anonymous', // Get from auth context  
         operationType: 'bulk_status_update',
         errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
         stackTrace: error instanceof Error ? error.stack : undefined,
@@ -276,7 +278,7 @@ export default function TicketsPage() {
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
         url: window.location.href,
-        userId: 'current-user', // TODO: Get from auth context
+        userId: user?.id || 'anonymous', // Get from auth context
         operationType: 'bulk_assignment',
         errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
         stackTrace: error instanceof Error ? error.stack : undefined,
@@ -384,7 +386,7 @@ export default function TicketsPage() {
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
         url: window.location.href,
-        userId: 'current-user', // TODO: Get from auth context
+        userId: user?.id || 'anonymous', // Get from auth context
         operationType: 'bulk_deletion',
         errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
         stackTrace: error instanceof Error ? error.stack : undefined,
@@ -486,7 +488,7 @@ export default function TicketsPage() {
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
         url: window.location.href,
-        userId: 'current-user', // TODO: Get from auth context
+        userId: user?.id || 'anonymous', // Get from auth context
         operationType: 'ticket_export',
         errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
         stackTrace: error instanceof Error ? error.stack : undefined,

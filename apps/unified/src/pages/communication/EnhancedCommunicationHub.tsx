@@ -90,7 +90,20 @@ const communicationService = {
       const usersResponse = await userService.getUsers(1, 20, {});
       const activeUsers = usersResponse.data.filter((user) => user.isActive);
 
-      // TODO: Load team channels from API
+      // Load team channels from API
+      try {
+        const response = await fetch('/api/communication/channels');
+        if (response.ok) {
+          const channelsData = await response.json();
+          return channelsData.channels || [];
+        } else {
+          console.warn('Failed to load team channels from API, falling back to department-based channels');
+        }
+      } catch (error) {
+        console.warn('Error loading team channels:', error);
+      }
+
+      // Fallback: Generate channels from user departments
       const departments = [...new Set(activeUsers.map((user) => user.department).filter(Boolean))];
 
       return departments.map((dept, index) => ({

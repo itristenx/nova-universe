@@ -27,11 +27,21 @@ const SimpleWorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationPro
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Implement actual API call to WorkflowEngineService
+      // Implement actual API call to WorkflowEngineService
       console.log('Loading workflow:', id);
-      // No mock workflow; require live backend
-      setError('Workflow loading not implemented');
-      setCurrentWorkflow(undefined as any);
+      const response = await fetch(`/api/workflows/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to load workflow: ${response.statusText}`);
+      }
+      
+      const workflowData = await response.json();
+      setCurrentWorkflow(workflowData.workflow || workflowData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load workflow');
     } finally {
@@ -43,9 +53,28 @@ const SimpleWorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationPro
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Implement actual API call to WorkflowEngineService
+      // Implement actual API call to WorkflowEngineService
       console.log('Saving workflow:', workflow);
-      setCurrentWorkflow(workflow);
+      
+      const method = workflow.id ? 'PUT' : 'POST';
+      const url = workflow.id ? `/api/workflows/${workflow.id}` : '/api/workflows';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(workflow)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to save workflow: ${response.statusText}`);
+      }
+      
+      const savedWorkflow = await response.json();
+      setCurrentWorkflow(savedWorkflow.workflow || savedWorkflow);
+      
       // Show success message
       alert('Workflow saved successfully!');
     } catch (err) {
@@ -59,9 +88,23 @@ const SimpleWorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationPro
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Implement actual API call to WorkflowEngineService
+      // Implement actual API call to WorkflowEngineService
       console.log('Executing workflow:', id);
-      setError('Workflow execution not implemented');
+      
+      const response = await fetch(`/api/workflows/${id}/execute`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to execute workflow: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      alert(`Workflow execution ${result.success ? 'started successfully' : 'failed'}!`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to execute workflow');
     } finally {
@@ -74,9 +117,23 @@ const SimpleWorkflowAutomation = ({ workflowId, onClose }: WorkflowAutomationPro
       setIsLoading(true);
       setError(null);
       try {
-        // TODO: Implement actual API call to WorkflowEngineService
+        // Implement actual API call to WorkflowEngineService
         console.log('Publishing workflow:', id);
-        setError('Workflow publish not implemented');
+        
+        const response = await fetch(`/api/workflows/${id}/publish`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to publish workflow: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        alert(`Workflow ${result.success ? 'published successfully' : 'failed to publish'}!`);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to publish workflow');
       } finally {

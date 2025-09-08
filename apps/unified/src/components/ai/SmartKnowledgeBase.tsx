@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { knowledgeService, type SearchSuggestion } from '@/services/knowledge';
+import { useAuthStore } from '@stores/auth';
 import {
   MagnifyingGlassIcon,
   SparklesIcon,
@@ -53,6 +54,7 @@ interface SmartKnowledgeBaseProps {
 
 export function SmartKnowledgeBase({ initialQuery = '', contextData }: SmartKnowledgeBaseProps) {
   const { t } = useTranslation(['knowledge', 'common']);
+  const { user } = useAuthStore();
   const [query, setQuery] = useState(initialQuery);
   const [articles, setArticles] = useState<KnowledgeArticle[]>([]);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
@@ -80,7 +82,17 @@ export function SmartKnowledgeBase({ initialQuery = '', contextData }: SmartKnow
           category: category !== 'all' ? category : undefined,
           sortBy,
           limit: 20,
-          // TODO: Add contextData support to knowledge service for personalized results
+          // Add contextData support to knowledge service for personalized results
+          contextData: {
+            ...contextData,
+            userId: user?.id,
+            userRole: user?.roles?.[0]?.name,
+            department: user?.department || contextData?.department,
+            preferences: {
+              language: user?.preferences?.language || 'en',
+              timezone: user?.preferences?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+            }
+          }
         });
 
         setArticles(searchResults.articles);
