@@ -30,8 +30,8 @@ describe('Basic App Tests', () => {
   });
 
   test('Environment should be properly configured', () => {
-    // Test that mock data is disabled in test environment
-    expect(process.env.VITE_USE_MOCK_DATA).toBe('false');
+    // Mock data support has been removed - this test is no longer relevant
+    expect(process.env.VITE_API_URL).toBeDefined();
   });
 
   test('renderWithProviders should work correctly', () => {

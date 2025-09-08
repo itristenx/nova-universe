@@ -86,94 +86,8 @@ interface RealTimeCollaborationProps {
   enableVideoCall?: boolean;
 }
 
-// Mock data for demonstration
-const mockUsers: CollaborationUser[] = [
-  {
-    id: 'user-1',
-    name: 'Sarah Johnson',
-    avatar: '/avatars/sarah.jpg',
-    role: 'agent',
-    status: 'online',
-  },
-  {
-    id: 'user-2',
-    name: 'Mike Chen',
-    avatar: '/avatars/mike.jpg',
-    role: 'supervisor',
-    status: 'online',
-    isTyping: true,
-  },
-  {
-    id: 'user-3',
-    name: 'Alex Rodriguez',
-    avatar: '/avatars/alex.jpg',
-    role: 'specialist',
-    status: 'away',
-  },
-  {
-    id: 'user-4',
-    name: 'Customer User',
-    role: 'customer',
-    status: 'online',
-  },
-];
-
-const mockMessages: CollaborationMessage[] = [
-  {
-    id: 'msg-1',
-    userId: 'user-1',
-    userName: 'Sarah Johnson',
-    content:
-      "I've reviewed the initial ticket details. This looks like it might be related to the recent network updates.",
-    type: 'text',
-    timestamp: new Date(Date.now() - 10 * 60 * 1000),
-    reactions: [{ emoji: '👍', userIds: ['user-2'] }],
-  },
-  {
-    id: 'msg-2',
-    userId: 'user-2',
-    userName: 'Mike Chen',
-    content:
-      'Good catch! @Alex Rodriguez can you take a look at the network configuration? I think we might need your expertise here.',
-    type: 'text',
-    timestamp: new Date(Date.now() - 8 * 60 * 1000),
-    mentions: ['user-3'],
-  },
-  {
-    id: 'msg-3',
-    userId: 'user-3',
-    userName: 'Alex Rodriguez',
-    content:
-      'Sure thing! Let me pull up the network logs. Can someone share their screen so I can walk through the configuration?',
-    type: 'text',
-    timestamp: new Date(Date.now() - 5 * 60 * 1000),
-  },
-  {
-    id: 'msg-4',
-    userId: 'system',
-    userName: 'System',
-    content: 'Sarah Johnson started screen sharing',
-    type: 'system',
-    timestamp: new Date(Date.now() - 3 * 60 * 1000),
-  },
-  {
-    id: 'msg-5',
-    userId: 'user-1',
-    userName: 'Sarah Johnson',
-    content:
-      "Here's the current network configuration file. The issue seems to be in the routing table.",
-    type: 'text',
-    timestamp: new Date(Date.now() - 2 * 60 * 1000),
-    attachments: [
-      {
-        name: 'network-config.json',
-        url: '/files/network-config.json',
-        type: 'application/json',
-        size: 2048,
-      },
-    ],
-  },
-];
+// Real-time collaboration component for ticket resolution
+// This would integrate with WebSocket connections and real user data in production
 
 export function RealTimeCollaboration({
   className,
@@ -188,19 +102,14 @@ export function RealTimeCollaboration({
   enableVideoCall = true,
 }: RealTimeCollaborationProps) {
   const [session, setSession] = useState<CollaborationSession>({
-    id: 'session-1',
+    id: `session-${ticketId}`,
     ticketId,
-    ticketTitle: 'Network connectivity issues affecting multiple users',
-    participants: mockUsers,
-    messages: mockMessages,
-    isActive: true,
-    startedAt: new Date(Date.now() - 15 * 60 * 1000),
+    ticketTitle: 'Loading...',
+    participants: [],
+    messages: [],
+    isActive: false,
+    startedAt: new Date(),
     lastActivity: new Date(),
-    sharedScreen: {
-      userId: 'user-1',
-      userName: 'Sarah Johnson',
-      screenId: 'screen-1',
-    },
   });
 
   const [newMessage, setNewMessage] = useState('');

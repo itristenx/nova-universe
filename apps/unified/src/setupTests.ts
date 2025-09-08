@@ -8,7 +8,7 @@ if (typeof global.TextEncoder === 'undefined') {
 }
 
 // Mock environment variables
-process.env.VITE_USE_MOCK_DATA = 'false';
+// process.env.VITE_USE_MOCK_DATA = 'false'; // DEPRECATED: Mock data support removed
 process.env.VITE_API_URL = 'http://localhost:8080';
 
 // Mock fetch globally
