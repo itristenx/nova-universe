@@ -1,0 +1,775 @@
+<testsuites id="" name="" tests="39" failures="6" skipped="0" errors="0" time="121.944292">
+<testsuite name="basic-ui.spec.ts" timestamp="2025-09-08T06:22:02.473Z" hostname="chromium" tests="4" failures="1" skipped="0" time="6.463" errors="0">
+<testcase name="Basic UI Functionality › should load the main page without errors" classname="basic-ui.spec.ts" time="1.141">
+</testcase>
+<testcase name="Basic UI Functionality › should render main navigation elements" classname="basic-ui.spec.ts" time="2.905">
+<failure message="basic-ui.spec.ts:20:3 should render main navigation elements" type="FAILURE">
+<![CDATA[  [chromium] › basic-ui.spec.ts:20:3 › Basic UI Functionality › should render main navigation elements 
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+      35 |       }
+      36 |     }
+    > 37 |     expect(foundNav).toBeTruthy();
+         |                      ^
+      38 |   });
+      39 |
+      40 |   test('should handle responsive design', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/basic-ui.spec.ts:37:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium/error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+      35 |       }
+      36 |     }
+    > 37 |     expect(foundNav).toBeTruthy();
+         |                      ^
+      38 |   });
+      39 |
+      40 |   test('should handle responsive design', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/basic-ui.spec.ts:37:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+      35 |       }
+      36 |     }
+    > 37 |     expect(foundNav).toBeTruthy();
+         |                      ^
+      38 |   });
+      39 |
+      40 |   test('should handle responsive design', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/basic-ui.spec.ts:37:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry2/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry2/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry2/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium/video.webm]]
+
+[[ATTACHMENT|basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium/error-context.md]]
+
+[[ATTACHMENT|basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry1/video.webm]]
+
+[[ATTACHMENT|basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry1/error-context.md]]
+
+[[ATTACHMENT|basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry1/trace.zip]]
+
+[[ATTACHMENT|basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry2/test-failed-1.png]]
+
+[[ATTACHMENT|basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry2/video.webm]]
+
+[[ATTACHMENT|basic-ui-Basic-UI-Function-31ea6-er-main-navigation-elements-chromium-retry2/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Basic UI Functionality › should handle responsive design" classname="basic-ui.spec.ts" time="1.586">
+</testcase>
+<testcase name="Basic UI Functionality › should load without console errors" classname="basic-ui.spec.ts" time="0.831">
+</testcase>
+</testsuite>
+<testsuite name="complete-ui-functionality.spec.ts" timestamp="2025-09-08T06:22:02.473Z" hostname="chromium" tests="20" failures="4" skipped="0" time="65.014" errors="0">
+<testcase name="Complete UI Functionality Test Suite › Navigation and Accessibility › should have proper page structure and navigation" classname="complete-ui-functionality.spec.ts" time="18.651">
+<failure message="complete-ui-functionality.spec.ts:10:5 should have proper page structure and navigation" type="FAILURE">
+<![CDATA[  [chromium] › complete-ui-functionality.spec.ts:10:5 › Complete UI Functionality Test Suite › Navigation and Accessibility › should have proper page structure and navigation 
+
+    Error: Timed out 5000ms waiting for expect(locator).toBeVisible()
+
+    Locator: locator('nav')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('nav')
+
+
+      10 |     test('should have proper page structure and navigation', async ({ page }) => {
+      11 |       // Check main navigation elements
+    > 12 |       await expect(page.locator('nav')).toBeVisible();
+         |                                         ^
+      13 |       
+      14 |       // Check for accessible navigation
+      15 |       const navByRole = page.locator('[role="navigation"]');
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:12:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium/error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: Timed out 5000ms waiting for expect(locator).toBeVisible()
+
+    Locator: locator('nav')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('nav')
+
+
+      10 |     test('should have proper page structure and navigation', async ({ page }) => {
+      11 |       // Check main navigation elements
+    > 12 |       await expect(page.locator('nav')).toBeVisible();
+         |                                         ^
+      13 |       
+      14 |       // Check for accessible navigation
+      15 |       const navByRole = page.locator('[role="navigation"]');
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:12:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: Timed out 5000ms waiting for expect(locator).toBeVisible()
+
+    Locator: locator('nav')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('nav')
+
+
+      10 |     test('should have proper page structure and navigation', async ({ page }) => {
+      11 |       // Check main navigation elements
+    > 12 |       await expect(page.locator('nav')).toBeVisible();
+         |                                         ^
+      13 |       
+      14 |       // Check for accessible navigation
+      15 |       const navByRole = page.locator('[role="navigation"]');
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:12:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry2/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry2/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry2/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|complete-ui-functionality--256cc-ge-structure-and-navigation-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--256cc-ge-structure-and-navigation-chromium/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--256cc-ge-structure-and-navigation-chromium/error-context.md]]
+
+[[ATTACHMENT|complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry1/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry1/error-context.md]]
+
+[[ATTACHMENT|complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry1/trace.zip]]
+
+[[ATTACHMENT|complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry2/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry2/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--256cc-ge-structure-and-navigation-chromium-retry2/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Navigation and Accessibility › should have skip links for accessibility" classname="complete-ui-functionality.spec.ts" time="0.927">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Navigation and Accessibility › should support keyboard navigation" classname="complete-ui-functionality.spec.ts" time="0.87">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Navigation and Accessibility › should have proper color contrast and readability" classname="complete-ui-functionality.spec.ts" time="0.855">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Responsive Design › should work on mobile devices" classname="complete-ui-functionality.spec.ts" time="20.462">
+<failure message="complete-ui-functionality.spec.ts:52:5 should work on mobile devices" type="FAILURE">
+<![CDATA[  [chromium] › complete-ui-functionality.spec.ts:52:5 › Complete UI Functionality Test Suite › Responsive Design › should work on mobile devices 
+
+    Error: Timed out 5000ms waiting for expect(locator).toBeVisible()
+
+    Locator: locator('nav')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('nav')
+
+
+      62 |       // Check navigation is accessible on mobile
+      63 |       const nav = page.locator('nav');
+    > 64 |       await expect(nav).toBeVisible();
+         |                         ^
+      65 |     });
+      66 |
+      67 |     test('should work on tablet devices', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:64:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium/error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: Timed out 5000ms waiting for expect(locator).toBeVisible()
+
+    Locator: locator('nav')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('nav')
+
+
+      62 |       // Check navigation is accessible on mobile
+      63 |       const nav = page.locator('nav');
+    > 64 |       await expect(nav).toBeVisible();
+         |                         ^
+      65 |     });
+      66 |
+      67 |     test('should work on tablet devices', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:64:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: Timed out 5000ms waiting for expect(locator).toBeVisible()
+
+    Locator: locator('nav')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('nav')
+
+
+      62 |       // Check navigation is accessible on mobile
+      63 |       const nav = page.locator('nav');
+    > 64 |       await expect(nav).toBeVisible();
+         |                         ^
+      65 |     });
+      66 |
+      67 |     test('should work on tablet devices', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:64:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry2/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry2/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry2/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium/error-context.md]]
+
+[[ATTACHMENT|complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry1/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry1/error-context.md]]
+
+[[ATTACHMENT|complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry1/trace.zip]]
+
+[[ATTACHMENT|complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry2/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry2/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--41fb6-ould-work-on-mobile-devices-chromium-retry2/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Responsive Design › should work on tablet devices" classname="complete-ui-functionality.spec.ts" time="1.499">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Responsive Design › should work on desktop devices" classname="complete-ui-functionality.spec.ts" time="1.485">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Interactive Elements › should have functional buttons" classname="complete-ui-functionality.spec.ts" time="0.985">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Interactive Elements › should have functional links" classname="complete-ui-functionality.spec.ts" time="0.873">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Interactive Elements › should handle form interactions if present" classname="complete-ui-functionality.spec.ts" time="0.932">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Performance and Loading › should load quickly" classname="complete-ui-functionality.spec.ts" time="1.409">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Performance and Loading › should not have memory leaks" classname="complete-ui-functionality.spec.ts" time="3.747">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Content Quality › should have meaningful content" classname="complete-ui-functionality.spec.ts" time="2.878">
+<failure message="complete-ui-functionality.spec.ts:177:5 should have meaningful content" type="FAILURE">
+<![CDATA[  [chromium] › complete-ui-functionality.spec.ts:177:5 › Complete UI Functionality Test Suite › Content Quality › should have meaningful content 
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      187 |       const paragraphs = page.locator('p');
+      188 |       const paragraphCount = await paragraphs.count();
+    > 189 |       expect(paragraphCount).toBeGreaterThan(0);
+          |                              ^
+      190 |     });
+      191 |
+      192 |     test('should have proper image handling', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:189:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium/error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      187 |       const paragraphs = page.locator('p');
+      188 |       const paragraphCount = await paragraphs.count();
+    > 189 |       expect(paragraphCount).toBeGreaterThan(0);
+          |                              ^
+      190 |     });
+      191 |
+      192 |     test('should have proper image handling', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:189:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      187 |       const paragraphs = page.locator('p');
+      188 |       const paragraphCount = await paragraphs.count();
+    > 189 |       expect(paragraphCount).toBeGreaterThan(0);
+          |                              ^
+      190 |     });
+      191 |
+      192 |     test('should have proper image handling', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:189:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry2/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry2/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry2/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|complete-ui-functionality--0853b-uld-have-meaningful-content-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--0853b-uld-have-meaningful-content-chromium/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--0853b-uld-have-meaningful-content-chromium/error-context.md]]
+
+[[ATTACHMENT|complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry1/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry1/error-context.md]]
+
+[[ATTACHMENT|complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry1/trace.zip]]
+
+[[ATTACHMENT|complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry2/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry2/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--0853b-uld-have-meaningful-content-chromium-retry2/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Content Quality › should have proper image handling" classname="complete-ui-functionality.spec.ts" time="0.914">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Error Handling › should handle JavaScript errors gracefully" classname="complete-ui-functionality.spec.ts" time="1.423">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Error Handling › should handle network errors gracefully" classname="complete-ui-functionality.spec.ts" time="1.527">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Industry Standards Compliance › should follow HTML5 semantic standards" classname="complete-ui-functionality.spec.ts" time="2.903">
+<failure message="complete-ui-functionality.spec.ts:239:5 should follow HTML5 semantic standards" type="FAILURE">
+<![CDATA[  [chromium] › complete-ui-functionality.spec.ts:239:5 › Complete UI Functionality Test Suite › Industry Standards Compliance › should follow HTML5 semantic standards 
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+      249 |         (await main.count() > 0);
+      250 |       
+    > 251 |       expect(hasSemanticStructure).toBeTruthy();
+          |                                    ^
+      252 |     });
+      253 |
+      254 |     test('should have proper ARIA attributes', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:251:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium/error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+      249 |         (await main.count() > 0);
+      250 |       
+    > 251 |       expect(hasSemanticStructure).toBeTruthy();
+          |                                    ^
+      252 |     });
+      253 |
+      254 |     test('should have proper ARIA attributes', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:251:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+      249 |         (await main.count() > 0);
+      250 |       
+    > 251 |       expect(hasSemanticStructure).toBeTruthy();
+          |                                    ^
+      252 |     });
+      253 |
+      254 |     test('should have proper ARIA attributes', async ({ page }) => {
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/complete-ui-functionality.spec.ts:251:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry2/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry2/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry2/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium/error-context.md]]
+
+[[ATTACHMENT|complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry1/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry1/error-context.md]]
+
+[[ATTACHMENT|complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry1/trace.zip]]
+
+[[ATTACHMENT|complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry2/test-failed-1.png]]
+
+[[ATTACHMENT|complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry2/video.webm]]
+
+[[ATTACHMENT|complete-ui-functionality--7770a-ow-HTML5-semantic-standards-chromium-retry2/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Industry Standards Compliance › should have proper ARIA attributes" classname="complete-ui-functionality.spec.ts" time="0.891">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Industry Standards Compliance › should support focus management" classname="complete-ui-functionality.spec.ts" time="0.899">
+</testcase>
+<testcase name="Complete UI Functionality Test Suite › Industry Standards Compliance › should have proper document structure" classname="complete-ui-functionality.spec.ts" time="0.884">
+</testcase>
+</testsuite>
+<testsuite name="dashboard-functionality.spec.ts" timestamp="2025-09-08T06:22:02.473Z" hostname="chromium" tests="8" failures="0" skipped="0" time="27.208" errors="0">
+<testcase name="Dashboard and ITSM Core Functionality › should simulate successful login and show dashboard" classname="dashboard-functionality.spec.ts" time="1.982">
+</testcase>
+<testcase name="Dashboard and ITSM Core Functionality › should have proper dashboard navigation" classname="dashboard-functionality.spec.ts" time="1.934">
+</testcase>
+<testcase name="Dashboard and ITSM Core Functionality › should have functional quick action buttons" classname="dashboard-functionality.spec.ts" time="2.079">
+</testcase>
+<testcase name="Dashboard and ITSM Core Functionality › should navigate to tickets page" classname="dashboard-functionality.spec.ts" time="2.955">
+</testcase>
+<testcase name="Dashboard and ITSM Core Functionality › should have proper responsive design across all pages" classname="dashboard-functionality.spec.ts" time="10.171">
+</testcase>
+<testcase name="Dashboard and ITSM Core Functionality › should have proper color scheme and visual hierarchy" classname="dashboard-functionality.spec.ts" time="2.947">
+</testcase>
+<testcase name="Dashboard and ITSM Core Functionality › should handle keyboard navigation across all interactive elements" classname="dashboard-functionality.spec.ts" time="2.235">
+</testcase>
+<testcase name="Dashboard and ITSM Core Functionality › should provide proper ARIA labels and accessibility features" classname="dashboard-functionality.spec.ts" time="2.905">
+</testcase>
+</testsuite>
+<testsuite name="industry-standard-auth.spec.ts" timestamp="2025-09-08T06:22:02.473Z" hostname="chromium" tests="7" failures="1" skipped="0" time="10.374" errors="0">
+<testcase name="ITSM Industry-Standard Authentication Flow › should display proper login interface matching industry standards" classname="industry-standard-auth.spec.ts" time="0.882">
+</testcase>
+<testcase name="ITSM Industry-Standard Authentication Flow › should validate form inputs according to industry standards" classname="industry-standard-auth.spec.ts" time="0.954">
+</testcase>
+<testcase name="ITSM Industry-Standard Authentication Flow › should provide accessible error messages" classname="industry-standard-auth.spec.ts" time="3.022">
+<failure message="industry-standard-auth.spec.ts:74:3 should provide accessible error messages" type="FAILURE">
+<![CDATA[  [chromium] › industry-standard-auth.spec.ts:74:3 › ITSM Industry-Standard Authentication Flow › should provide accessible error messages 
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+      91 |       
+      92 |       // One of these should be true for good UX
+    > 93 |       expect(hasValidationErrors || formWasSubmitted.includes('login')).toBeTruthy();
+         |                                                                         ^
+      94 |     }
+      95 |   });
+      96 |
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/industry-standard-auth.spec.ts:93:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium/error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+      91 |       
+      92 |       // One of these should be true for good UX
+    > 93 |       expect(hasValidationErrors || formWasSubmitted.includes('login')).toBeTruthy();
+         |                                                                         ^
+      94 |     }
+      95 |   });
+      96 |
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/industry-standard-auth.spec.ts:93:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+      91 |       
+      92 |       // One of these should be true for good UX
+    > 93 |       expect(hasValidationErrors || formWasSubmitted.includes('login')).toBeTruthy();
+         |                                                                         ^
+      94 |     }
+      95 |   });
+      96 |
+        at /home/runner/work/nova-universe/nova-universe/apps/unified/tests/industry-standard-auth.spec.ts:93:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry2/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry2/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry2/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium/video.webm]]
+
+[[ATTACHMENT|industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium/error-context.md]]
+
+[[ATTACHMENT|industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry1/test-failed-1.png]]
+
+[[ATTACHMENT|industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry1/video.webm]]
+
+[[ATTACHMENT|industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry1/error-context.md]]
+
+[[ATTACHMENT|industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry1/trace.zip]]
+
+[[ATTACHMENT|industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry2/test-failed-1.png]]
+
+[[ATTACHMENT|industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry2/video.webm]]
+
+[[ATTACHMENT|industry-standard-auth-ITS-e0b36-e-accessible-error-messages-chromium-retry2/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="ITSM Industry-Standard Authentication Flow › should support keyboard navigation for accessibility" classname="industry-standard-auth.spec.ts" time="1.03">
+</testcase>
+<testcase name="ITSM Industry-Standard Authentication Flow › should have proper security indicators" classname="industry-standard-auth.spec.ts" time="0.852">
+</testcase>
+<testcase name="ITSM Industry-Standard Authentication Flow › should provide proper visual feedback for form interactions" classname="industry-standard-auth.spec.ts" time="0.915">
+</testcase>
+<testcase name="ITSM Industry-Standard Authentication Flow › should handle different viewport sizes appropriately" classname="industry-standard-auth.spec.ts" time="2.719">
+</testcase>
+</testsuite>
+</testsuites>

@@ -19,7 +19,7 @@ function testConfigurationManagement() {
 
   const componentPath = path.join(
     __dirname,
-    '../apps/core/nova-core/src/components/admin/ConfigurationManagement.tsx',
+    '../apps/unified/src/components/admin/ConfigurationManagement.tsx',
   );
 
   if (!fs.existsSync(componentPath)) {

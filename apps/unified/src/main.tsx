@@ -4,8 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import App from './App';
-import '@styles/globals.css';
+import FallbackApp from './FallbackApp';
+import '@/styles/globals.css';
 import './i18n/config'; // Initialize i18n
 
 // Create a client for React Query
@@ -45,7 +45,7 @@ root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <App />
+        <FallbackApp />
         <Toaster
           position="top-right"
           toastOptions={{
