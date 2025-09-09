@@ -189,7 +189,7 @@ export class NovaRAGEngine extends EventEmitter {
   // Configuration
   private config = {
     defaultEmbeddingModel: 'nova-local-embeddings', // Prioritize Nova's own embedding model
-    defaultVectorStore: 'chromadb',
+    defaultVectorStore: 'chromadb-main',
     chunkSize: 512,
     chunkOverlap: 50,
     maxRetrieval: 10,
@@ -1006,7 +1006,30 @@ export class NovaRAGEngine extends EventEmitter {
   private async addToVectorStore(chunk: DocumentChunk): Promise<void> {
     const store = this.vectorStores.get(this.config.defaultVectorStore);
     if (!store) {
-      throw new Error(`Vector store not found: ${this.config.defaultVectorStore}`);
+      // Fallback to first available vector store
+      const availableStores = Array.from(this.vectorStores.values());
+      if (availableStores.length === 0) {
+        logger.warn('No vector stores available');
+        return;
+      }
+      
+      const fallbackStore = availableStores[0];
+      logger.info(`Using fallback vector store: ${fallbackStore.name}`);
+      const storeInstance = this.vectorStoreInstances.get(fallbackStore.id);
+      
+      if (!storeInstance) {
+        logger.warn(`Fallback vector store instance not available: ${fallbackStore.id}`);
+        return;
+      }
+
+      try {
+        await storeInstance.addChunk(chunk);
+        logger.debug(`Added chunk ${chunk.id} to fallback vector store ${fallbackStore.name}`);
+      } catch (error) {
+        logger.error('Failed to add chunk to fallback vector store:', error);
+        throw error;
+      }
+      return;
     }
 
     const storeInstance = this.vectorStoreInstances.get(store.id);
@@ -1047,9 +1070,21 @@ export class NovaRAGEngine extends EventEmitter {
     query: RAGQuery,
     queryEmbedding: number[],
   ): Promise<DocumentChunk[]> {
-    // First try vector store search
-    const store = this.vectorStores.get(this.config.defaultVectorStore);
-    const storeInstance = store ? this.vectorStoreInstances.get(store.id) : null;
+    // Try to find the default vector store first, then fallback to any available store
+    let store = this.vectorStores.get(this.config.defaultVectorStore);
+    let storeInstance = store ? this.vectorStoreInstances.get(store.id) : null;
+
+    // Fallback to first available vector store if default is not available
+    if (!storeInstance) {
+      const availableStores = Array.from(this.vectorStores.values());
+      if (availableStores.length > 0) {
+        store = availableStores[0];
+        storeInstance = this.vectorStoreInstances.get(store.id);
+        if (storeInstance) {
+          logger.debug(`Using fallback vector store for search: ${store.name}`);
+        }
+      }
+    }
 
     if (storeInstance) {
       try {
