@@ -1,30 +1,14 @@
-/**
- * Nova RAG Engine - Retrieval-Augmented Generation System
- *
- * This implements a comprehensive RAG system that enhances AI responses with
- * contextually relevant information from Nova's knowledge base, documentation,
- * tickets, and other data sources.
- *
- * Features:
- * - Multi-modal vector embeddings
- * - Semantic search and retrieval
- * - Context chunking and ranking
- * - Dynamic retrieval strategies
- * - Knowledge graph integration
- * - Real-time index updates
- * - Advanced filtering and relevance scoring
- */
 import { EventEmitter } from 'events';
 import { logger } from '../logger.js';
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import { ragRBAC } from './nova-rag-rbac.js';
-/**
- * Main RAG Engine Implementation
- */
+import { VectorStoreFactory } from './rag-vector-stores.js';
+import { localEmbeddingModel } from './rag-local-embeddings.js';
 export class NovaRAGEngine extends EventEmitter {
     embeddingModels = new Map();
     vectorStores = new Map();
+    vectorStoreInstances = new Map();
     documentChunks = new Map();
     queryHistory = new Map();
     resultHistory = new Map();
@@ -38,7 +22,7 @@ export class NovaRAGEngine extends EventEmitter {
     // Configuration
     config = {
         defaultEmbeddingModel: 'nova-local-embeddings', // Prioritize Nova's own embedding model
-        defaultVectorStore: 'chromadb',
+        defaultVectorStore: 'chromadb-main',
         chunkSize: 512,
         chunkOverlap: 50,
         maxRetrieval: 10,
@@ -557,39 +541,16 @@ export class NovaRAGEngine extends EventEmitter {
         }
     }
     async initializeVectorStore(store) {
-        switch (store.type) {
-            case 'chromadb':
-                await this.initializeChromaDB(store);
-                break;
-            case 'pinecone':
-                await this.initializePinecone(store);
-                break;
-            case 'local':
-                await this.initializeLocalStore(store);
-                break;
-            default:
-                logger.warn(`Unknown vector store type: ${store.type}`);
-        }
-    }
-    async initializeChromaDB(store) {
-        // ChromaDB initialization logic
-        logger.info(`Initializing ChromaDB: ${store.config.host}:${store.config.port}`);
-    }
-    async initializePinecone(store) {
-        // Pinecone initialization logic
-        logger.info(`Initializing Pinecone: ${store.config.indexName}`);
-    }
-    async initializeLocalStore(store) {
-        // Local FAISS store initialization
-        const storagePath = store.config.storagePath;
         try {
-            await fs.mkdir(storagePath, { recursive: true });
-            logger.info(`Initialized local vector store: ${storagePath}`);
-        }
-        catch (error) {
-            logger.error(`Failed to initialize local store: ${error}`);
+            const instance = await VectorStoreFactory.createStore(store);
+            this.vectorStoreInstances.set(store.id, instance);
+            logger.info(`Successfully initialized vector store: ${store.name}`);
+        } catch (error) {
+            logger.warn(`Failed to initialize vector store ${store.name}`);
+            // Don't throw - allow system to continue with other stores
         }
     }
+
     async loadDocumentChunks() {
         // Load existing chunks from persistent storage
         logger.info('Loading existing document chunks...');
@@ -737,146 +698,143 @@ export class NovaRAGEngine extends EventEmitter {
     }
     async generateLocalEmbedding(text, model) {
         try {
-            // For local models, we would use TensorFlow.js or ONNX runtime
-            // This is a placeholder for the actual local inference
-            if (!model.config.modelPath) {
-                throw new Error('Local model path not configured');
-            }
-            // In production, this would load and run a local model
-            // For now, throw an error to indicate not implemented
-            throw new Error('Local embedding model not yet implemented. Please use OpenAI or HuggingFace models.');
-        }
-        catch (error) {
-            logger.error('Failed to generate local embedding:', error);
+            // Use our local embedding model
+            return await localEmbeddingModel.generateEmbedding(text);
+        } catch (error) {
+            logger.error('Failed to generate local embedding');
             throw new Error(`Local embedding generation failed: ${error.message}`);
         }
     }
     async addToVectorStore(chunk) {
         const store = this.vectorStores.get(this.config.defaultVectorStore);
         if (!store) {
-            throw new Error(`Vector store not found: ${this.config.defaultVectorStore}`);
+            // Fallback to first available vector store
+            const availableStores = Array.from(this.vectorStores.values());
+            if (availableStores.length === 0) {
+                logger.warn('No vector stores available');
+                return;
+            }
+            
+            const fallbackStore = availableStores[0];
+            logger.info(`Using fallback vector store: ${fallbackStore.name}`);
+            const storeInstance = this.vectorStoreInstances.get(fallbackStore.id);
+            
+            if (!storeInstance) {
+                logger.warn(`Fallback vector store instance not available: ${fallbackStore.id}`);
+                return;
+            }
+
+            try {
+                await storeInstance.addChunk(chunk);
+                logger.debug(`Added chunk ${chunk.id} to fallback vector store ${fallbackStore.name}`);
+            } catch (error) {
+                logger.error('Failed to add chunk to fallback vector store');
+                throw error;
+            }
+            return;
         }
-        // Add chunk to vector store based on type
-        switch (store.type) {
-            case 'chromadb':
-                await this.addToChromaDB(chunk, store);
-                break;
-            case 'pinecone':
-                await this.addToPinecone(chunk, store);
-                break;
-            case 'local':
-                await this.addToLocalStore(chunk, store);
-                break;
+
+        const storeInstance = this.vectorStoreInstances.get(store.id);
+        if (!storeInstance) {
+            logger.warn(`Vector store instance not available: ${store.id}`);
+            return;
         }
-    }
-    async addToChromaDB(chunk, store) {
-        // ChromaDB insertion logic - simplified implementation
+
         try {
-            // Log the operation for monitoring
-            logger.debug(`Adding chunk ${chunk.id} to ChromaDB store ${store.name} with config: ${JSON.stringify(store.config)}`);
-            // Placeholder for actual ChromaDB API call
-            // await chromaCollection.add({...});
-        }
-        catch (error) {
-            logger.error(`Failed to add chunk ${chunk.id} to ChromaDB: ${error}`);
+            await storeInstance.addChunk(chunk);
+            logger.debug(`Added chunk ${chunk.id} to vector store ${store.name}`);
+        } catch (error) {
+            logger.error('Failed to add chunk to vector store');
             throw error;
         }
     }
-    async addToPinecone(chunk, store) {
-        // Pinecone insertion logic
-        try {
-            logger.debug(`Adding chunk ${chunk.id} to Pinecone store ${store.name} with config: ${JSON.stringify(store.config)}`);
-            // Placeholder for actual Pinecone API call
-            // await pineconeIndex.upsert({...});
-        }
-        catch (error) {
-            logger.error(`Failed to add chunk ${chunk.id} to Pinecone: ${error}`);
-            throw error;
-        }
-    }
-    async addToLocalStore(chunk, store) {
-        // Local FAISS store insertion logic
-        try {
-            logger.debug(`Adding chunk ${chunk.id} to local store ${store.name} of type ${store.type}`);
-            // Placeholder for actual local store operation
-            // this.localVectorIndex.add(chunk.embedding, chunk.id);
-        }
-        catch (error) {
-            logger.error(`Failed to add chunk ${chunk.id} to local store: ${error}`);
-            throw error;
-        }
-    }
+
     async removeFromVectorStore(chunkId) {
         const store = this.vectorStores.get(this.config.defaultVectorStore);
-        if (!store)
-            return;
-        // Remove from vector store based on type
-        switch (store.type) {
-            case 'chromadb':
-                await this.removeFromChromaDB(chunkId, store);
-                break;
-            case 'pinecone':
-                await this.removeFromPinecone(chunkId, store);
-                break;
-            case 'local':
-                await this.removeFromLocalStore(chunkId, store);
-                break;
-        }
-    }
-    async removeFromChromaDB(chunkId, store) {
-        // ChromaDB deletion logic
+        if (!store) return;
+
+        const storeInstance = this.vectorStoreInstances.get(store.id);
+        if (!storeInstance) return;
+
         try {
-            logger.debug(`Removing chunk ${chunkId} from ChromaDB store ${store.name}`);
-            // Placeholder for actual ChromaDB deletion
-            // await chromaCollection.delete({ ids: [chunkId] });
-        }
-        catch (error) {
-            logger.error(`Failed to remove chunk ${chunkId} from ChromaDB: ${error}`);
-            throw error;
+            await storeInstance.removeChunk(chunkId);
+            logger.debug(`Removed chunk ${chunkId} from vector store ${store.name}`);
+        } catch (error) {
+            logger.error('Failed to remove chunk from vector store');
         }
     }
-    async removeFromPinecone(chunkId, store) {
-        // Pinecone deletion logic
-        try {
-            logger.debug(`Removing chunk ${chunkId} from Pinecone store ${store.name}`);
-            // Placeholder for actual Pinecone deletion
-            // await pineconeIndex.delete1([chunkId]);
-        }
-        catch (error) {
-            logger.error(`Failed to remove chunk ${chunkId} from Pinecone: ${error}`);
-            throw error;
-        }
-    }
-    async removeFromLocalStore(chunkId, store) {
-        // Local store deletion logic
-        try {
-            logger.debug(`Removing chunk ${chunkId} from local store ${store.name}`);
-            // Placeholder for actual local store deletion
-            // this.localVectorIndex.remove(chunkId);
-        }
-        catch (error) {
-            logger.error(`Failed to remove chunk ${chunkId} from local store: ${error}`);
-            throw error;
-        }
-    }
+
     async semanticSearch(query, queryEmbedding) {
-        // Semantic search using vector similarity with Nova data prioritization
+        // Try to find the default vector store first, then fallback to any available store
+        let store = this.vectorStores.get(this.config.defaultVectorStore);
+        let storeInstance = store ? this.vectorStoreInstances.get(store.id) : null;
+
+        // Fallback to first available vector store if default is not available
+        if (!storeInstance) {
+            const availableStores = Array.from(this.vectorStores.values());
+            if (availableStores.length > 0) {
+                store = availableStores[0];
+                storeInstance = this.vectorStoreInstances.get(store.id);
+                if (storeInstance) {
+                    logger.debug(`Using fallback vector store for search: ${store.name}`);
+                }
+            }
+        }
+
+        if (storeInstance) {
+            try {
+                const vectorResults = await storeInstance.searchSimilar(queryEmbedding, {
+                    nResults: query.options.maxResults || this.config.maxRetrieval,
+                    minSimilarity: query.options.minScore || this.config.minSimilarity,
+                });
+
+                if (vectorResults.length > 0) {
+                    // Apply Nova data prioritization to vector results
+                    if (this.config.novaDataPriority) {
+                        vectorResults.forEach(chunk => {
+                            if (chunk.metadata.relevanceScore) {
+                                chunk.metadata.relevanceScore = this.applyNovaDataPrioritization(
+                                    chunk, 
+                                    chunk.metadata.relevanceScore
+                                );
+                            }
+                        });
+                    }
+
+                    // Sort by updated relevance scores
+                    vectorResults.sort((a, b) => (b.metadata.relevanceScore || 0) - (a.metadata.relevanceScore || 0));
+                    
+                    logger.debug(`Vector search returned ${vectorResults.length} results`);
+                    return vectorResults;
+                }
+            } catch (error) {
+                logger.warn('Vector store search failed, falling back to in-memory search');
+            }
+        }
+
+        // Fallback to in-memory search
+        logger.debug('Using in-memory semantic search');
         const chunks = Array.from(this.documentChunks.values());
         const results = [];
+
         for (const chunk of chunks) {
-            if (!chunk.embedding)
-                continue;
+            if (!chunk.embedding) continue;
+
             let similarity = this.cosineSimilarity(queryEmbedding, chunk.embedding);
+            
             // Apply Nova data prioritization
             if (this.config.novaDataPriority) {
                 similarity = this.applyNovaDataPrioritization(chunk, similarity);
             }
+            
             if (similarity >= (query.options.minScore || this.config.minSimilarity)) {
                 results.push({ chunk, score: similarity });
             }
         }
+
         // Sort by similarity score (Nova data will naturally rank higher due to boost)
         results.sort((a, b) => b.score - a.score);
+
         return results.map((r) => {
             r.chunk.metadata.relevanceScore = r.score;
             return r.chunk;
