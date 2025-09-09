@@ -158,7 +158,7 @@ export class NovaLocalAI extends EventEmitter {
     version: string;
     metadata?: any;
   }): Promise<string> {
-    const modelId = config.id || createHash('sha256')
+    const modelId = (config.id && config.id.trim() !== '') ? config.id : createHash('sha256')
       .update(`${config.name}-${config.type}-${Date.now()}`)
       .digest('hex')
       .substring(0, 16);

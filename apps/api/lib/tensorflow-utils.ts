@@ -209,11 +209,11 @@ export class TensorFlowModelUtils {
   /**
    * Compile model with validation
    */
-  static compileModel(
+  static async compileModel(
     model: tf.LayersModel,
     config: tf.ModelCompileArgs
-  ): void {
-    TensorFlowErrorHandler.withErrorHandling(() => {
+  ): Promise<void> {
+    await TensorFlowErrorHandler.withErrorHandling(() => {
       model.compile(config);
     }, 'model_compilation');
   }
@@ -250,11 +250,7 @@ export class TensorFlowDataUtils {
     dtype?: tf.DataType
   ): tf.Tensor {
     return TensorFlowErrorHandler.withErrorHandling(() => {
-      if (shape) {
-        return tf.tensor(data, shape, dtype);
-      } else {
-        return tf.tensor(data, undefined, dtype);
-      }
+      return tf.tensor(data, shape, dtype);
     }, 'tensor_creation') as tf.Tensor;
   }
 
