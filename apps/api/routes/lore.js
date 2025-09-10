@@ -406,6 +406,9 @@ router.post(
       ) {
         return res.status(403).json({ success: false, error: 'Forbidden', errorCode: 'FORBIDDEN' });
       }
+      
+      const prisma = await ensurePrismaClient();
+      
       // Generate unique slug
       const slugBase = title
         .toLowerCase()
@@ -706,6 +709,7 @@ router.get(
 router.get('/articles/:articleId/versions', authenticateJWT, async (req, res) => {
   try {
     const { articleId } = req.params;
+    const prisma = await ensurePrismaClient();
     const versions = await prisma.kbArticleVersion.findMany({
       where: { articleId: parseInt(articleId) },
       include: { author: { select: { id: true, name: true } } },
@@ -722,6 +726,7 @@ router.get('/articles/:articleId/versions', authenticateJWT, async (req, res) =>
 router.get('/articles/:articleId/versions/:versionId', authenticateJWT, async (req, res) => {
   try {
     const { versionId } = req.params;
+    const prisma = await ensurePrismaClient();
     const version = await prisma.kbArticleVersion.findUnique({
       where: { id: parseInt(versionId) },
       include: { author: { select: { id: true, name: true } } },
@@ -759,6 +764,9 @@ router.post(
       ) {
         return res.status(403).json({ success: false, error: 'Forbidden', errorCode: 'FORBIDDEN' });
       }
+      
+      const prisma = await ensurePrismaClient();
+      
       // Get latest version number
       const lastVersion = await prisma.kbArticleVersion.findFirst({
         where: { articleId: parseInt(articleId) },
@@ -788,6 +796,7 @@ router.post(
 router.get('/articles/:articleId/comments', authenticateJWT, async (req, res) => {
   try {
     const { articleId } = req.params;
+    const prisma = await ensurePrismaClient();
     const comments = await prisma.kbArticleComment.findMany({
       where: { articleId: parseInt(articleId) },
       include: { user: { select: { id: true, name: true } } },
@@ -816,6 +825,8 @@ router.post(
       const { articleId } = req.params;
       const { content } = req.body;
       const userId = req.user.id;
+      
+      const prisma = await ensurePrismaClient();
       const comment = await prisma.kbArticleComment.create({
         data: {
           articleId: parseInt(articleId),

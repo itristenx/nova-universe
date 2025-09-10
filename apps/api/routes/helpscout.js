@@ -12,7 +12,7 @@ const router = express.Router();
 router.post('/import', authenticateJWT, async (req, res) => {
   try {
     // Use environment configuration first, then fallback to request body
-    const helpscoutConfig = getHelpScoutConfig();
+    let helpscoutConfig = getHelpScoutConfig();
 
     if (!helpscoutConfig) {
       const { apiKey, mailboxId } = req.body;
