@@ -1,7 +1,6 @@
 import express from 'express';
 // Use the Nova TV-specific Prisma client output
-import pkg from '@prisma/nova-tv-client';
-const { PrismaClient } = pkg;
+import { PrismaClient } from '../../../prisma/generated/nova-tv/index.js';
 import { v4 as uuid } from 'uuid';
 import { logger } from '../logger.js';
 

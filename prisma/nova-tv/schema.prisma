@@ -2,7 +2,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../../node_modules/@prisma/nova-tv-client"
+  output   = "../generated/nova-tv"
 }
 
 datasource db {
