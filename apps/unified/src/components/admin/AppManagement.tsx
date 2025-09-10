@@ -25,7 +25,6 @@ import toast from 'react-hot-toast';
 export function AppManagement() {
   const { t } = useTranslation(['admin', 'common']);
   const { currentUser } = useRBACStore();
-  const { addNotification } = useNotifications();
   const [apps, setApps] = useState<CustomApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -96,11 +95,6 @@ export function AppManagement() {
   const handleCreateApp = async () => {
     try {
       await enhancedAppSwitcherService.createCustomApp(formData, currentUser?.id);
-      addNotification({
-        type: 'success',
-        title: 'Success',
-        message: 'Application created successfully',
-      });
       toast.success(t('admin:appManagement.success.created'));
       setShowCreateModal(false);
       resetForm();
