@@ -4,7 +4,7 @@ import { body, validationResult } from 'express-validator';
 import db from '../db.js';
 import { logger } from '../logger.js';
 import { sign as signJwt } from '../jwt.js';
-import crypto from 'crypto';
+import apiKeyManager from '../services/api-key-manager.js';
 
 const router = express.Router();
 
@@ -306,22 +306,27 @@ router.get('/me', async (req, res) => {
   }
 });
 
-// API Key Authentication for automated testing
-// In-memory store for API keys (in production, use database)
-const apiKeys = new Map();
+// GET /api/auth/test-key - Get test API key for automated testing
+router.get('/test-key', (req, res) => {
+  const testKeyInfo = apiKeyManager.getTestApiKey();
+  
+  if (!testKeyInfo) {
+    return res.status(403).json({ 
+      error: 'Test API key not available',
+      reason: process.env.NODE_ENV === 'production' 
+        ? 'Test keys disabled in production'
+        : 'TEST_API_KEY environment variable not configured'
+    });
+  }
 
-// Initialize test API key for automated testing
-const TEST_API_KEY = process.env.TEST_API_KEY || 'nova-test-api-key-' + crypto.randomBytes(16).toString('hex');
-apiKeys.set(TEST_API_KEY, {
-  id: 'test-user-' + crypto.randomBytes(8).toString('hex'),
-  email: 'test@nova-universe.com',
-  name: 'Test User',
-  permissions: ['read', 'write', 'admin'],
-  createdAt: new Date().toISOString(),
-  isTestKey: true
+  return res.json({
+    success: true,
+    ...testKeyInfo,
+    message: 'Use this API key for automated testing. Available only in non-production environments.'
+  });
 });
 
-// POST /api/auth/api-key - Create API key (for automated testing)
+// POST /api/auth/api-key - Create API key for authenticated users
 router.post('/api-key', [
   body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('password').isString().isLength({ min: 1 }).withMessage('Password is required'),
@@ -333,7 +338,7 @@ router.post('/api-key', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password, purpose = 'API Testing' } = req.body;
+    const { email, password, purpose = 'API Access' } = req.body;
 
     // Verify user credentials first
     let user = null;
@@ -356,31 +361,17 @@ router.post('/api-key', [
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Generate new API key
-    const apiKey = 'nova-api-' + crypto.randomBytes(32).toString('hex');
-    const keyData = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      purpose,
-      permissions: ['read', 'write'], // Standard permissions
-      createdAt: new Date().toISOString(),
-      lastUsed: null,
-      isTestKey: false
-    };
+    // Create API key using centralized manager
+    const { apiKey, keyData } = apiKeyManager.createApiKey(user, purpose);
 
-    apiKeys.set(apiKey, keyData);
-
-    // In production, store in database:
+    // In production, also store in database:
     // await db.query('INSERT INTO api_keys (key_hash, user_id, purpose, permissions, created_at) VALUES ($1, $2, $3, $4, $5)',
     //   [crypto.createHash('sha256').update(apiKey).digest('hex'), user.id, purpose, JSON.stringify(keyData.permissions), new Date()]);
-
-    logger.info('API key created', { userId: user.id, email: user.email, purpose });
 
     return res.status(201).json({
       success: true,
       apiKey,
-      purpose,
+      purpose: keyData.purpose,
       permissions: keyData.permissions,
       createdAt: keyData.createdAt,
       message: 'API key created successfully. Store this key securely - it will not be shown again.'
@@ -404,15 +395,11 @@ router.post('/api-login', [
 
     const { apiKey } = req.body;
 
-    // Check if API key exists
-    const keyData = apiKeys.get(apiKey);
+    // Validate API key using centralized manager
+    const keyData = apiKeyManager.validateApiKey(apiKey);
     if (!keyData) {
       return res.status(401).json({ error: 'Invalid API key' });
     }
-
-    // Update last used timestamp
-    keyData.lastUsed = new Date().toISOString();
-    apiKeys.set(apiKey, keyData);
 
     // Generate JWT token for the API key user
     const token = signJwt({
@@ -420,6 +407,7 @@ router.post('/api-login', [
       email: keyData.email,
       name: keyData.name,
       permissions: keyData.permissions,
+      roles: keyData.roles,
       apiKeyAuth: true
     });
 
@@ -430,7 +418,8 @@ router.post('/api-login', [
         id: keyData.id,
         email: keyData.email,
         name: keyData.name,
-        permissions: keyData.permissions
+        permissions: keyData.permissions,
+        roles: keyData.roles
       },
       message: 'API authentication successful'
     });
@@ -440,59 +429,5 @@ router.post('/api-login', [
     return res.status(500).json({ error: 'API authentication failed' });
   }
 });
-
-// GET /api/auth/test-key - Get test API key for automated testing
-router.get('/test-key', (req, res) => {
-  if (process.env.NODE_ENV === 'production') {
-    return res.status(403).json({ error: 'Test API key not available in production' });
-  }
-
-  return res.json({
-    success: true,
-    testApiKey: TEST_API_KEY,
-    purpose: 'Automated Testing',
-    permissions: ['read', 'write', 'admin'],
-    usage: {
-      loginEndpoint: '/api/auth/api-login',
-      example: {
-        method: 'POST',
-        body: { apiKey: TEST_API_KEY },
-        response: 'JWT token for authenticated requests'
-      }
-    },
-    message: 'Use this API key for automated testing. It bypasses normal authentication.'
-  });
-});
-
-// Middleware to validate API key authentication
-export function authenticateApiKey(req, res, next) {
-  const apiKey = req.headers['x-api-key'] || req.query.apiKey;
-  
-  if (!apiKey) {
-    return next(); // Continue to JWT authentication
-  }
-
-  const keyData = apiKeys.get(apiKey);
-  if (!keyData) {
-    return res.status(401).json({
-      error: 'Invalid API key',
-      errorCode: 'INVALID_API_KEY'
-    });
-  }
-
-  // Update last used and attach user to request
-  keyData.lastUsed = new Date().toISOString();
-  apiKeys.set(apiKey, keyData);
-  
-  req.user = {
-    id: keyData.id,
-    email: keyData.email,
-    name: keyData.name,
-    permissions: keyData.permissions,
-    apiKeyAuth: true
-  };
-
-  next();
-}
 
 export default router;

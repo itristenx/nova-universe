@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 // import db from '../db.js'; // Currently unused but may be needed for future auth features
 import { verify as verifyJwtToken } from '../jwt.js';
 import { logger } from '../logger.js';
+import apiKeyManager from '../services/api-key-manager.js';
 
 /**
  * Middleware to verify JWT and attach user info to req.user
@@ -59,27 +60,12 @@ export function authenticateJWT(req, res, next) {
 }
 
 /**
- * API Key authentication for automated testing
+ * API Key authentication using centralized manager
  */
 function authenticateWithApiKey(req, res, next, apiKey) {
-  // In-memory API keys for testing (in production, use database)
-  const testApiKeys = new Map();
+  // Use centralized API key manager for validation
+  const keyData = apiKeyManager.validateApiKey(apiKey);
   
-  // Initialize test API key if not exists
-  const TEST_API_KEY = process.env.TEST_API_KEY || 'nova-test-api-key-automated-testing';
-  if (!testApiKeys.has(TEST_API_KEY)) {
-    testApiKeys.set(TEST_API_KEY, {
-      id: 'test-user-api-auth',
-      email: 'api-test@nova-universe.com',
-      name: 'API Test User',
-      permissions: ['read', 'write', 'admin'],
-      roles: ['user', 'api_user'],
-      createdAt: new Date().toISOString(),
-      isTestKey: true
-    });
-  }
-  
-  const keyData = testApiKeys.get(apiKey);
   if (!keyData) {
     return res.status(401).json({
       error: 'Invalid API key',
@@ -100,6 +86,7 @@ function authenticateWithApiKey(req, res, next, apiKey) {
   logger.info('API key authentication successful', {
     userId: keyData.id,
     email: keyData.email,
+    isTestKey: keyData.isTestKey,
     ip: req.ip
   });
 
