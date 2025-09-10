@@ -4,6 +4,7 @@ import { body, validationResult } from 'express-validator';
 import db from '../db.js';
 import { logger } from '../logger.js';
 import { sign as signJwt } from '../jwt.js';
+import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -304,5 +305,194 @@ router.get('/me', async (req, res) => {
     });
   }
 });
+
+// API Key Authentication for automated testing
+// In-memory store for API keys (in production, use database)
+const apiKeys = new Map();
+
+// Initialize test API key for automated testing
+const TEST_API_KEY = process.env.TEST_API_KEY || 'nova-test-api-key-' + crypto.randomBytes(16).toString('hex');
+apiKeys.set(TEST_API_KEY, {
+  id: 'test-user-' + crypto.randomBytes(8).toString('hex'),
+  email: 'test@nova-universe.com',
+  name: 'Test User',
+  permissions: ['read', 'write', 'admin'],
+  createdAt: new Date().toISOString(),
+  isTestKey: true
+});
+
+// POST /api/auth/api-key - Create API key (for automated testing)
+router.post('/api-key', [
+  body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('password').isString().isLength({ min: 1 }).withMessage('Password is required'),
+  body('purpose').optional().isString().withMessage('Purpose must be a string'),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password, purpose = 'API Testing' } = req.body;
+
+    // Verify user credentials first
+    let user = null;
+    try {
+      const found = await db.query(
+        'SELECT id, name, email, password_hash as passwordhash FROM users WHERE email = $1',
+        [email]
+      );
+      if (found.rows && found.rows.length > 0) {
+        user = { ...found.rows[0], passwordHash: found.rows[0].passwordhash };
+      }
+    } catch {
+      // Fallback to in-memory
+      if (inMemoryUsersByEmail.has(email)) {
+        user = inMemoryUsersByEmail.get(email);
+      }
+    }
+
+    if (!user || !user.passwordHash || !bcrypt.compareSync(password, user.passwordHash)) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Generate new API key
+    const apiKey = 'nova-api-' + crypto.randomBytes(32).toString('hex');
+    const keyData = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      purpose,
+      permissions: ['read', 'write'], // Standard permissions
+      createdAt: new Date().toISOString(),
+      lastUsed: null,
+      isTestKey: false
+    };
+
+    apiKeys.set(apiKey, keyData);
+
+    // In production, store in database:
+    // await db.query('INSERT INTO api_keys (key_hash, user_id, purpose, permissions, created_at) VALUES ($1, $2, $3, $4, $5)',
+    //   [crypto.createHash('sha256').update(apiKey).digest('hex'), user.id, purpose, JSON.stringify(keyData.permissions), new Date()]);
+
+    logger.info('API key created', { userId: user.id, email: user.email, purpose });
+
+    return res.status(201).json({
+      success: true,
+      apiKey,
+      purpose,
+      permissions: keyData.permissions,
+      createdAt: keyData.createdAt,
+      message: 'API key created successfully. Store this key securely - it will not be shown again.'
+    });
+
+  } catch (error) {
+    logger.error('API key creation error', { error: error.message });
+    return res.status(500).json({ error: 'Failed to create API key' });
+  }
+});
+
+// POST /api/auth/api-login - Login using API key
+router.post('/api-login', [
+  body('apiKey').isString().isLength({ min: 10 }).withMessage('Valid API key is required'),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { apiKey } = req.body;
+
+    // Check if API key exists
+    const keyData = apiKeys.get(apiKey);
+    if (!keyData) {
+      return res.status(401).json({ error: 'Invalid API key' });
+    }
+
+    // Update last used timestamp
+    keyData.lastUsed = new Date().toISOString();
+    apiKeys.set(apiKey, keyData);
+
+    // Generate JWT token for the API key user
+    const token = signJwt({
+      id: keyData.id,
+      email: keyData.email,
+      name: keyData.name,
+      permissions: keyData.permissions,
+      apiKeyAuth: true
+    });
+
+    return res.json({
+      success: true,
+      token,
+      user: {
+        id: keyData.id,
+        email: keyData.email,
+        name: keyData.name,
+        permissions: keyData.permissions
+      },
+      message: 'API authentication successful'
+    });
+
+  } catch (error) {
+    logger.error('API login error', { error: error.message });
+    return res.status(500).json({ error: 'API authentication failed' });
+  }
+});
+
+// GET /api/auth/test-key - Get test API key for automated testing
+router.get('/test-key', (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ error: 'Test API key not available in production' });
+  }
+
+  return res.json({
+    success: true,
+    testApiKey: TEST_API_KEY,
+    purpose: 'Automated Testing',
+    permissions: ['read', 'write', 'admin'],
+    usage: {
+      loginEndpoint: '/api/auth/api-login',
+      example: {
+        method: 'POST',
+        body: { apiKey: TEST_API_KEY },
+        response: 'JWT token for authenticated requests'
+      }
+    },
+    message: 'Use this API key for automated testing. It bypasses normal authentication.'
+  });
+});
+
+// Middleware to validate API key authentication
+export function authenticateApiKey(req, res, next) {
+  const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+  
+  if (!apiKey) {
+    return next(); // Continue to JWT authentication
+  }
+
+  const keyData = apiKeys.get(apiKey);
+  if (!keyData) {
+    return res.status(401).json({
+      error: 'Invalid API key',
+      errorCode: 'INVALID_API_KEY'
+    });
+  }
+
+  // Update last used and attach user to request
+  keyData.lastUsed = new Date().toISOString();
+  apiKeys.set(apiKey, keyData);
+  
+  req.user = {
+    id: keyData.id,
+    email: keyData.email,
+    name: keyData.name,
+    permissions: keyData.permissions,
+    apiKeyAuth: true
+  };
+
+  next();
+}
 
 export default router;

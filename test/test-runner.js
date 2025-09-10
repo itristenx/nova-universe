@@ -234,19 +234,61 @@ class TestSuiteRunner {
 
   async verifyEnvironment() {
     console.log('🔍 Verifying test environment...');
-    // API check omitted in CI if not reachable
+    
+    // Enhanced API check with better error handling and retry logic
     try {
       const fetch = (await import('node-fetch')).default;
-      const response = await fetch(`${TEST_CONFIG.apiUrl}/health`, { timeout: 10000 });
-      if (response.ok) {
-        TEST_CONFIG.apiAvailable = true;
-        console.log(`   ✅ API accessible at ${TEST_CONFIG.apiUrl}`);
-      } else {
-        console.log(`   ⚠️  API returned status ${response.status} at ${TEST_CONFIG.apiUrl}`);
+      let response;
+      let attempts = 0;
+      const maxAttempts = 3;
+      
+      while (attempts < maxAttempts) {
+        try {
+          response = await fetch(`${TEST_CONFIG.apiUrl}/health`, { 
+            timeout: 15000,
+            headers: {
+              'User-Agent': 'Nova-Test-Runner/1.0',
+              'Accept': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const healthData = await response.json().catch(() => ({}));
+            TEST_CONFIG.apiAvailable = true;
+            console.log(`   ✅ API accessible at ${TEST_CONFIG.apiUrl}`);
+            console.log(`   📊 API Health: ${healthData.status || 'OK'} (${response.status})`);
+            break;
+          } else {
+            console.log(`   ⚠️  API returned status ${response.status} at ${TEST_CONFIG.apiUrl}`);
+            if (attempts === maxAttempts - 1) {
+              TEST_CONFIG.apiAvailable = false;
+            }
+          }
+        } catch (fetchError) {
+          attempts++;
+          if (attempts < maxAttempts) {
+            console.log(`   🔄 API connection attempt ${attempts} failed, retrying... (${fetchError.message})`);
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s before retry
+          } else {
+            console.log(`   ⚠️  API not accessible at ${TEST_CONFIG.apiUrl} after ${maxAttempts} attempts`);
+            console.log(`      Final error: ${fetchError.message}`);
+            
+            // Additional diagnostic checks
+            try {
+              const baseUrlCheck = await fetch(TEST_CONFIG.apiUrl.replace('/api', ''), { timeout: 5000 });
+              if (baseUrlCheck.ok) {
+                console.log(`   💡 Base URL accessible but /api endpoint may not be ready`);
+              }
+            } catch {
+              console.log(`   ❌ Base URL also not accessible - service may be down`);
+            }
+            
+            TEST_CONFIG.apiAvailable = false;
+          }
+        }
       }
     } catch (error) {
-      console.log(`   ⚠️  API not accessible at ${TEST_CONFIG.apiUrl} - some tests may fail`);
-      console.log(`      Error: ${error.message}`);
+      console.log(`   ❌ API verification failed: ${error.message}`);
       TEST_CONFIG.apiAvailable = false;
     }
 

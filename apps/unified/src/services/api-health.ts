@@ -196,68 +196,6 @@ class APIHealthMonitor {
 // Singleton instance
 export const apiHealthMonitor = new APIHealthMonitor();
 
-// React hook for component usage
-import { useState, useEffect } from 'react';
-
-export function useAPIConnectivity() {
-  const [connectivityState, setConnectivityState] = useState<ConnectivityState>(
-    apiHealthMonitor.getConnectivityState()
-  );
-
-  useEffect(() => {
-    const unsubscribe = apiHealthMonitor.addConnectivityListener(setConnectivityState);
-    return unsubscribe;
-  }, []);
-
-  return {
-    ...connectivityState,
-    forceCheck: () => apiHealthMonitor.forceHealthCheck(),
-    isAPIAvailable: apiHealthMonitor.isAPIAvailable(),
-  };
-}
-
-// Network status component
-export function NetworkStatusIndicator() {
-  const connectivity = useAPIConnectivity();
-
-  if (connectivity.isConnected) {
-    return null; // Don't show anything when connected
-  }
-
-  const getStatusInfo = () => {
-    if (!connectivity.isOnline) {
-      return {
-        className: 'network-status--offline',
-        message: 'No internet connection',
-        icon: '🔴'
-      };
-    }
-    
-    if (connectivity.circuitState === 'open') {
-      return {
-        className: 'network-status--offline',
-        message: 'API temporarily unavailable',
-        icon: '⚠️'
-      };
-    }
-    
-    return {
-      className: 'network-status--reconnecting',
-      message: 'Reconnecting...',
-      icon: '🔄'
-    };
-  };
-
-  const status = getStatusInfo();
-
-  return (
-    <div className={`network-status ${status.className}`}>
-      <span className="mr-2">{status.icon}</span>
-      {status.message}
-    </div>
-  );
-}
-
 // Offline-aware API wrapper
 export function createOfflineAwareAPICall<T>(
   apiCall: () => Promise<T>,

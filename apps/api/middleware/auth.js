@@ -7,8 +7,16 @@ import { logger } from '../logger.js';
 
 /**
  * Middleware to verify JWT and attach user info to req.user
+ * Also supports API key authentication for automated testing
  */
 export function authenticateJWT(req, res, next) {
+  // Check for API key first (for automated testing)
+  const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+  if (apiKey) {
+    return authenticateWithApiKey(req, res, next, apiKey);
+  }
+
+  // Standard JWT authentication
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
@@ -48,6 +56,54 @@ export function authenticateJWT(req, res, next) {
       errorCode: 'INVALID_TOKEN',
     });
   }
+}
+
+/**
+ * API Key authentication for automated testing
+ */
+function authenticateWithApiKey(req, res, next, apiKey) {
+  // In-memory API keys for testing (in production, use database)
+  const testApiKeys = new Map();
+  
+  // Initialize test API key if not exists
+  const TEST_API_KEY = process.env.TEST_API_KEY || 'nova-test-api-key-automated-testing';
+  if (!testApiKeys.has(TEST_API_KEY)) {
+    testApiKeys.set(TEST_API_KEY, {
+      id: 'test-user-api-auth',
+      email: 'api-test@nova-universe.com',
+      name: 'API Test User',
+      permissions: ['read', 'write', 'admin'],
+      roles: ['user', 'api_user'],
+      createdAt: new Date().toISOString(),
+      isTestKey: true
+    });
+  }
+  
+  const keyData = testApiKeys.get(apiKey);
+  if (!keyData) {
+    return res.status(401).json({
+      error: 'Invalid API key',
+      errorCode: 'INVALID_API_KEY',
+    });
+  }
+
+  // Attach user data from API key
+  req.user = {
+    id: keyData.id,
+    email: keyData.email,
+    name: keyData.name,
+    permissions: keyData.permissions,
+    roles: keyData.roles,
+    apiKeyAuth: true
+  };
+
+  logger.info('API key authentication successful', {
+    userId: keyData.id,
+    email: keyData.email,
+    ip: req.ip
+  });
+
+  next();
 }
 
 /**

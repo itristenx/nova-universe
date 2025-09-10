@@ -177,7 +177,7 @@ export const useAuthStore = create<AuthState>()(
           if (data && (data.id || data.email)) {
             const bootstrapUser: User = {
               id: data.id || 'user',
-              email: data.email || fallbackEmail || 'user@example.com',
+              email: data.email || fallbackEmail || `user-${Date.now()}@nova-universe.local`,
               firstName: data.name || (fallbackEmail ? fallbackEmail.split('@')[0] : 'User'),
               lastName: '',
               displayName: data.name || fallbackEmail || 'User',
@@ -374,25 +374,6 @@ export const useAuthStore = create<AuthState>()(
             });
             throw fallbackErr;
           }
-        }
-      },
-
-      // Register action - Note: Registration might not be available in Helix
-      register: async () => {
-        set({ isLoading: true, error: null });
-
-        try {
-          // In Nova Helix, registration is typically handled by administrators
-          // This would need to be adapted based on your specific setup
-          throw new Error('Self-registration is not available. Please contact your administrator.');
-        } catch (_error) {
-          set({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: _error instanceof Error ? _error.message : 'Registration failed',
-          });
-          throw _error;
         }
       },
 
