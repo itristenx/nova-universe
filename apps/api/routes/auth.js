@@ -1,5 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { body, validationResult } from 'express-validator';
 import db from '../db.js';
 import { logger } from '../logger.js';
@@ -11,14 +12,106 @@ const router = express.Router();
 const inMemoryUsersByEmail = new Map();
 const failedLoginAttempts = new Map();
 
+// Enhanced password strength validation following industry standards
+function validatePasswordStrength(password) {
+  if (typeof password !== 'string') {
+    return { 
+      isValid: false, 
+      errors: ['Password must be a string'] 
+    };
+  }
+
+  const errors = [];
+  const requirements = {
+    minLength: 8,
+    maxLength: 128,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireNumbers: true,
+    requireSymbols: true,
+  };
+
+  // Length validation
+  if (password.length < requirements.minLength) {
+    errors.push(`Password must be at least ${requirements.minLength} characters long`);
+  }
+  if (password.length > requirements.maxLength) {
+    errors.push(`Password must be no more than ${requirements.maxLength} characters long`);
+  }
+
+  // Character class validation
+  if (requirements.requireUppercase && !/[A-Z]/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter');
+  }
+  if (requirements.requireLowercase && !/[a-z]/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter');
+  }
+  if (requirements.requireNumbers && !/\d/.test(password)) {
+    errors.push('Password must contain at least one number');
+  }
+  if (requirements.requireSymbols && !/[^A-Za-z0-9]/.test(password)) {
+    errors.push('Password must contain at least one special character');
+  }
+
+  // Common weak passwords
+  const commonWeakPasswords = [
+    'password', 'password123', '123456', '123456789', 'qwerty',
+    'abc123', 'password1', 'admin', 'letmein', 'welcome',
+    'monkey', '1234567890', 'password!', 'Password1', 'Password123',
+    'qwerty123', 'admin123', 'root', 'toor', 'pass'
+  ];
+  
+  if (commonWeakPasswords.includes(password.toLowerCase())) {
+    errors.push('Password is too common and easily guessable');
+  }
+
+  // Sequential character detection
+  if (/(?:abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i.test(password)) {
+    errors.push('Password should not contain sequential alphabetic characters');
+  }
+  if (/(?:123|234|345|456|567|678|789|890)/.test(password)) {
+    errors.push('Password should not contain sequential numeric characters');
+  }
+
+  // Repeated character detection
+  if (/(.)\1{2,}/.test(password)) {
+    errors.push('Password should not contain repeated characters (3+ in a row)');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    score: calculatePasswordScore(password),
+  };
+}
+
+function calculatePasswordScore(password) {
+  let score = 0;
+  
+  // Base score for length
+  score += Math.min(password.length * 2, 20);
+  
+  // Character variety bonus
+  if (/[A-Z]/.test(password)) score += 5;
+  if (/[a-z]/.test(password)) score += 5;
+  if (/\d/.test(password)) score += 5;
+  if (/[^A-Za-z0-9]/.test(password)) score += 10;
+  
+  // Length bonuses
+  if (password.length >= 12) score += 10;
+  if (password.length >= 16) score += 5;
+  
+  // Penalize common patterns
+  if (/password/i.test(password)) score -= 20;
+  if (/123/.test(password)) score -= 10;
+  if (/abc/i.test(password)) score -= 10;
+  
+  return Math.max(0, Math.min(100, score));
+}
+
 function isStrongPassword(pw) {
-  if (typeof pw !== 'string') return false;
-  if (pw.length < 8) return false;
-  const hasUpper = /[A-Z]/.test(pw);
-  const hasLower = /[a-z]/.test(pw);
-  const hasNumber = /\d/.test(pw);
-  const hasSymbol = /[^A-Za-z0-9]/.test(pw);
-  return hasUpper && hasLower && hasNumber && hasSymbol;
+  const validation = validatePasswordStrength(pw);
+  return validation.isValid;
 }
 
 // POST /api/auth/register
@@ -52,9 +145,14 @@ router.post(
 
       const { email, first_name, last_name, password } = req.body;
 
-      // Enforce password complexity (security test expects rejection for weak passwords)
-      if (!isStrongPassword(password)) {
-        return res.status(422).json({ error: 'Password does not meet complexity requirements' });
+      // Enhanced password complexity validation
+      const passwordValidation = validatePasswordStrength(password);
+      if (!passwordValidation.isValid) {
+        return res.status(422).json({ 
+          error: 'Password does not meet complexity requirements',
+          details: passwordValidation.errors,
+          score: passwordValidation.score,
+        });
       }
 
       const fullName = `${first_name} ${last_name}`.trim();
@@ -114,27 +212,62 @@ router.post(
       }
 
       const { email, password } = req.body;
+      const clientIp = req.ip || req.connection.remoteAddress;
+      const userAgent = req.get('User-Agent') || 'Unknown';
 
-      // Brute force protection (memory level fallback)
+      // Enhanced brute force protection
       const now = Date.now();
-      const attempt = failedLoginAttempts.get(email) || { count: 0, lockedUntil: 0 };
+      const attemptKey = `${email}:${clientIp}`;
+      const attempt = failedLoginAttempts.get(attemptKey) || { 
+        count: 0, 
+        lockedUntil: 0,
+        firstAttempt: now,
+        lastAttempt: now,
+      };
+      
+      // Check if account is locked
       if (attempt.lockedUntil && now < attempt.lockedUntil) {
-        return res.status(423).json({ error: 'Account temporarily locked' });
+        const lockTimeRemaining = Math.ceil((attempt.lockedUntil - now) / 1000 / 60);
+        logger.warn('Login attempt on locked account', {
+          email,
+          ip: clientIp,
+          userAgent,
+          lockTimeRemaining,
+          timestamp: new Date().toISOString(),
+        });
+        return res.status(423).json({ 
+          error: 'Account temporarily locked due to too many failed attempts',
+          lockTimeRemaining: `${lockTimeRemaining} minutes`,
+        });
       }
 
       let user = null;
       try {
         const found = await db.query(
-          'SELECT id, name, email, password_hash as passwordhash, disabled, locked_until FROM users WHERE email = $1',
+          'SELECT id, name, email, password_hash as passwordhash, disabled, locked_until, failed_login_attempts FROM users WHERE email = $1',
           [email],
         );
         if (found.rows && found.rows.length > 0) {
           user = { ...found.rows[0], passwordHash: found.rows[0].passwordhash };
+          
+          // Check if account is disabled
+          if (user.disabled) {
+            logger.warn('Login attempt on disabled account', {
+              email,
+              ip: clientIp,
+              userAgent,
+              timestamp: new Date().toISOString(),
+            });
+            return res.status(403).json({ error: 'Account has been disabled' });
+          }
+          
+          // Check database-level lock
           if (user.locked_until && new Date(user.locked_until).getTime() > now) {
             return res.status(423).json({ error: 'Account temporarily locked' });
           }
         }
-      } catch {
+      } catch (dbErr) {
+        logger.warn('Database error during login', { error: dbErr.message });
         // ignore DB error and use in-memory
       }
 
@@ -142,28 +275,79 @@ router.post(
         user = inMemoryUsersByEmail.get(email);
       }
 
-      if (!user || !user.passwordHash || !bcrypt.compareSync(password, user.passwordHash)) {
-        // Increment attempts and possibly lock
+      // Verify password using constant-time comparison
+      const isValidPassword = user && user.passwordHash && await bcrypt.compare(password, user.passwordHash);
+      
+      if (!user || !isValidPassword) {
+        // Log failed attempt
+        logger.warn('Failed login attempt', {
+          email,
+          ip: clientIp,
+          userAgent,
+          reason: !user ? 'user_not_found' : 'invalid_password',
+          timestamp: new Date().toISOString(),
+        });
+
+        // Increment failed attempts with progressive lockout
         attempt.count += 1;
-        if (attempt.count >= 10) {
-          attempt.lockedUntil = now + 15 * 60 * 1000; // 15 minutes
+        attempt.lastAttempt = now;
+        
+        // Progressive lockout times
+        let lockDuration = 0;
+        if (attempt.count >= 3) lockDuration = 5 * 60 * 1000;      // 5 minutes after 3 attempts
+        if (attempt.count >= 5) lockDuration = 15 * 60 * 1000;     // 15 minutes after 5 attempts  
+        if (attempt.count >= 10) lockDuration = 60 * 60 * 1000;    // 1 hour after 10 attempts
+        if (attempt.count >= 20) lockDuration = 24 * 60 * 60 * 1000; // 24 hours after 20 attempts
+        
+        if (lockDuration > 0) {
+          attempt.lockedUntil = now + lockDuration;
         }
-        failedLoginAttempts.set(email, attempt);
+        
+        failedLoginAttempts.set(attemptKey, attempt);
+
+        // Always return same error message to prevent user enumeration
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
-      // Reset attempts on success
-      failedLoginAttempts.delete(email);
+      // Reset failed attempts on successful login
+      failedLoginAttempts.delete(attemptKey);
 
-      // Update last_login best-effort
+      // Update last_login and reset failed attempts in database
       try {
-        await db.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
-      } catch {}
+        await db.query(
+          'UPDATE users SET last_login = CURRENT_TIMESTAMP, failed_login_attempts = 0, locked_until = NULL WHERE id = $1',
+          [user.id]
+        );
+      } catch (dbErr) {
+        logger.warn('Failed to update user login timestamp', { error: dbErr.message });
+      }
 
-      const token = signJwt({ id: user.id, email: user.email });
-      return res.json({ token });
+      // Log successful login
+      logger.info('Successful login', {
+        userId: user.id,
+        email: user.email,
+        ip: clientIp,
+        userAgent,
+        timestamp: new Date().toISOString(),
+      });
+
+      const token = signJwt({ 
+        id: user.id, 
+        email: user.email,
+        name: user.name,
+        roles: user.roles || ['user'], // Default role
+      });
+      
+      return res.json({ 
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
+      });
     } catch (error) {
-      logger.error('Login error', { error: error.message });
+      logger.error('Login error', { error: error.message, stack: error.stack });
       return res.status(500).json({ error: 'Login failed' });
     }
   },
@@ -178,42 +362,72 @@ router.post('/logout', async (req, res) => {
       return res.status(401).json({
         success: false,
         error: 'No valid token provided',
+        errorCode: 'MISSING_TOKEN',
       });
     }
 
     const token = authHeader.split(' ')[1];
+    const clientIp = req.ip || req.connection.remoteAddress;
+    
+    try {
+      // Verify the token first to get user info for logging
+      const { verify: verifyJwt } = await import('../jwt.js');
+      const decoded = verifyJwt(token);
+      
+      // Log the logout event
+      logger.info('User logout', {
+        userId: decoded.id,
+        email: decoded.email,
+        tokenId: decoded.jti,
+        ip: clientIp,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date().toISOString(),
+      });
 
-    // Add token to blacklist for security
-    if (token && global.tokenBlacklist) {
-      global.tokenBlacklist.add(token);
-    } else if (token) {
-      // Initialize blacklist if it doesn't exist
-      global.tokenBlacklist = new Set([token]);
+      // Revoke the token using the improved JWT system
+      const { revoke } = await import('../jwt.js');
+      revoke(token);
+      
+      // In a production environment, you should also:
+      // 1. Store the revoked token JTI in Redis with TTL equal to token expiration
+      // 2. Implement a cleanup job for expired revoked tokens
+      // 3. Check revocation list in the JWT middleware
+      // 4. Consider revoking all sessions for the user if this is a "logout everywhere" operation
+
+      return res.json({
+        success: true,
+        message: 'Logged out successfully',
+        timestamp: new Date().toISOString(),
+      });
+      
+    } catch (tokenError) {
+      // Even if token verification fails, we still want to attempt to blacklist it
+      const { revoke } = await import('../jwt.js');
+      revoke(token);
+      
+      logger.warn('Logout with invalid token', {
+        error: tokenError.message,
+        ip: clientIp,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date().toISOString(),
+      });
+      
+      return res.json({
+        success: true,
+        message: 'Logged out successfully',
+        timestamp: new Date().toISOString(),
+      });
     }
-
-    // In a production environment, you would:
-    // 1. Add the token to a blacklist/revocation list
-    // 2. Store the revocation in Redis or database
-    // 3. Check the blacklist on subsequent requests
-
-    // For now, we'll just return success
-    // The client should remove the token from storage
-
-    logger.info('User logged out successfully', {
-      timestamp: new Date().toISOString(),
-      message: 'Token should be removed by client',
-    });
-
-    return res.json({
-      success: true,
-      message: 'Logged out successfully',
-      timestamp: new Date().toISOString(),
-    });
   } catch (error) {
-    logger.error('Logout error', { error: error.message });
+    logger.error('Logout error', { 
+      error: error.message, 
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+    });
     return res.status(500).json({
       success: false,
       error: 'Logout failed',
+      errorCode: 'LOGOUT_ERROR',
     });
   }
 });
@@ -304,5 +518,70 @@ router.get('/me', async (req, res) => {
     });
   }
 });
+
+// POST /api/auth/forgot-password - Request password reset
+router.post(
+  '/forgot-password',
+  [
+    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { email } = req.body;
+      const clientIp = req.ip || req.connection.remoteAddress;
+
+      // Always return success to prevent user enumeration attacks
+      const successResponse = {
+        success: true,
+        message: 'If an account with that email exists, a password reset link has been sent.',
+      };
+
+      try {
+        // Check if user exists
+        const userResult = await db.query(
+          'SELECT id, email, name FROM users WHERE email = $1 AND disabled = FALSE',
+          [email]
+        );
+
+        if (userResult.rows && userResult.rows.length > 0) {
+          const user = userResult.rows[0];
+          
+          // Generate secure reset token
+          const resetToken = crypto.randomBytes(32).toString('hex');
+          const tokenExpiry = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour from now
+          
+          // Log password reset request
+          logger.info('Password reset requested', {
+            userId: user.id,
+            email: user.email,
+            ip: clientIp,
+            userAgent: req.get('User-Agent'),
+            timestamp: new Date().toISOString(),
+          });
+
+          // In production, send email with reset link
+          // const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+          // await sendPasswordResetEmail(user.email, user.name, resetUrl);
+        }
+
+        return res.json(successResponse);
+      } catch (dbErr) {
+        logger.warn('Database error during password reset request', { 
+          error: dbErr.message,
+          email,
+        });
+        return res.json(successResponse); // Always return success
+      }
+    } catch (error) {
+      logger.error('Forgot password error', { error: error.message });
+      return res.status(500).json({ error: 'Password reset request failed' });
+    }
+  }
+);
 
 export default router;

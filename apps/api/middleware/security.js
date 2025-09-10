@@ -4,50 +4,198 @@
 import helmet from 'helmet';
 import cors from 'cors';
 import { logger } from '../logger.js';
-import ConfigurationManager from '../config/app-settings.js';
 
 /**
- * Configure comprehensive security headers using Helmet
+ * Configure comprehensive security headers using Helmet with industry standards
  */
 export function configureSecurityHeaders() {
-  // Development flag available for future conditional logic
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isDevelopment = process.env.NODE_ENV === 'development';
+  const isProduction = process.env.NODE_ENV === 'production';
 
   return helmet({
-    // Content Security Policy
+    // Content Security Policy - Enhanced for security
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        baseUri: ["'self'"],
+        blockAllMixedContent: [],
+        fontSrc: ["'self'", 'https:', 'data:'],
+        frameAncestors: ["'none'"],
         imgSrc: ["'self'", 'data:', 'https:'],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        connectSrc: ["'self'"],
-        frameSrc: ["'none'"],
         objectSrc: ["'none'"],
-        mediaSrc: ["'self'"],
-        workerSrc: ["'self'"],
-        childSrc: ["'self'"],
-        formAction: ["'self'"],
-        upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+        scriptSrc: isDevelopment 
+          ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"] // Relaxed for development
+          : ["'self'", "'sha256-...'"], // Strict for production (add actual hashes)
+        scriptSrcAttr: ["'none'"],
+        styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
+        upgradeInsecureRequests: isProduction ? [] : null,
+        workerSrc: ["'self'", 'blob:'],
+        connectSrc: [
+          "'self'",
+          ...(process.env.CORS_ORIGINS?.split(',') || []),
+          'wss:', // WebSocket support
+        ],
+        reportUri: '/api/csp-report', // CSP violation reporting
       },
     },
 
-    // Cross-Origin Embedder Policy
-    crossOriginEmbedderPolicy: false, // Disable for API compatibility
-
-    // Cross-Origin Opener Policy
+    // Cross-Origin policies for enhanced security
+    crossOriginEmbedderPolicy: false, // Keep disabled for API compatibility
     crossOriginOpenerPolicy: { policy: 'same-origin' },
-
-    // Cross-Origin Resource Policy
     crossOriginResourcePolicy: { policy: 'cross-origin' },
 
     // DNS Prefetch Control
     dnsPrefetchControl: { allow: false },
 
-    // Frame Options
+    // Frame Options - Prevent clickjacking
     frameguard: { action: 'deny' },
+
+    // Hide X-Powered-By header
+    hidePoweredBy: true,
+
+    // HTTP Strict Transport Security (HSTS) - Production only
+    hsts: isProduction ? {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    } : false,
+
+    // IE No Open - Prevent IE from executing downloads
+    ieNoOpen: true,
+
+    // No Sniff - Prevent MIME sniffing
+    noSniff: true,
+
+    // Origin Agent Cluster
+    originAgentCluster: true,
+
+    // Permissions Policy (formerly Feature Policy)
+    permissionsPolicy: {
+      camera: [],
+      microphone: [],
+      geolocation: [],
+      payment: [],
+      usb: [],
+      bluetooth: [],
+      magnetometer: [],
+      gyroscope: [],
+      accelerometer: [],
+      ambient: [],
+    },
+
+    // Referrer Policy
+    referrerPolicy: { policy: ['no-referrer', 'strict-origin-when-cross-origin'] },
+
+    // X-Content-Type-Options
+    xssFilter: true,
+  });
+}
+
+/**
+ * Configure CORS with security best practices
+ */
+export function configureCORS() {
+  const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
+    'http://localhost:3000',
+    'http://localhost:3001', 
+    'http://localhost:5173',
+    'http://localhost:8080',
+  ];
+
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
+  return cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, etc.)
+      if (!origin) return callback(null, true);
+      
+      if (isDevelopment || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // Log blocked CORS requests for security monitoring
+      logger.warn('CORS request blocked', { 
+        origin, 
+        allowedOrigins,
+        timestamp: new Date().toISOString(),
+      });
+      
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Cache-Control',
+    ],
+    exposedHeaders: ['X-Total-Count'],
+    maxAge: 86400, // 24 hours
+  });
+}
+
+/**
+ * Security middleware for request validation
+ */
+export function securityValidation(req, res, next) {
+  // Block requests with suspicious patterns
+  const suspiciousPatterns = [
+    /\.\./,     // Directory traversal
+    /<script/i, // XSS attempts
+    /javascript:/i,
+    /vbscript:/i,
+    /on\w+=/i,  // Event handlers
+    /script:/i,
+    /alert\(/i,
+    /eval\(/i,
+    /expression\(/i,
+    /import\(/i,
+  ];
+
+  const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+  const queryString = req.url.split('?')[1] || '';
+  const requestBody = JSON.stringify(req.body || {});
+
+  for (const pattern of suspiciousPatterns) {
+    if (pattern.test(fullUrl) || pattern.test(queryString) || pattern.test(requestBody)) {
+      logger.warn('Suspicious request blocked', {
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        url: req.originalUrl,
+        method: req.method,
+        pattern: pattern.toString(),
+        timestamp: new Date().toISOString(),
+      });
+      
+      return res.status(400).json({
+        error: 'Invalid request',
+        errorCode: 'SECURITY_VIOLATION',
+      });
+    }
+  }
+
+  // Validate request size (prevent DoS attacks)
+  const contentLength = parseInt(req.get('Content-Length') || '0', 10);
+  const maxRequestSize = 10 * 1024 * 1024; // 10MB
+  
+  if (contentLength > maxRequestSize) {
+    logger.warn('Large request blocked', {
+      ip: req.ip,
+      contentLength,
+      maxAllowed: maxRequestSize,
+      timestamp: new Date().toISOString(),
+    });
+    
+    return res.status(413).json({
+      error: 'Request too large',
+      errorCode: 'REQUEST_TOO_LARGE',
+    });
+  }
+
+  next();
+}
 
     // Hide Powered-By header
     hidePoweredBy: true,

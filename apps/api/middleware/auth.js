@@ -19,8 +19,8 @@ export function authenticateJWT(req, res, next) {
 
   const token = authHeader.split(' ')[1];
 
-  // Basic token format validation
-  if (!token || token.length < 10) {
+  // Enhanced token format validation
+  if (!token || token.length < 10 || token.split('.').length !== 3) {
     return res.status(401).json({
       error: 'Invalid token format',
       errorCode: 'INVALID_TOKEN_FORMAT',
@@ -29,23 +29,55 @@ export function authenticateJWT(req, res, next) {
 
   try {
     const user = verifyJwtToken(token);
-    if (!user || !user.id || !user.email) {
+    
+    // Enhanced user validation
+    if (!user || !user.id || !user.email || !user.sub) {
+      logger.warn('JWT verification failed - invalid payload', {
+        hasUser: !!user,
+        hasId: !!(user && user.id),
+        hasEmail: !!(user && user.email),
+        hasSub: !!(user && user.sub),
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
       return res.status(403).json({
         error: 'Invalid token payload',
         errorCode: 'INVALID_TOKEN_PAYLOAD',
       });
     }
+    
+    // Attach user info to request
     req.user = user;
+    req.tokenId = user.jti; // Store token ID for potential revocation
+    
     next();
   } catch (err) {
     logger.warn('JWT verification failed', {
       error: err.message,
       ip: req.ip,
       userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString(),
     });
-    return res.status(403).json({
+    
+    // Map specific JWT errors to appropriate responses
+    let errorCode = 'INVALID_TOKEN';
+    let status = 403;
+    
+    if (err.name === 'TokenExpiredError') {
+      errorCode = 'TOKEN_EXPIRED';
+      status = 401;
+    } else if (err.name === 'JsonWebTokenError') {
+      errorCode = 'MALFORMED_TOKEN';
+      status = 401;
+    } else if (err.message === 'Token has been revoked') {
+      errorCode = 'TOKEN_REVOKED';
+      status = 401;
+    }
+    
+    return res.status(status).json({
       error: 'Invalid or expired token',
-      errorCode: 'INVALID_TOKEN',
+      errorCode,
     });
   }
 }
@@ -75,11 +107,15 @@ export function requireRole(role) {
         requiredRole: role,
         userRoles: req.user.roles,
         ip: req.ip,
+        endpoint: req.path,
+        method: req.method,
+        timestamp: new Date().toISOString(),
       });
 
       return res.status(403).json({
         error: 'Insufficient permissions',
         errorCode: 'INSUFFICIENT_PERMISSIONS',
+        required: role,
       });
     }
 
@@ -98,6 +134,78 @@ export function requireAnyRole(roles) {
         errorCode: 'AUTH_REQUIRED',
       });
     }
+
+    if (!req.user.roles || !Array.isArray(req.user.roles)) {
+      return res.status(403).json({
+        error: 'Invalid user role data',
+        errorCode: 'INVALID_ROLE_DATA',
+      });
+    }
+
+    const hasRequiredRole = roles.some(role => req.user.roles.includes(role));
+    
+    if (!hasRequiredRole) {
+      logger.warn('Access denied - insufficient permissions', {
+        userId: req.user.id,
+        requiredRoles: roles,
+        userRoles: req.user.roles,
+        ip: req.ip,
+        endpoint: req.path,
+        method: req.method,
+        timestamp: new Date().toISOString(),
+      });
+
+      return res.status(403).json({
+        error: 'Insufficient permissions',
+        errorCode: 'INSUFFICIENT_PERMISSIONS',
+        requiredAny: roles,
+      });
+    }
+
+    next();
+  };
+}
+
+/**
+ * Middleware to require specific permissions
+ */
+export function requirePermission(permission) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        error: 'Authentication required',
+        errorCode: 'AUTH_REQUIRED',
+      });
+    }
+
+    if (!req.user.permissions || !Array.isArray(req.user.permissions)) {
+      return res.status(403).json({
+        error: 'Invalid user permissions data',
+        errorCode: 'INVALID_PERMISSIONS_DATA',
+      });
+    }
+
+    if (!req.user.permissions.includes(permission)) {
+      logger.warn('Access denied - missing permission', {
+        userId: req.user.id,
+        requiredPermission: permission,
+        userPermissions: req.user.permissions,
+        ip: req.ip,
+        endpoint: req.path,
+        method: req.method,
+        timestamp: new Date().toISOString(),
+      });
+
+      return res.status(403).json({
+        error: 'Missing required permission',
+        errorCode: 'MISSING_PERMISSION',
+        required: permission,
+      });
+    }
+
+    next();
+  };
+}
 
     if (!req.user.roles || !Array.isArray(req.user.roles)) {
       return res.status(403).json({
