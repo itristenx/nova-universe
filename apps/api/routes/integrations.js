@@ -4,6 +4,7 @@ import { logger } from '../logger.js';
 import { deleteConfigByKey, fetchConfigByKey } from '../utils/dbUtils.js';
 
 const router = express.Router();
+router.use(express.json());
 
 async function getIntegrationLayer() {
   try {
@@ -75,26 +76,62 @@ router.get('/', (req, res) => {
       const integrations = [
         {
           id: 4,
+          type: 'slack',
           name: 'Slack',
           description: 'Slack integration for Nova Universe',
           status: 'active',
         },
         {
           id: 5,
+          type: 'teams',
           name: 'Microsoft Teams',
           description: 'Teams integration for Nova Universe',
           status: 'planned',
         },
         {
           id: 6,
+          type: 'discord',
           name: 'Discord',
           description: 'Discord integration for Nova Universe',
           status: 'beta',
         },
+        {
+          id: 7,
+          type: 'microsoft365',
+          name: 'Microsoft 365',
+          description: 'Microsoft 365 calendar and email integration',
+          status: 'planned',
+        },
       ];
-      res.json({ integrations, storedConfigs });
+      const integrationsWithConfig = integrations.map((i) => ({
+        ...i,
+        config: storedConfigs[i.type] || {},
+      }));
+      res.json({ integrations: integrationsWithConfig });
     },
   );
+});
+
+/**
+ * Save integration configuration
+ */
+router.post('/:key', (req, res) => {
+  const { key } = req.params;
+  const config = req.body;
+  if (!config || typeof config !== 'object') {
+    return res.status(400).json({ error: 'Invalid request body', errorCode: 'INVALID_BODY' });
+  }
+
+  const dbKey = `integration_${key}`;
+  const query =
+    'INSERT INTO config (key, value) VALUES ($1, $2) ON CONFLICT(key) DO UPDATE SET value = excluded.value';
+  db.run(query, [dbKey, JSON.stringify(config)], (err) => {
+    if (err) {
+      logger.error(`Failed to save integration config for ${key}: ${err.message}`);
+      return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+    }
+    res.json({ message: 'Integration configuration saved' });
+  });
 });
 
 /**
