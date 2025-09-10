@@ -164,7 +164,7 @@ export default function IntegrationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingIntegration, setEditingIntegration] = useState<Integration | null>(null);
-  const [testingIntegration, setTestingIntegration] = useState<string | null>(null);
+  const [testingIntegration, setTestingIntegration] = useState<number | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [formData, setFormData] = useState({
@@ -203,7 +203,7 @@ export default function IntegrationsPage() {
       setIsLoading(true);
 
       // Fetch integrations from API
-      const response = await apiFetch('/api/integrations');
+      const response = await apiFetch('/api/v1/integrations');
       if (response.ok) {
         const data = await response.json();
         setIntegrations(data.integrations || []);
@@ -222,7 +222,7 @@ export default function IntegrationsPage() {
 
   const saveIntegration = async () => {
     try {
-      const response = await apiFetch(`/api/integrations/${formData.type}`, {
+      const response = await apiFetch(`/api/v1/integrations/${formData.type}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData.config),
@@ -243,7 +243,7 @@ export default function IntegrationsPage() {
     }
   };
 
-  const testIntegration = async (integrationId: string) => {
+  const testIntegration = async (integrationId: number) => {
     try {
       setTestingIntegration(integrationId);
 
@@ -267,7 +267,7 @@ export default function IntegrationsPage() {
     }
   };
 
-  const toggleIntegration = async (integrationId: string, enabled: boolean) => {
+  const toggleIntegration = async (integrationId: number, enabled: boolean) => {
     try {
       setIntegrations(
         integrations.map((integration) =>
@@ -284,7 +284,7 @@ export default function IntegrationsPage() {
     }
   };
 
-  const deleteIntegration = async (integrationId: string) => {
+  const deleteIntegration = async (integrationId: number) => {
     if (!confirm('Are you sure you want to delete this integration?')) {
       return;
     }
