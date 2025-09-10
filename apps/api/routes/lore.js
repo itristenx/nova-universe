@@ -3,11 +3,22 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import db /* , { prisma } */ from '../db.js';
+import { getCoreClient } from '../lib/database-clients.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
+const prismaPromise = getCoreClient();
+
+// Helper function to ensure prisma client is available
+async function ensurePrismaClient() {
+  const client = await prismaPromise;
+  if (!client) {
+    throw new Error('Database client not available');
+  }
+  return client;
+}
 
 /**
  * @swagger
@@ -160,6 +171,7 @@ router.get(
         ],
       };
 
+      const prisma = await ensurePrismaClient();
       const [articles, total] = await Promise.all([
         prisma.kbArticle.findMany({
           where,
@@ -258,6 +270,7 @@ router.get(
         query += ` AND (kb.visibility = 'public' OR kb.visibility = 'internal')`;
       }
 
+      const prisma = await ensurePrismaClient();
       const row = await prisma.$queryRaw(query, params);
 
       if (!row) {

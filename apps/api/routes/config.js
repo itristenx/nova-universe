@@ -13,6 +13,15 @@ import ConfigurationService from '../services/configuration.service.js';
 const router = Router();
 const prismaPromise = getCoreClient();
 
+// Helper function to ensure prisma client is available
+async function ensurePrismaClient() {
+  const client = await prismaPromise;
+  if (!client) {
+    throw new Error('Database client not available');
+  }
+  return client;
+}
+
 /**
  * Hierarchical configuration resolution:
  * 1. Environment variables (highest priority)
@@ -144,6 +153,7 @@ class ConfigurationManager {
    */
   static async setValue(key, value, userId, reason = null) {
     try {
+      const prisma = await ensurePrismaClient();
       // Check if configuration exists and is UI editable
       const config = await prisma.config.findUnique({
         where: { key },
@@ -262,6 +272,7 @@ router.get('/', async (req, res) => {
       result = await ConfigurationManager.getByCategory(category, includeAdvanced === 'true');
     } else {
       // Get all public configurations
+      const prisma = await ensurePrismaClient();
       const configs = await prisma.config.findMany({
         where: {
           isPublic: true,
@@ -296,6 +307,7 @@ router.get('/admin', ensureAuth, async (req, res) => {
       result = await ConfigurationManager.getByCategory(category, includeAdvanced === 'true');
     } else {
       // Get all configurations with metadata
+      const prisma = await ensurePrismaClient();
       const configs = await prisma.config.findMany({
         orderBy: [{ category: 'asc' }, { displayOrder: 'asc' }, { key: 'asc' }],
       });
@@ -336,6 +348,7 @@ router.get('/:key', async (req, res) => {
   try {
     const { key } = req.params;
 
+    const prisma = await ensurePrismaClient();
     const config = await prisma.config.findUnique({
       where: { key },
     });
@@ -621,6 +634,7 @@ router.get('/:key/history', ensureAuth, async (req, res) => {
     const { key } = req.params;
     const { limit = 50, offset = 0 } = req.query;
 
+    const prisma = await ensurePrismaClient();
     const history = await prisma.configHistory.findMany({
       where: { configKey: key },
       orderBy: { createdAt: 'desc' },
@@ -658,6 +672,7 @@ router.get('/:key/history', ensureAuth, async (req, res) => {
 // GET /api/v1/config/schema/validation - Get validation schema for all configs
 router.get('/schema/validation', ensureAuth, async (req, res) => {
   try {
+    const prisma = await ensurePrismaClient();
     const configs = await prisma.config.findMany({
       select: {
         key: true,
@@ -683,6 +698,7 @@ router.get('/schema/validation', ensureAuth, async (req, res) => {
 // GET /api/v1/config/templates - Get configuration templates (admin only)
 router.get('/templates', ensureAuth, async (req, res) => {
   try {
+    const prisma = await ensurePrismaClient();
     const templates = await prisma.configTemplate.findMany({
       orderBy: [{ isDefault: 'desc' }, { category: 'asc' }, { name: 'asc' }],
     });
@@ -701,6 +717,7 @@ router.post('/templates/:id/apply', ensureAuth, async (req, res) => {
     const { reason } = req.body;
     const userId = req.user.id;
 
+    const prisma = await ensurePrismaClient();
     const template = await prisma.configTemplate.findUnique({
       where: { id: parseInt(id) },
     });
