@@ -1,9 +1,14 @@
 import express from 'express';
+import crypto from 'crypto';
 import db from '../db.js';
 import { logger } from '../logger.js';
 import { deleteConfigByKey, fetchConfigByKey } from '../utils/dbUtils.js';
+import { SlackConnector } from '../../../packages/integrations/integration/connectors/slack-connector.js';
+import { ZoomConnector } from '../../../packages/integrations/integration/connectors/zoom-connector.js';
 
 const router = express.Router();
+const slackStates = new Map();
+const zoomStates = new Map();
 
 async function getIntegrationLayer() {
   try {
@@ -487,6 +492,114 @@ router.post('/actions', async (req, res) => {
       error: 'Failed to execute action',
       code: 'ACTION_FAILED',
     });
+  }
+});
+
+// Slack OAuth endpoints
+router.get('/slack/auth-url', (req, res) => {
+  try {
+    const clientId = process.env.SLACK_CLIENT_ID;
+    const clientSecret = process.env.SLACK_CLIENT_SECRET;
+    const redirectUri = process.env.SLACK_REDIRECT_URI;
+    if (!clientId || !clientSecret || !redirectUri) {
+      return res.status(500).json({ error: 'Slack OAuth not configured' });
+    }
+    const state = crypto.randomUUID();
+    slackStates.set(state, Date.now());
+    const url = SlackConnector.getAuthorizationUrl(
+      { credentials: { clientId, clientSecret } },
+      redirectUri,
+      state,
+    );
+    res.json({ url });
+  } catch (error) {
+    logger.error('Failed to generate Slack auth URL', { error: error.message });
+    res.status(500).json({ error: 'Failed to generate Slack auth URL' });
+  }
+});
+
+router.get('/slack/callback', async (req, res) => {
+  const { code, state } = req.query;
+  if (!code || !state || !slackStates.has(state)) {
+    return res.status(400).send('Invalid OAuth state');
+  }
+  slackStates.delete(state);
+  try {
+    const clientId = process.env.SLACK_CLIENT_ID;
+    const clientSecret = process.env.SLACK_CLIENT_SECRET;
+    const redirectUri = process.env.SLACK_REDIRECT_URI;
+    const tokens = await SlackConnector.exchangeCodeForToken(
+      { credentials: { clientId, clientSecret } },
+      code,
+      redirectUri,
+    );
+    db.run(
+      'INSERT OR REPLACE INTO config (key, value, value_type, category) VALUES ($1,$2,$3,$4)',
+      ['integration_slack', JSON.stringify(tokens), 'json', 'integrations'],
+      (err) => {
+        if (err) {
+          logger.error('Failed to store Slack tokens', { error: err.message });
+        }
+      },
+    );
+    res.send('Slack account connected. You may close this window.');
+  } catch (error) {
+    logger.error('Slack OAuth callback failed', { error: error.message });
+    res.status(500).send('Slack authorization failed');
+  }
+});
+
+// Zoom OAuth endpoints
+router.get('/zoom/auth-url', (req, res) => {
+  try {
+    const clientId = process.env.ZOOM_CLIENT_ID;
+    const clientSecret = process.env.ZOOM_CLIENT_SECRET;
+    const redirectUri = process.env.ZOOM_REDIRECT_URI;
+    if (!clientId || !clientSecret || !redirectUri) {
+      return res.status(500).json({ error: 'Zoom OAuth not configured' });
+    }
+    const state = crypto.randomUUID();
+    zoomStates.set(state, Date.now());
+    const url = ZoomConnector.getAuthorizationUrl(
+      { credentials: { clientId, clientSecret } },
+      redirectUri,
+      state,
+    );
+    res.json({ url });
+  } catch (error) {
+    logger.error('Failed to generate Zoom auth URL', { error: error.message });
+    res.status(500).json({ error: 'Failed to generate Zoom auth URL' });
+  }
+});
+
+router.get('/zoom/callback', async (req, res) => {
+  const { code, state } = req.query;
+  if (!code || !state || !zoomStates.has(state)) {
+    return res.status(400).send('Invalid OAuth state');
+  }
+  zoomStates.delete(state);
+  try {
+    const clientId = process.env.ZOOM_CLIENT_ID;
+    const clientSecret = process.env.ZOOM_CLIENT_SECRET;
+    const redirectUri = process.env.ZOOM_REDIRECT_URI;
+    const tokens = await ZoomConnector.exchangeCodeForToken(
+      { credentials: { clientId, clientSecret } },
+      code,
+      redirectUri,
+    );
+    db.run(
+      'INSERT OR REPLACE INTO config (key, value, value_type, category) VALUES ($1,$2,$3,$4)',
+      ['integration_zoom', JSON.stringify(tokens), 'json', 'integrations'],
+      (err) => {
+        if (err) {
+          logger.error('Failed to store Zoom tokens', { error: err.message });
+        }
+      },
+    );
+    res.send('Zoom account connected. You may close this window.');
+  } catch (error) {
+    logger.error('Zoom OAuth callback failed', { error: error.message });
+    res.status(500).send('Zoom authorization failed');
   }
 });
 

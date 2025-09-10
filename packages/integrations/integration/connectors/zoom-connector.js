@@ -25,6 +25,64 @@ export class ZoomConnector extends IConnector {
   }
 
   /**
+   * Generate Zoom OAuth authorization URL
+   * @param {object} config - Config with clientId and optional scopes
+   * @param {string} redirectUri - OAuth redirect URI
+   * @param {string} state - CSRF protection state
+   * @returns {string} Authorization URL
+   */
+  static getAuthorizationUrl(config, redirectUri, state) {
+    const scopes =
+      config.scopes || ['meeting:read', 'meeting:write', 'phone:read', 'user:read'];
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: config.credentials.clientId,
+      redirect_uri: redirectUri,
+      scope: scopes.join(' '),
+      state,
+    });
+    return `https://zoom.us/oauth/authorize?${params.toString()}`;
+  }
+
+  /**
+   * Exchange OAuth code for Zoom tokens
+   * @param {object} config - Config with clientId and clientSecret
+   * @param {string} code - Authorization code
+   * @param {string} redirectUri - OAuth redirect URI
+   * @returns {Promise<object>} Token information
+   */
+  static async exchangeCodeForToken(config, code, redirectUri) {
+    const params = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri,
+    });
+
+    const authHeader = Buffer.from(
+      `${config.credentials.clientId}:${config.credentials.clientSecret}`,
+    ).toString('base64');
+
+    const response = await axios.post(
+      'https://zoom.us/oauth/token',
+      params.toString(),
+      {
+        headers: { Authorization: `Basic ${authHeader}` },
+      },
+    );
+
+    if (!response.data.access_token) {
+      throw new Error('Failed to exchange Zoom authorization code');
+    }
+
+    return {
+      accessToken: response.data.access_token,
+      refreshToken: response.data.refresh_token,
+      expiresIn: response.data.expires_in,
+      scope: response.data.scope,
+    };
+  }
+
+  /**
    * Initialize Zoom connector with enterprise configuration
    */
   async initialize(config) {
@@ -304,6 +362,12 @@ export class ZoomConnector extends IConnector {
         case 'update_user_settings':
           return await this.updateUserSettings(target, parameters);
 
+        case 'create_war_room':
+          return await this.createWarRoomMeeting(parameters);
+
+        case 'fetch_shared_calls':
+          return await this.getSharedNumberCalls(parameters);
+
         default:
           throw new Error(`Unsupported action: ${actionType}`);
       }
@@ -359,6 +423,8 @@ export class ZoomConnector extends IConnector {
         'create_webinar',
         'send_invitation',
         'update_user_settings',
+        'create_war_room',
+        'fetch_shared_calls',
       ],
       meetingTypes: ['instant', 'scheduled', 'recurring', 'webinar'],
     };
@@ -423,8 +489,19 @@ export class ZoomConnector extends IConnector {
   validateZoomConfig(config) {
     const authType = config.credentials?.authType || 'oauth';
 
-    if (authType === 'jwt' && !config.credentials?.apiKey?.match(/^[A-Za-z0-9_-]+$/)) {
-      throw new Error('Invalid Zoom API key format');
+    if (authType === 'jwt') {
+      if (!config.credentials?.apiKey?.match(/^[A-Za-z0-9_-]+$/)) {
+        throw new Error('Invalid Zoom API key format');
+      }
+      if (!config.credentials?.apiSecret) {
+        throw new Error('Zoom API secret is required for JWT auth');
+      }
+    } else if (authType === 'oauth') {
+      if (!config.credentials?.clientId || !config.credentials?.clientSecret) {
+        throw new Error('Zoom OAuth client ID and secret are required');
+      }
+    } else {
+      throw new Error('Unsupported authentication type');
     }
   }
 
@@ -975,5 +1052,81 @@ export class ZoomConnector extends IConnector {
     } catch (error) {
       throw new Error(`Failed to update user settings: ${error.message}`);
     }
+  }
+
+  /**
+   * Retrieve call logs for a shared number or call queue
+   * @param {object} options { sharedNumberId, from, to }
+   */
+  async getSharedNumberCalls(options = {}) {
+    const { sharedNumberId, from, to } = options;
+
+    if (!sharedNumberId) {
+      throw new Error('sharedNumberId is required to fetch call logs');
+    }
+
+    const params = new URLSearchParams({
+      page_size: '100'
+    });
+
+    if (from) params.append('from', from);
+    if (to) params.append('to', to);
+
+    const endpoint = `/phone/shared_line_groups/${sharedNumberId}/call_logs?${params}`;
+
+    const response = await this.client.get(endpoint, {
+      headers: { Authorization: `Bearer ${this.accessToken}` }
+    });
+
+    if (response.status !== 200) {
+      throw new Error(`Failed to fetch call logs: HTTP ${response.status}`);
+    }
+
+    return {
+      success: true,
+      data: response.data.call_logs || [],
+    };
+  }
+
+  /**
+   * Create an instant meeting to serve as a war room for P1 alerts
+   * @param {object} params { topic, alertId }
+   */
+  async createWarRoomMeeting(params = {}) {
+    const { topic = 'P1 Incident War Room', alertId } = params;
+
+    const payload = {
+      topic,
+      type: 1, // instant meeting
+    };
+
+    const response = await this.client.post('/users/me/meetings', payload, {
+      headers: { Authorization: `Bearer ${this.accessToken}` },
+    });
+
+    if (response.status !== 201) {
+      throw new Error(`Failed to create war room: HTTP ${response.status}`);
+    }
+
+    const meeting = response.data;
+
+    return {
+      success: true,
+      message: 'War room meeting created',
+      data: {
+        meetingId: meeting.id,
+        joinUrl: meeting.join_url,
+        startUrl: meeting.start_url,
+        alertId,
+        deepLink: this.getMeetingDeepLink(meeting.id),
+      },
+    };
+  }
+
+  /**
+   * Generate a deep link to join a Zoom meeting
+   */
+  getMeetingDeepLink(meetingId) {
+    return `https://zoom.us/j/${meetingId}`;
   }
 }

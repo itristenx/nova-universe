@@ -24,6 +24,62 @@ export class SlackConnector extends IConnector {
   }
 
   /**
+   * Generate Slack OAuth authorization URL
+   * @param {object} config - Configuration containing clientId and optional scopes
+   * @param {string} redirectUri - OAuth redirect URI
+   * @param {string} state - CSRF protection state
+   * @returns {string} Authorization URL
+   */
+  static getAuthorizationUrl(config, redirectUri, state) {
+    const scopes =
+      config.scopes || [
+        'commands',
+        'chat:write',
+        'im:history',
+        'channels:manage',
+        'channels:history',
+        'users:read',
+        'app_home:read',
+      ];
+    const params = new URLSearchParams({
+      client_id: config.credentials.clientId,
+      scope: scopes.join(','),
+      redirect_uri: redirectUri,
+      state,
+    });
+    return `https://slack.com/oauth/v2/authorize?${params.toString()}`;
+  }
+
+  /**
+   * Exchange OAuth code for Slack tokens
+   * @param {object} config - Configuration with clientId and clientSecret
+   * @param {string} code - Authorization code from Slack
+   * @param {string} redirectUri - OAuth redirect URI
+   * @returns {Promise<object>} Token information
+   */
+  static async exchangeCodeForToken(config, code, redirectUri) {
+    const params = new URLSearchParams({
+      client_id: config.credentials.clientId,
+      client_secret: config.credentials.clientSecret,
+      code,
+      redirect_uri: redirectUri,
+    });
+
+    const response = await axios.post('https://slack.com/api/oauth.v2.access', params);
+
+    if (!response.data.ok) {
+      throw new Error(response.data.error || 'Failed to exchange Slack authorization code');
+    }
+
+    return {
+      botToken: response.data.access_token,
+      userToken: response.data.authed_user?.access_token || null,
+      scope: response.data.scope,
+      team: response.data.team,
+    };
+  }
+
+  /**
    * Initialize Slack connector with enterprise configuration
    */
   async initialize(config) {
@@ -306,6 +362,12 @@ export class SlackConnector extends IConnector {
         case 'update_status':
           return await this.updateUserStatus(parameters);
 
+        case 'create_ticket_from_message':
+          return await this.createTicketFromMessage(target, parameters);
+
+        case 'move_message':
+          return await this.moveMessage(target, parameters);
+
         default:
           throw new Error(`Unsupported action: ${actionType}`);
       }
@@ -355,6 +417,8 @@ export class SlackConnector extends IConnector {
         'set_channel_topic',
         'send_notification',
         'update_status',
+        'create_ticket_from_message',
+        'move_message',
       ],
       communicationTypes: ['instant_messaging', 'channels', 'workflows', 'notifications'],
     };
@@ -421,8 +485,11 @@ export class SlackConnector extends IConnector {
   // Private helper methods
 
   validateSlackConfig(config) {
-    if (!config.credentials?.botToken) {
-      throw new Error('Slack bot token is required');
+    const hasToken = Boolean(config.credentials?.botToken);
+    const hasOAuth =
+      config.credentials?.clientId && config.credentials?.clientSecret;
+    if (!hasToken && !hasOAuth) {
+      throw new Error('Slack bot token or OAuth client credentials are required');
     }
   }
 
@@ -930,6 +997,114 @@ export class SlackConnector extends IConnector {
     } catch (error) {
       throw new Error(`Failed to send notification: ${error.message}`);
     }
+  }
+
+  /**
+   * Create a Nova ticket from a Slack message
+   * @param {string} channelId
+   * @param {object} parameters { messageTs, apiUrl, metadata }
+   */
+  async createTicketFromMessage(channelId, parameters) {
+    const { messageTs, apiUrl, metadata = {} } = parameters;
+
+    if (!messageTs || !apiUrl) {
+      throw new Error('messageTs and apiUrl are required to create a ticket');
+    }
+
+    // Retrieve the message
+    const historyResp = await this.client.get(
+      `/conversations.history?channel=${channelId}&latest=${messageTs}&oldest=${messageTs}&inclusive=true&limit=1`,
+      { headers: { Authorization: `Bearer ${this.botToken}` } },
+    );
+
+    if (!historyResp.data.ok || !historyResp.data.messages?.length) {
+      throw new Error('Failed to retrieve message content');
+    }
+
+    const message = historyResp.data.messages[0];
+
+    // Create ticket via Nova API
+    const ticketResp = await this.client.post(
+      apiUrl,
+      {
+        source: 'slack',
+        channelId,
+        messageTs,
+        text: message.text,
+        metadata,
+        deepLink: this.getMessageLink(channelId, messageTs),
+      },
+      { headers: { Authorization: `Bearer ${this.userToken || this.botToken}` } },
+    );
+
+    if (!ticketResp.data || ticketResp.status >= 400) {
+      throw new Error('Ticket creation failed');
+    }
+
+    return {
+      success: true,
+      message: 'Ticket created from Slack message',
+      data: ticketResp.data,
+    };
+  }
+
+  /**
+   * Move a message to another channel (typically a private review channel)
+   * @param {string} sourceChannel
+   * @param {object} parameters { messageTs, targetChannel }
+   */
+  async moveMessage(sourceChannel, parameters) {
+    const { messageTs, targetChannel } = parameters;
+
+    if (!messageTs || !targetChannel) {
+      throw new Error('messageTs and targetChannel are required to move a message');
+    }
+
+    // Fetch the message
+    const historyResp = await this.client.get(
+      `/conversations.history?channel=${sourceChannel}&latest=${messageTs}&oldest=${messageTs}&inclusive=true&limit=1`,
+      { headers: { Authorization: `Bearer ${this.botToken}` } },
+    );
+
+    if (!historyResp.data.ok || !historyResp.data.messages?.length) {
+      throw new Error('Failed to retrieve message for moving');
+    }
+
+    const message = historyResp.data.messages[0];
+
+    // Post to target channel
+    await this.client.post(
+      '/chat.postMessage',
+      {
+        channel: targetChannel,
+        text: message.text,
+      },
+      { headers: { Authorization: `Bearer ${this.botToken}` } },
+    );
+
+    // Delete original message
+    await this.client.post(
+      '/chat.delete',
+      {
+        channel: sourceChannel,
+        ts: messageTs,
+      },
+      { headers: { Authorization: `Bearer ${this.botToken}` } },
+    );
+
+    return {
+      success: true,
+      message: 'Message moved successfully',
+      data: { sourceChannel, targetChannel, messageTs },
+    };
+  }
+
+  /**
+   * Generate a deep link to a Slack message
+   */
+  getMessageLink(channelId, messageTs) {
+    const cleanedTs = messageTs.replace('.', '');
+    return `https://slack.com/archives/${channelId}/p${cleanedTs}`;
   }
 
   async updateUserStatus(parameters) {
