@@ -46,6 +46,7 @@ packages/integrations/
 
 - **Slack Connector**: Team communication and workflow integration
 - **Zoom Connector**: Meeting management and user provisioning
+- **Microsoft 365 Connector**: Room calendar synchronization and email send/receive via Microsoft Graph
 
 ### AI & Automation
 
@@ -120,6 +121,10 @@ OKTA_TOKEN=your-api-token
 
 SLACK_BOT_TOKEN=xoxb-your-bot-token
 SLACK_USER_TOKEN=xoxp-your-user-token
+
+M365_TENANT_ID=00000000-0000-0000-0000-000000000000
+M365_CLIENT_ID=11111111-1111-1111-1111-111111111111
+M365_CLIENT_SECRET=super-secret-value
 
 CROWDSTRIKE_CLIENT_ID=your-client-id
 CROWDSTRIKE_CLIENT_SECRET=your-client-secret
