@@ -347,7 +347,7 @@ export class NovaRAGDataConnectors extends EventEmitter {
                             impact: ticket.impact,
                             businessService: ticket.business_service,
                             configurationItem: ticket.configuration_item,
-                            source: ticket.source,
+                            originalSource: ticket.source,
                             channel: ticket.channel,
                             location: ticket.location,
                             costCenter: ticket.cost_center,
