@@ -48,3 +48,18 @@
   File: /Users/tneibarger/nova-universe/apps/unified/src/stores/auth.ts
 8:09:14 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx
 8:09:14 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx
+8:40:34 AM [vite] hmr update /src/components/PWAInstaller.tsx, /src/styles/globals.css
+8:40:46 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx
+8:41:22 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx
+8:41:33 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx
+8:41:44 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx
+8:42:07 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx
+8:42:20 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx
+8:42:35 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx
+8:42:59 AM [vite] page reload src/components/spaces/components/BookingEngine.tsx
+8:55:02 AM [vite] hmr update /src/FallbackApp.tsx, /src/styles/globals.css
+8:55:09 AM [vite] hmr update /src/FallbackApp.tsx, /src/styles/globals.css
+8:55:35 AM [vite] page reload src/components/ai/PredictiveAnalyticsDashboard.tsx
+8:55:59 AM [vite] page reload src/components/workflow/SimpleWorkflowAutomation.tsx
+8:56:20 AM [vite] page reload src/services/samlConfig.ts
+8:56:32 AM [vite] page reload src/services/samlConfig.ts

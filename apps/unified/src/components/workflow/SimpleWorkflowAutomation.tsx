@@ -3,7 +3,7 @@
 
 import React, { useState, useCallback } from 'react';
 import SimpleWorkflowBuilder from './SimpleWorkflowBuilder';
-import { Workflow, WorkflowStatus, WorkflowType } from '../../types/workflow';
+import { Workflow } from '../../types/workflow';
 import './SimpleWorkflowAutomation.css';
 
 interface WorkflowAutomationProps {

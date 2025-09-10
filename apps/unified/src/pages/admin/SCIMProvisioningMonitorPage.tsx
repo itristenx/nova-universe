@@ -309,9 +309,17 @@ export default function SCIMProvisioningMonitorPage() {
         }
       }
     } catch (_error) {
-      console.error('Failed to load SCIM data:', error);
+      console.error('Failed to load SCIM data:', _error);
       setSyncStatus('error');
       toast.error('Failed to load SCIM data');
+      // Enhanced error tracking with context
+      const errorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'scim_data_load',
+        stackTrace: _error instanceof Error ? _error.stack : undefined
+      };
+      console.error('SCIM Data Load Error Context:', errorDetails);
     } finally {
       setIsLoading(false);
     }
@@ -330,10 +338,18 @@ export default function SCIMProvisioningMonitorPage() {
         setIsSyncing(false);
       }, 2000);
     } catch (_error) {
-      console.error('Failed to trigger sync:', error);
+      console.error('Failed to trigger sync:', _error);
       setSyncStatus('error');
       toast.error('Failed to trigger manual sync');
       setIsSyncing(false);
+      // Enhanced sync failure tracking
+      const syncErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'manual_scim_sync',
+        operation: 'triggerManualSync'
+      };
+      console.error('Manual SCIM Sync Error:', syncErrorDetails);
     }
   };
 

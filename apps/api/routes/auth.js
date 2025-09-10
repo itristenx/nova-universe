@@ -24,6 +24,16 @@ function isStrongPassword(pw) {
 // POST /api/auth/register
 router.post(
   '/register',
+  // Normalize incoming field names to support both camelCase and snake_case
+  (req, _res, next) => {
+    try {
+      if (req.body) {
+        if (!req.body.first_name && req.body.firstName) req.body.first_name = req.body.firstName;
+        if (!req.body.last_name && req.body.lastName) req.body.last_name = req.body.lastName;
+      }
+    } catch {}
+    next();
+  },
   [
     body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
     body('first_name').isString().isLength({ min: 1 }).withMessage('First name is required'),

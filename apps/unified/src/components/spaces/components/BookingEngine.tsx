@@ -180,6 +180,15 @@ export function BookingEngine({
           setAvailableSpaces([]);
           setSelectedSpace(null);
           setBookings([]);
+          // Enhanced error tracking for space/booking loading
+          const loadErrorDetails = {
+            error: _e instanceof Error ? _e.message : String(_e),
+            timestamp: new Date().toISOString(),
+            context: 'space_booking_load',
+            spaceId: spaceId,
+            operation: 'loadSpaceData'
+          };
+          console.error('Space Booking Load Error:', loadErrorDetails);
         }
       }
     };

@@ -7,6 +7,11 @@ config();
 
 async function globalTeardown(config: FullConfig): Promise<void> {
   console.log('🧹 Starting global test teardown...');
+  console.log(`Test configuration: ${JSON.stringify({
+    projects: config.projects?.length || 0,
+    workers: config.workers || 1,
+    timeout: config.timeout || 'default'
+  })}`);
 
   try {
     const apiBaseUrl = process.env.TEST_API_URL || 'http://localhost:3000';

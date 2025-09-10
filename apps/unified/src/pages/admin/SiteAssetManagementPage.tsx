@@ -40,8 +40,17 @@ export default function SiteAssetManagementPage() {
         const assetsData = await siteAssetsService.getAssets(filters);
         setAssets(assetsData);
       } catch (_error) {
-        console.error('Failed to fetch site assets:', error);
+        console.error('Failed to fetch site assets:', _error);
         toast.error('Failed to load assets');
+        // Enhanced asset loading error tracking
+        const assetLoadErrorDetails = {
+          error: _error instanceof Error ? _error.message : String(_error),
+          timestamp: new Date().toISOString(),
+          context: 'site_assets_load',
+          filters: { searchTerm, typeFilter },
+          operation: 'fetchAssets'
+        };
+        console.error('Site Assets Load Error:', assetLoadErrorDetails);
       } finally {
         setIsLoading(false);
       }
@@ -70,6 +79,15 @@ export default function SiteAssetManagementPage() {
       // In real implementation, refetch from API
     } catch (_error) {
       toast.error('Failed to upload files');
+      // Enhanced file upload error tracking
+      const uploadErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'file_upload',
+        fileCount: files?.length || 0,
+        operation: 'handleUpload'
+      };
+      console.error('File Upload Error:', uploadErrorDetails);
     }
   };
 

@@ -243,6 +243,48 @@ export class HelixKioskIntegrationService {
    */
   async getKioskAssets(kioskId, options = {}) {
     try {
+      // Enhanced options processing for asset retrieval
+      const {
+        limit = 100,
+        offset = 0,
+        status = null,
+        department = null,
+        includeInactive = false,
+        sortBy = 'registration_date',
+        sortOrder = 'DESC'
+      } = options;
+
+      logger.info('Retrieving kiosk assets with options', {
+        kioskId,
+        options: {
+          limit,
+          offset,
+          status,
+          department,
+          includeInactive,
+          sortBy,
+          sortOrder
+        }
+      });
+
+      // Build dynamic query with options
+      let whereConditions = [`kar.kiosk_id = ${kioskId}`];
+      
+      if (status) {
+        whereConditions.push(`ia.status = '${status}'`);
+      }
+      
+      if (department) {
+        whereConditions.push(`ia.department = '${department}'`);
+      }
+      
+      if (!includeInactive) {
+        whereConditions.push(`k.active = true`);
+      }
+
+      const whereClause = whereConditions.join(' AND ');
+      const orderClause = `kar.${sortBy} ${sortOrder}`;
+      
       const kioskAssets = await this.db.$queryRaw`
         SELECT 
           kar.*,
@@ -256,8 +298,9 @@ export class HelixKioskIntegrationService {
         FROM kiosk_asset_registry kar
         JOIN inventory_assets ia ON kar.asset_id = ia.id
         JOIN kiosks k ON kar.kiosk_id = k.id
-        WHERE kar.kiosk_id = ${kioskId}
-        ORDER BY kar.registration_date DESC
+        WHERE ${whereClause}
+        ORDER BY ${orderClause}
+        LIMIT ${limit} OFFSET ${offset}
       `;
 
       // Decrypt metadata for each asset

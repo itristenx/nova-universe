@@ -360,6 +360,12 @@ test.describe('End-to-End User Workflows', () => {
         context.newPage(),
         context.newPage(),
       ]);
+      
+      // Add the original page to the test set
+      pages.push(page);
+
+      // Login all users concurrently
+      const loginPromises = pages.map(async (userPage) => {
 
       // Login all users concurrently
       const loginPromises = pages.map(async (userPage) => {

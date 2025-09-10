@@ -380,7 +380,15 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
             console.log('ℹ️ No real-time notification update detected');
           }
         } catch (error) {
-          console.log('⚠️ Could not test real-time notifications via API');
+          console.log('⚠️ Could not test real-time notifications via API:', error instanceof Error ? error.message : String(error));
+          // Enhanced error tracking for real-time notification test
+          const errorDetails = {
+            error: error instanceof Error ? error.message : String(error),
+            timestamp: new Date().toISOString(),
+            context: 'realtime_notification_test',
+            operation: 'api_notification_check'
+          };
+          console.log('Real-time Notification Test Error Details:', errorDetails);
         }
       }
     });

@@ -245,7 +245,15 @@ export function usePWAInstall() {
         return true;
       }
     } catch (_error) {
-      console.error('PWA install failed:', error);
+      console.error('PWA install failed:', _error);
+      // Track installation failure for analytics
+      if (typeof window !== 'undefined' && (window as any).analytics) {
+        (window as any).analytics.track('pwa_install_failed', {
+          error: _error instanceof Error ? _error.message : String(_error),
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent
+        });
+      }
     }
 
     return false;

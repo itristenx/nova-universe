@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { LoadingSpinner } from '@components/common/LoadingSpinner';
 import { ErrorBoundary } from '@components/common/ErrorBoundary';
 import SkipLinks from '@components/accessibility/SkipLinks';
 

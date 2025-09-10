@@ -12,8 +12,6 @@ import {
   ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   ClockIcon,
-  UserGroupIcon,
-  ServerIcon,
   BoltIcon,
   EyeIcon,
   ArrowRightIcon,

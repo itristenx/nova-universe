@@ -108,7 +108,15 @@ export default function SettingsPage() {
         ),
       }));
     } catch (_error) {
-      console.error('Failed to load module settings:', error);
+      console.error('Failed to load module settings:', _error);
+      // Enhanced module settings error tracking
+      const moduleErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'module_settings_load',
+        operation: 'loadModuleSettings'
+      };
+      console.error('Module Settings Load Error:', moduleErrorDetails);
     }
   };
 
@@ -120,6 +128,15 @@ export default function SettingsPage() {
       toast.success(`${sections.find((s) => s.id === section)?.name} settings saved`);
     } catch (_error) {
       toast.error('Failed to save settings');
+      // Enhanced settings save error tracking
+      const saveErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'settings_save',
+        section: section,
+        operation: 'handleSave'
+      };
+      console.error('Settings Save Error:', saveErrorDetails);
     } finally {
       setIsLoading(false);
     }
@@ -138,6 +155,16 @@ export default function SettingsPage() {
       toast.success(`${moduleKey} ${enabled ? 'enabled' : 'disabled'}`);
     } catch (_error) {
       toast.error('Failed to update module');
+      // Enhanced module toggle error tracking
+      const moduleToggleErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'module_toggle',
+        moduleKey: moduleKey,
+        targetState: enabled,
+        operation: 'handleModuleToggle'
+      };
+      console.error('Module Toggle Error:', moduleToggleErrorDetails);
     }
   };
 
