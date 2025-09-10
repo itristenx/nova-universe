@@ -773,4 +773,178 @@ router.get(
   },
 );
 
+/**
+ * @swagger
+ * /search/comprehensive:
+ *   post:
+ *     summary: Comprehensive search across all Nova data sources
+ *     description: Execute a comprehensive search with advanced filters and sorting
+ *     tags: [Search]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - query
+ *             properties:
+ *               query:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 1000
+ *               sources:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [tickets, knowledge, users, assets, monitoring, workflows]
+ *               filters:
+ *                 type: object
+ *               sorting:
+ *                 type: object
+ *               size:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 100
+ *     responses:
+ *       200:
+ *         description: Comprehensive search results
+ *       400:
+ *         description: Invalid search parameters
+ */
+router.post(
+  '/comprehensive',
+  authenticateJWT,
+  createRateLimit(15 * 60 * 1000, 50), // 50 comprehensive searches per 15 minutes
+  [
+    body('query')
+      .isLength({ min: 1, max: 1000 })
+      .withMessage('Query must be between 1 and 1000 characters')
+      .trim(),
+    body('sources')
+      .optional()
+      .isArray()
+      .withMessage('Sources must be an array')
+      .custom((sources) => {
+        const validSources = ['tickets', 'knowledge', 'users', 'assets', 'monitoring', 'workflows'];
+        return sources.every(source => validSources.includes(source));
+      })
+      .withMessage('Invalid source specified'),
+    body('size')
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage('Size must be between 1 and 100'),
+    body('filters')
+      .optional()
+      .isObject()
+      .withMessage('Filters must be an object'),
+    body('sorting')
+      .optional()
+      .isObject()
+      .withMessage('Sorting must be an object'),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          errors: errors.array(),
+          errorCode: 'VALIDATION_ERROR',
+        });
+      }
+
+      const { query: searchQuery, sources = ['tickets', 'knowledge'], filters = {}, sorting = {}, size = 20 } = req.body;
+
+      logger.info(`Comprehensive search initiated by user ${req.user.id}: "${searchQuery}"`);
+
+      const searchPromises = [];
+
+      // Search tickets if included
+      if (sources.includes('tickets')) {
+        searchPromises.push(
+          elasticManager.search('nova-tickets', {
+            query: {
+              bool: {
+                must: [
+                  {
+                    multi_match: {
+                      query: searchQuery,
+                      fields: ['title^3', 'description^2', 'comments', 'tags'],
+                      fuzziness: 'AUTO',
+                      operator: 'and'
+                    }
+                  }
+                ],
+                filter: Object.keys(filters).map(key => ({
+                  term: { [key]: filters[key] }
+                }))
+              }
+            },
+            size: Math.floor(size * 0.4), // Allocate 40% to tickets
+            sort: sorting.tickets || [{ _score: 'desc' }]
+          }).then(results => ({ source: 'tickets', data: results.hits?.hits || [] }))
+        );
+      }
+
+      // Search knowledge base if included
+      if (sources.includes('knowledge')) {
+        searchPromises.push(
+          elasticManager.search('nova-knowledge', {
+            query: {
+              bool: {
+                must: [{
+                  multi_match: {
+                    query: searchQuery,
+                    fields: ['title^4', 'content^3', 'summary^2', 'tags'],
+                    fuzziness: 'AUTO'
+                  }
+                }],
+                filter: Object.keys(filters).map(key => ({
+                  term: { [key]: filters[key] }
+                }))
+              }
+            },
+            size: Math.floor(size * 0.3), // Allocate 30% to knowledge
+            sort: sorting.knowledge || [{ _score: 'desc' }]
+          }).then(results => ({ source: 'knowledge', data: results.hits?.hits || [] }))
+        );
+      }
+
+      // Execute all searches concurrently
+      const results = await Promise.allSettled(searchPromises);
+      
+      const searchResults = {
+        query: searchQuery,
+        sources: sources,
+        total: 0,
+        results: {}
+      };
+
+      // Process results
+      results.forEach((result, _index) => {
+        if (result.status === 'fulfilled' && result.value) {
+          const { source, data } = result.value;
+          searchResults.results[source] = data;
+          searchResults.total += data.length;
+        }
+      });
+
+      res.json({
+        success: true,
+        data: searchResults,
+      });
+    } catch (error) {
+      logger.error('Comprehensive search error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Comprehensive search failed',
+        errorCode: 'COMPREHENSIVE_SEARCH_ERROR',
+      });
+    }
+  },
+);
+
 export default router;

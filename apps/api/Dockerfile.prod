@@ -37,6 +37,7 @@ RUN npx -y prisma@6.12.0 generate --schema=/app/prisma/core/schema.prisma \
  && npx -y prisma@6.12.0 generate --schema=/app/prisma/integration/schema.prisma \
  && npx -y prisma@6.12.0 generate --schema=/app/prisma/notification/schema.prisma \
  && npx -y prisma@6.12.0 generate --schema=/app/prisma/user360/schema.prisma \
+ && npx -y prisma@6.12.0 generate --schema=/app/prisma/nova-tv/schema.prisma \
  || true
 
 # Build the application (if needed)
@@ -71,8 +72,12 @@ COPY --from=builder --chown=nextjs:nodejs /app .
 RUN mkdir -p /prisma/generated && \
     cp -r /app/prisma/generated/* /prisma/generated/ || true
 
+
 # Ensure runtime-only deps missing from prod build are installed
 RUN npm install --omit=dev handlebars@^4 || true
+
+# Regenerate the Nova TV Prisma client at runtime AFTER installs to avoid pruning
+RUN npx -y prisma@6.12.0 generate --schema=/app/prisma/nova-tv/schema.prisma || true
 
 # Create necessary directories with proper permissions
 RUN mkdir -p /app/logs /app/uploads /app/temp && \

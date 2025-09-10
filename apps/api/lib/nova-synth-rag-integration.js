@@ -414,13 +414,61 @@ Meanwhile, here's some general information that might be helpful:
         if (!this.intentClassifier) {
             return 'unknown';
         }
+        
         try {
-            // Use ML Pipeline to classify intent
-            const result = await novaMLPipeline.predictWithCosmoPersonality(this.intentClassifier.id, query, { context: 'intent_detection' });
-            return result.prediction || 'unknown';
-        }
-        catch (error) {
-            logger.warn('Intent detection failed:', error.message);
+            // Enhanced intent detection with comprehensive context analysis
+            const contextualFeatures = this.extractContextualFeatures(context);
+            const contextComplexity = this.calculateContextComplexity(context);
+            
+            // Prepare enriched context for ML Pipeline
+            const enrichedContext = {
+                originalContext: context,
+                features: contextualFeatures,
+                complexity: contextComplexity,
+                timestamp: new Date().toISOString(),
+                queryLength: query.length,
+                contextType: this.determineContextType(context),
+                intentScope: 'enhanced_detection'
+            };
+            
+            logger.info('Detecting intent with context:', {
+                queryPreview: query.substring(0, 50) + '...',
+                contextType: enrichedContext.contextType,
+                complexity: contextComplexity,
+                featuresCount: contextualFeatures.length
+            });
+            
+            // Use ML Pipeline with enriched context for better intent classification
+            const result = await novaMLPipeline.predictWithCosmoPersonality(
+                this.intentClassifier.id, 
+                query, 
+                { 
+                    context: 'intent_detection',
+                    enrichedContext: enrichedContext,
+                    useContextualAnalysis: true,
+                    modelVersion: '2.1'
+                }
+            );
+            
+            // Post-process result with context-aware refinement
+            const refinedIntent = this.refineIntentWithContext(result.prediction || 'unknown', context);
+            
+            logger.info('Intent detection completed:', {
+                originalIntent: result.prediction || 'unknown',
+                refinedIntent: refinedIntent,
+                confidence: result.confidence || 0.5,
+                contextInfluence: refinedIntent !== (result.prediction || 'unknown')
+            });
+            
+            return refinedIntent;
+            
+        } catch (error) {
+            logger.warn('Intent detection failed:', {
+                error: error.message,
+                query: query.substring(0, 30) + '...',
+                contextType: context ? typeof context : 'undefined',
+                fallbackIntent: 'unknown'
+            });
             return 'unknown';
         }
     }
@@ -624,19 +672,47 @@ Meanwhile, here's some general information that might be helpful:
         return `\nThis information is based on ${sources.length > 1 ? 'multiple sources' : 'our'} ${sources.join(', ')}.`;
     }
     buildStepByStepGuide(chunks, synthQuery) {
-        // Extract actionable steps from chunks
+        // Enhanced step-by-step guide generation with query-specific optimization
+        logger.info(`Building step-by-step guide for query: "${synthQuery.substring(0, 50)}..."`);
+        
         const steps = [];
+        const queryIntent = this.analyzeQueryIntent(synthQuery);
+        const urgencyLevel = this.assessQueryUrgency(synthQuery);
+        
         chunks.forEach((chunk, index) => {
             if (chunk.content.toLowerCase().includes('step') ||
                 chunk.content.toLowerCase().includes('first') ||
                 chunk.content.toLowerCase().includes('then')) {
-                steps.push(`${index + 1}. ${this.extractKeySentence(chunk.content)}`);
+                
+                // Extract and enhance step with query context
+                let stepText = this.extractKeySentence(chunk.content);
+                
+                // Query-specific step enhancement
+                if (queryIntent === 'troubleshooting' && urgencyLevel === 'high') {
+                    stepText = `🔴 URGENT: ${stepText}`;
+                } else if (queryIntent === 'configuration') {
+                    stepText = `⚙️ CONFIG: ${stepText}`;
+                } else if (queryIntent === 'integration') {
+                    stepText = `🔗 CONNECT: ${stepText}`;
+                }
+                
+                steps.push(`${index + 1}. ${stepText}`);
             }
         });
+        
+        // Generate fallback steps based on query analysis
         if (steps.length === 0) {
-            return `1. ${this.extractKeySentence(chunks[0]?.content || 'No specific steps available')}\n2. If that doesn't resolve the issue, please check the related documentation\n3. Contact support if the problem persists`;
+            const fallbackSteps = this.generateQuerySpecificSteps(synthQuery, chunks);
+            return fallbackSteps;
         }
-        return steps.join('\n');
+        
+        // Add query-specific footer with next actions
+        const footer = this.buildQuerySpecificFooter(synthQuery, queryIntent);
+        const stepsText = steps.join('\n');
+        
+        logger.info(`Generated ${steps.length} contextual steps for query intent: ${queryIntent}`);
+        
+        return `${stepsText}\n\n${footer}`;
     }
     buildAdditionalInfo(chunks) {
         if (chunks.length <= 1)
@@ -787,6 +863,187 @@ Meanwhile, here's some general information that might be helpful:
             }
         }, this.config.memoryCleanupInterval);
     }
+    
+    // Enhanced contextual analysis helper methods
+    
+    /**
+     * Extract contextual features for intent detection
+     */
+    extractContextualFeatures(context) {
+        if (!context) return [];
+        
+        const features = [];
+        
+        // Analyze context structure and content
+        if (typeof context === 'object') {
+            features.push(`object_context_${Object.keys(context).length}_keys`);
+            if (context.user) features.push('user_context');
+            if (context.session) features.push('session_context');
+            if (context.request) features.push('request_context');
+        } else if (typeof context === 'string') {
+            features.push('string_context');
+            if (context.length > 100) features.push('long_context');
+            if (context.includes('error')) features.push('error_context');
+        }
+        
+        return features;
+    }
+
+    /**
+     * Calculate context complexity score
+     */
+    calculateContextComplexity(context) {
+        if (!context) return 0;
+        
+        let complexity = 0;
+        
+        if (typeof context === 'object') {
+            complexity += Object.keys(context).length * 2;
+            complexity += JSON.stringify(context).length / 100;
+        } else if (typeof context === 'string') {
+            complexity += context.length / 50;
+            complexity += (context.split(' ').length / 10);
+        }
+        
+        return Math.min(Math.round(complexity), 100);
+    }
+
+    /**
+     * Determine the type of context provided
+     */
+    determineContextType(context) {
+        if (!context) return 'none';
+        if (typeof context === 'string') return 'textual';
+        if (Array.isArray(context)) return 'array';
+        if (typeof context === 'object') {
+            if (context.user) return 'user_session';
+            if (context.request) return 'http_request';
+            if (context.error) return 'error_context';
+            return 'structured_object';
+        }
+        return 'unknown';
+    }
+
+    /**
+     * Refine intent based on context analysis
+     */
+    refineIntentWithContext(originalIntent, context) {
+        if (!context || originalIntent === 'unknown') return originalIntent;
+        
+        const contextType = this.determineContextType(context);
+        
+        // Context-based intent refinement rules
+        switch (contextType) {
+            case 'error_context':
+                if (originalIntent === 'general') return 'troubleshooting';
+                break;
+            case 'user_session':
+                if (originalIntent === 'general') return 'user_support';
+                break;
+            case 'http_request':
+                if (originalIntent === 'general') return 'api_support';
+                break;
+        }
+        
+        return originalIntent;
+    }
+
+    /**
+     * Analyze query intent for step generation
+     */
+    analyzeQueryIntent(query) {
+        const lowerQuery = query.toLowerCase();
+        
+        if (lowerQuery.includes('error') || lowerQuery.includes('problem') || lowerQuery.includes('fix')) {
+            return 'troubleshooting';
+        }
+        if (lowerQuery.includes('configure') || lowerQuery.includes('setup') || lowerQuery.includes('settings')) {
+            return 'configuration';
+        }
+        if (lowerQuery.includes('connect') || lowerQuery.includes('integrate') || lowerQuery.includes('sync')) {
+            return 'integration';
+        }
+        if (lowerQuery.includes('how to') || lowerQuery.includes('guide') || lowerQuery.includes('tutorial')) {
+            return 'guidance';
+        }
+        
+        return 'general';
+    }
+
+    /**
+     * Assess query urgency level
+     */
+    assessQueryUrgency(query) {
+        const lowerQuery = query.toLowerCase();
+        
+        const urgentKeywords = ['urgent', 'critical', 'emergency', 'down', 'broken', 'failing', 'crash'];
+        const highKeywords = ['error', 'issue', 'problem', 'trouble', 'alert'];
+        
+        if (urgentKeywords.some(keyword => lowerQuery.includes(keyword))) {
+            return 'urgent';
+        }
+        if (highKeywords.some(keyword => lowerQuery.includes(keyword))) {
+            return 'high';
+        }
+        
+        return 'normal';
+    }
+
+    /**
+     * Generate query-specific fallback steps
+     */
+    generateQuerySpecificSteps(query, chunks) {
+        const intent = this.analyzeQueryIntent(query);
+        const baseStep = this.extractKeySentence(chunks[0]?.content || 'No specific information available');
+        
+        switch (intent) {
+            case 'troubleshooting':
+                return `1. 🔍 DIAGNOSE: ${baseStep}\n2. ⚡ CHECK: Verify system status and recent changes\n3. 🔧 RESOLVE: Apply the recommended fix\n4. ✅ VERIFY: Confirm the issue is resolved\n5. 📝 DOCUMENT: Record the solution for future reference`;
+                
+            case 'configuration':
+                return `1. ⚙️ PREPARE: ${baseStep}\n2. 🔧 CONFIGURE: Apply the configuration changes\n3. ✅ VALIDATE: Test the configuration\n4. 💾 SAVE: Commit and document the changes`;
+                
+            case 'integration':
+                return `1. 🔗 CONNECT: ${baseStep}\n2. 🔑 AUTHENTICATE: Set up proper credentials\n3. 🧪 TEST: Verify the integration works\n4. 📊 MONITOR: Set up monitoring and alerts`;
+                
+            default:
+                return `1. 📖 REVIEW: ${baseStep}\n2. 🎯 IDENTIFY: Determine your specific requirements\n3. 🛠️ IMPLEMENT: Follow the recommended approach\n4. 📞 SUPPORT: Contact support if you need assistance`;
+        }
+    }
+
+    /**
+     * Build query-specific footer with next actions
+     */
+    buildQuerySpecificFooter(query, intent) {
+        const urgency = this.assessQueryUrgency(query);
+        
+        let footer = `\n💡 **Next Actions:**\n`;
+        
+        if (urgency === 'urgent') {
+            footer += `⚡ **URGENT SUPPORT:** If this is critical, contact emergency support immediately.\n`;
+        }
+        
+        switch (intent) {
+            case 'troubleshooting':
+                footer += `🔍 If the issue persists, check logs and system status\n`;
+                footer += `📞 Escalate to technical support if needed`;
+                break;
+            case 'configuration':
+                footer += `⚙️ Review configuration documentation\n`;
+                footer += `🧪 Test in a staging environment first`;
+                break;
+            case 'integration':
+                footer += `🔗 Verify API credentials and permissions\n`;
+                footer += `📊 Monitor integration health after setup`;
+                break;
+            default:
+                footer += `📚 Check related documentation for more details\n`;
+                footer += `💬 Ask follow-up questions if needed`;
+        }
+        
+        return footer;
+    }
+
     async shutdown() {
         logger.info('Shutting down Nova Synth RAG Integration...');
         this.isInitialized = false;

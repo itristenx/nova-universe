@@ -1747,13 +1747,15 @@ export class NovaGoAlertIntegration extends EventEmitter {
   }
 
   private async acknowledgeGoAlert(goAlertId: string, userId: string): Promise<void> {
+    logger.info(`User ${userId} acknowledging GoAlert ${goAlertId}`);
     await axios.post(
       `${this.goAlertProxyUrl}/alerts/${goAlertId}/acknowledge`,
-      {},
+      { acknowledgedBy: userId }, // Include user context for audit trail
       {
         headers: this.getAuthHeaders(),
       },
     );
+    logger.debug(`GoAlert ${goAlertId} acknowledged successfully by user ${userId}`);
   }
 
   private async closeGoAlert(goAlertId: string): Promise<void> {

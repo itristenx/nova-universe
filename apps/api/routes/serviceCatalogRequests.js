@@ -1,4 +1,5 @@
 import express from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import db from '../db.js';
 import { logger } from '../logger.js';
 import { authenticateJWT } from '../middleware/auth.js';
@@ -465,6 +466,14 @@ async function generateRequestNumber() {
 
 async function initiateApprovalWorkflow(requestId, itemId, _userId) {
   try {
+    // Log workflow initiation with user context
+    logger.info('Initiating approval workflow', {
+      requestId,
+      itemId,
+      initiatedBy: _userId,
+      timestamp: new Date().toISOString()
+    });
+
     // Find applicable approval workflow
     const workflowResult = await db.query(`
       SELECT id, steps FROM approval_workflows
@@ -477,15 +486,21 @@ async function initiateApprovalWorkflow(requestId, itemId, _userId) {
     if (workflowResult.rows.length > 0) {
       const workflow = workflowResult.rows[0];
 
-      // Create approval instance
-      await db.query(
-        `
-        INSERT INTO approval_instances (
-          workflow_id, request_id, current_step, status, metadata
-        ) VALUES ($1, $2, 1, 'pending', '{}')
-      `,
-        [workflow.id, requestId],
-      );
+      // Create approval instance with user context
+      const createResult = await db.query(`
+        INSERT INTO approval_instances (id, request_id, workflow_id, current_step, status, initiated_by, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW())
+        RETURNING id
+      `, [
+        uuidv4(),
+        requestId,
+        workflow.id,
+        1,
+        'pending',
+        _userId
+      ]);
+
+      return createResult.rows[0].id;
     }
   } catch (err) {
     logger.error('Error initiating approval workflow:', err);

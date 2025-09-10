@@ -546,7 +546,10 @@ export class NovaRAGEngine extends EventEmitter {
             this.vectorStoreInstances.set(store.id, instance);
             logger.info(`Successfully initialized vector store: ${store.name}`);
         } catch (error) {
-            logger.warn(`Failed to initialize vector store ${store.name}`);
+            logger.warn(`Failed to initialize vector store ${store.name}: ${error.message}`);
+            // Store initialization failure details for debugging
+            store.lastError = error.message;
+            store.lastFailureTime = new Date().toISOString();
             // Don't throw - allow system to continue with other stores
         }
     }
@@ -554,9 +557,21 @@ export class NovaRAGEngine extends EventEmitter {
     async loadDocumentChunks() {
         // Load existing chunks from persistent storage
         logger.info('Loading existing document chunks...');
-        // This would load from database or file system
-        // For now, we'll start with an empty collection
-        logger.info('Document chunks loaded');
+        try {
+            // Try to load from filesystem cache
+            const cacheFile = './data/rag_chunks_cache.json';
+            const chunksData = await fs.readFile(cacheFile, 'utf8');
+            const parsedChunks = JSON.parse(chunksData);
+            
+            // Restore chunks to memory
+            for (const [id, chunk] of Object.entries(parsedChunks)) {
+                this.documentChunks.set(id, chunk);
+            }
+            
+            logger.info(`Loaded ${this.documentChunks.size} document chunks from cache`);
+        } catch (error) {
+            logger.info(`No existing chunks cache found (${error.message}), starting fresh`);
+        }
     }
     async initializeKnowledgeGraph() {
         if (!this.config.knowledgeGraphEnabled) {
@@ -698,10 +713,12 @@ export class NovaRAGEngine extends EventEmitter {
     }
     async generateLocalEmbedding(text, model) {
         try {
-            // Use our local embedding model
-            return await localEmbeddingModel.generateEmbedding(text);
+            // Use our local embedding model with specified model variant
+            const modelConfig = model ? { variant: model } : {};
+            logger.debug(`Generating local embedding with model: ${model || 'default'}`);
+            return await localEmbeddingModel.generateEmbedding(text, modelConfig);
         } catch (error) {
-            logger.error('Failed to generate local embedding');
+            logger.error(`Failed to generate local embedding with model ${model}:`, error);
             throw new Error(`Local embedding generation failed: ${error.message}`);
         }
     }
@@ -760,7 +777,9 @@ export class NovaRAGEngine extends EventEmitter {
             await storeInstance.removeChunk(chunkId);
             logger.debug(`Removed chunk ${chunkId} from vector store ${store.name}`);
         } catch (error) {
-            logger.error('Failed to remove chunk from vector store');
+            logger.error(`Failed to remove chunk ${chunkId} from vector store:`, error);
+            // Store removal failure for debugging
+            this.emit('chunkRemovalFailed', { chunkId, storeName: store.name, error: error.message });
         }
     }
 
@@ -808,7 +827,9 @@ export class NovaRAGEngine extends EventEmitter {
                     return vectorResults;
                 }
             } catch (error) {
-                logger.warn('Vector store search failed, falling back to in-memory search');
+                logger.warn(`Vector store search failed, falling back to in-memory search:`, error);
+                // Track search failures for performance monitoring
+                this.emit('vectorSearchFailed', { storeName: store?.name, error: error.message });
             }
         }
 

@@ -35,7 +35,8 @@ export class ChromaDBStore {
           this.collections.set(collectionName, collection);
           logger.info(`ChromaDB collection "${collectionName}" initialized`);
         } catch (error) {
-          // Collection might already exist
+          // Collection might already exist - attempt to retrieve it
+          logger.debug(`ChromaDB collection creation failed for "${collectionName}": ${error.message}, attempting to retrieve existing collection`);
           try {
             const collection = await this.client.getCollection({ name: collectionName });
             this.collections.set(collectionName, collection);
@@ -123,13 +124,13 @@ export class ChromaDBStore {
   async removeChunk(chunkId: string): Promise<void> {
     for (const [collectionName, collection] of this.collections) {
       try {
-        await this.client.delete({
-          collectionName,
+        await collection.delete({
           ids: [chunkId],
         });
         logger.debug(`Removed chunk ${chunkId} from ChromaDB collection ${collectionName}`);
       } catch (error) {
-        // Chunk might not exist in this collection, continue
+        // Chunk might not exist in this collection - log and continue
+        logger.debug(`Failed to remove chunk ${chunkId} from collection ${collectionName}: ${error.message}`);
       }
     }
   }
@@ -249,18 +250,46 @@ export class LocalVectorStore {
   private cosineSimilarity(a: number[], b: number[]): number {
     if (a.length !== b.length) return 0;
 
-    let dotProduct = 0;
-    let normA = 0;
-    let normB = 0;
+    try {
+      // Use TensorFlow.js for optimized vector operations
+      const tensorA = tf.tensor1d(a);
+      const tensorB = tf.tensor1d(b);
+      
+      // Calculate cosine similarity using TensorFlow operations
+      const dotProduct = tf.sum(tf.mul(tensorA, tensorB));
+      const normA = tf.norm(tensorA);
+      const normB = tf.norm(tensorB);
+      
+      // Compute similarity and convert to JavaScript number
+      const similarity = tf.div(dotProduct, tf.mul(normA, normB));
+      const result = similarity.dataSync()[0];
+      
+      // Clean up tensors to prevent memory leaks
+      tensorA.dispose();
+      tensorB.dispose();
+      dotProduct.dispose();
+      normA.dispose();
+      normB.dispose();
+      similarity.dispose();
+      
+      return isNaN(result) ? 0 : result;
+    } catch (error) {
+      logger.warn(`TensorFlow cosine similarity calculation failed: ${error.message}, falling back to manual calculation`);
+      
+      // Fallback to manual calculation
+      let dotProduct = 0;
+      let normA = 0;
+      let normB = 0;
 
-    for (let i = 0; i < a.length; i++) {
-      dotProduct += a[i] * b[i];
-      normA += a[i] * a[i];
-      normB += b[i] * b[i];
+      for (let i = 0; i < a.length; i++) {
+        dotProduct += a[i] * b[i];
+        normA += a[i] * a[i];
+        normB += b[i] * b[i];
+      }
+
+      if (normA === 0 || normB === 0) return 0;
+      return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
-
-    if (normA === 0 || normB === 0) return 0;
-    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
   private async saveIndex(): Promise<void> {
@@ -305,6 +334,7 @@ export class LocalVectorStore {
       logger.info(`Loaded local vector index with ${this.embeddings.length} embeddings`);
     } catch (error) {
       // Index doesn't exist or is corrupted, start fresh
+      logger.debug(`Failed to load vector index: ${error.message}, starting with empty index`);
       this.embeddings = [];
       this.chunkIds = [];
       this.chunks = new Map();

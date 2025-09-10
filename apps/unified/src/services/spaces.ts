@@ -123,26 +123,26 @@ export const spaceService = {
       params.append('datetime', filters.dateTime);
     }
 
-    return await apiClient.getPaginated<Space>('/v1/spaces', Object.fromEntries(params));
+    return await apiClient.getPaginated<Space>('/api/v1/spaces', Object.fromEntries(params));
   },
 
   async getSpace(id: string): Promise<Space> {
-    const response = await apiClient.get<Space>(`/v1/spaces/${id}`);
+    const response = await apiClient.get<Space>(`/api/v1/spaces/${id}`);
     return response.data!;
   },
 
   async createSpace(data: Omit<Space, 'id' | 'createdAt' | 'updatedAt'>): Promise<Space> {
-    const response = await apiClient.post<Space>('/v1/spaces', data);
+    const response = await apiClient.post<Space>('/api/v1/spaces', data);
     return response.data!;
   },
 
   async updateSpace(id: string, data: Partial<Space>): Promise<Space> {
-    const response = await apiClient.patch<Space>(`/v1/spaces/${id}`, data);
+    const response = await apiClient.patch<Space>(`/api/v1/spaces/${id}`, data);
     return response.data!;
   },
 
   async deleteSpace(id: string): Promise<void> {
-    await apiClient.delete(`/v1/spaces/${id}`);
+    await apiClient.delete(`/api/v1/spaces/${id}`);
   },
 
   // Space booking operations
@@ -151,23 +151,23 @@ export const spaceService = {
     if (spaceId) params.spaceId = spaceId;
     if (userId) params.userId = userId;
 
-    return await apiClient.getPaginated<SpaceBooking>('/v1/spaces/bookings', params);
+    return await apiClient.getPaginated<SpaceBooking>('/api/v1/spaces/bookings', params);
   },
 
   async createBooking(
     data: Omit<SpaceBooking, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<SpaceBooking> {
-    const response = await apiClient.post<SpaceBooking>('/v1/spaces/bookings', data);
+    const response = await apiClient.post<SpaceBooking>('/api/v1/spaces/bookings', data);
     return response.data!;
   },
 
   async updateBooking(id: string, data: Partial<SpaceBooking>): Promise<SpaceBooking> {
-    const response = await apiClient.patch<SpaceBooking>(`/v1/spaces/bookings/${id}`, data);
+    const response = await apiClient.patch<SpaceBooking>(`/api/v1/spaces/bookings/${id}`, data);
     return response.data!;
   },
 
   async cancelBooking(id: string): Promise<void> {
-    await apiClient.delete(`/v1/spaces/bookings/${id}`);
+    await apiClient.delete(`/api/v1/spaces/bookings/${id}`);
   },
 
   // Space availability
@@ -177,7 +177,7 @@ export const spaceService = {
     endTime: string,
   ): Promise<{ available: boolean; conflicts: SpaceBooking[] }> {
     const response = await apiClient.get<{ available: boolean; conflicts: SpaceBooking[] }>(
-      `/v1/spaces/${spaceId}/availability`,
+      `/api/v1/spaces/${spaceId}/availability`,
       {
         params: { startTime, endTime },
       },
@@ -202,24 +202,24 @@ export const spaceService = {
       params.buildings = filters.building.join(',');
     }
 
-    const response = await apiClient.get<Space[]>('/v1/spaces/available', { params });
+    const response = await apiClient.get<Space[]>('/api/v1/spaces/available', { params });
     return response.data!;
   },
 
   // Space occupancy and sensors
   async getOccupancy(spaceId?: string): Promise<SpaceOccupancy[]> {
-    const endpoint = spaceId ? `/v1/spaces/${spaceId}/occupancy` : '/v1/spaces/occupancy';
+    const endpoint = spaceId ? `/api/v1/spaces/${spaceId}/occupancy` : '/api/v1/spaces/occupancy';
     const response = await apiClient.get<SpaceOccupancy[]>(endpoint);
     return response.data!;
   },
 
   async updateOccupancy(spaceId: string, occupiedCount: number): Promise<void> {
-    await apiClient.post(`/v1/spaces/${spaceId}/occupancy`, { occupiedCount });
+    await apiClient.post(`/api/v1/spaces/${spaceId}/occupancy`, { occupiedCount });
   },
 
   // Space metrics and analytics
   async getMetrics(period: 'day' | 'week' | 'month' | 'year' = 'week'): Promise<SpaceMetrics> {
-    const response = await apiClient.get<SpaceMetrics>('/v1/spaces/metrics', {
+    const response = await apiClient.get<SpaceMetrics>('/api/v1/spaces/metrics', {
       params: { period },
     });
     return response.data!;
@@ -257,7 +257,7 @@ export const spaceService = {
         averageDuration: number;
         peakHours: Array<{ hour: number; bookingCount: number }>;
       }>
-    >('/v1/spaces/utilization', { params });
+    >('/api/v1/spaces/utilization', { params });
     return response.data!;
   },
 
@@ -286,7 +286,7 @@ export const spaceService = {
         coordinates: { x: number; y: number; width: number; height: number };
         status: SpaceStatus;
       }>;
-    }>(`/v1/spaces/floorplan/${building}/${floor}`);
+    }>(`/api/v1/spaces/floorplan/${building}/${floor}`);
     return response.data!;
   },
 
@@ -301,7 +301,7 @@ export const spaceService = {
       }>;
     },
   ): Promise<void> {
-    await apiClient.patch(`/v1/spaces/floorplan/${building}/${floor}`, data);
+    await apiClient.patch(`/api/v1/spaces/floorplan/${building}/${floor}`, data);
   },
 
   // Integration with external systems
@@ -309,7 +309,7 @@ export const spaceService = {
     provider: 'outlook' | 'google' | 'exchange',
   ): Promise<{ synced: number; errors: string[] }> {
     const response = await apiClient.post<{ synced: number; errors: string[] }>(
-      `/v1/spaces/sync/${provider}`,
+      `/api/v1/spaces/sync/${provider}`,
     );
     return response.data!;
   },
@@ -330,7 +330,7 @@ export const spaceService = {
     if (filters?.spaceId) params.append('spaceId', filters.spaceId);
     if (filters?.userId) params.append('userId', filters.userId);
 
-    await apiClient.downloadFile(`/v1/spaces/export?${params.toString()}`, `bookings.${format}`);
+    await apiClient.downloadFile(`/api/v1/spaces/export?${params.toString()}`, `bookings.${format}`);
   },
 };
 

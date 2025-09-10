@@ -140,12 +140,21 @@ export class AutoClassificationService {
   /**
    * Find similar tickets based on content analysis
    */
-  async findSimilarTickets(ticketData, limit = 5) {
+  static async findSimilarTickets(ticketData, limit = 5) {
     try {
-      logger.info('Finding similar tickets using advanced text analysis');
+      const prisma = await prismaPromise;
+      logger.info('Finding similar tickets using advanced text analysis with database connection');
 
       const searchText = `${ticketData.title} ${ticketData.description}`.toLowerCase();
       const keywords = this.extractKeywords(searchText);
+
+      // Enhanced logging for database connection and search parameters
+      logger.debug(`Database connection established for similarity search`, {
+        searchKeywords: keywords.slice(0, 5), // Log first 5 keywords
+        searchTextLength: searchText.length,
+        limit,
+        connectionId: prisma ? 'connected' : 'disconnected'
+      });
 
       // Use full-text search with ranking
       const similarTickets = await prisma.$queryRaw`

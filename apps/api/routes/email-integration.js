@@ -502,6 +502,15 @@ router.post('/analyze-email', authenticateToken, async (req, res) => {
       });
     }
 
+    // Enhanced logging with context information
+    logger.info('Analyzing email with Nova Synth', {
+      hasEmail: !!email,
+      hasContext: !!context,
+      contextKeys: context ? Object.keys(context) : [],
+      userTenant: req.user.tenantId,
+      timestamp: new Date().toISOString()
+    });
+
     // Create test email account if not provided
     const testAccount = {
       id: 'test',
@@ -511,7 +520,22 @@ router.post('/analyze-email', authenticateToken, async (req, res) => {
       autoCreateTickets: true,
     };
 
-    const result = await emailService.testNovaSynthProcessing(email, testAccount);
+    // Pass context to the processing function for enhanced AI analysis
+    const enhancedEmail = {
+      ...email,
+      additionalContext: context || {},
+      analysisContext: {
+        userProvided: context,
+        requestMetadata: {
+          userId: req.user.id,
+          tenantId: req.user.tenantId,
+          timestamp: new Date().toISOString(),
+          analysisType: 'manual_test'
+        }
+      }
+    };
+
+    const result = await emailService.testNovaSynthProcessing(enhancedEmail, testAccount);
 
     if (result.success) {
       res.json({

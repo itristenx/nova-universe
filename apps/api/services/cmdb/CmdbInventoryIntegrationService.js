@@ -253,6 +253,7 @@ class CmdbInventoryIntegrationService {
 
       return { success: true, syncedAt: new Date() };
     } catch (error) {
+      logger.error(`CMDB-Inventory sync failed for mapping ${mappingId}:`, error);
       // Update mapping with error
       await this.cmdbDb.cmdbInventoryMapping.update({
         where: { id: mappingId },

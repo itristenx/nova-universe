@@ -7,7 +7,7 @@
 import { EventEmitter } from 'events';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import * as tf from '@tensorflow/tfjs-node';
+import tf from './tfjs-bridge.js';
 import { logger } from '../logger.js';
 import db from '../db.js';
 

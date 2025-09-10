@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
+import App from './App';
 import FallbackApp from './FallbackApp';
 import '@/styles/globals.css';
 import './i18n/config'; // Initialize i18n
@@ -41,11 +43,14 @@ if (!rootElement) {
 // Create root and render app
 const root = ReactDOM.createRoot(rootElement);
 
+// Decide which app to render
+const useRealApp = import.meta.env.PROD || import.meta.env.VITE_E2E === 'true';
+
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <FallbackApp />
+        {useRealApp ? <App /> : <FallbackApp />}
         <Toaster
           position="top-right"
           toastOptions={{
@@ -76,3 +81,27 @@ root.render(
     </QueryClientProvider>
   </React.StrictMode>,
 );
+
+// E2E test bridge: mirror toast state into DOM testids for Playwright
+if (typeof window !== 'undefined') {
+  try {
+    toast.onChange((t) => {
+      const id = t.type === 'error' ? 'toast-error' : t.type === 'success' ? 'toast-success' : 'toast-info';
+      let el = document.getElementById(id);
+      if (!el) {
+        el = document.createElement('div');
+        el.id = id;
+        el.setAttribute('data-testid', id);
+        el.style.position = 'fixed';
+        el.style.bottom = '4px';
+        el.style.right = '4px';
+        el.style.zIndex = '9999';
+        el.style.pointerEvents = 'none';
+        document.body.appendChild(el);
+      }
+      el.textContent = (t?.message as any) || '';
+      // Show only while visible
+      el.style.display = t.visible ? 'block' : 'none';
+    });
+  } catch {}
+}

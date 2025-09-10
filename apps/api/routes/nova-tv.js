@@ -433,20 +433,23 @@ router.get('/devices', requireAuth, async (req, res) => {
         params.push(dashboardId);
       }
 
-      const whereClause = whereConditions.length > 0 ? `AND ${whereConditions.join(' AND ')}` : '';
+      // Use the dedicated getDevicesFromDB function for consistent query building
+      const filterConditions = {
+        department: req.query.department,
+        status: req.query.status, 
+        type: req.query.type,
+        dashboard_id: req.query.dashboard_id
+      };
 
-      const query = `
-        SELECT d.*, 
-               db.name as dashboard_name,
-               db.department as dashboard_department
-        FROM nova_tv_devices d
-        LEFT JOIN nova_tv_dashboards db ON d.dashboard_id = db.id
-        WHERE 1=1 ${whereClause}
-        ORDER BY d.created_at DESC
-      `;
+      // Remove undefined values to match function's filter logic
+      Object.keys(filterConditions).forEach(key => {
+        if (filterConditions[key] === undefined) {
+          delete filterConditions[key];
+        }
+      });
 
-      const result = await db.query(query, params);
-      return res.json(result.rows || []);
+      const devices = await getDevicesFromDB(filterConditions);
+      return res.json(devices);
     } catch (dbError) {
       logger.error('Database error fetching devices:', dbError.message);
       return res.status(500).json({ error: 'Failed to fetch devices' });
@@ -513,10 +516,9 @@ router.post('/devices/register', async (req, res) => {
 
     // Try database first
     try {
-      // Check if device already exists
-      const existingQuery = `SELECT * FROM nova_tv_devices WHERE device_fingerprint = $1`;
-      const existingResult = await db.query(existingQuery, [deviceFingerprint]);
-      const existingDevice = existingResult.rows?.[0];
+      // Check if device already exists using dedicated function
+      // Since we're setting deviceId to fingerprint in creation, this lookup should work
+      const existingDevice = await getDeviceByDeviceIdFromDB(deviceFingerprint);
 
       if (existingDevice) {
         // Update existing device
@@ -543,34 +545,29 @@ router.post('/devices/register', async (req, res) => {
 
         return res.json(updateResult.rows[0]);
       } else {
-        // Create new device
-        const insertQuery = `
-          INSERT INTO nova_tv_devices (
-            id, name, location, department, device_fingerprint, 
-            ip_address, browser_info, connection_status, settings, 
-            metadata, last_active_at, created_at, updated_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW(), NOW())
-          RETURNING *
-        `;
-
+        // Create new device using dedicated function
         const deviceId = uuid();
         const deviceName = name || `TV-${deviceFingerprint.slice(-6)}`;
 
-        const insertResult = await db.query(insertQuery, [
-          deviceId,
-          deviceName,
+        const deviceData = {
+          id: deviceId,
+          name: deviceName,
+          deviceId: deviceFingerprint, // Using fingerprint as device_id
           location,
-          department,
-          deviceFingerprint,
-          ipAddress,
-          browserInfo,
-          'connected',
-          JSON.stringify(settings),
-          JSON.stringify(metadata),
-        ]);
+          status: 'connected',
+          lastPing: new Date(),
+          configuration: {
+            department,
+            ipAddress,
+            browserInfo,
+            settings,
+            metadata
+          }
+        };
 
+        const newDevice = await createDeviceInDB(deviceData);
         logger.info('Registered Nova TV device:', { deviceId, fingerprint: deviceFingerprint });
-        return res.status(201).json(insertResult.rows[0]);
+        return res.status(201).json(newDevice);
       }
     } catch (dbError) {
       logger.error('Database error registering device:', dbError.message);
@@ -588,70 +585,30 @@ router.put('/devices/:id', requireAuth, async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
-    // Try database first
+    // Use dedicated updateDeviceInDB function for consistent updates
     try {
-      const updateFields = [];
-      const params = [id];
-      let paramIndex = 2;
+      // Prepare update data structure to match function expectations
+      const updateData = {};
+      
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.location !== undefined) updateData.location = updates.location;
+      if (updates.department !== undefined) updateData.department = updates.department;
+      if (updates.dashboardId !== undefined) updateData.dashboard_id = updates.dashboardId;
+      if (updates.settings !== undefined) updateData.settings = updates.settings;
+      if (updates.metadata !== undefined) updateData.metadata = updates.metadata;
+      if (updates.brandingConfig !== undefined) updateData.branding_config = updates.brandingConfig;
+      if (updates.displayConfig !== undefined) updateData.display_config = updates.displayConfig;
+      if (updates.logoUrl !== undefined) updateData.logo_url = updates.logoUrl;
+      if (updates.bgUrl !== undefined) updateData.bg_url = updates.bgUrl;
 
-      if (updates.name !== undefined) {
-        updateFields.push(`name = $${paramIndex++}`);
-        params.push(updates.name);
-      }
-      if (updates.location !== undefined) {
-        updateFields.push(`location = $${paramIndex++}`);
-        params.push(updates.location);
-      }
-      if (updates.department !== undefined) {
-        updateFields.push(`department = $${paramIndex++}`);
-        params.push(updates.department);
-      }
-      if (updates.dashboardId !== undefined) {
-        updateFields.push(`dashboard_id = $${paramIndex++}`);
-        params.push(updates.dashboardId);
-      }
-      if (updates.settings !== undefined) {
-        updateFields.push(`settings = $${paramIndex++}`);
-        params.push(JSON.stringify(updates.settings));
-      }
-      if (updates.metadata !== undefined) {
-        updateFields.push(`metadata = $${paramIndex++}`);
-        params.push(JSON.stringify(updates.metadata));
-      }
-      if (updates.brandingConfig !== undefined) {
-        updateFields.push(`branding_config = $${paramIndex++}`);
-        params.push(JSON.stringify(updates.brandingConfig));
-      }
-      if (updates.displayConfig !== undefined) {
-        updateFields.push(`display_config = $${paramIndex++}`);
-        params.push(JSON.stringify(updates.displayConfig));
-      }
-      if (updates.logoUrl !== undefined) {
-        updateFields.push(`logo_url = $${paramIndex++}`);
-        params.push(updates.logoUrl);
-      }
-      if (updates.bgUrl !== undefined) {
-        updateFields.push(`bg_url = $${paramIndex++}`);
-        params.push(updates.bgUrl);
-      }
+      const updatedDevice = await updateDeviceInDB(id, updateData);
 
-      updateFields.push('updated_at = NOW()');
-
-      const updateQuery = `
-        UPDATE nova_tv_devices 
-        SET ${updateFields.join(', ')}
-        WHERE id = $1
-        RETURNING *
-      `;
-
-      const result = await db.query(updateQuery, params);
-
-      if (!result.rows?.[0]) {
+      if (!updatedDevice) {
         return res.status(404).json({ error: 'Device not found' });
       }
 
       logger.info('Updated Nova TV device:', { deviceId: id });
-      return res.json(result.rows[0]);
+      return res.json(updatedDevice);
     } catch (dbError) {
       logger.error('Database error updating device:', dbError.message);
       return res.status(500).json({ error: 'Failed to update device' });
@@ -820,24 +777,23 @@ router.post('/activations/verify', async (req, res) => {
       return res.status(400).json({ error: 'Invalid or expired activation code' });
     }
 
-    // Find or create device by fingerprint
-    let device = null;
-    const devRes = await db.query(
-      `SELECT * FROM nova_tv_devices WHERE device_fingerprint = $1 LIMIT 1`,
-      [deviceFingerprint],
-    );
-    if (devRes.rows?.[0]) {
-      device = devRes.rows[0];
-    } else {
+    // Find or create device by fingerprint using dedicated functions
+    let device = await getDeviceByDeviceIdFromDB(deviceFingerprint);
+    
+    if (!device) {
+      // Create device using dedicated function
       const deviceId = uuid();
       const name = `TV-${deviceFingerprint.slice(-6)}`;
-      await db.query(
-        `INSERT INTO nova_tv_devices (id, name, device_fingerprint, connection_status, last_active_at, created_at, updated_at)
-         VALUES ($1, $2, $3, 'connected', NOW(), NOW(), NOW())`,
-        [deviceId, name, deviceFingerprint],
-      );
-      const newRes = await db.query(`SELECT * FROM nova_tv_devices WHERE id = $1`, [deviceId]);
-      device = newRes.rows?.[0];
+      const deviceData = {
+        id: deviceId,
+        name,
+        deviceId: deviceFingerprint, // Using fingerprint as device_id
+        location: null,
+        status: 'connected',
+        lastPing: new Date(),
+        configuration: {}
+      };
+      device = await createDeviceInDB(deviceData);
     }
 
     // Mark activation as used and link device

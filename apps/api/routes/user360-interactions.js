@@ -119,12 +119,31 @@ router.get('/interactions/stats', async (req, res) => {
       timeframe = '7d'
     } = req.query;
 
+    // Enhanced logging with user context for analytics and debugging
+    logger.info('Fetching interaction statistics', {
+      requestedUserId: userId,
+      timeframe,
+      requestedBy: req.user?.id,
+      hasUserFilter: !!userId,
+      timestamp: new Date().toISOString()
+    });
+
     const stats = await userInteractionService.getInteractionStats(timeframe);
 
+    // Enhanced response with user context
     res.json({
       success: true,
       data: {
-        stats
+        stats,
+        filters: {
+          userId: userId || null,
+          timeframe,
+          hasUserFilter: !!userId
+        },
+        meta: {
+          generatedAt: new Date().toISOString(),
+          requestedBy: req.user?.id
+        }
       }
     });
   } catch (error) {

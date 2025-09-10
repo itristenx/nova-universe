@@ -124,33 +124,33 @@ class NovaTVService {
     createdBy?: string;
     isActive?: boolean;
   }): Promise<Dashboard[]> {
-    const response = await api.get('/nova-tv/dashboards', { params: filters });
+    const response = await api.get('/api/nova-tv/dashboards', { params: filters });
     return response.data;
   }
 
   async getDashboard(id: string): Promise<Dashboard> {
-    const response = await api.get(`/nova-tv/dashboards/${id}`);
+    const response = await api.get(`/api/nova-tv/dashboards/${id}`);
     return response.data;
   }
 
   async createDashboard(
     dashboard: Omit<Dashboard, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<Dashboard> {
-    const response = await api.post('/nova-tv/dashboards', dashboard);
+    const response = await api.post('/api/nova-tv/dashboards', dashboard);
     return response.data;
   }
 
   async updateDashboard(id: string, updates: Partial<Dashboard>): Promise<Dashboard> {
-    const response = await api.put(`/nova-tv/dashboards/${id}`, updates);
+    const response = await api.put(`/api/nova-tv/dashboards/${id}`, updates);
     return response.data;
   }
 
   async deleteDashboard(id: string): Promise<void> {
-    await api.delete(`/nova-tv/dashboards/${id}`);
+    await api.delete(`/api/nova-tv/dashboards/${id}`);
   }
 
   async duplicateDashboard(id: string, name: string): Promise<Dashboard> {
-    const response = await api.post(`/nova-tv/dashboards/${id}/duplicate`, { name });
+    const response = await api.post(`/api/nova-tv/dashboards/${id}/duplicate`, { name });
     return response.data;
   }
 
@@ -160,12 +160,12 @@ class NovaTVService {
     connectionStatus?: string;
     dashboardId?: string;
   }): Promise<Device[]> {
-    const response = await api.get('/nova-tv/devices', { params: filters });
+    const response = await api.get('/api/nova-tv/devices', { params: filters });
     return response.data;
   }
 
   async getDevice(id: string): Promise<Device> {
-    const response = await api.get(`/nova-tv/devices/${id}`);
+    const response = await api.get(`/api/nova-tv/devices/${id}`);
     return response.data;
   }
 
@@ -176,42 +176,42 @@ class NovaTVService {
     deviceFingerprint: string;
     settings?: any;
   }): Promise<Device> {
-    const response = await api.post('/nova-tv/devices/register', device);
+    const response = await api.post('/api/nova-tv/devices/register', device);
     return response.data;
   }
 
   async updateDevice(id: string, updates: Partial<Device>): Promise<Device> {
-    const response = await api.put(`/nova-tv/devices/${id}`, updates);
+    const response = await api.put(`/api/nova-tv/devices/${id}`, updates);
     return response.data;
   }
 
   async revokeDevice(id: string): Promise<void> {
-    await api.delete(`/nova-tv/devices/${id}/revoke`);
+    await api.delete(`/api/nova-tv/devices/${id}/revoke`);
   }
 
   async assignDashboard(deviceId: string, dashboardId: string): Promise<Device> {
-    const response = await api.post(`/nova-tv/devices/${deviceId}/assign`, { dashboardId });
+    const response = await api.post(`/api/nova-tv/devices/${deviceId}/assign`, { dashboardId });
     return response.data;
   }
 
   // Authentication
   async generateAuthCode(params?: { deviceFingerprint?: string }): Promise<AuthSession & { deviceFingerprint?: string | null }>{
-    const response = await api.post('/nova-tv/auth/generate-code', params || {});
+    const response = await api.post('/api/nova-tv/auth/generate-code', params || {});
     return response.data;
   }
 
   async verifyAuthCode(sessionId: string, code: string): Promise<AuthVerification> {
-    const response = await api.post('/nova-tv/auth/verify-code', { sessionId, code });
+    const response = await api.post('/api/nova-tv/auth/verify-code', { sessionId, code });
     return response.data;
   }
 
   async checkAuthStatus(sessionId: string): Promise<{ isVerified: boolean; isExpired: boolean }> {
-    const response = await api.get(`/nova-tv/auth/status/${sessionId}`);
+    const response = await api.get(`/api/nova-tv/auth/status/${sessionId}`);
     return response.data;
   }
 
   async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
-    const response = await api.post('/nova-tv/auth/refresh', { refreshToken });
+    const response = await api.post('/api/nova-tv/auth/refresh', { refreshToken });
     return response.data;
   }
 
@@ -221,58 +221,58 @@ class NovaTVService {
     departmentType?: string;
     isSystemTemplate?: boolean;
   }): Promise<Template[]> {
-    const response = await api.get('/nova-tv/templates', { params: filters });
+    const response = await api.get('/api/nova-tv/templates', { params: filters });
     return response.data;
   }
 
   async getTemplate(id: string): Promise<Template> {
-    const response = await api.get(`/nova-tv/templates/${id}`);
+    const response = await api.get(`/api/nova-tv/templates/${id}`);
     return response.data;
   }
 
   async createTemplate(
     template: Omit<Template, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<Template> {
-    const response = await api.post('/nova-tv/templates', template);
+    const response = await api.post('/api/nova-tv/templates', template);
     return response.data;
   }
 
   async updateTemplate(id: string, updates: Partial<Template>): Promise<Template> {
-    const response = await api.put(`/nova-tv/templates/${id}`, updates);
+    const response = await api.put(`/api/nova-tv/templates/${id}`, updates);
     return response.data;
   }
 
   async deleteTemplate(id: string): Promise<void> {
-    await api.delete(`/nova-tv/templates/${id}`);
+    await api.delete(`/api/nova-tv/templates/${id}`);
   }
 
   async previewTemplate(id: string, data?: any): Promise<any> {
-    const response = await api.get(`/nova-tv/templates/${id}/preview`, { params: data });
+    const response = await api.get(`/api/nova-tv/templates/${id}/preview`, { params: data });
     return response.data;
   }
 
   // Content Management
   async getContent(dashboardId: string): Promise<Content[]> {
-    const response = await api.get(`/nova-tv/dashboards/${dashboardId}/content`);
+    const response = await api.get(`/api/nova-tv/dashboards/${dashboardId}/content`);
     return response.data;
   }
 
   async createContent(content: Omit<Content, 'id' | 'createdAt' | 'updatedAt'>): Promise<Content> {
-    const response = await api.post('/nova-tv/content', content);
+    const response = await api.post('/api/nova-tv/content', content);
     return response.data;
   }
 
   async updateContent(id: string, updates: Partial<Content>): Promise<Content> {
-    const response = await api.put(`/nova-tv/content/${id}`, updates);
+    const response = await api.put(`/api/nova-tv/content/${id}`, updates);
     return response.data;
   }
 
   async deleteContent(id: string): Promise<void> {
-    await api.delete(`/nova-tv/content/${id}`);
+    await api.delete(`/api/nova-tv/content/${id}`);
   }
 
   async reorderContent(dashboardId: string, contentIds: string[]): Promise<Content[]> {
-    const response = await api.post(`/nova-tv/dashboards/${dashboardId}/content/reorder`, {
+    const response = await api.post(`/api/nova-tv/dashboards/${dashboardId}/content/reorder`, {
       contentIds,
     });
     return response.data;
@@ -286,7 +286,7 @@ class NovaTVService {
       department?: string;
     },
   ): Promise<DashboardAnalytics> {
-    const response = await api.get(`/nova-tv/analytics/dashboard/${dashboardId}`, {
+    const response = await api.get(`/api/nova-tv/analytics/dashboard/${dashboardId}`, {
       params: filters,
     });
     return response.data;
@@ -299,11 +299,11 @@ class NovaTVService {
     eventType: string;
     eventData?: any;
   }): Promise<void> {
-    await api.post('/nova-tv/analytics/events', event);
+    await api.post('/api/nova-tv/analytics/events', event);
   }
 
   async getDeviceAnalytics(deviceId: string, timeRange?: string): Promise<any> {
-    const response = await api.get(`/nova-tv/analytics/device/${deviceId}`, {
+    const response = await api.get(`/api/nova-tv/analytics/device/${deviceId}`, {
       params: { timeRange },
     });
     return response.data;
@@ -311,27 +311,27 @@ class NovaTVService {
 
   // Live Data Integration
   async getLiveTicketMetrics(department?: string): Promise<any> {
-    const response = await api.get('/nova-tv/live-data/tickets', { params: { department } });
+    const response = await api.get('/api/nova-tv/live-data/tickets', { params: { department } });
     return response.data;
   }
 
   async getLiveAssetMetrics(department?: string): Promise<any> {
-    const response = await api.get('/nova-tv/live-data/assets', { params: { department } });
+    const response = await api.get('/api/nova-tv/live-data/assets', { params: { department } });
     return response.data;
   }
 
   async getLiveHRMetrics(): Promise<any> {
-    const response = await api.get('/nova-tv/live-data/hr');
+    const response = await api.get('/api/nova-tv/live-data/hr');
     return response.data;
   }
 
   async getLiveSystemHealth(): Promise<any> {
-    const response = await api.get('/nova-tv/live-data/system-health');
+    const response = await api.get('/api/nova-tv/live-data/system-health');
     return response.data;
   }
 
   async getLiveAnnouncements(department?: string): Promise<any> {
-    const response = await api.get('/nova-tv/live-data/announcements', { params: { department } });
+    const response = await api.get('/api/nova-tv/live-data/announcements', { params: { department } });
     return response.data;
   }
 

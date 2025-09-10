@@ -1,5 +1,4 @@
 import { chromium, FullConfig } from '@playwright/test';
-import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import { config } from 'dotenv';
 
@@ -8,7 +7,6 @@ config();
 
 interface TestEnvironment {
   apiBaseUrl: string;
-  databaseUrl: string;
   testUser: {
     email: string;
     password: string;
@@ -34,9 +32,6 @@ async function globalSetup(config: FullConfig): Promise<void> {
 
   const testEnv: TestEnvironment = {
     apiBaseUrl: process.env.TEST_API_URL || 'http://localhost:3000',
-    databaseUrl:
-      process.env.TEST_DATABASE_URL ||
-      'postgresql://nova_admin:nova_password@localhost:5432/nova_universe_test',
     testUser: {
       email: process.env.TEST_USER_EMAIL || 'testuser@nova.com',
       password: process.env.TEST_USER_PASSWORD || 'TestUser123!',
@@ -49,23 +44,15 @@ async function globalSetup(config: FullConfig): Promise<void> {
   };
 
   try {
-    // 1. Verify database connectivity
-    console.log('📊 Verifying database connectivity...');
-    await verifyDatabaseConnection(testEnv.databaseUrl);
-
-    // 2. Verify API connectivity
-    console.log('🔌 Verifying API connectivity...');
+    // 1. Verify API + DB connectivity via API health
+    console.log('🔌 Verifying API connectivity (and DB via health)...');
     await verifyApiConnection(testEnv.apiBaseUrl);
 
-    // 3. Setup test database
-    console.log('🗄️ Setting up test database...');
-    await setupTestDatabase(testEnv.databaseUrl);
-
-    // 4. Create test users and get authentication tokens
+    // 2. Create test users and get authentication tokens via API
     console.log('👤 Setting up test users...');
     const { userToken, adminToken } = await setupTestUsers(testEnv);
 
-    // 5. Store test environment in global config
+    // 3. Store test environment tokens
     process.env.TEST_USER_TOKEN = userToken;
     process.env.TEST_ADMIN_TOKEN = adminToken;
     process.env.TEST_ENV_READY = 'true';
@@ -111,29 +98,15 @@ async function setupBrowserEnvironment(
   return browserConfig;
 }
 
-async function verifyDatabaseConnection(databaseUrl: string): Promise<void> {
-  try {
-    const prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
-    });
-
-    await prisma.$connect();
-    console.log('✅ Database connection verified');
-    await prisma.$disconnect();
-  } catch (error) {
-    throw new Error(`Database connection failed: ${error}`);
-  }
-}
-
 async function verifyApiConnection(apiBaseUrl: string): Promise<void> {
   try {
     const response = await axios.get(`${apiBaseUrl}/health`, { timeout: 10000 });
     if (response.status !== 200) {
       throw new Error(`API health check failed with status: ${response.status}`);
+    }
+    // Optional: basic DB check if health includes checks
+    if (response.data?.status !== 'healthy') {
+      throw new Error(`API health reported non-healthy status: ${response.data?.status}`);
     }
     console.log('✅ API connection verified');
   } catch (error) {
@@ -141,83 +114,12 @@ async function verifyApiConnection(apiBaseUrl: string): Promise<void> {
   }
 }
 
-async function setupTestDatabase(databaseUrl: string): Promise<void> {
-  try {
-    const prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
-    });
-
-    // Clean up any existing test data
-    await cleanupTestData(prisma);
-
-    // Create test data
-    await createTestData(prisma);
-
-    await prisma.$disconnect();
-    console.log('✅ Test database setup completed');
-  } catch (error) {
-    throw new Error(`Test database setup failed: ${error}`);
-  }
-}
-
-async function cleanupTestData(prisma: PrismaClient): Promise<void> {
-  // Clean up test data in reverse dependency order
-  const tables = ['ticket_activities', 'tickets', 'assets', 'users', 'organizations', 'categories'];
-
-  for (const table of tables) {
-    try {
-      await prisma.$executeRawUnsafe(
-        `DELETE FROM "${table}" WHERE email LIKE '%@test.nova.com' OR name LIKE '%TEST%'`,
-      );
-    } catch (error) {
-      // Log cleanup errors for debugging but continue with other tables
-      console.warn(`⚠️ Cleanup warning for table ${table}:`, error instanceof Error ? error.message : error);
-    }
-  }
-}
-
-async function createTestData(prisma: PrismaClient): Promise<void> {
-  // Create test organization
-  const testOrg = await prisma.organization.upsert({
-    where: { name: 'Nova Test Organization' },
-    update: {},
-    create: {
-      name: 'Nova Test Organization',
-      description: 'Test organization for UI testing',
-      status: 'ACTIVE',
-    },
-  });
-
-  // Create test categories
-  const testCategory = await prisma.category.upsert({
-    where: { name: 'Test Category' },
-    update: {},
-    create: {
-      name: 'Test Category',
-      description: 'Test category for UI testing',
-      organizationId: testOrg.id,
-      status: 'ACTIVE',
-    },
-  });
-
-  // Validate test data creation
-  if (!testCategory.id) {
-    throw new Error('Failed to create test category');
-  }
-
-  console.log(`✅ Test data created - Organization: ${testOrg.id}, Category: ${testCategory.id}`);
-}
-
 async function setupTestUsers(
   testEnv: TestEnvironment,
 ): Promise<{ userToken: string; adminToken: string }> {
   try {
     // Create test user account
-    const userResponse = await axios.post(`${testEnv.apiBaseUrl}/auth/register`, {
+    const userResponse = await axios.post(`${testEnv.apiBaseUrl}/api/auth/register`, {
       email: testEnv.testUser.email,
       password: testEnv.testUser.password,
       firstName: 'Test',
@@ -232,7 +134,7 @@ async function setupTestUsers(
     console.log('✅ Test user created successfully');
 
     // Create test admin account
-    const adminResponse = await axios.post(`${testEnv.apiBaseUrl}/auth/register`, {
+    const adminResponse = await axios.post(`${testEnv.apiBaseUrl}/api/auth/register`, {
       email: testEnv.testAdmin.email,
       password: testEnv.testAdmin.password,
       firstName: 'Test',
@@ -247,12 +149,12 @@ async function setupTestUsers(
     console.log('✅ Test admin created successfully');
 
     // Login to get tokens
-    const userLogin = await axios.post(`${testEnv.apiBaseUrl}/auth/login`, {
+    const userLogin = await axios.post(`${testEnv.apiBaseUrl}/api/auth/login`, {
       email: testEnv.testUser.email,
       password: testEnv.testUser.password,
     });
 
-    const adminLogin = await axios.post(`${testEnv.apiBaseUrl}/auth/login`, {
+    const adminLogin = await axios.post(`${testEnv.apiBaseUrl}/api/auth/login`, {
       email: testEnv.testAdmin.email,
       password: testEnv.testAdmin.password,
     });
@@ -264,12 +166,12 @@ async function setupTestUsers(
   } catch (error) {
     // If registration fails, try to login with existing accounts
     try {
-      const userLogin = await axios.post(`${testEnv.apiBaseUrl}/auth/login`, {
+      const userLogin = await axios.post(`${testEnv.apiBaseUrl}/api/auth/login`, {
         email: testEnv.testUser.email,
         password: testEnv.testUser.password,
       });
 
-      const adminLogin = await axios.post(`${testEnv.apiBaseUrl}/auth/login`, {
+      const adminLogin = await axios.post(`${testEnv.apiBaseUrl}/api/auth/login`, {
         email: testEnv.testAdmin.email,
         password: testEnv.testAdmin.password,
       });

@@ -188,6 +188,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-nova_universe}
       - POSTGRES_USER=${POSTGRES_USER:-nova_admin}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-nova_password}
+      - FAST_BOOT=false
+      - ENABLE_AI_COMPONENTS=true
     ports:
       - '3000:3000'
     volumes:

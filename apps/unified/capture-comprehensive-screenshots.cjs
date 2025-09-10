@@ -67,7 +67,7 @@ async function captureWorkingSystemScreenshots() {
             });
             console.log('✅ Captured API documentation');
         } catch (e) {
-            console.log('⚠️  API docs not accessible');
+            console.log('⚠️  API docs not accessible:', e.message || e);
         }
         
         // 4. Try monitoring endpoints
@@ -79,7 +79,7 @@ async function captureWorkingSystemScreenshots() {
             });
             console.log('✅ Captured monitoring health');
         } catch (e) {
-            console.log('⚠️  Monitoring endpoint not available');
+            console.log('⚠️  Monitoring endpoint not available:', e.message || e);
         }
         
         // 5. Check database status through API
@@ -91,7 +91,7 @@ async function captureWorkingSystemScreenshots() {
             });
             console.log('✅ Captured system health');
         } catch (e) {
-            console.log('⚠️  Health endpoint not available');
+            console.log('⚠️  Health endpoint not available:', e.message || e);
         }
         
         // 6. Go back to UI and try different routes

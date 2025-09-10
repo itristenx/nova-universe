@@ -67,14 +67,14 @@ class TicketService {
       sort: sort?.map((s) => `${s.field}:${s.direction}`).join(','),
     };
 
-    return await apiClient.getPaginated<Ticket>('/v1/tickets', params);
+    return await apiClient.getPaginated<Ticket>('/api/v1/tickets', params);
   }
 
   /**
    * Get single ticket by ID
    */
   async getTicket(id: string): Promise<Ticket> {
-    const response = await apiClient.get<Ticket>(`/v1/tickets/${id}`);
+    const response = await apiClient.get<Ticket>(`/api/v1/tickets/${id}`);
     return response.data!;
   }
 
@@ -99,7 +99,7 @@ class TicketService {
       });
     }
 
-    const response = await apiClient.post<Ticket>('/v1/tickets', formData, {
+    const response = await apiClient.post<Ticket>('/api/v1/tickets', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -112,7 +112,7 @@ class TicketService {
    * Update existing ticket
    */
   async updateTicket(id: string, data: UpdateTicketData): Promise<Ticket> {
-    const response = await apiClient.patch<Ticket>(`/v1/tickets/${id}`, data);
+    const response = await apiClient.patch<Ticket>(`/api/v1/tickets/${id}`, data);
     return response.data!;
   }
 
@@ -120,7 +120,7 @@ class TicketService {
    * Delete ticket
    */
   async deleteTicket(id: string): Promise<void> {
-    await apiClient.delete(`/v1/tickets/${id}`);
+    await apiClient.delete(`/api/v1/tickets/${id}`);
   }
 
   /**
@@ -128,7 +128,7 @@ class TicketService {
    */
   async bulkUpdateTickets(data: BulkUpdateData): Promise<{ updated: number; failed: number }> {
     const response = await apiClient.post<{ updated: number; failed: number }>(
-      '/v1/tickets/bulk-update',
+      '/api/v1/tickets/bulk-update',
       data,
     );
     return response.data!;
@@ -139,7 +139,7 @@ class TicketService {
    */
   async bulkDeleteTickets(ticketIds: string[]): Promise<{ deleted: number; failed: number }> {
     const response = await apiClient.post<{ deleted: number; failed: number }>(
-      '/v1/tickets/bulk-delete',
+      '/api/v1/tickets/bulk-delete',
       {
         ticketIds,
       },
@@ -151,7 +151,7 @@ class TicketService {
    * Get ticket comments
    */
   async getTicketComments(ticketId: string): Promise<Comment[]> {
-    const response = await apiClient.get<Comment[]>(`/v1/tickets/${ticketId}/comments`);
+    const response = await apiClient.get<Comment[]>(`/api/v1/tickets/${ticketId}/comments`);
     return response.data!;
   }
 
@@ -188,7 +188,7 @@ class TicketService {
    */
   async updateComment(ticketId: string, commentId: string, content: string): Promise<Comment> {
     const response = await apiClient.patch<Comment>(
-      `/v1/tickets/${ticketId}/comments/${commentId}`,
+      `/api/v1/tickets/${ticketId}/comments/${commentId}`,
       {
         content,
       },
@@ -200,14 +200,14 @@ class TicketService {
    * Delete comment
    */
   async deleteComment(ticketId: string, commentId: string): Promise<void> {
-    await apiClient.delete(`/v1/tickets/${ticketId}/comments/${commentId}`);
+    await apiClient.delete(`/api/v1/tickets/${ticketId}/comments/${commentId}`);
   }
 
   /**
    * Assign ticket to user
    */
   async assignTicket(ticketId: string, assigneeId: string): Promise<Ticket> {
-    const response = await apiClient.post<Ticket>(`/v1/tickets/${ticketId}/assign`, {
+    const response = await apiClient.post<Ticket>(`/api/v1/tickets/${ticketId}/assign`, {
       assigneeId,
     });
     return response.data!;
@@ -217,7 +217,7 @@ class TicketService {
    * Assign ticket to group
    */
   async assignToGroup(ticketId: string, groupId: string): Promise<Ticket> {
-    const response = await apiClient.post<Ticket>(`/v1/tickets/${ticketId}/assign-group`, {
+    const response = await apiClient.post<Ticket>(`/api/v1/tickets/${ticketId}/assign-group`, {
       groupId,
     });
     return response.data!;
@@ -227,21 +227,21 @@ class TicketService {
    * Add watcher to ticket
    */
   async addWatcher(ticketId: string, userId: string): Promise<void> {
-    await apiClient.post(`/v1/tickets/${ticketId}/watchers`, { userId });
+    await apiClient.post(`/api/v1/tickets/${ticketId}/watchers`, { userId });
   }
 
   /**
    * Remove watcher from ticket
    */
   async removeWatcher(ticketId: string, userId: string): Promise<void> {
-    await apiClient.delete(`/v1/tickets/${ticketId}/watchers/${userId}`);
+    await apiClient.delete(`/api/v1/tickets/${ticketId}/watchers/${userId}`);
   }
 
   /**
    * Get ticket attachments
    */
   async getTicketAttachments(ticketId: string): Promise<Attachment[]> {
-    const response = await apiClient.get<Attachment[]>(`/v1/tickets/${ticketId}/attachments`);
+    const response = await apiClient.get<Attachment[]>(`/api/v1/tickets/${ticketId}/attachments`);
     return response.data!;
   }
 
@@ -253,7 +253,7 @@ class TicketService {
     formData.append('file', file);
 
     const response = await apiClient.post<Attachment>(
-      `/v1/tickets/${ticketId}/attachments`,
+      `/api/v1/tickets/${ticketId}/attachments`,
       formData,
       {
         headers: {
@@ -269,7 +269,7 @@ class TicketService {
    * Delete attachment from ticket
    */
   async deleteAttachment(ticketId: string, attachmentId: string): Promise<void> {
-    await apiClient.delete(`/v1/tickets/${ticketId}/attachments/${attachmentId}`);
+    await apiClient.delete(`/api/v1/tickets/${ticketId}/attachments/${attachmentId}`);
   }
 
   /**
@@ -294,7 +294,7 @@ class TicketService {
         createdAt: string;
         changes?: Record<string, { from: unknown; to: unknown }>;
       }>
-    >(`/v1/tickets/${ticketId}/history`);
+    >(`/api/v1/tickets/${ticketId}/history`);
     return response.data!;
   }
 
@@ -302,7 +302,7 @@ class TicketService {
    * Export tickets to various formats
    */
   async exportTickets(format: 'csv' | 'excel' | 'pdf'): Promise<void> {
-    await apiClient.downloadFile(`/v1/tickets/export?format=${format}`, `tickets.${format}`);
+    await apiClient.downloadFile(`/api/v1/tickets/export?format=${format}`, `tickets.${format}`);
   }
 
   /**
@@ -333,7 +333,7 @@ class TicketService {
       byType: Record<string, number>;
       byStatus: Record<string, number>;
       trends: Array<{ date: string; count: number }>;
-    }>(`/v1/tickets/stats?period=${period}`);
+    }>(`/api/v1/tickets/stats?period=${period}`);
     return response.data!;
   }
 
@@ -348,7 +348,7 @@ class TicketService {
     const params = { query, page, perPage };
     return await apiClient.getPaginated<
       Ticket & { score: number; highlights: Record<string, string[]> }
-    >('/v1/tickets/search', params);
+    >('/api/v1/tickets/search', params);
   }
 
   /**
@@ -360,7 +360,7 @@ class TicketService {
     limit = 5,
   ): Promise<Array<Ticket & { similarity: number; reason: string }>> {
     const response = await apiClient.post<Array<Ticket & { similarity: number; reason: string }>>(
-      '/v1/tickets/suggestions',
+      '/api/v1/tickets/suggestions',
       {
         title,
         description,
@@ -390,7 +390,7 @@ class TicketService {
         type: string;
         fields: Record<string, unknown>;
       }>
-    >('/v1/tickets/templates');
+    >('/api/v1/tickets/templates');
     return response.data!;
   }
 
@@ -402,7 +402,7 @@ class TicketService {
     overrides?: Partial<CreateTicketData>,
   ): Promise<Ticket> {
     const response = await apiClient.post<Ticket>(
-      `/v1/tickets/templates/${templateId}/apply`,
+      `/api/v1/tickets/templates/${templateId}/apply`,
       { overrides },
     );
     return response.data!;
@@ -412,7 +412,7 @@ class TicketService {
    * Merge tickets
    */
   async mergeTickets(primaryTicketId: string, ticketIds: string[]): Promise<Ticket> {
-    const response = await apiClient.post<Ticket>(`/v1/tickets/${primaryTicketId}/merge`, {
+    const response = await apiClient.post<Ticket>(`/api/v1/tickets/${primaryTicketId}/merge`, {
       ticketIds,
     });
     return response.data!;
@@ -426,7 +426,7 @@ class TicketService {
     relatedTicketId: string,
     relationship: 'blocks' | 'is_blocked_by' | 'duplicates' | 'is_duplicated_by' | 'relates_to',
   ): Promise<void> {
-    await apiClient.post(`/v1/tickets/${ticketId}/links`, {
+    await apiClient.post(`/api/v1/tickets/${ticketId}/links`, {
       relatedTicketId,
       relationship,
     });
@@ -436,7 +436,7 @@ class TicketService {
    * Remove ticket link
    */
   async unlinkTickets(ticketId: string, linkId: string): Promise<void> {
-    await apiClient.delete(`/v1/tickets/${ticketId}/links/${linkId}`);
+    await apiClient.delete(`/api/v1/tickets/${ticketId}/links/${linkId}`);
   }
 }
 

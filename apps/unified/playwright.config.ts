@@ -82,7 +82,7 @@ export default defineConfig({
   webServer: useExternalServer
     ? undefined
     : {
-        command: 'npm run dev',
+        command: 'VITE_E2E=true VITE_AUTH_LEGACY=true VITE_API_URL=http://localhost:3000 npm run dev -- --port 3003 --strictPort',
         url: 'http://localhost:3003',
         reuseExistingServer: !process.env.CI,
         timeout: 120 * 1000,

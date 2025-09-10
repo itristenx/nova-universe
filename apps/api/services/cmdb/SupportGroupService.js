@@ -488,7 +488,7 @@ class SupportGroupService {
       }
       return true;
     } catch (error) {
-      console.error('Error evaluating condition:', error);
+      logger.error('Error evaluating support group condition:', error);
       return false;
     }
   }

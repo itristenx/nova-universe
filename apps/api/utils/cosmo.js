@@ -4,7 +4,23 @@ import { v4 as uuidv4 } from 'uuid';
 // import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 // import { z } from 'zod'; // Lazy-loaded in registerNovaTools
 import db from '../db.js';
-import { aiFabric } from '../lib/ai-fabric.js';
+// Lazy-load AI Fabric to avoid loading heavy AI stack unless enabled
+let _aiFabric = null;
+async function getAiFabric() {
+  if (_aiFabric) return _aiFabric;
+  try {
+    const mod = await import('../lib/ai-fabric.js');
+    _aiFabric = mod.aiFabric || mod.default || mod;
+  } catch (e) {
+    logger.warn('AI Fabric not available; AI features disabled:', e.message);
+    // Provide a minimal stub to avoid crashes if accidentally called
+    _aiFabric = {
+      processRequest: async () => ({ result: 'AI disabled', metadata: {}, provider: 'disabled' }),
+      isReady: () => false,
+    };
+  }
+  return _aiFabric;
+}
 import { generateTypedTicketId } from './dbUtils.js';
 import { normalizeTicketType } from './utils.js';
 import { CosmoTicketProcessor } from '../services/cosmo-ticket-processor.js';
@@ -1911,6 +1927,7 @@ export async function handleMCPRequest(userId, tenantId, mcpRequest) {
 async function processMessageWithAI(message, conversation, context) {
   try {
     // Use AI Fabric for intelligent processing instead of simulated responses
+    const aiFabric = await getAiFabric();
     const response = await aiFabric.processRequest({
       type: 'chat',
       input: message,

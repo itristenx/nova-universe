@@ -1,84 +1,50 @@
-/Users/tneibarger/.rvm/scripts/rvm: line 29: /bin/ps: Operation not permitted
-/Users/tneibarger/.rvm/scripts/rvm: line 29: /bin/ps: Operation not permitted
 
 > @nova/unified-ui@1.0.0 dev
-> vite
+> vite --port 5173 --strictPort
 
-▲ [WARNING] Duplicate key "test:ui:auth" in object literal [duplicate-object-key]
 
-    package.json:33:4:
-      33 │     "test:ui:auth": "node ui-test-runner.cjs --suites authenticati...
-         ╵     ~~~~~~~~~~~~~~
+  VITE v5.4.19  ready in 597 ms
 
-  The original key "test:ui:auth" is here:
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.1.215:5173/
+  ➜  Network: http://192.168.1.124:5173/
+5:48:29 PM [vite] hmr update /src/FallbackApp.tsx, /src/styles/globals.css
+5:48:47 PM [vite] hmr update /src/FallbackApp.tsx, /src/styles/globals.css
+7:31:13 PM [vite] page reload src/main.tsx
+7:33:32 PM [vite] page reload src/pages/auth/LoginPage.tsx
+7:33:45 PM [vite] page reload src/pages/auth/LoginPage.tsx
+7:35:14 PM [vite] page reload src/pages/auth/LoginPage.tsx
+7:35:26 PM [vite] page reload src/pages/auth/LoginPage.tsx
+8:04:37 PM [vite] page reload playwright-report/index.html
+8:04:37 PM [vite] page reload playwright-report/trace/index.html
+8:04:37 PM [vite] page reload playwright-report/trace/snapshot.html
+8:04:37 PM [vite] page reload playwright-report/trace/uiMode.html
+8:08:35 PM [vite] page reload src/pages/auth/LoginPage.tsx
+8:12:04 PM [vite] page reload src/pages/auth/LoginPage.tsx
+8:24:25 PM [vite] page reload src/pages/auth/LoginPage.tsx
+8:24:44 PM [vite] page reload src/main.tsx
+8:29:00 PM [vite] page reload src/stores/auth.ts
+11:27:26 PM [vite] warning: Duplicate key "register" in object literal
+481|  
+482|        // Register user (legacy/E2E or Helix)
+483|        register: async (data) => {
+   |        ^
+484|          set({ isLoading: true, error: null });
+485|          try {
 
-    package.json:19:4:
-      19 │     "test:ui:auth": "playwright test tests/auth/",
-         ╵     ~~~~~~~~~~~~~~
+  Plugin: vite:esbuild
+  File: /Users/tneibarger/nova-universe/apps/unified/src/stores/auth.ts
+11:27:30 PM [vite] ✨ new dependencies optimized: zustand/middleware, clsx, tailwind-merge, date-fns, axios
+11:27:30 PM [vite] ✨ optimized dependencies changed. reloading
+11:27:54 PM [vite] warning: Duplicate key "register" in object literal
+481|  
+482|        // Register user (legacy/E2E or Helix)
+483|        register: async (data) => {
+   |        ^
+484|          set({ isLoading: true, error: null });
+485|          try {
 
-▲ [WARNING] Duplicate key "test:ui:database" in object literal [duplicate-object-key]
-
-    package.json:34:4:
-      34 │     "test:ui:database": "node ui-test-runner.cjs --suites database",
-         ╵     ~~~~~~~~~~~~~~~~~~
-
-  The original key "test:ui:database" is here:
-
-    package.json:23:4:
-      23 │     "test:ui:database": "playwright test tests/database/",
-         ╵     ~~~~~~~~~~~~~~~~~~
-
-▲ [WARNING] Duplicate key "test:ui:security" in object literal [duplicate-object-key]
-
-    package.json:39:4:
-      39 │     "test:ui:security": "node ui-test-runner.cjs --tags security",
-         ╵     ~~~~~~~~~~~~~~~~~~
-
-  The original key "test:ui:security" is here:
-
-    package.json:26:4:
-      26 │     "test:ui:security": "playwright test tests/security/",
-         ╵     ~~~~~~~~~~~~~~~~~~
-
-▲ [WARNING] Duplicate key "test:ui:performance" in object literal [duplicate-object-key]
-
-    package.json:40:4:
-      40 │     "test:ui:performance": "node ui-test-runner.cjs --tags perform...
-         ╵     ~~~~~~~~~~~~~~~~~~~~~
-
-  The original key "test:ui:performance" is here:
-
-    package.json:25:4:
-      25 │     "test:ui:performance": "playwright test tests/performance/",
-         ╵     ~~~~~~~~~~~~~~~~~~~~~
-
-▲ [WARNING] Duplicate key "test:ui:accessibility" in object literal [duplicate-object-key]
-
-    package.json:41:4:
-      41 │     "test:ui:accessibility": "node ui-test-runner.cjs --tags acces...
-         ╵     ~~~~~~~~~~~~~~~~~~~~~~~
-
-  The original key "test:ui:accessibility" is here:
-
-    package.json:24:4:
-      24 │     "test:ui:accessibility": "playwright test tests/accessibility/",
-         ╵     ~~~~~~~~~~~~~~~~~~~~~~~
-
-▲ [WARNING] Duplicate key "test:ui:mobile" in object literal [duplicate-object-key]
-
-    package.json:42:4:
-      42 │     "test:ui:mobile": "node ui-test-runner.cjs --tags mobile",
-         ╵     ~~~~~~~~~~~~~~~~
-
-  The original key "test:ui:mobile" is here:
-
-    package.json:27:4:
-      27 │     "test:ui:mobile": "playwright test tests/mobile/",
-         ╵     ~~~~~~~~~~~~~~~~
-
-error when starting dev server:
-Error: listen EPERM: operation not permitted 0.0.0.0:3002
-    at Server.setupListenHandle [as _listen2] (node:net:1918:21)
-    at listenInCluster (node:net:1997:12)
-    at Server.listen (node:net:2102:7)
-    at httpServer.listen (file:///Users/tneibarger/nova-universe/apps/unified/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:63403:14)
+  Plugin: vite:esbuild
+  File: /Users/tneibarger/nova-universe/apps/unified/src/stores/auth.ts
+8:09:14 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx
+8:09:14 AM [vite] hmr update /src/styles/globals.css, /src/App.tsx

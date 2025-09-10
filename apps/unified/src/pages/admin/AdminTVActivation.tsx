@@ -149,7 +149,7 @@ const AdminTVActivation: React.FC = () => {
         }
       } else {
         // Fallback to activation verification with device fingerprint
-        const resp = await api.post('/nova-tv/activations/verify', {
+        const resp = await api.post('/api/nova-tv/activations/verify', {
           code: activationCode,
           deviceFingerprint,
         });

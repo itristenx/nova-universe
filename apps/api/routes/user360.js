@@ -374,6 +374,7 @@ router.patch('/profile/:helix_uid', authenticateJWT, async (req, res) => {
       });
     }
 
+    const novaIntegrationLayer = await getIntegrationLayer();
     const result = await novaIntegrationLayer.updateUserProfile(helix_uid, sanitizedUpdates, {
       updatedBy: req.user.id,
       reason: reason || 'Profile update via API',
@@ -381,14 +382,23 @@ router.patch('/profile/:helix_uid', authenticateJWT, async (req, res) => {
 
     logger.info(
       `User profile updated for ${helix_uid} by ${req.user.id}: ${Object.keys(sanitizedUpdates).join(', ')}`,
+      {
+        updateResult: result?.success ? 'SUCCESS' : 'PARTIAL',
+        fieldsUpdated: Object.keys(sanitizedUpdates),
+        resultData: result?.data ? Object.keys(result.data) : [],
+        affectedRecords: result?.affectedRows || result?.count || 1
+      }
     );
 
     res.json({
       success: true,
       updated: sanitizedUpdates,
+      updateResult: result,
       meta: {
         updatedBy: req.user.id,
         timestamp: new Date().toISOString(),
+        affectedRecords: result?.affectedRows || result?.count || 1,
+        resultStatus: result?.success ? 'COMPLETE' : 'PARTIAL'
       },
     });
   } catch (error) {
@@ -449,13 +459,21 @@ router.post('/merge', authenticateJWT, async (req, res) => {
       });
     }
 
+    const novaIntegrationLayer = await getIntegrationLayer();
     const result = await novaIntegrationLayer.mergeUserProfiles(primary_uid, secondary_uid, {
       strategy: merge_strategy,
       mergedBy: req.user.id,
       reason: reason || 'Profile merge via API',
     });
 
-    logger.warn(`User profiles merged: ${secondary_uid} -> ${primary_uid} by ${req.user.id}`);
+    logger.warn(`User profiles merged: ${secondary_uid} -> ${primary_uid} by ${req.user.id}`,
+      {
+        mergeResult: result?.success ? 'SUCCESS' : 'PARTIAL',
+        strategy: merge_strategy,
+        affectedRecords: result?.affectedRows || result?.count || 1,
+        resultData: result?.data ? Object.keys(result.data) : []
+      }
+    );
 
     res.json({
       success: true,

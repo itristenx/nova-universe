@@ -85,37 +85,37 @@ class AnalyticsService {
   async getDashboardAnalytics(
     timeRange: '1d' | '7d' | '30d' | '90d' = '7d',
   ): Promise<DashboardAnalytics> {
-    const response = await api.get(`/v1/analytics/dashboard?range=${timeRange}`);
+    const response = await api.get(`/api/v1/analytics/dashboard?range=${timeRange}`);
     return response.data;
   }
 
   async getRealTimeMetrics(): Promise<RealTimeMetrics> {
-    const response = await api.get('/v1/analytics/real-time');
+    const response = await api.get('/api/v1/analytics/real-time');
     return response.data;
   }
 
   async getTicketTrends(timeRange: string = '7d') {
-    const response = await api.get(`/v1/analytics/trends/tickets?range=${timeRange}`);
+    const response = await api.get(`/api/v1/analytics/trends/tickets?range=${timeRange}`);
     return response.data;
   }
 
   async getAgentPerformance(timeRange: string = '7d') {
-    const response = await api.get(`/v1/analytics/performance/agents?range=${timeRange}`);
+    const response = await api.get(`/api/v1/analytics/performance/agents?range=${timeRange}`);
     return response.data;
   }
 
   async getCategoryAnalysis(timeRange: string = '7d') {
-    const response = await api.get(`/v1/analytics/categories?range=${timeRange}`);
+    const response = await api.get(`/api/v1/analytics/categories?range=${timeRange}`);
     return response.data;
   }
 
   async getSystemMetrics() {
-    const response = await api.get('/v1/analytics/system');
+    const response = await api.get('/api/v1/analytics/system');
     return response.data;
   }
 
   async getCustomMetrics(metricType: string, timeRange: string = '7d') {
-    const response = await api.get(`/v1/analytics/custom/${metricType}?range=${timeRange}`);
+    const response = await api.get(`/api/v1/analytics/custom/${metricType}?range=${timeRange}`);
     return response.data;
   }
 
@@ -127,7 +127,7 @@ class AnalyticsService {
 
       // Get recent ticket activity
       const ticketResponse = await api.get(
-        `/v1/tickets?limit=${Math.min(limit, 5)}&sort=created_at:desc`,
+        `/api/v1/tickets?limit=${Math.min(limit, 5)}&sort=created_at:desc`,
       );
       const recentTickets = ticketResponse.data?.data || [];
 

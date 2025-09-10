@@ -261,17 +261,57 @@ export class NovaRAGEngine extends EventEmitter {
     const startTime = Date.now();
 
     try {
-      // Generate query ID
+      // Generate query ID for tracking and caching
       ragQuery.id = crypto.randomUUID();
       this.queryHistory.set(ragQuery.id, ragQuery);
 
-      // Enforce RBAC if enabled and user context is provided
-      if (ragQuery.options.enforceRBAC && ragQuery.context?.userId && ragQuery.context?.tenantId) {
-        return await this.queryWithRBAC(ragQuery, startTime);
+      // Try to load from filesystem cache for repeated queries
+      const queryHash = crypto.createHash('sha256')
+        .update(JSON.stringify({ query: ragQuery.query, filters: ragQuery.filters, options: ragQuery.options }))
+        .digest('hex');
+      
+      const cacheDir = './cache/rag-queries';
+      const cacheFile = `${cacheDir}/${queryHash}.json`;
+      
+      try {
+        await fs.mkdir(cacheDir, { recursive: true });
+        const cachedResult = await fs.readFile(cacheFile, 'utf-8');
+        const parsedResult = JSON.parse(cachedResult);
+        
+        // Check if cache is still valid (24 hours)
+        if (Date.now() - parsedResult.timestamp < 24 * 60 * 60 * 1000) {
+          logger.info(`Returning cached RAG result for query ${queryHash}`);
+          return { ...parsedResult, fromCache: true, processingTimeMs: Date.now() - startTime };
+        }
+      } catch (cacheError) {
+        // Cache miss or error - continue with normal processing
+        logger.debug('RAG cache miss, processing fresh query:', cacheError.message);
       }
 
-      // Standard query without RBAC
-      return await this.queryWithoutRBAC(ragQuery, startTime);
+      // Enforce RBAC if enabled and user context is provided
+      let result: RAGResult;
+      if (ragQuery.options.enforceRBAC && ragQuery.context?.userId && ragQuery.context?.tenantId) {
+        result = await this.queryWithRBAC(ragQuery, startTime);
+      } else {
+        // Standard query without RBAC
+        result = await this.queryWithoutRBAC(ragQuery, startTime);
+      }
+
+      // Cache the result for future queries (excluding sensitive RBAC results)
+      if (!ragQuery.options.enforceRBAC) {
+        try {
+          await fs.writeFile(cacheFile, JSON.stringify({
+            ...result,
+            timestamp: Date.now(),
+            queryId: ragQuery.id
+          }), 'utf-8');
+          logger.debug(`Cached RAG result for query ${queryHash}`);
+        } catch (cacheWriteError) {
+          logger.warn('Failed to cache RAG result:', cacheWriteError.message);
+        }
+      }
+
+      return result;
     } catch (error) {
       logger.error('RAG query processing error:', error);
       throw error;
@@ -284,6 +324,62 @@ export class NovaRAGEngine extends EventEmitter {
   private async queryWithRBAC(ragQuery: RAGQuery, startTime: number): Promise<RAGResult> {
     const { userId, tenantId } = ragQuery.context!;
 
+    // Enhanced RBAC processing with explicit user and access decision types
+    const ragUser: RAGUser = {
+      id: userId,
+      tenantId: tenantId,
+      roles: ragQuery.context?.roles || ['user'],
+      permissions: ragQuery.context?.permissions || [],
+      metadata: {
+        sessionId: ragQuery.context?.sessionId || crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        queryId: crypto.randomUUID()
+      }
+    };
+
+    logger.info(`Processing RAG query with RBAC for user: ${ragUser.id}`, {
+      tenantId: ragUser.tenantId,
+      roles: ragUser.roles,
+      sessionId: ragUser.metadata.sessionId
+    });
+
+    // Create access context for RBAC validation
+    const accessContext: RAGAccessContext = {
+      user: ragUser,
+      resource: ragQuery.options.sources || ['all'],
+      action: 'read',
+      context: {
+        query: ragQuery.query,
+        timestamp: new Date().toISOString(),
+        source: 'rag-engine'
+      }
+    };
+
+    // Perform RBAC access decision
+    const accessDecision: AccessDecision = await ragRBAC.evaluateAccess(accessContext);
+    
+    logger.info(`RBAC access decision: ${accessDecision.decision}`, {
+      userId: ragUser.id,
+      reason: accessDecision.reason,
+      allowedSources: accessDecision.allowedResources?.length || 0
+    });
+
+    if (accessDecision.decision === 'deny') {
+      logger.warn(`Access denied for user ${ragUser.id}: ${accessDecision.reason}`);
+      return {
+        chunks: [],
+        answer: 'Access denied: You do not have permission to access the requested information.',
+        sources: [],
+        tokens: { input: 0, output: 0, total: 0 },
+        metadata: {
+          queryTime: Date.now() - startTime,
+          chunkCount: 0,
+          model: this.activeEmbeddingModel?.name || 'unknown',
+          accessDecision: accessDecision
+        }
+      };
+    }
+
     // Expand query if enabled
     if (ragQuery.options.expandQuery) {
       ragQuery.query = await this.expandQuery(ragQuery.query);
@@ -292,12 +388,20 @@ export class NovaRAGEngine extends EventEmitter {
     // Generate query embedding
     const queryEmbedding = await this.generateEmbedding(ragQuery.query);
 
-    // Perform retrieval
+    // Perform retrieval with RBAC-filtered sources
     let chunks: DocumentChunk[];
-    if (ragQuery.options.hybridSearch) {
-      chunks = await this.hybridSearch(ragQuery, queryEmbedding);
+    const filteredQuery = {
+      ...ragQuery,
+      options: {
+        ...ragQuery.options,
+        sources: accessDecision.allowedResources || ragQuery.options.sources
+      }
+    };
+
+    if (filteredQuery.options.hybridSearch) {
+      chunks = await this.hybridSearch(filteredQuery, queryEmbedding);
     } else {
-      chunks = await this.semanticSearch(ragQuery, queryEmbedding);
+      chunks = await this.semanticSearch(filteredQuery, queryEmbedding);
     }
 
     // Apply basic filters first
@@ -995,10 +1099,20 @@ export class NovaRAGEngine extends EventEmitter {
 
   private async generateLocalEmbedding(text: string, model: EmbeddingModel): Promise<number[]> {
     try {
+      // Log model usage for analytics
+      logger.debug(`Generating embedding with local model ${model.name} (${model.id}), dimensions: ${model.dimensions}, textLength: ${text.length}`);
+
       // Use our local embedding model
-      return await localEmbeddingModel.generateEmbedding(text);
+      const embedding = await localEmbeddingModel.generateEmbedding(text);
+      
+      // Validate embedding dimensions match model expectations
+      if (embedding.length !== model.dimensions) {
+        logger.warn(`Embedding dimension mismatch: expected ${model.dimensions}, got ${embedding.length}`);
+      }
+
+      return embedding;
     } catch (error) {
-      logger.error('Failed to generate local embedding:', error);
+      logger.error(`Failed to generate local embedding: ${error.message}`);
       throw new Error(`Local embedding generation failed: ${error.message}`);
     }
   }

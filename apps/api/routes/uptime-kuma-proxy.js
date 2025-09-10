@@ -336,7 +336,9 @@ router.get('/monitors/:id', async (req, res) => {
  *     security:
  *       - bearerAuth: []
  */
-router.post('/monitors', async (req, res) => {
+router.post('/monitors',
+  createRateLimit(60 * 60 * 1000, 10), // 10 monitor creations per hour
+  async (req, res) => {
   try {
     const monitorData = req.body;
 

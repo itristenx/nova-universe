@@ -1,4 +1,4 @@
-import { describe, test, beforeEach } from 'node:test';
+import { describe, test, beforeEach } from '@jest/globals';
 import assert from 'node:assert';
 import { SLAMatrixService } from '../services/sla-matrix.service.js';
 

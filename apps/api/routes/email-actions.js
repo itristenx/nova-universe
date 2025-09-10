@@ -289,6 +289,28 @@ function generateActionResponsePage(action, ticketId, result) {
     ? 'Your approval has been recorded successfully.'
     : 'Your denial has been recorded successfully.';
 
+  // Enhanced response with result details
+  const resultDetails = result ? {
+    timestamp: result.timestamp || new Date().toISOString(),
+    transactionId: result.transactionId || ticketId,
+    status: result.status || 'processed',
+    processingTime: result.processingTime || 'immediate'
+  } : null;
+
+  // Additional context based on result data
+  let additionalInfo = '';
+  if (resultDetails) {
+    additionalInfo = `
+      <div class="result-details">
+        <p><strong>Transaction ID:</strong> ${resultDetails.transactionId}</p>
+        <p><strong>Processed at:</strong> ${new Date(resultDetails.timestamp).toLocaleString()}</p>
+        <p><strong>Status:</strong> ${resultDetails.status}</p>
+        ${resultDetails.processingTime !== 'immediate' ? 
+          `<p><strong>Processing time:</strong> ${resultDetails.processingTime}</p>` : ''}
+      </div>
+    `;
+  }
+
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -339,6 +361,17 @@ function generateActionResponsePage(action, ticketId, result) {
           padding: 16px;
           margin: 20px 0;
         }
+        .result-details {
+          background: #e0f2fe;
+          border-radius: 8px;
+          padding: 16px;
+          margin: 20px 0;
+          border-left: 4px solid #0ea5e9;
+        }
+        .result-details p {
+          margin-bottom: 8px;
+          font-size: 14px;
+        }
         .btn {
           display: inline-block;
           background: #3b82f6;
@@ -366,6 +399,7 @@ function generateActionResponsePage(action, ticketId, result) {
           <strong>Action:</strong> ${action.charAt(0).toUpperCase() + action.slice(1)}<br>
           <strong>Processed:</strong> ${new Date().toLocaleString()}
         </div>
+        ${additionalInfo}
         <a href="${process.env.PUBLIC_URL || 'https://nova.local'}/tickets/${ticketId}" class="btn">
           View Ticket
         </a>

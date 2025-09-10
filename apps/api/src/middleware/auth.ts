@@ -35,6 +35,14 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     req.user = decoded;
     next();
   } catch (error) {
+    // Log authentication failure for security monitoring
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.warn(`JWT authentication failed: ${errorMessage}`, {
+      token: token ? `${token.substring(0, 10)}...` : 'none',
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString()
+    });
     return res.status(403).json({ error: 'Invalid or expired token' });
   }
 };
@@ -49,8 +57,9 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction) =>
       const decoded = jwt.verify(token, secret) as JWTPayload;
       req.user = decoded;
     } catch (error) {
-      // Invalid token, but we'll proceed without authentication
-      console.warn('Invalid token provided, proceeding without auth');
+      // Invalid token in optional auth - log for security awareness but proceed
+      const errorMessage = error instanceof Error ? error.message : 'Unknown token error';
+      console.debug(`Optional auth failed with invalid token: ${errorMessage}`);
     }
   }
 

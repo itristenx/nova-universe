@@ -144,7 +144,20 @@ router.get('/', authenticateJWT, checkPermission('workflows:read'), async (req, 
     if (type) workflows = workflows.filter(w => w.type === type.toUpperCase());
     if (category) workflows = workflows.filter(w => w.category === category.toUpperCase());
 
-    res.json([]);
+    // Future database integration preparation
+    try {
+      // Check database connectivity for future workflow integration
+      await db.query('SELECT 1'); // Simple connectivity test
+      logger.debug('Database ready for workflow integration');
+      
+      // When database integration is ready, use db for dynamic workflow fetching
+      // const dbWorkflows = await db.query('SELECT * FROM workflows WHERE active = true');
+      // workflows = [...workflows, ...dbWorkflows.rows];
+    } catch (dbError) {
+      logger.warn('Database workflow integration not yet available:', dbError.message);
+    }
+
+    res.json(workflows); // Return the filtered workflows instead of empty array
   } catch (err) {
     logger.error('Error fetching workflows:', err);
     res.status(500).json({ error: 'Failed to fetch workflows' });

@@ -202,12 +202,12 @@ export interface NovaSystemHealth {
 export const uptimeKumaService = {
   // Monitor Management
   async getMonitors(): Promise<NovaMonitor[]> {
-    const response = await apiClient.get<UptimeKumaMonitor[]>('/v1/uptime-kuma/monitors');
+    const response = await apiClient.get<UptimeKumaMonitor[]>('/api/v1/uptime-kuma/monitors');
     return response.data!.map(transformUptimeKumaMonitor);
   },
 
   async getMonitor(id: string): Promise<NovaMonitor> {
-    const response = await apiClient.get<UptimeKumaMonitor>(`/v1/uptime-kuma/monitors/${id}`);
+    const response = await apiClient.get<UptimeKumaMonitor>(`/api/v1/uptime-kuma/monitors/${id}`);
     return transformUptimeKumaMonitor(response.data!);
   },
 
@@ -226,7 +226,7 @@ export const uptimeKumaService = {
   ): Promise<NovaMonitor> {
     const kumaMonitor = transformNovaMonitorToKuma(monitor);
     const response = await apiClient.post<UptimeKumaMonitor>(
-      '/v1/uptime-kuma/monitors',
+      '/api/v1/uptime-kuma/monitors',
       kumaMonitor,
     );
     return transformUptimeKumaMonitor(response.data!);
@@ -235,27 +235,27 @@ export const uptimeKumaService = {
   async updateMonitor(id: string, updates: Partial<NovaMonitor>): Promise<NovaMonitor> {
     const kumaUpdates = transformNovaMonitorToKuma(updates);
     const response = await apiClient.patch<UptimeKumaMonitor>(
-      `/v1/uptime-kuma/monitors/${id}`,
+      `/api/v1/uptime-kuma/monitors/${id}`,
       kumaUpdates,
     );
     return transformUptimeKumaMonitor(response.data!);
   },
 
   async deleteMonitor(id: string): Promise<void> {
-    await apiClient.delete(`/v1/uptime-kuma/monitors/${id}`);
+    await apiClient.delete(`/api/v1/uptime-kuma/monitors/${id}`);
   },
 
   async pauseMonitor(id: string): Promise<void> {
-    await apiClient.post(`/v1/uptime-kuma/monitors/${id}/pause`);
+    await apiClient.post(`/api/v1/uptime-kuma/monitors/${id}/pause`);
   },
 
   async resumeMonitor(id: string): Promise<void> {
-    await apiClient.post(`/v1/uptime-kuma/monitors/${id}/resume`);
+    await apiClient.post(`/api/v1/uptime-kuma/monitors/${id}/resume`);
   },
 
   async testMonitor(id: string): Promise<NovaHeartbeat> {
     const response = await apiClient.post<UptimeKumaHeartbeat>(
-      `/v1/uptime-kuma/monitors/${id}/test`,
+      `/api/v1/uptime-kuma/monitors/${id}/test`,
     );
     return transformUptimeKumaHeartbeat(response.data!);
   },
@@ -266,7 +266,7 @@ export const uptimeKumaService = {
     period: '1h' | '24h' | '7d' | '30d' = '24h',
   ): Promise<NovaHeartbeat[]> {
     const response = await apiClient.get<UptimeKumaHeartbeat[]>(
-      `/v1/uptime-kuma/monitors/${monitorId}/heartbeats`,
+      `/api/v1/uptime-kuma/monitors/${monitorId}/heartbeats`,
       {
         params: { period },
       },
@@ -284,7 +284,7 @@ export const uptimeKumaService = {
     averageResponseTime: number;
   }> {
     const response = await apiClient.get<UptimeKumaUptimeData>(
-      `/v1/uptime-kuma/monitors/${monitorId}/uptime`,
+      `/api/v1/uptime-kuma/monitors/${monitorId}/uptime`,
       {
         params: { period },
       },
@@ -310,7 +310,7 @@ export const uptimeKumaService = {
         downMonitors: number;
         avgResponseTime: number;
       };
-    }>('/v1/uptime-kuma/health');
+    }>('/api/v1/uptime-kuma/health');
 
     const { monitors, systemStats } = response.data!;
 
@@ -342,7 +342,7 @@ export const uptimeKumaService = {
 
   // Tags Management
   async getTags(): Promise<Array<{ id: string; name: string; color: string; count: number }>> {
-    const response = await apiClient.get<UptimeKumaTag[]>('/v1/uptime-kuma/tags');
+    const response = await apiClient.get<UptimeKumaTag[]>('/api/v1/uptime-kuma/tags');
     return response.data!.map((tag) => ({
       id: tag.id.toString(),
       name: tag.name,
@@ -355,7 +355,7 @@ export const uptimeKumaService = {
     name: string,
     color: string,
   ): Promise<{ id: string; name: string; color: string }> {
-    const response = await apiClient.post<UptimeKumaTag>('/v1/uptime-kuma/tags', { name, color });
+    const response = await apiClient.post<UptimeKumaTag>('/api/v1/uptime-kuma/tags', { name, color });
     const tag = response.data!;
     return {
       id: tag.id.toString(),
@@ -374,7 +374,7 @@ export const uptimeKumaService = {
       isDefault: boolean;
     }>
   > {
-    const response = await apiClient.get<UptimeKumaNotification[]>('/v1/uptime-kuma/notifications');
+    const response = await apiClient.get<UptimeKumaNotification[]>('/api/v1/uptime-kuma/notifications');
     return response.data!.map((notification) => {
       const config = JSON.parse(notification.config);
       return {
@@ -398,7 +398,7 @@ export const uptimeKumaService = {
       theme: string;
     }>
   > {
-    const response = await apiClient.get<UptimeKumaStatusPage[]>('/v1/uptime-kuma/status-pages');
+    const response = await apiClient.get<UptimeKumaStatusPage[]>('/api/v1/uptime-kuma/status-pages');
     return response.data!.map((page) => ({
       id: page.id.toString(),
       slug: page.slug,

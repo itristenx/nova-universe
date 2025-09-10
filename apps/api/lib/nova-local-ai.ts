@@ -905,8 +905,51 @@ export class NovaLocalAI extends EventEmitter {
    */
   private async updateModelWithNovaData(modelId: string, novaData: any): Promise<void> {
     // Incremental training with Nova data
-    console.log(`Updating model ${modelId} with fresh Nova data`);
+    console.log(`Updating model ${modelId} with fresh Nova data containing ${Object.keys(novaData).length} data sources`);
+    
+    // Process Nova data for model training
+    const trainingData = this.processNovaDataForTraining(novaData);
+    
+    // Update model metrics with new data volume
+    if (this.models.has(modelId)) {
+      const model = this.models.get(modelId);
+      if (model) {
+        model.lastUpdated = new Date();
+        model.trainingDataSize = (model.trainingDataSize || 0) + trainingData.length;
+      }
+    }
+    
     // Implementation would process novaData and retrain model incrementally
+    console.log(`Processed ${trainingData.length} training samples from Nova data`);
+  }
+
+  /**
+   * Process Nova data into training format
+   */
+  private processNovaDataForTraining(novaData: any): any[] {
+    const trainingData = [];
+    
+    // Process tickets data if available
+    if (novaData.tickets) {
+      trainingData.push(...novaData.tickets.map((ticket: any) => ({
+        input: ticket.description,
+        output: ticket.resolution,
+        category: 'ticket_resolution',
+        priority: ticket.priority || 'medium'
+      })));
+    }
+    
+    // Process knowledge base data if available
+    if (novaData.knowledge) {
+      trainingData.push(...novaData.knowledge.map((kb: any) => ({
+        input: kb.question,
+        output: kb.answer,
+        category: 'knowledge_base',
+        confidence: kb.confidence || 0.8
+      })));
+    }
+    
+    return trainingData;
   }
 
   /**

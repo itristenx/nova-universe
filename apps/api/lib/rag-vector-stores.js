@@ -33,13 +33,17 @@ export class ChromaDBStore {
           this.collections.set(collectionName, collection);
           logger.info(`ChromaDB collection "${collectionName}" initialized`);
         } catch (error) {
-          // Collection might already exist
+          // Collection might already exist - log error details for debugging
+          logger.debug(`Collection creation failed for "${collectionName}": ${error.message}`);
           try {
             const collection = await this.client.getCollection({ name: collectionName });
             this.collections.set(collectionName, collection);
             logger.info(`ChromaDB collection "${collectionName}" loaded`);
           } catch (getError) {
-            logger.warn(`Failed to initialize ChromaDB collection "${collectionName}"`);
+            logger.warn(`Failed to initialize ChromaDB collection "${collectionName}": ${getError.message}`);
+            // Track collection initialization failures
+            this.failedCollections = this.failedCollections || [];
+            this.failedCollections.push({ name: collectionName, error: getError.message });
           }
         }
       }
@@ -107,7 +111,10 @@ export class ChromaDBStore {
           }
         }
       } catch (error) {
-        logger.warn(`ChromaDB search failed for collection ${collectionName}`);
+        logger.warn(`ChromaDB search failed for collection ${collectionName}: ${error.message}`);
+        // Track search failures for monitoring
+        this.searchFailures = this.searchFailures || [];
+        this.searchFailures.push({ collection: collectionName, error: error.message, timestamp: new Date() });
       }
     }
 
@@ -123,7 +130,8 @@ export class ChromaDBStore {
         });
         logger.debug(`Removed chunk ${chunkId} from ChromaDB collection ${collectionName}`);
       } catch (error) {
-        // Chunk might not exist in this collection, continue
+        // Chunk might not exist in this collection, log for debugging
+        logger.debug(`Failed to remove chunk ${chunkId} from collection ${collectionName}: ${error.message}`);
       }
     }
   }
@@ -160,9 +168,11 @@ export class LocalVectorStore {
       
       logger.info('Local vector store initialized successfully');
     } catch (error) {
-      logger.warn('Failed to initialize local vector store, starting fresh');
+      logger.warn(`Failed to initialize local vector store: ${error.message}, starting fresh`);
       this.embeddings = [];
       this.chunkIds = [];
+      // Track initialization failures
+      this.initializationError = error.message;
     }
   }
 
@@ -274,7 +284,9 @@ export class LocalVectorStore {
 
       logger.debug(`Saved local vector index with ${this.embeddings.length} embeddings`);
     } catch (error) {
-      logger.warn('Failed to save local vector index');
+      logger.warn(`Failed to save local vector index: ${error.message}`);
+      // Track save failures for troubleshooting
+      this.lastSaveError = { error: error.message, timestamp: new Date() };
     }
   }
 
@@ -294,9 +306,11 @@ export class LocalVectorStore {
       logger.info(`Loaded local vector index with ${this.embeddings.length} embeddings`);
     } catch (error) {
       // Index doesn't exist or is corrupted, start fresh
+      logger.debug(`Index loading failed: ${error.message}, starting fresh`);
       this.embeddings = [];
       this.chunkIds = [];
       this.chunks = new Map();
+      this.lastLoadError = { error: error.message, timestamp: new Date() };
     }
   }
 
@@ -313,20 +327,22 @@ export class LocalVectorStore {
 export class VectorStoreFactory {
   static async createStore(store) {
     switch (store.type) {
-      case 'chromadb':
+      case 'chromadb': {
         const chromaStore = new ChromaDBStore(store.config);
         try {
           await chromaStore.initialize();
           return chromaStore;
         } catch (error) {
-          logger.warn('ChromaDB unavailable, falling back to local store');
+          logger.warn(`ChromaDB unavailable: ${error.message}, falling back to local store`);
           // Fall through to local store
         }
-
-      case 'local':
+      }
+      // eslint-disable-next-line no-fallthrough
+      case 'local': {
         const localStore = new LocalVectorStore(store.config);
         await localStore.initialize();
         return localStore;
+      }
 
       default:
         throw new Error(`Unsupported vector store type: ${store.type}`);

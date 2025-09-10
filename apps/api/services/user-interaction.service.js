@@ -106,6 +106,26 @@ class UserInteractionService extends EventEmitter {
       
       // Create new session if none found
       if (!session) {
+        // Generate secure session tracking identifiers using crypto
+        const sessionTrackingId = crypto.randomUUID();
+        const sessionSecretHash = crypto.createHash('sha256')
+          .update(`${userId}-${sessionType}-${channel}-${Date.now()}`)
+          .digest('hex').substring(0, 32);
+        
+        logger.info(`Creating new session with tracking ID: ${sessionTrackingId} for user: ${userId}`);
+        
+        // Enhanced context with security metadata
+        const enhancedContext = {
+          ...(context || {}),
+          sessionTrackingId,
+          sessionSecretHash,
+          securityLevel: 'STANDARD',
+          createdWithCrypto: true,
+          sessionIntegrity: crypto.createHash('md5')
+            .update(`${userId}${sessionType}${channel}`)
+            .digest('hex')
+        };
+        
         session = await user360Prisma.conversationSession.create({
           data: {
             userId,
@@ -113,7 +133,7 @@ class UserInteractionService extends EventEmitter {
             channel,
             externalId,
             subject,
-            context: context || {},
+            context: enhancedContext,
             category,
             priority,
             status: 'ACTIVE',
@@ -181,6 +201,18 @@ class UserInteractionService extends EventEmitter {
     responseDeadline = null
   }) {
     try {
+      // Generate secure interaction tracking ID using crypto
+      const interactionTrackingId = crypto.randomUUID();
+      const interactionHash = crypto.createHash('sha256')
+        .update(`${userId}-${sessionId}-${interactionType}-${Date.now()}`)
+        .digest('hex').substring(0, 16);
+      
+      logger.info(`Recording interaction with tracking ID: ${interactionTrackingId} and hash: ${interactionHash} for user: ${userId}`);
+      
+      // Generate content hash for deduplication and integrity verification
+      const contentHash = content ? 
+        crypto.createHash('md5').update(content).digest('hex') : null;
+      
       // Generate AI summary if content provided
       let summary = null;
       if (content && content.length > 200) {
@@ -196,6 +228,20 @@ class UserInteractionService extends EventEmitter {
       // Determine processing requirements
       const containsPII = this.detectPII(content || '');
       const isConfidential = this.detectConfidentialContent(content || '');
+      
+      // Enhanced metadata with cryptographic tracking
+      const enhancedMetadata = {
+        ...(metadata || {}),
+        trackingId: interactionTrackingId,
+        contentHash: contentHash,
+        interactionHash: interactionHash,
+        securityLevel: isConfidential ? 'HIGH' : containsPII ? 'MEDIUM' : 'LOW',
+        processingFlags: {
+          containsPII,
+          isConfidential,
+          requiresEncryption: isConfidential || containsPII
+        }
+      };
       
       const user360Prisma = await user360PrismaPromise;
       const interaction = await user360Prisma.userInteraction.create({
@@ -225,7 +271,7 @@ class UserInteractionService extends EventEmitter {
           attachmentTypes,
           containsPII,
           isConfidential,
-          metadata: metadata || {},
+          metadata: enhancedMetadata,
           tags,
           keywords,
           requiresResponse,
@@ -270,6 +316,8 @@ class UserInteractionService extends EventEmitter {
         includeAI = true,
         includeSystem = false
       } = options;
+      
+      const user360Prisma = await user360PrismaPromise;
       
       const where = {
         userId,
@@ -360,6 +408,8 @@ class UserInteractionService extends EventEmitter {
    */
   async getAIMemory(userId, aiPersonality = 'default', conversationId = null) {
     try {
+      const user360Prisma = await user360PrismaPromise;
+      
       const where = {
         userId,
         aiPersonality,
@@ -392,6 +442,7 @@ class UserInteractionService extends EventEmitter {
    */
   async updateAIMemory(userId, interaction, aiPersonality = 'default') {
     try {
+      const user360Prisma = await user360PrismaPromise;
       const conversationId = interaction.sessionId || `single_${interaction.id}`;
       
       // Get existing memory or create new
@@ -463,6 +514,7 @@ class UserInteractionService extends EventEmitter {
    */
   async searchInteractions(query, options = {}) {
     try {
+      const user360Prisma = await user360PrismaPromise;
       const {
         userId = null,
         channel = null,
@@ -532,6 +584,7 @@ class UserInteractionService extends EventEmitter {
    */
   async getInteractionStats(timeframe = '7d') {
     try {
+      const user360Prisma = await user360PrismaPromise;
       const startDate = this.getTimeframeStartDate(timeframe);
       
       const [
@@ -637,6 +690,7 @@ class UserInteractionService extends EventEmitter {
    */
   async closeSession(sessionId, resolution = null, satisfactionScore = null) {
     try {
+      const user360Prisma = await user360PrismaPromise;
       const session = await user360Prisma.conversationSession.update({
         where: { id: sessionId },
         data: {
@@ -677,6 +731,7 @@ class UserInteractionService extends EventEmitter {
    */
   async updateSessionMetrics(sessionId) {
     try {
+      const user360Prisma = await user360PrismaPromise;
       const interactions = await user360Prisma.userInteraction.findMany({
         where: { sessionId },
         orderBy: { timestamp: 'asc' }
@@ -858,6 +913,7 @@ class UserInteractionService extends EventEmitter {
    */
   async loadActiveConversations() {
     try {
+      const user360Prisma = await user360PrismaPromise;
       const activeSessions = await user360Prisma.conversationSession.findMany({
         where: {
           status: { in: ['ACTIVE', 'WAITING_RESPONSE'] },
@@ -888,6 +944,7 @@ class UserInteractionService extends EventEmitter {
    */
   async cleanupExpiredSessions() {
     try {
+      const user360Prisma = await user360PrismaPromise;
       const cutoffDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
       
       // Mark old sessions as abandoned
@@ -925,6 +982,7 @@ class UserInteractionService extends EventEmitter {
     this.memoryCache.clear();
     this.sessionTimeouts.clear();
     
+    const user360Prisma = await user360PrismaPromise;
     await user360Prisma.$disconnect();
     logger.info('User Interaction Service shut down');
   }

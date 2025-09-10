@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-09-10T05:10:07.992Z",
+  "config": {
+    "baseURL": "http://localhost:3001",
+    "apiURL": "http://localhost:3000",
+    "databaseURL": "postgresql://nova_admin:nova_password@localhost:5432/nova_universe_test",
+    "testUser": {
+      "email": "testuser@nova.com",
+      "password": "TestUser123!"
+    },
+    "testAdmin": {
+      "email": "admin@nova.com",
+      "password": "admin123"
+    },
+    "timeout": 30000,
+    "retries": 2,
+    "workers": 1
+  },
+  "summary": {
+    "totalTests": 2,
+    "passedTests": 0,
+    "failedTests": 2
+  },
+  "suites": [
+    {
+      "name": "authentication",
+      "passed": 0,
+      "failed": 1,
+      "total": 1,
+      "duration": 1431,
+      "errors": [
+        "Command failed: npx playwright test \"tests/auth/**/*.spec.ts\" --workers=2 --retries=2 --timeout=30000 --reporter=json --output=test-results/authentication\nnpm warn Unknown env config \"dir\". This will stop working in the next major version of npm.\nnpm warn Unknown env config \"verify-deps-before-run\". This will stop working in the next major version of npm.\nnpm warn Unknown env config \"_jsr-registry\". This will stop working in the next major version of npm.\n"
+      ]
+    },
+    {
+      "name": "api-health",
+      "passed": 0,
+      "failed": 1,
+      "total": 1,
+      "duration": 1161,
+      "errors": [
+        "Command failed: npx playwright test \"tests/api/comprehensive-api-health.spec.ts\" --workers=2 --retries=2 --timeout=30000 --reporter=json --output=test-results/api-health\nnpm warn Unknown env config \"dir\". This will stop working in the next major version of npm.\nnpm warn Unknown env config \"verify-deps-before-run\". This will stop working in the next major version of npm.\nnpm warn Unknown env config \"_jsr-registry\". This will stop working in the next major version of npm.\n"
+      ]
+    }
+  ],
+  "environment": {
+    "node": "v22.17.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  }
+}

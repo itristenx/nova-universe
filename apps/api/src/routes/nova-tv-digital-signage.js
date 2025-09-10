@@ -6,6 +6,7 @@ import multer from 'multer';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '../../logger.js';
 
 // Import database client
 import { getCoreClient } from '../../lib/database-clients.js';
@@ -669,6 +670,16 @@ router.get('/formats', (req, res) => {
 
 // Error handling middleware
 router.use((error, req, res, _next) => {
+  // Log error for monitoring and debugging
+  logger.error('Digital signage route error', {
+    error: error.message,
+    stack: error.stack,
+    url: req.url,
+    method: req.method,
+    userId: req.user?.id,
+    timestamp: new Date().toISOString()
+  });
+
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({

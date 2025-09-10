@@ -229,11 +229,28 @@ export const useAuthStore = create<AuthState>()(
         isLoading: false,
         error: null,
 
-        // Legacy login action for backward compatibility, with fallback to basic auth
-        login: async (email: string, password: string, rememberMe = false) => {
+      // Legacy login action for backward compatibility, with fallback to basic auth
+      login: async (email: string, password: string, rememberMe = false) => {
         set({ isLoading: true, error: null });
 
         try {
+          // E2E/Legacy path: bypass Helix and call unified API directly
+          if ((import.meta as any)?.env?.VITE_AUTH_LEGACY === 'true') {
+            const legacy = await apiClient.post<{ token?: string; accessToken?: string; refreshToken?: number; expiresIn?: number }>(
+              '/auth/login',
+              { email, password },
+            );
+            const token = (legacy as any)?.data?.token || (legacy as any)?.data?.accessToken;
+            if (!token) throw new Error('Legacy login did not return a token');
+            try { TokenManager.setStorage(rememberMe ? 'local' : 'session'); } catch {}
+            TokenManager.setTokens(
+              token,
+              (legacy as any)?.data?.refreshToken,
+              (legacy as any)?.data?.expiresIn,
+            );
+            await hydrateUserFromApis(email);
+            return;
+          }
           // First discover tenant
           const discovery = await helixAuthService.discoverTenant(email);
 
@@ -459,6 +476,27 @@ export const useAuthStore = create<AuthState>()(
               error: fallbackError instanceof Error ? fallbackError.message : 'Failed to refresh user data',
             });
           }
+        }
+      },
+
+      // Register user (legacy/E2E or Helix)
+      register: async (data) => {
+        set({ isLoading: true, error: null });
+        try {
+          if ((import.meta as any)?.env?.VITE_AUTH_LEGACY === 'true') {
+            await apiClient.post('/auth/register', {
+              email: data.email,
+              password: data.password,
+              firstName: data.firstName,
+              lastName: data.lastName,
+            });
+          } else {
+            await helixAuthService.registerUser?.(data as any);
+          }
+          await hydrateUserFromApis(data.email);
+        } catch (e) {
+          set({ isLoading: false, error: e instanceof Error ? e.message : 'Registration failed' });
+          throw e;
         }
       },
 

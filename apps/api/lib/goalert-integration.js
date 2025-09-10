@@ -1467,9 +1467,59 @@ export class NovaGoAlertIntegration extends EventEmitter {
         return resp.data?.alert?.id || crypto.randomUUID();
     }
     async acknowledgeGoAlert(goAlertId, userId) {
-        await axios.post(`${this.goAlertProxyUrl}/alerts/${goAlertId}/acknowledge`, {}, {
-            headers: this.getAuthHeaders(),
-        });
+        // Enhanced alert acknowledgment with comprehensive user tracking and audit logging
+        console.log(`Acknowledging GoAlert ${goAlertId} by user ${userId}`);
+        
+        // Log acknowledgment attempt with user context
+        const acknowledgmentData = {
+            alertId: goAlertId,
+            acknowledgedBy: userId,
+            timestamp: new Date().toISOString(),
+            source: 'nova-goalert-integration',
+            userAgent: 'Nova-GoAlert-Bridge/1.0'
+        };
+        
+        console.log('Acknowledgment request:', acknowledgmentData);
+        
+        try {
+            const resp = await axios.post(`${this.goAlertProxyUrl}/alerts/${goAlertId}/acknowledge`, {
+                acknowledgedBy: userId,
+                acknowledgedAt: acknowledgmentData.timestamp,
+                source: acknowledgmentData.source,
+                metadata: {
+                    userContext: userId,
+                    integrationVersion: '1.0',
+                    platform: 'nova-universe'
+                }
+            }, {
+                headers: this.getAuthHeaders(),
+            });
+            
+            // Log successful acknowledgment with comprehensive details
+            console.log(`GoAlert ${goAlertId} successfully acknowledged by user ${userId}`, {
+                responseStatus: resp.status,
+                acknowledgedAt: acknowledgmentData.timestamp,
+                userId: userId,
+                alertId: goAlertId
+            });
+            
+            return {
+                success: true,
+                acknowledgedBy: userId,
+                acknowledgedAt: acknowledgmentData.timestamp,
+                alertId: goAlertId,
+                response: resp.data
+            };
+            
+        } catch (error) {
+            console.error(`Failed to acknowledge GoAlert ${goAlertId} for user ${userId}:`, {
+                error: error.message,
+                userId: userId,
+                alertId: goAlertId,
+                timestamp: acknowledgmentData.timestamp
+            });
+            throw error;
+        }
     }
     async closeGoAlert(goAlertId) {
         await axios.post(`${this.goAlertProxyUrl}/alerts/${goAlertId}/close`, {}, {

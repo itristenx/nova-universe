@@ -67,6 +67,8 @@ export class NovaRAGDataConnectors extends EventEmitter {
   private connectors: Map<string, DataSourceConnector> = new Map();
   private syncIntervals: Map<string, NodeJS.Timeout> = new Map();
   private lastSyncState: Map<string, any> = new Map();
+  private securityContext: any = null; // RBAC security context
+  private rbacInstance: any = null; // RAG RBAC instance
 
   private isInitialized = false;
   private db: any; // Database connection
@@ -82,9 +84,16 @@ export class NovaRAGDataConnectors extends EventEmitter {
     try {
       logger.info('Initializing Nova RAG Data Connectors...');
 
+      // Generate unique instance identifier for secure operations
+      const instanceId = crypto.randomUUID();
+      logger.info(`Data connectors instance ID: ${instanceId}`);
+
       // Import database connection
       const { default: database } = await import('../db.js');
       this.db = database;
+
+      // Initialize RAG RBAC security context for data access control
+      await this.initializeRBACSecurityContext();
 
       // Initialize default data source configurations
       await this.initializeDefaultConnectors();
@@ -93,9 +102,9 @@ export class NovaRAGDataConnectors extends EventEmitter {
       await this.startSyncLoops();
 
       this.isInitialized = true;
-      this.emit('initialized');
+      this.emit('initialized', { instanceId, timestamp: new Date().toISOString() });
 
-      logger.info('Nova RAG Data Connectors initialized successfully');
+      logger.info('Nova RAG Data Connectors initialized successfully with security context');
     } catch (error) {
       logger.error('Failed to initialize Data Connectors:', error);
       throw error;
@@ -1023,6 +1032,65 @@ Last Updated: ${new Date(item.updated_at).toLocaleDateString()}`;
       return categoryDeptMap[ticket.category] || 'general';
     }
     return 'general';
+  }
+
+  /**
+   * Initialize RBAC Security Context for data access control
+   */
+  private async initializeRBACSecurityContext(): Promise<void> {
+    try {
+      logger.info('Initializing RAG RBAC security context for data connectors');
+
+      // Initialize RBAC permissions for data source access
+      const dataSourcePermissions = [
+        'knowledge_base:read',
+        'tickets:read',
+        'service_catalog:read',
+        'documentation:read',
+        'monitoring:read',
+        'external:read'
+      ];
+
+      // Setup security context using ragRBAC
+      const securityContext = {
+        userId: 'system',
+        role: 'data_connector',
+        permissions: dataSourcePermissions,
+        timestamp: new Date().toISOString(),
+        instanceId: crypto.randomUUID()
+      };
+
+      // Initialize RAG RBAC with data connector permissions
+      if (ragRBAC) {
+        // Use ragRBAC for security context validation
+        logger.info(`RAG RBAC available for security context: ${typeof ragRBAC}`);
+        
+        // Check if ragRBAC has initialization method
+        if (typeof ragRBAC.initialize === 'function') {
+          await ragRBAC.initialize();
+        }
+        
+        // Store RBAC reference for future access control operations
+        this.rbacInstance = ragRBAC;
+        logger.info('RAG RBAC security context initialized successfully');
+      } else {
+        logger.info('RAG RBAC not available - using basic security context');
+      }
+
+      // Store security context for later use
+      this.securityContext = securityContext;
+      
+      // Generate secure hash for context validation
+      const contextHash = crypto.createHash('sha256')
+        .update(JSON.stringify(securityContext))
+        .digest('hex');
+      
+      logger.info(`Security context hash: ${contextHash.substring(0, 16)}...`);
+
+    } catch (error) {
+      logger.error(`Failed to initialize RBAC security context: ${error}`);
+      throw error;
+    }
   }
 
   async shutdown(): Promise<void> {

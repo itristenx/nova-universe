@@ -101,14 +101,14 @@ class AssetService {
       sort: sort?.map((s) => `${s.field}:${s.direction}`).join(','),
     };
 
-    return await apiClient.getPaginated<Asset>('/v1/assets', params);
+    return await apiClient.getPaginated<Asset>('/api/v1/assets', params);
   }
 
   /**
    * Get single asset by ID
    */
   async getAsset(id: string): Promise<Asset> {
-    const response = await apiClient.get<Asset>(`/v1/assets/${id}`);
+    const response = await apiClient.get<Asset>(`/api/v1/assets/${id}`);
     return response.data!;
   }
 
@@ -133,7 +133,7 @@ class AssetService {
       });
     }
 
-    const response = await apiClient.post<Asset>('/v1/assets', formData, {
+    const response = await apiClient.post<Asset>('/api/v1/assets', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -146,7 +146,7 @@ class AssetService {
    * Update existing asset
    */
   async updateAsset(id: string, data: UpdateAssetData): Promise<Asset> {
-    const response = await apiClient.patch<Asset>(`/v1/assets/${id}`, data);
+    const response = await apiClient.patch<Asset>(`/api/v1/assets/${id}`, data);
     return response.data!;
   }
 
@@ -154,7 +154,7 @@ class AssetService {
    * Delete asset
    */
   async deleteAsset(id: string): Promise<void> {
-    await apiClient.delete(`/v1/assets/${id}`);
+    await apiClient.delete(`/api/v1/assets/${id}`);
   }
 
   /**
@@ -162,7 +162,7 @@ class AssetService {
    */
   async bulkUpdateAssets(action: BulkAssetAction): Promise<{ updated: number; failed: number }> {
     const response = await apiClient.post<{ updated: number; failed: number }>(
-      '/v1/assets/bulk-action',
+      '/api/v1/assets/bulk-action',
       action,
     );
     return response.data!;
@@ -172,7 +172,7 @@ class AssetService {
    * Assign asset to user
    */
   async assignAsset(assetId: string, userId: string, notes?: string): Promise<Asset> {
-    const response = await apiClient.post<Asset>(`/v1/assets/${assetId}/assign`, {
+    const response = await apiClient.post<Asset>(`/api/v1/assets/${assetId}/assign`, {
       userId,
       notes,
     });
@@ -183,7 +183,7 @@ class AssetService {
    * Unassign asset from user
    */
   async unassignAsset(assetId: string, notes?: string): Promise<Asset> {
-    const response = await apiClient.post<Asset>(`/v1/assets/${assetId}/unassign`, {
+    const response = await apiClient.post<Asset>(`/api/v1/assets/${assetId}/unassign`, {
       notes,
     });
     return response.data!;
@@ -193,7 +193,7 @@ class AssetService {
    * Move asset to different location
    */
   async relocateAsset(assetId: string, locationId: string, notes?: string): Promise<Asset> {
-    const response = await apiClient.post<Asset>(`/v1/assets/${assetId}/relocate`, {
+    const response = await apiClient.post<Asset>(`/api/v1/assets/${assetId}/relocate`, {
       locationId,
       notes,
     });
@@ -289,7 +289,7 @@ class AssetService {
    * Get asset categories
    */
   async getCategories(): Promise<AssetCategory[]> {
-    const response = await apiClient.get<AssetCategory[]>('/v1/assets/categories');
+    const response = await apiClient.get<AssetCategory[]>('/api/v1/assets/categories');
     return response.data!;
   }
 
@@ -297,7 +297,7 @@ class AssetService {
    * Get asset types
    */
   async getTypes(): Promise<AssetType[]> {
-    const response = await apiClient.get<AssetType[]>('/v1/assets/types');
+    const response = await apiClient.get<AssetType[]>('/api/v1/assets/types');
     return response.data!;
   }
 
@@ -305,7 +305,7 @@ class AssetService {
    * Get asset locations
    */
   async getLocations(): Promise<AssetLocation[]> {
-    const response = await apiClient.get<AssetLocation[]>('/v1/assets/locations');
+    const response = await apiClient.get<AssetLocation[]>('/api/v1/assets/locations');
     return response.data!;
   }
 
@@ -320,7 +320,7 @@ class AssetService {
     const params = { query, page, perPage };
     return await apiClient.getPaginated<
       Asset & { score: number; highlights: Record<string, string[]> }
-    >('/v1/assets/search', params);
+    >('/api/v1/assets/search', params);
   }
 
   /**
@@ -357,7 +357,7 @@ class AssetService {
       byStatus: Record<string, number>;
       maintenanceDue: number;
       warrantyExpiring: number;
-    }>('/v1/assets/stats');
+    }>('/api/v1/assets/stats');
     return response.data!;
   }
 
@@ -366,7 +366,7 @@ class AssetService {
    */
   async generateQRCodes(assetIds: string[]): Promise<{ url: string; filename: string }> {
     const response = await apiClient.post<{ url: string; filename: string }>(
-      '/v1/assets/qr-codes',
+      '/api/v1/assets/qr-codes',
       {
         assetIds,
       },
@@ -381,7 +381,7 @@ class AssetService {
     format: 'csv' | 'excel' | 'pdf',
     _filters?: AssetFilters, // unused for now
   ): Promise<void> {
-    await apiClient.downloadFile(`/v1/assets/export?format=${format}`, `assets.${format}`);
+    await apiClient.downloadFile(`/api/v1/assets/export?format=${format}`, `assets.${format}`);
   }
 
   /**
@@ -414,7 +414,7 @@ class AssetService {
       updated: number;
       skipped: number;
       errors: Array<{ row: number; message: string }>;
-    }>('/v1/assets/import', formData, {
+    }>('/api/v1/assets/import', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -431,7 +431,7 @@ class AssetService {
     discoveryType?: 'network' | 'active-directory' | 'snmp' | 'wmi';
     credentials?: Record<string, string>;
   }): Promise<AssetDiscoveryResult[]> {
-    const response = await apiClient.post<AssetDiscoveryResult[]>('/v1/assets/discover', options);
+    const response = await apiClient.post<AssetDiscoveryResult[]>('/api/v1/assets/discover', options);
     return response.data!;
   }
 
@@ -461,7 +461,7 @@ class AssetService {
         remainingValue: number;
         fullyDepreciatedDate: string;
       }>
-    >('/v1/assets/depreciation');
+    >('/api/v1/assets/depreciation');
     return response.data!;
   }
 
@@ -488,7 +488,7 @@ class AssetService {
         depreciation: number;
         bookValue: number;
       }>;
-    }>(`/v1/assets/${assetId}/depreciation`, { method });
+    }>(`/api/v1/assets/${assetId}/depreciation`, { method });
     return response.data!;
   }
 
@@ -512,7 +512,7 @@ class AssetService {
           daysPastDue: number;
         }
       >
-    >('/v1/assets/maintenance-due');
+    >('/api/v1/assets/maintenance-due');
     return response.data!;
   }
 
@@ -536,7 +536,7 @@ class AssetService {
           warrantyProvider: string;
         }
       >
-    >(`/v1/assets/warranty-expiring?days=${daysAhead}`);
+    >(`/api/v1/assets/warranty-expiring?days=${daysAhead}`);
     return response.data!;
   }
 
@@ -560,7 +560,7 @@ class AssetService {
     },
   ): Promise<MaintenanceRecord> {
     const response = await apiClient.post<MaintenanceRecord>(
-      `/v1/assets/${assetId}/schedule-maintenance`,
+      `/api/v1/assets/${assetId}/schedule-maintenance`,
       data,
     );
     return response.data!;

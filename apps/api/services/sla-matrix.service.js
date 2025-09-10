@@ -224,6 +224,42 @@ export class SLAMatrixService {
 
       let impactScore = 4; // Default to Low impact
 
+      // Category-based impact scoring - certain categories have inherent higher impact
+      const categoryImpactMap = {
+        'Security': 1,        // Security issues are always critical
+        'Infrastructure': 2,  // Infrastructure issues are high impact
+        'Network': 2,         // Network issues are high impact  
+        'Database': 2,        // Database issues are high impact
+        'Email': 3,           // Email issues are medium impact
+        'Software': 3,        // Software issues are medium impact
+        'Hardware': 3,        // Hardware issues are medium impact
+        'Account': 4,         // Account issues are typically low impact
+        'Training': 4         // Training requests are low impact
+      };
+
+      // Subcategory-based impact refinement
+      const subcategoryImpactMap = {
+        'Malware': 1,         // Malware is critical
+        'Data Breach': 1,     // Data breach is critical
+        'Server Down': 1,     // Server down is critical
+        'Network Outage': 1,  // Network outage is critical
+        'Password Reset': 4,  // Password reset is low impact
+        'Software Install': 4, // Software install is low impact
+        'User Training': 4    // User training is low impact
+      };
+
+      // Apply category-based impact scoring
+      if (category && categoryImpactMap[category]) {
+        impactScore = Math.min(impactScore, categoryImpactMap[category]);
+        logger.debug(`Applied category impact scoring: ${category} -> ${categoryImpactMap[category]}`);
+      }
+
+      // Apply subcategory-based impact refinement
+      if (subcategory && subcategoryImpactMap[subcategory]) {
+        impactScore = Math.min(impactScore, subcategoryImpactMap[subcategory]);
+        logger.debug(`Applied subcategory impact scoring: ${subcategory} -> ${subcategoryImpactMap[subcategory]}`);
+      }
+
       // High impact indicators
       const criticalImpactKeywords = [
         'critical', 'emergency', 'production down', 'system crash', 'data loss', 
@@ -340,6 +376,27 @@ export class SLAMatrixService {
           urgencyScore = Math.min(urgencyScore, 2); // High urgency for gold VIPs
         } else {
           urgencyScore = Math.min(urgencyScore, 2); // High urgency for VIPs
+        }
+      }
+
+      // Requester-based urgency boost
+      if (requestedBy) {
+        // Check for high-priority roles or departments in requestedBy field
+        const requestorInfo = requestedBy.toLowerCase();
+        
+        const executiveRoles = ['ceo', 'cto', 'cfo', 'president', 'director', 'vp', 'vice president'];
+        const managementRoles = ['manager', 'supervisor', 'lead', 'head', 'chief'];
+        const criticalDepts = ['security', 'compliance', 'legal', 'finance'];
+        
+        if (executiveRoles.some(role => requestorInfo.includes(role))) {
+          urgencyScore = Math.min(urgencyScore, 1); // Critical urgency for executives
+          logger.debug(`Applied executive urgency boost for requestor: ${requestedBy}`);
+        } else if (managementRoles.some(role => requestorInfo.includes(role))) {
+          urgencyScore = Math.min(urgencyScore, 2); // High urgency for management
+          logger.debug(`Applied management urgency boost for requestor: ${requestedBy}`);
+        } else if (criticalDepts.some(dept => requestorInfo.includes(dept))) {
+          urgencyScore = Math.min(urgencyScore, 2); // High urgency for critical departments
+          logger.debug(`Applied department urgency boost for requestor: ${requestedBy}`);
         }
       }
 

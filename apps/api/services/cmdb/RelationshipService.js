@@ -165,11 +165,29 @@ export class RelationshipService {
 
       await client.ciRelationship.update({
         where: { id: relationshipId },
-        data: { isActive: false, updatedAt: new Date() },
+        data: { 
+          isActive: false, 
+          updatedAt: new Date(),
+          // Enhanced audit tracking with deletion context
+          deletionMetadata: {
+            deletedBy,
+            deletedAt: new Date().toISOString(),
+            reason: 'manual_deletion'
+          }
+        },
       });
 
+      // Comprehensive audit logging with user context
       logger.info(
         `Relationship deleted: ${relationship.sourceCi.ciId} -> ${relationship.targetCi.ciId} (${relationship.relationshipType.name})`,
+        {
+          relationshipId,
+          sourceCiId: relationship.sourceCi.id,
+          targetCiId: relationship.targetCi.id,
+          relationshipType: relationship.relationshipType.name,
+          deletedBy,
+          deletionTimestamp: new Date().toISOString()
+        }
       );
       return true;
     } catch (error) {
@@ -248,12 +266,19 @@ export class RelationshipService {
       };
 
       for (const [ciId, impactData] of impactMap) {
+        // Enhanced impact data with CI identifier for comprehensive tracking
+        const enhancedImpactData = {
+          ...impactData,
+          ciId, // Include CI identifier for complete impact context
+          analysisTimestamp: new Date().toISOString()
+        };
+
         if (impactData.depth === 1) {
-          impactLevels.direct.push(impactData);
+          impactLevels.direct.push(enhancedImpactData);
         } else if (impactData.depth === 2) {
-          impactLevels.indirect.push(impactData);
+          impactLevels.indirect.push(enhancedImpactData);
         } else {
-          impactLevels.extended.push(impactData);
+          impactLevels.extended.push(enhancedImpactData);
         }
       }
 

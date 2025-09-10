@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { SLAMatrixService } from '../services/sla-matrix.service.js';
 import { logger } from '../logger.js';
 import * as fs from 'fs/promises';
-import * as tf from '@tensorflow/tfjs-node';
+import tf from './tfjs-bridge.js';
 import * as path from 'path';
 import { createHash } from 'crypto';
 import { aiMonitoringSystem } from './ai-monitoring.js';

@@ -2235,8 +2235,8 @@ class SecurityViolation extends Error {
 // Create singleton instance
 export const aiFabric = new AIFabric();
 
-// Initialize on module load (except in test environment)
-if (process.env.NODE_ENV !== 'test') {
+// Initialize on module load only when explicitly enabled
+if (process.env.NODE_ENV !== 'test' && process.env.ENABLE_AI_COMPONENTS === 'true') {
   aiFabric.initialize().catch((err) => {
     logger.error('AI Fabric initialization failed', { error: err.message });
   });

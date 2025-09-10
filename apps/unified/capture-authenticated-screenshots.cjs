@@ -294,7 +294,7 @@ async function captureAuthenticatedUIFunctionality() {
             console.log('✅ 15 - Captured user profile page');
 
         } catch (e) {
-            console.log('⚠️ Profile page not accessible');
+            console.log('⚠️ Profile page not accessible:', e.message || e);
         }
 
         // 10. Final comprehensive view

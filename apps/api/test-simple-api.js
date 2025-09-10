@@ -75,14 +75,37 @@ app.get('/api/v1/auth/me', (req, res) => {
 app.post('/api/v1/helix/login/tenant/discover', (req, res) => {
   const { email } = req.body;
 
+  // Enhanced tenant discovery based on email domain
+  let tenant = {
+    id: 'nova-universe',
+    name: 'Nova Universe',
+    domain: 'nova.com',
+    logo: null,
+  };
+
+  // In a real system, this would query the database for tenant by email domain
+  if (email) {
+    const emailDomain = email.split('@')[1];
+    console.log(`Tenant discovery for email: ${email} (domain: ${emailDomain})`);
+    
+    // Mock tenant mapping based on email domain
+    const tenantMapping = {
+      'nova.com': { id: 'nova-universe', name: 'Nova Universe', domain: 'nova.com' },
+      'company.com': { id: 'company-tenant', name: 'Company Corp', domain: 'company.com' },
+      'example.com': { id: 'example-tenant', name: 'Example Inc', domain: 'example.com' }
+    };
+    
+    if (tenantMapping[emailDomain]) {
+      tenant = { ...tenantMapping[emailDomain], logo: null };
+      console.log(`Found tenant: ${tenant.name} for domain: ${emailDomain}`);
+    } else {
+      console.log(`Using default tenant for unknown domain: ${emailDomain}`);
+    }
+  }
+
   res.json({
     success: true,
-    tenant: {
-      id: 'nova-universe',
-      name: 'Nova Universe',
-      domain: 'nova.com',
-      logo: null,
-    },
+    tenant,
   });
 });
 

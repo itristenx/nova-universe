@@ -95,7 +95,7 @@ class UserService {
       ...Object.fromEntries(Object.entries(filters).filter(([_, value]) => value !== undefined)),
     });
 
-    const response = await apiClient.get<PaginatedResponse<User>>(`/v1/users?${params}`);
+    const response = await apiClient.get<PaginatedResponse<User>>(`/api/v1/users?${params}`);
     if (!response.data) {
       throw new Error('No data received from server');
     }
@@ -106,7 +106,7 @@ class UserService {
    * Get user by ID
    */
   async getUser(id: string): Promise<User> {
-    const response = await apiClient.get<ApiResponse<User>>(`/v1/users/${id}`);
+    const response = await apiClient.get<ApiResponse<User>>(`/api/v1/users/${id}`);
     if (!response.data?.data) {
       throw new Error('User not found');
     }
@@ -117,7 +117,7 @@ class UserService {
    * Get current user profile
    */
   async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<ApiResponse<User>>('/v1/users/me');
+    const response = await apiClient.get<ApiResponse<User>>('/api/v1/users/me');
     if (!response.data?.data) {
       throw new Error('User profile not found');
     }
@@ -128,7 +128,7 @@ class UserService {
    * Create new user
    */
   async createUser(userData: CreateUserData): Promise<User> {
-    const response = await apiClient.post<ApiResponse<User>>('/v1/users', userData);
+    const response = await apiClient.post<ApiResponse<User>>('/api/v1/users', userData);
     if (!response.data?.data) {
       throw new Error('Failed to create user');
     }
@@ -150,7 +150,7 @@ class UserService {
    * Update current user profile
    */
   async updateCurrentUser(userData: Partial<UpdateUserData>): Promise<User> {
-    const response = await apiClient.put<ApiResponse<User>>('/v1/users/me', userData);
+    const response = await apiClient.put<ApiResponse<User>>('/api/v1/users/me', userData);
     if (!response.data?.data) {
       throw new Error('Failed to update profile');
     }
@@ -161,14 +161,14 @@ class UserService {
    * Delete user (soft delete)
    */
   async deleteUser(id: string): Promise<void> {
-    await apiClient.delete(`/v1/users/${id}`);
+    await apiClient.delete(`/api/v1/users/${id}`);
   }
 
   /**
    * Activate user
    */
   async activateUser(id: string): Promise<User> {
-    const response = await apiClient.post<ApiResponse<User>>(`/v1/users/${id}/activate`);
+    const response = await apiClient.post<ApiResponse<User>>(`/api/v1/users/${id}/activate`);
     if (!response.data?.data) {
       throw new Error('Failed to activate user');
     }
@@ -179,7 +179,7 @@ class UserService {
    * Deactivate user
    */
   async deactivateUser(id: string): Promise<User> {
-    const response = await apiClient.post<ApiResponse<User>>(`/v1/users/${id}/deactivate`);
+    const response = await apiClient.post<ApiResponse<User>>(`/api/v1/users/${id}/deactivate`);
     if (!response.data?.data) {
       throw new Error('Failed to deactivate user');
     }
@@ -194,7 +194,7 @@ class UserService {
     newPassword?: string,
   ): Promise<{ temporaryPassword?: string }> {
     const response = await apiClient.post<ApiResponse<{ temporaryPassword?: string }>>(
-      `/v1/users/${id}/reset-password`,
+      `/api/v1/users/${id}/reset-password`,
       { newPassword },
     );
     if (!response.data?.data) {
@@ -207,7 +207,7 @@ class UserService {
    * Get available roles
    */
   async getRoles(): Promise<Role[]> {
-    const response = await apiClient.get<ApiResponse<Role[]>>('/v1/roles');
+    const response = await apiClient.get<ApiResponse<Role[]>>('/api/v1/roles');
     if (!response.data?.data) {
       throw new Error('Failed to fetch roles');
     }
@@ -223,7 +223,7 @@ class UserService {
       limit: limit.toString(),
     });
 
-    const response = await apiClient.get<ApiResponse<User[]>>(`/v1/users/search?${params}`);
+    const response = await apiClient.get<ApiResponse<User[]>>(`/api/v1/users/search?${params}`);
     if (!response.data?.data) {
       throw new Error('Failed to search users');
     }
@@ -234,7 +234,7 @@ class UserService {
    * Get user statistics
    */
   async getUserStats(): Promise<UserStats> {
-    const response = await apiClient.get<ApiResponse<UserStats>>('/v1/users/stats');
+    const response = await apiClient.get<ApiResponse<UserStats>>('/api/v1/users/stats');
     if (!response.data?.data) {
       throw new Error('Failed to fetch user statistics');
     }
@@ -249,7 +249,7 @@ class UserService {
     updates: Partial<UpdateUserData>,
   ): Promise<{ updated: number; failed: string[] }> {
     const response = await apiClient.post<ApiResponse<{ updated: number; failed: string[] }>>(
-      '/v1/users/bulk-update',
+      '/api/v1/users/bulk-update',
       { userIds, updates },
     );
     if (!response.data?.data) {
@@ -265,7 +265,7 @@ class UserService {
     const formData = new FormData();
     formData.append('avatar', file);
 
-    const response = await apiClient.post<ApiResponse<User>>('/v1/users/me/avatar', formData, {
+    const response = await apiClient.post<ApiResponse<User>>('/api/v1/users/me/avatar', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -281,7 +281,7 @@ class UserService {
    */
   async updateUserPreferences(preferences: Partial<UserPreferences>): Promise<UserPreferences> {
     const response = await apiClient.put<ApiResponse<UserPreferences>>(
-      '/v1/users/me/preferences',
+      '/api/v1/users/me/preferences',
       preferences,
     );
     if (!response.data?.data) {
@@ -300,7 +300,7 @@ class UserService {
     });
 
     const response = await apiClient.get<PaginatedResponse<any>>(
-      `/v1/users/${userId}/activity?${params}`,
+      `/api/v1/users/${userId}/activity?${params}`,
     );
     if (!response.data) {
       throw new Error('Failed to fetch user activity');

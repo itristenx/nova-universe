@@ -97,41 +97,41 @@ export const notificationService = {
     }
 
     return await apiClient.getPaginated<Notification>(
-      '/v1/notifications',
+      '/api/v1/notifications',
       Object.fromEntries(params),
     );
   },
 
   async getNotification(id: string): Promise<Notification> {
-    const response = await apiClient.get<Notification>(`/v1/notifications/${id}`);
+    const response = await apiClient.get<Notification>(`/api/v1/notifications/${id}`);
     return response.data!;
   },
 
   async markAsRead(id: string): Promise<void> {
-    await apiClient.patch(`/v1/notifications/${id}/read`);
+    await apiClient.patch(`/api/v1/notifications/${id}/read`);
   },
 
   async markAsUnread(id: string): Promise<void> {
-    await apiClient.patch(`/v1/notifications/${id}/unread`);
+    await apiClient.patch(`/api/v1/notifications/${id}/unread`);
   },
 
   async markAllAsRead(): Promise<void> {
-    await apiClient.patch('/v1/notifications/mark-all-read');
+    await apiClient.patch('/api/v1/notifications/mark-all-read');
   },
 
   async archiveNotification(id: string): Promise<void> {
-    await apiClient.patch(`/v1/notifications/${id}/archive`);
+    await apiClient.patch(`/api/v1/notifications/${id}/archive`);
   },
 
   async deleteNotification(id: string): Promise<void> {
-    await apiClient.delete(`/v1/notifications/${id}`);
+    await apiClient.delete(`/api/v1/notifications/${id}`);
   },
 
   async bulkAction(
     action: 'read' | 'unread' | 'archive' | 'delete',
     notificationIds: string[],
   ): Promise<void> {
-    await apiClient.post('/v1/notifications/bulk', {
+    await apiClient.post('/api/v1/notifications/bulk', {
       action,
       notificationIds,
     });
@@ -139,12 +139,12 @@ export const notificationService = {
 
   // Notification statistics
   async getStats(): Promise<NotificationStats> {
-    const response = await apiClient.get<NotificationStats>('/v1/notifications/stats');
+    const response = await apiClient.get<NotificationStats>('/api/v1/notifications/stats');
     return response.data!;
   },
 
   async getUnreadCount(): Promise<number> {
-    const response = await apiClient.get<{ count: number }>('/v1/notifications/unread-count');
+    const response = await apiClient.get<{ count: number }>('/api/v1/notifications/unread-count');
     return response.data!.count;
   },
 
@@ -224,7 +224,7 @@ export const notificationService = {
 
   // Notification preferences
   async getPreferences(): Promise<NotificationPreferences> {
-    const response = await apiClient.get<NotificationPreferences>('/v1/notifications/preferences');
+    const response = await apiClient.get<NotificationPreferences>('/api/v1/notifications/preferences');
     return response.data!;
   },
 
@@ -232,7 +232,7 @@ export const notificationService = {
     preferences: Partial<NotificationPreferences>,
   ): Promise<NotificationPreferences> {
     const response = await apiClient.patch<NotificationPreferences>(
-      '/v1/notifications/preferences',
+      '/api/v1/notifications/preferences',
       preferences,
     );
     return response.data!;
@@ -240,19 +240,19 @@ export const notificationService = {
 
   // Push notification registration
   async registerDevice(deviceToken: string, platform: 'ios' | 'android' | 'web'): Promise<void> {
-    await apiClient.post('/v1/notifications/devices', {
+    await apiClient.post('/api/v1/notifications/devices', {
       deviceToken,
       platform,
     });
   },
 
   async unregisterDevice(deviceToken: string): Promise<void> {
-    await apiClient.delete(`/v1/notifications/devices/${deviceToken}`);
+    await apiClient.delete(`/api/v1/notifications/devices/${deviceToken}`);
   },
 
   // Test notifications
   async sendTestNotification(type: NotificationType): Promise<void> {
-    await apiClient.post('/v1/notifications/test', { type });
+    await apiClient.post('/api/v1/notifications/test', { type });
   },
 };
 

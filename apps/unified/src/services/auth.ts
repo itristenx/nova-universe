@@ -246,14 +246,14 @@ class AuthService {
    * Verify email address
    */
   async verifyEmail(token: string): Promise<void> {
-    await apiClient.post('/v1/auth/email/verify', { token });
+    await apiClient.post('/api/v1/auth/email/verify', { token });
   }
 
   /**
    * Resend email verification
    */
   async resendEmailVerification(): Promise<void> {
-    await apiClient.post('/v1/auth/email/resend');
+    await apiClient.post('/api/v1/auth/email/resend');
   }
 
   /**
@@ -276,7 +276,7 @@ class AuthService {
         lastActive: string;
         current: boolean;
       }>
-    >('/v1/auth/sessions');
+    >('/api/v1/auth/sessions');
     return response.data!;
   }
 
@@ -284,14 +284,14 @@ class AuthService {
    * Revoke session
    */
   async revokeSession(sessionId: string): Promise<void> {
-    await apiClient.delete(`/v1/auth/sessions/${sessionId}`);
+    await apiClient.delete(`/api/v1/auth/sessions/${sessionId}`);
   }
 
   /**
    * Revoke all other sessions
    */
   async revokeAllOtherSessions(): Promise<void> {
-    await apiClient.post('/v1/auth/sessions/revoke-others');
+    await apiClient.post('/api/v1/auth/sessions/revoke-others');
   }
 }
 

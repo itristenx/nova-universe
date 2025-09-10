@@ -21,12 +21,14 @@ import analyticsRouter from './routes/analytics.js';
 import monitoringRouter from './routes/monitoring.js';
 // Defer loading heavy AI Fabric until explicitly enabled to keep demo startup light
 let aiFabricRouter = null;
-import mcpServerRouter from './routes/mcp-server.js';
+// Heavy MCP server (may pull AI dependencies); load conditionally
+let mcpServerRouter = null;
 import setupRouter from './routes/setup.js';
 import coreRouter from './routes/core.js';
 import statusSummaryRouter from './routes/status.js';
 import announcementsRouter from './routes/announcements.js';
-import cosmoRouter from './routes/cosmo.js';
+// Cosmo routes use AI Fabric; load conditionally
+let cosmoRouter = null;
 import beaconRouter from './routes/beacon.js';
 import goalertProxyRouter from './routes/goalert-proxy.js';
 import uptimeKumaProxyRouter from './routes/uptime-kuma-proxy.js';
@@ -39,7 +41,8 @@ import notificationsRouter from './routes/notifications.js'; // Universal Notifi
 import user360Router from './routes/user360.js'; // User 360 API
 import user360InteractionsRouter from './routes/user360-interactions.js'; // User 360 Interactions API
 import appSwitcherRouter from './routes/app-switcher.js'; // Enhanced App Switcher API
-import aiControlTowerRouter from './routes/ai-control-tower.js'; // AI Control Tower API
+// AI Control Tower routes are heavy (TensorFlow); load only if enabled
+let aiControlTowerRouter = null;
 import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
@@ -49,6 +52,7 @@ import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
 import novaTVRouter from './routes/nova-tv-prisma.js'; // Nova TV - Channel Management (Prisma-backed)
+import novaTVDigitalSignageRouter from './src/routes/nova-tv-digital-signage.js'; // Nova TV Digital Signage (media, playlists)
 import emailActionsRouter from './routes/email-actions.js'; // Enhanced Email Actions for Workflows
 import customerActivityRouter from './routes/customer-activity.js'; // Customer Activity & Email Communication Tracking
 // Service Catalog API routes
@@ -96,7 +100,8 @@ import inventoryRouter from './routes/inventory.js';
 import scimRouter from './routes/scim.js';
 import scimMonitorRouter from './routes/scimMonitor.js';
 import synthRouter from './routes/synth.js';
-import synthV2Router from './routes/synth-v2.js';
+// Synth v2 routes also use AI Fabric; load conditionally
+let synthV2Router = null;
 import { setupGraphQL } from './graphql.js';
 import { initializeSlackApp, startSlackApp } from './services/nova-comms.js';
 import { validateProductionEnvironment } from './config/production-validation.js';
@@ -2355,8 +2360,25 @@ app.use('/api/v2', v2Router);
 // Core v2 endpoints
 v2Router.use('/user360', user360Router); // User 360 API (v2 only)
 v2Router.use('/user360', user360InteractionsRouter); // User 360 Interactions API (v2 only)
-v2Router.use('/mcp', mcpServerRouter); // MCP Server Control Tower API (v2 only)
-v2Router.use('/synth', synthV2Router); // Nova Synth - AI Engine v2 (Enhanced)
+// Conditionally enable v2 MCP & Synth (AI-dependent)
+if (process.env.ENABLE_AI_COMPONENTS === 'true') {
+  try {
+    const mcpMod = await import('./routes/mcp-server.js');
+    mcpServerRouter = mcpMod.default || mcpMod;
+    v2Router.use('/mcp', mcpServerRouter);
+  } catch (e) {
+    logger.warn('v2 MCP routes disabled (failed to load):', e.message);
+  }
+  try {
+    const synthMod = await import('./routes/synth-v2.js');
+    synthV2Router = synthMod.default || synthMod;
+    v2Router.use('/synth', synthV2Router);
+  } catch (e) {
+    logger.warn('v2 Synth routes disabled (failed to load):', e.message);
+  }
+} else {
+  logger.info('v2 MCP/Synth routes disabled (ENABLE_AI_COMPONENTS not true)');
+}
 v2Router.use('/alerts', alertsRouter); // Unified Alerts facade (Nova Alert)
 v2Router.use('/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
 v2Router.use('/email-actions', emailActionsRouter); // Enhanced Email Actions for Workflows (no auth required for tokens)
@@ -2397,7 +2419,18 @@ v1Router.use('/websocket/uptime-kuma', uptimeKumaWebSocketRouter);
 v1Router.use('/auth', authRouter);
 v1Router.use('/email-actions', emailActionsRouter); // Enhanced Email Actions for Workflows (backward compatibility)
 v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
-v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - Enterprise AI/ML/RAG Management
+  // Conditionally enable AI Control Tower when AI components are enabled
+  if (process.env.ENABLE_AI_COMPONENTS === 'true') {
+    try {
+      const mod = await import('./routes/ai-control-tower.js');
+      aiControlTowerRouter = mod.default || mod;
+      v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - Enterprise AI/ML/RAG Management
+    } catch (e) {
+      logger.warn('AI Control Tower disabled (failed to load):', e.message);
+    }
+  } else {
+    logger.info('AI Control Tower disabled (ENABLE_AI_COMPONENTS not true)');
+  }
 v1Router.use('/tickets', ticketsRouter);
 v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
 // v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI - TEMPORARILY DISABLED
@@ -2421,7 +2454,18 @@ v1Router.use('/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
 v1Router.use('/core', coreRouter);
 v1Router.use('/status', statusSummaryRouter);
 v1Router.use('/announcements', announcementsRouter);
-v1Router.use('/cosmo', cosmoRouter);
+// Conditionally mount Cosmo (AI) under v1
+if (process.env.ENABLE_AI_COMPONENTS === 'true') {
+  try {
+    const mod = await import('./routes/cosmo.js');
+    cosmoRouter = mod.default || mod;
+    v1Router.use('/cosmo', cosmoRouter);
+  } catch (e) {
+    logger.warn('v1 Cosmo routes disabled (failed to load):', e.message);
+  }
+} else {
+  logger.info('v1 Cosmo routes disabled (ENABLE_AI_COMPONENTS not true)');
+}
 
 // Nova module routes (v1)
 v1Router.use('/helix', helixRouter); // Nova Helix - Identity Engine
@@ -2454,6 +2498,8 @@ if (aiFabricRouter) {
 // app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework - TEMPORARILY DISABLED
 app.use('/api/setup', setupRouter);
 app.use('/api/nova-tv', novaTVRouter);
+app.use('/api/nova-tv/digital-signage', novaTVDigitalSignageRouter);
+app.use('/api/v1/nova-tv/digital-signage', novaTVDigitalSignageRouter);
 app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
 
 // Service Catalog API routes

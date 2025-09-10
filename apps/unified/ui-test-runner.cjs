@@ -232,20 +232,25 @@ class UITestRunner {
       console.log('  Please ensure the UI server is running at:', this.config.baseURL);
     }
 
-    // Check API server
-    try {
-      const response = await fetchWithTimeout(`${this.config.apiURL}/health`, 5000);
-      if (!response.ok) {
-        throw new Error(`API server not responding: ${response.status}`);
+    // Check API server with retries (wait for container warm-up)
+    {
+      const start = Date.now();
+      const deadlineMs = parseInt(process.env.API_WAIT_TIMEOUT || '45000');
+      const intervalMs = 1500;
+      let ok = false;
+      while (Date.now() - start < deadlineMs) {
+        try {
+          const response = await fetchWithTimeout(`${this.config.apiURL}/health`, 5000);
+          if (response.ok) { ok = true; break; }
+        } catch (_) {}
+        await new Promise(r => setTimeout(r, intervalMs));
       }
-      console.log('  ✅ API server is running');
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        console.log('  ⚠️ API server check timed out');
+      if (ok) {
+        console.log('  ✅ API server is running');
       } else {
         console.log('  ⚠️ API server is not running');
+        console.log('  Some tests may be skipped');
       }
-      console.log('  Some tests may be skipped');
     }
 
     // Install Playwright browsers if needed
@@ -334,7 +339,7 @@ TEST_WORKERS=${this.config.workers}
       `--retries=${options.retries}`,
       `--timeout=${options.timeout}`,
       '--reporter=json',
-      `--output-dir=test-results/${suite.name}`,
+      `--output=test-results/${suite.name}`,
     ];
 
     if (options.headed) {

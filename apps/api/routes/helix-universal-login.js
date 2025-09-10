@@ -1693,10 +1693,22 @@ router.put('/admin/tenant/:tenantId/sso-configs/saml', async (req, res) => {
       autoProvisionUsers,
       defaultUserRole,
     } = req.body || {};
+    
+    // Enhanced logging for SAML configuration update
+    logger.info('Updating SAML configuration', {
+      tenantId,
+      enabled: !!enabled,
+      autoProvisionUsers: !!autoProvisionUsers,
+      defaultUserRole,
+      hasIssuer: !!issuer,
+      hasCert: !!cert,
+      hasEntryPoint: !!entryPoint
+    });
+    
     const upsert = await db.query(
       `INSERT INTO sso_configs (
         tenant_id, provider, provider_name, enabled, saml_entity_id, saml_sso_url, saml_certificate, saml_name_id_format, auto_provision, default_role_id
-      ) VALUES ($1,'saml',$2,$3,$4,$5,$6,$7,$8, NULL)
+      ) VALUES ($1,'saml',$2,$3,$4,$5,$6,$7,$8, $9)
       ON CONFLICT (tenant_id, provider) DO UPDATE SET
         provider_name = EXCLUDED.provider_name,
         enabled = EXCLUDED.enabled,
@@ -1705,9 +1717,10 @@ router.put('/admin/tenant/:tenantId/sso-configs/saml', async (req, res) => {
         saml_certificate = EXCLUDED.saml_certificate,
         saml_name_id_format = EXCLUDED.saml_name_id_format,
         auto_provision = EXCLUDED.auto_provision,
+        default_role_id = EXCLUDED.default_role_id,
         updated_at = CURRENT_TIMESTAMP
       RETURNING *`,
-      [tenantId, 'SAML', !!enabled, issuer || null, entryPoint || null, cert || null, authnContextClassRef || null, !!autoProvisionUsers],
+      [tenantId, 'SAML', !!enabled, issuer || null, entryPoint || null, cert || null, authnContextClassRef || null, !!autoProvisionUsers, defaultUserRole || null],
     );
     // Keep tenant.sso_enabled consistent with provider enabled state
     await db.query('UPDATE tenants SET sso_enabled = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1', [
@@ -1724,14 +1737,47 @@ router.put('/admin/tenant/:tenantId/sso-configs/saml', async (req, res) => {
 router.get('/admin/tenant/:tenantId/saml/metadata', async (req, res) => {
   try {
     const { tenantId } = req.params;
+    
+    // Enhanced logging with tenant context for SAML metadata generation
+    logger.info('Generating tenant-specific SAML metadata', {
+      tenantId,
+      requestedBy: req.user?.id || 'anonymous',
+      timestamp: new Date().toISOString(),
+      userAgent: req.headers['user-agent']
+    });
+    
     const base = process.env.API_BASE_URL || 'http://localhost:3000';
-    const entityId = `${base}/api/v1/helix/login/sso/callback/saml`;
-    const ssoUrl = `${base}/api/v1/helix/login/sso/callback/saml`;
-    const metadata = `<?xml version="1.0"?>\n<EntityDescriptor entityID="${entityId}" xmlns="urn:oasis:names:tc:SAML:2.0:metadata">\n  <SPSSODescriptor AuthnRequestsSigned="false" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">\n    <AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="${ssoUrl}" index="1"/>\n  </SPSSODescriptor>\n</EntityDescriptor>`;
+    
+    // Generate tenant-specific entity ID and URLs
+    const entityId = `${base}/api/v1/helix/login/sso/callback/saml/tenant/${tenantId}`;
+    const ssoUrl = `${base}/api/v1/helix/login/sso/callback/saml/tenant/${tenantId}`;
+    
+    // Enhanced metadata with tenant-specific configuration
+    const metadata = `<?xml version="1.0"?>
+<EntityDescriptor entityID="${entityId}" xmlns="urn:oasis:names:tc:SAML:2.0:metadata">
+  <SPSSODescriptor AuthnRequestsSigned="false" WantAssertionsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
+    <AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="${ssoUrl}" index="1"/>
+    <AttributeConsumingService index="1">
+      <ServiceName xml:lang="en">Nova Helix - Tenant ${tenantId}</ServiceName>
+      <RequestedAttribute Name="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" isRequired="true"/>
+      <RequestedAttribute Name="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" isRequired="false"/>
+      <RequestedAttribute Name="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" isRequired="false"/>
+    </AttributeConsumingService>
+  </SPSSODescriptor>
+</EntityDescriptor>`;
+    
+    logger.debug('Generated tenant SAML metadata', {
+      tenantId,
+      entityId,
+      ssoUrl,
+      metadataLength: metadata.length
+    });
+    
     res.setHeader('Content-Type', 'application/samlmetadata+xml');
     return res.send(metadata);
   } catch (error) {
-    logger.error('Failed to generate SAML metadata:', error);
+    logger.error('Failed to generate SAML metadata:', error, { tenantId: req.params.tenantId });
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });

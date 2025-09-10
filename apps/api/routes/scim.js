@@ -423,9 +423,25 @@ router.put('/Users/:id', authenticateSCIM, async (req, res) => {
     const updates = [];
     const params = [];
     let paramIndex = 1;
-    if (userName) {
+    
+    // Process emails array (SCIM specification support)
+    let primaryEmail = userName; // Default to userName
+    if (emails && Array.isArray(emails)) {
+      const primaryEmailObj = emails.find(email => email.primary) || emails[0];
+      if (primaryEmailObj && primaryEmailObj.value) {
+        primaryEmail = primaryEmailObj.value;
+      }
+      logger.info('Processing SCIM emails array', {
+        userId: id,
+        emailCount: emails.length,
+        emails: emails.map(e => ({ value: e.value, primary: e.primary })),
+        selectedPrimaryEmail: primaryEmail
+      });
+    }
+    
+    if (userName || primaryEmail) {
       updates.push(`email = $${paramIndex++}`);
-      params.push(userName);
+      params.push(primaryEmail);
     }
     if (name) {
       const displayName = `${name.givenName || ''} ${name.familyName || ''}`.trim();
