@@ -304,22 +304,32 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900" data-testid="main-content">
-      <div className="w-full max-w-md space-y-8">
-        {/* Logo and header */}
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/20" data-testid="main-content">
+      {/* Background patterns for Apple-style depth */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-gradient-to-br from-blue-400/20 to-indigo-600/20 blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-gradient-to-br from-purple-400/20 to-pink-600/20 blur-3xl"></div>
+      </div>
+      
+      <div className="relative w-full max-w-md space-y-8 px-6">
+        {/* Logo and header with enhanced Apple styling */}
         <div className="text-center">
-          <div className="bg-gradient-nova shadow-apple mx-auto flex h-16 w-16 items-center justify-center rounded-2xl">
-            <span className="text-2xl font-bold text-white">N</span>
+          {/* Glass morphism logo container */}
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-white/80 backdrop-blur-xl shadow-2xl ring-1 ring-white/20 dark:bg-gray-800/80 dark:ring-gray-700/50 transition-transform duration-300 hover:scale-105">
+            <span className="bg-gradient-to-br from-blue-600 to-indigo-600 bg-clip-text text-3xl font-black text-transparent">N</span>
           </div>
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-            {t('auth:login.welcome')}
-          </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          
+          {/* Enhanced typography hierarchy */}
+          <h1 className="mt-8 text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight">
+            Nova Universe Login
+          </h1>
+          <p className="mt-3 text-lg font-medium text-gray-600 dark:text-gray-400 leading-relaxed">
             {loginStep.step === 'email' && t('auth:login.enterEmailToContinue')}
             {loginStep.step === 'auth' &&
               t('auth:login.signInTo', { organization: loginStep.tenantData?.tenant.name })}
             {loginStep.step === 'mfa' && t('auth:login.enterVerificationCode')}
           </p>
+          
           {/* E2E hook: a discoverable, clickable login button used by specs */}
           <button
             type="button"
@@ -340,51 +350,80 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* Login form */}
-        <div className="card p-8">
-          {/* Step 1: Email Discovery */}
+        {/* Enhanced glass morphism login form card */}
+        <div className="backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-3xl shadow-2xl ring-1 ring-white/20 dark:ring-gray-700/50 p-8 transition-all duration-300 hover:shadow-3xl">
+          {/* Step 1: Email Discovery with enhanced Apple design */}
           {loginStep.step === 'email' && (
-            <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)} className="space-y-6" data-testid="login-form">
-              <div>
+            <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)} className="space-y-8" data-testid="login-form">
+              <div className="space-y-3">
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="block text-base font-semibold text-gray-900 dark:text-gray-100 tracking-tight"
                 >
-                  {t('auth:login.workEmail')}
+                  Email
                 </label>
-                <div className="mt-1">
+                <div className="relative">
                   <input
                     data-testid="email-input"
                     {...emailForm.register('email')}
                     type="email"
                     autoComplete="email"
-                    className={cn('input', emailForm.formState.errors.email && 'input-error')}
-                    placeholder={t('auth:login.emailPlaceholder')}
+                    className={cn(
+                      'w-full px-4 py-4 text-base bg-gray-50/80 dark:bg-gray-700/50 border-0 rounded-2xl',
+                      'focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-blue-500/50 focus:outline-none',
+                      'transition-all duration-200 ease-out backdrop-blur-sm',
+                      'placeholder:text-gray-500 dark:placeholder:text-gray-400',
+                      'shadow-lg shadow-gray-100/50 dark:shadow-gray-900/50',
+                      emailForm.formState.errors.email && 'ring-2 ring-red-500/50 bg-red-50/50 dark:bg-red-900/20'
+                    )}
+                    placeholder="Enter your email"
                   />
                   {emailForm.formState.errors.email && (
-                    <p data-testid="email-error" className="mt-2 text-sm text-red-600 dark:text-red-400">
+                    <p data-testid="email-error" className="mt-3 text-sm font-medium text-red-600 dark:text-red-400 flex items-center">
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
                       {emailForm.formState.errors.email.message}
                     </p>
                   )}
                 </div>
               </div>
 
-              <button type="submit" disabled={isDiscovering} className="btn btn-primary w-full">
-                {isDiscovering ? (
-                  <>
-                    <LoadingSpinner size="sm" />
-                    <span className="ml-2">{t('auth:login.discovering')}</span>
-                  </>
-                ) : (
-                  <>
-                    <BuildingOfficeIcon className="mr-2 h-5 w-5" />
-                    {t('common:continue')}
-                  </>
+              {/* Enhanced Apple-style button */}
+              <button 
+                type="submit" 
+                disabled={isDiscovering} 
+                className={cn(
+                  'w-full py-4 px-6 text-base font-semibold text-white rounded-2xl',
+                  'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800',
+                  'shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40',
+                  'transform transition-all duration-200 ease-out',
+                  'hover:scale-[1.02] active:scale-[0.98]',
+                  'focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800',
+                  'disabled:opacity-50 disabled:transform-none disabled:cursor-not-allowed',
+                  'relative overflow-hidden'
                 )}
+              >
+                {/* Button background glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
+                
+                <div className="relative flex items-center justify-center">
+                  {isDiscovering ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      <span className="ml-3">{t('auth:login.discovering')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <BuildingOfficeIcon className="mr-3 h-5 w-5" />
+                      Sign In
+                    </>
+                  )}
+                </div>
               </button>
 
-              <div className="text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-center pt-2">
+                <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
                   {t('auth:login.findOrganizationHelp')}
                 </p>
               </div>
@@ -444,41 +483,114 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {/* Password Authentication */}
+              {/* Enhanced Password Authentication */}
               {loginStep.tenantData.authMethods.some((method) => method.type === 'password') && (
-                <form onSubmit={loginForm.handleSubmit(handleLoginSubmit)} className="space-y-6">
-                  <div>
+                <form onSubmit={loginForm.handleSubmit(handleLoginSubmit)} className="space-y-8">
+                  <div className="space-y-3">
                     <label
                       htmlFor="password"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      className="block text-base font-semibold text-gray-900 dark:text-gray-100 tracking-tight"
                     >
-                      {t('auth:login.password')}
+                      Password
                     </label>
-                    <div className="relative mt-1">
+                    <div className="relative">
                       <input
+                        data-testid="password-input"
                         {...loginForm.register('password')}
                         type={showPassword ? 'text' : 'password'}
                         autoComplete="current-password"
                         className={cn(
-                          'input pr-10',
-                          loginForm.formState.errors.password && 'input-error',
+                          'w-full px-4 py-4 pr-12 text-base bg-gray-50/80 dark:bg-gray-700/50 border-0 rounded-2xl',
+                          'focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-blue-500/50 focus:outline-none',
+                          'transition-all duration-200 ease-out backdrop-blur-sm',
+                          'placeholder:text-gray-500 dark:placeholder:text-gray-400',
+                          'shadow-lg shadow-gray-100/50 dark:shadow-gray-900/50',
+                          loginForm.formState.errors.password && 'ring-2 ring-red-500/50 bg-red-50/50 dark:bg-red-900/20'
                         )}
-                        placeholder={t('auth:login.passwordPlaceholder')}
+                        placeholder="Enter your password"
                       />
                       <button
                         type="button"
-                        className="absolute inset-y-0 right-0 flex items-center pr-3"
+                        className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
-                          <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                          <EyeSlashIcon className="h-5 w-5" />
                         ) : (
-                          <EyeIcon className="h-5 w-5 text-gray-400" />
+                          <EyeIcon className="h-5 w-5" />
                         )}
                       </button>
                     </div>
                     {loginForm.formState.errors.password && (
-                      <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                      <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400 flex items-center">
+                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {loginForm.formState.errors.password.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Enhanced Remember Me and Forgot Password */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <input
+                        {...loginForm.register('rememberMe')}
+                        id="rememberMe"
+                        type="checkbox"
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
+                      />
+                      <label
+                        htmlFor="rememberMe"
+                        className="ml-3 block text-base text-gray-700 dark:text-gray-300 font-medium"
+                      >
+                        Remember me
+                      </label>
+                    </div>
+
+                    <div className="text-base">
+                      <Link
+                        to="/auth/forgot-password"
+                        className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Enhanced Sign In Button */}
+                  <button
+                    data-testid="login-submit"
+                    type="submit"
+                    disabled={isLoading}
+                    className={cn(
+                      'w-full py-4 px-6 text-base font-semibold text-white rounded-2xl',
+                      'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800',
+                      'shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40',
+                      'transform transition-all duration-200 ease-out',
+                      'hover:scale-[1.02] active:scale-[0.98]',
+                      'focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-800',
+                      'disabled:opacity-50 disabled:transform-none disabled:cursor-not-allowed',
+                      'relative overflow-hidden'
+                    )}
+                  >
+                    {/* Button background glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
+                    
+                    <div className="relative flex items-center justify-center">
+                      {isLoading ? (
+                        <>
+                          <LoadingSpinner size="sm" />
+                          <span className="ml-3">Signing in...</span>
+                        </>
+                      ) : (
+                        <>
+                          <KeyIcon className="mr-3 h-5 w-5" />
+                          Sign In
+                        </>
+                      )}
+                    </div>
+                  </button>
                         {loginForm.formState.errors.password.message}
                       </p>
                     )}
