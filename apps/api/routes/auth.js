@@ -5,6 +5,7 @@ import { body, validationResult } from 'express-validator';
 import db from '../db.js';
 import { logger } from '../logger.js';
 import { sign as signJwt } from '../jwt.js';
+import { authAudit } from '../middleware/audit.js';
 
 const router = express.Router();
 
@@ -170,6 +171,10 @@ router.post(
           [fullName, email, passwordHash],
         );
         const user = result.rows[0];
+        
+        // Log successful registration
+        await authAudit.registration(user.id, user.email, req.ip, req.get('User-Agent'));
+        
         return res.status(201).json({ id: user.id, email: user.email, name: user.name });
       } catch (dbErr) {
         // Log database error and fallback to in-memory for environments without DB
@@ -188,6 +193,10 @@ router.post(
           createdAt: new Date().toISOString(),
         };
         inMemoryUsersByEmail.set(email, user);
+        
+        // Log successful registration
+        await authAudit.registration(user.id, user.email, req.ip, req.get('User-Agent'));
+        
         return res.status(201).json({ id, email, name: fullName });
       }
     } catch (error) {
@@ -305,6 +314,14 @@ router.post(
         
         failedLoginAttempts.set(attemptKey, attempt);
 
+        // Log failed login attempt
+        await authAudit.loginFailure(email, clientIp, userAgent, !user ? 'user_not_found' : 'invalid_password');
+        
+        // Detect potential brute force attack
+        if (attempt.count >= 10) {
+          await authAudit.bruteForceDetected(email, clientIp, userAgent, attempt.count);
+        }
+
         // Always return same error message to prevent user enumeration
         return res.status(401).json({ error: 'Invalid credentials' });
       }
@@ -322,14 +339,8 @@ router.post(
         logger.warn('Failed to update user login timestamp', { error: dbErr.message });
       }
 
-      // Log successful login
-      logger.info('Successful login', {
-        userId: user.id,
-        email: user.email,
-        ip: clientIp,
-        userAgent,
-        timestamp: new Date().toISOString(),
-      });
+      // Log successful login with audit system
+      await authAudit.loginSuccess(user.id, user.email, clientIp, userAgent);
 
       const token = signJwt({ 
         id: user.id, 
@@ -374,15 +385,8 @@ router.post('/logout', async (req, res) => {
       const { verify: verifyJwt } = await import('../jwt.js');
       const decoded = verifyJwt(token);
       
-      // Log the logout event
-      logger.info('User logout', {
-        userId: decoded.id,
-        email: decoded.email,
-        tokenId: decoded.jti,
-        ip: clientIp,
-        userAgent: req.get('User-Agent'),
-        timestamp: new Date().toISOString(),
-      });
+      // Log the logout event with audit system
+      await authAudit.logout(decoded.id, decoded.email, clientIp, req.get('User-Agent'));
 
       // Revoke the token using the improved JWT system
       const { revoke } = await import('../jwt.js');
@@ -555,14 +559,8 @@ router.post(
           const resetToken = crypto.randomBytes(32).toString('hex');
           const tokenExpiry = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour from now
           
-          // Log password reset request
-          logger.info('Password reset requested', {
-            userId: user.id,
-            email: user.email,
-            ip: clientIp,
-            userAgent: req.get('User-Agent'),
-            timestamp: new Date().toISOString(),
-          });
+          // Log password reset request with audit system
+          await authAudit.passwordResetRequest(user.email, clientIp, req.get('User-Agent'));
 
           // In production, send email with reset link
           // const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
