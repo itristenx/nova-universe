@@ -19,19 +19,10 @@ import {
   type CustomApp,
   type AppAssignment,
 } from '@services/enhancedAppSwitcher';
-<<<<<<< Updated upstream
-import { useRBACStore } from '../../stores/rbacStore';
-
-export function AppManagement() {
-  const { t } = useTranslation(['admin']);
-  const { currentUser } = useRBACStore();
-  const { addNotification } = useNotifications();
-=======
 import toast from 'react-hot-toast';
 
 export function AppManagement() {
   const { t } = useTranslation(['admin', 'common']);
->>>>>>> Stashed changes
   const [apps, setApps] = useState<CustomApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -101,17 +92,8 @@ export function AppManagement() {
 
   const handleCreateApp = async () => {
     try {
-<<<<<<< Updated upstream
-      await enhancedAppSwitcherService.createCustomApp(formData, currentUser?.id);
-      addNotification({
-        type: 'success',
-        title: 'Success',
-        message: 'Application created successfully',
-      });
-=======
       await enhancedAppSwitcherService.createCustomApp(formData);
       toast.success(t('admin:appManagement.success.created'));
->>>>>>> Stashed changes
       setShowCreateModal(false);
       resetForm();
       loadApps();
