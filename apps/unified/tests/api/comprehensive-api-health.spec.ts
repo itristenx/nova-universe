@@ -418,6 +418,15 @@ test.describe('Comprehensive API Health and Integration Tests', () => {
       expect(readTime).toBeLessThan(10000); // Should complete within 10 seconds
 
       console.log(`✅ Concurrent reads: ${successfulReads.length}/${concurrentRequests} successful in ${readTime}ms`);
+      
+      if (failedReads.length > 0) {
+        console.warn(`⚠️ ${failedReads.length} failed reads detected during load test`);
+        failedReads.forEach((result, index) => {
+          if (result.status === 'rejected') {
+            console.warn(`Failed read ${index}:`, result.reason);
+          }
+        });
+      }
 
       // Test batch operations
       const batchPromises = Array.from({ length: requestsPerBatch }, (_, i) =>

@@ -98,7 +98,16 @@ export default function UsersPage() {
       }
       clearSelection();
     } catch (_error) {
-      console.error('Bulk action failed:', error);
+      console.error('Bulk action failed:', _error);
+      // Enhanced bulk action error tracking
+      const actionErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'bulk_user_action',
+        action: action,
+        selectedCount: selectedUsers.size
+      };
+      console.error('Bulk Action Error Details:', actionErrorDetails);
     }
   };
 
@@ -130,7 +139,16 @@ export default function UsersPage() {
           break;
       }
     } catch (_error) {
-      console.error('User action failed:', error);
+      console.error('User action failed:', _error);
+      // Enhanced user action error tracking
+      const userActionErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'individual_user_action',
+        action: action,
+        userId: userId
+      };
+      console.error('User Action Error Details:', userActionErrorDetails);
     }
   };
 

@@ -83,8 +83,17 @@ export default function UserProfilePage() {
       setEditMode(false);
       setUploadedFiles([]);
     } catch (_error) {
-      console.error('Failed to update profile:', error);
+      console.error('Failed to update profile:', _error);
       toast.error('Failed to update profile. Please try again.');
+      // Enhanced profile update error tracking
+      const profileErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'profile_update',
+        userId: user?.id,
+        operation: 'updateProfile'
+      };
+      console.error('Profile Update Error Details:', profileErrorDetails);
     } finally {
       setIsSaving(false);
     }

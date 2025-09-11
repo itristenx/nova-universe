@@ -18,6 +18,7 @@ const authenticateJWT = (req, res, next) => {
 
 const checkPermission = (permission) => (req, res, next) => {
   // Mock permission check - always allow for testing
+  console.log(`Checking permission: ${permission} for user ${req.user?.id || 'anonymous'}`);
   next();
 };
 
@@ -25,9 +26,12 @@ const checkPermission = (permission) => (req, res, next) => {
 import workflowRoutes from '../apps/api/routes/workflows.js';
 import approvalRoutes from '../apps/api/routes/approvals.js';
 
-// Use routes
-app.use('/api/workflows', workflowRoutes);
-app.use('/api/approvals', approvalRoutes);
+// Apply authentication middleware
+app.use('/api', authenticateJWT);
+
+// Use routes with permission checking
+app.use('/api/workflows', checkPermission('workflows:read'), workflowRoutes);
+app.use('/api/approvals', checkPermission('approvals:read'), approvalRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

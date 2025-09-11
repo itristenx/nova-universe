@@ -70,6 +70,18 @@ export default function CreateAssetPage() {
       navigate('/assets');
     } catch (_error) {
       toast.error('Failed to create asset');
+      // Enhanced asset creation error tracking
+      const assetCreationErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'asset_creation',
+        assetData: {
+          type: formData.type,
+          name: formData.name,
+          model: formData.model
+        }
+      };
+      console.error('Asset Creation Error Details:', assetCreationErrorDetails);
     } finally {
       setIsLoading(false);
     }

@@ -170,6 +170,20 @@ test.describe('Dashboard and ITSM Core Functionality', () => {
           };
         });
         
+        // Also check h2 styles if present
+        if (await h2.isVisible()) {
+          const h2Styles = await h2.evaluate(el => {
+            const styles = window.getComputedStyle(el);
+            return {
+              fontSize: styles.fontSize,
+              fontWeight: styles.fontWeight,
+              color: styles.color
+            };
+          });
+          
+          console.log('H2 Styles detected:', h2Styles);
+        }
+        
         // H1 should have larger font size than body text
         expect(parseFloat(h1Styles.fontSize)).toBeGreaterThan(16);
       }

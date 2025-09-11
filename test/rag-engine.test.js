@@ -6,7 +6,7 @@
 
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert';
-import { NovaRAGEngine, ragEngine } from '../apps/api/lib/rag-engine.js';
+import { NovaRAGEngine } from '../apps/api/lib/rag-engine.js';
 import { localEmbeddingModel } from '../apps/api/lib/rag-local-embeddings.js';
 
 describe('RAG Engine System', () => {

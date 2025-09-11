@@ -3,7 +3,7 @@
  * Tests ServiceNow/Zendesk-style email functionality
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
 import enhancedEmailTrackingService from '../apps/api/services/enhanced-email-tracking.service.js';
 import EnhancedNotificationIntegration from '../apps/api/services/enhanced-notification-integration.service.js';
 

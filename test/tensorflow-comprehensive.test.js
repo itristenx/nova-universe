@@ -5,7 +5,7 @@
  * to ensure industry standards compliance and full functionality.
  */
 
-import { describe, test, before, after, beforeEach } from 'node:test';
+import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert';
 import * as tf from '@tensorflow/tfjs-node';
 import * as fs from 'fs/promises';

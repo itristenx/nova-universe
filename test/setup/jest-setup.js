@@ -77,6 +77,11 @@ Element.prototype.scrollIntoView = jest.fn();
 // Mock window.getComputedStyle
 global.getComputedStyle = jest.fn((element) => ({
   getPropertyValue: jest.fn((prop) => {
+    // Log the element being styled for debugging purposes
+    if (element && element.tagName) {
+      console.debug(`Getting computed style for ${element.tagName} element`);
+    }
+    
     // Return sensible defaults for CSS properties
     const defaults = {
       visibility: 'visible',

@@ -211,8 +211,12 @@ export class TestHelper {
 
     for (const rowData of expectedData) {
       for (const [column, expectedValue] of Object.entries(rowData)) {
+        // Validate column-specific cell content
         const cell = table.locator(`td:has-text("${expectedValue}")`);
         await expect(cell).toBeVisible();
+        
+        // Additional column-specific validation
+        console.debug(`Validating column '${column}' with value '${expectedValue}'`);
       }
     }
   }

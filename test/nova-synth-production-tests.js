@@ -292,6 +292,15 @@ class NovaSynthProductionTests {
       });
 
       if (!result.success) throw new Error('Quality monitoring failed to start');
+      
+      // Wait briefly and check if monitoring started
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if (!monitoringStarted) {
+        console.warn('Quality monitoring may not have triggered callback yet');
+      } else {
+        console.log('Quality monitoring successfully started and callback triggered');
+      }
 
       // Simulate some time for monitoring to activate
       await new Promise((resolve) => setTimeout(resolve, 100));

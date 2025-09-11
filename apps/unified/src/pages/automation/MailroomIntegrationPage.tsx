@@ -104,7 +104,16 @@ export default function MailroomIntegrationPage() {
         setProcessingRules([]);
       }
     } catch (_error) {
-      console.warn('Mailroom API unavailable, using fallback data:', error);
+      console.warn('Mailroom API unavailable, using fallback data:', _error);
+      // Enhanced mailroom error tracking
+      const mailroomErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'mailroom_data_load',
+        operation: 'loadMailroomData'
+      };
+      console.error('Mailroom Integration Error Details:', mailroomErrorDetails);
+      
       // Fallback to empty state
       setEmails([]);
       setProcessingRules([]);

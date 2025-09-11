@@ -231,6 +231,14 @@ Object.keys(translations).forEach(locale => {
   if (fs.existsSync(localeFilePath)) {
     const localeData = JSON.parse(fs.readFileSync(localeFilePath, 'utf8'));
     
+    // Validate critical sections exist in English reference
+    criticalSections.forEach(section => {
+      const sectionExists = hasNestedKey(enLocale, section);
+      if (!sectionExists) {
+        console.warn(`Warning: Critical section '${section}' missing from English locale`);
+      }
+    });
+    
     // Add missing translations
     Object.entries(translations[locale]).forEach(([key, value]) => {
       setNestedValue(localeData, key, value);
@@ -241,5 +249,20 @@ Object.keys(translations).forEach(locale => {
     console.log(`Updated ${locale}.json with ${Object.keys(translations[locale]).length} new translations`);
   }
 });
+
+// Helper function to check if nested key exists
+function hasNestedKey(obj, key) {
+  const keys = key.split('.');
+  let current = obj;
+  
+  for (let i = 0; i < keys.length; i++) {
+    if (!current || typeof current !== 'object' || !(keys[i] in current)) {
+      return false;
+    }
+    current = current[keys[i]];
+  }
+  
+  return true;
+}
 
 console.log('Translation completion script finished!');

@@ -8,7 +8,6 @@
 
 import { ragEngine } from '../apps/api/lib/rag-engine.js';
 import { localEmbeddingModel } from '../apps/api/lib/rag-local-embeddings.js';
-import { logger } from '../apps/api/logger.js';
 
 // Sample Nova documentation and knowledge base content
 const sampleDocuments = [

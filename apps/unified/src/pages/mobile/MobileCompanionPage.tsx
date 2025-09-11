@@ -94,7 +94,16 @@ export default function MobileCompanionPage() {
         setQrSessions([]);
       }
     } catch (_error) {
-      console.warn('Mobile API unavailable, using fallback data:', error);
+      console.warn('Mobile API unavailable, using fallback data:', _error);
+      // Enhanced mobile companion error tracking
+      const mobileErrorDetails = {
+        error: _error instanceof Error ? _error.message : String(_error),
+        timestamp: new Date().toISOString(),
+        context: 'mobile_companion_data_load',
+        operation: 'loadMobileData'
+      };
+      console.error('Mobile Companion Error Details:', mobileErrorDetails);
+      
       // Fallback to empty state
       setDevices([]);
       setNotifications([]);

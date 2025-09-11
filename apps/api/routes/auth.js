@@ -125,11 +125,13 @@ router.post(
       let user = null;
       try {
         const found = await db.query(
-          'SELECT id, name, email, password_hash as passwordhash, disabled, locked_until FROM users WHERE email = $1',
+          'SELECT id, name, email, password_hash as passwordhash, password_hash, password, disabled, locked_until FROM users WHERE email = $1',
           [email],
         );
         if (found.rows && found.rows.length > 0) {
-          user = { ...found.rows[0], passwordHash: found.rows[0].passwordhash };
+          const row = found.rows[0] || {};
+          const hash = row.passwordhash || row.password_hash || row.password || row.passwordHash;
+          user = { ...row, passwordHash: hash };
           if (user.locked_until && new Date(user.locked_until).getTime() > now) {
             return res.status(423).json({ error: 'Account temporarily locked' });
           }

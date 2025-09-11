@@ -141,8 +141,17 @@ export default function SpaceDetailPage() {
         setSpace(spaceData);
         setBookings(bookingsData.data);
       } catch (_error) {
-        console.error('Failed to fetch space details:', error);
+        console.error('Failed to fetch space details:', _error);
         toast.error('Failed to load space details');
+        // Enhanced space detail error tracking
+        const spaceErrorDetails = {
+          error: _error instanceof Error ? _error.message : String(_error),
+          timestamp: new Date().toISOString(),
+          context: 'space_detail_load',
+          spaceId: id,
+          operation: 'fetchSpaceDetails'
+        };
+        console.error('Space Detail Error Details:', spaceErrorDetails);
         navigate('/spaces');
       } finally {
         setIsLoading(false);

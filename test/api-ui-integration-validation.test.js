@@ -152,6 +152,11 @@ await test('Circuit Breaker Pattern Validation', async (t) => {
     const circuitBreakerStates = ['closed', 'open', 'half-open'];
     
     const updateCircuitState = (currentState, consecutiveFailures, threshold) => {
+      // Validate state is one of the allowed states
+      if (!circuitBreakerStates.includes(currentState)) {
+        throw new Error(`Invalid circuit breaker state: ${currentState}`);
+      }
+      
       if (consecutiveFailures >= threshold) {
         return 'open';
       }
@@ -164,6 +169,11 @@ await test('Circuit Breaker Pattern Validation', async (t) => {
     assert.strictEqual(updateCircuitState('closed', 5, 5), 'open');
     assert.strictEqual(updateCircuitState('open', 3, 5), 'half-open');
     assert.strictEqual(updateCircuitState('closed', 2, 5), 'closed');
+    
+    // Test that all defined states are valid
+    circuitBreakerStates.forEach(state => {
+      assert.doesNotThrow(() => updateCircuitState(state, 0, 5));
+    });
   });
 
   await t.test('should calculate circuit breaker timeout', () => {
