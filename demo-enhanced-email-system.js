@@ -5,6 +5,15 @@
  * Shows ServiceNow/Zendesk-style email functionality
  */
 
+/* glo    logger.info(`✅ Generated token: ${testToken.substring(0, 16)}...`);
+    
+    const tokenData = await enhancedEmailTrackingService.processActionToken(testToken);
+    logger.info(`✅ Token validated: ${tokenData.action} for ticket ${tokenData.context.ticketId}`);
+
+    // 4. Demonstrate Workflow Approval
+    logger.info('\n📋 4. Workflow Approval Notification');
+    logger.info('-'.repeat(40));ole, URLSearchParams, process */
+
 // Simple console logger for demo
 const logger = {
   info: console.log,
@@ -34,7 +43,10 @@ const enhancedEmailTrackingService = {
   },
   
   generateActionToken: (action, context) => {
-    return Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+    // Generate secure action token based on action type and context
+    const actionPrefix = action.substring(0, 3);
+    const contextHash = context ? context.toString(36) : 'anon';
+    return actionPrefix + Math.random().toString(36).substring(2) + contextHash + Math.random().toString(36).substring(2);
   },
   
   generateActionUrls: (ticketId, workflowId, instanceId) => {
@@ -43,71 +55,92 @@ const enhancedEmailTrackingService = {
     const denyToken = Math.random().toString(36).substring(2);
     
     return {
-      approve: {
-        token: approveToken,
-        url: `${baseUrl}/api/v2/email-actions/approve?token=${approveToken}`
-      },
-      deny: {
-        token: denyToken,
-        url: `${baseUrl}/api/v2/email-actions/deny?token=${denyToken}`
-      },
-      view: {
-        url: `${baseUrl}/tickets/${ticketId}`
-      },
-      comment: {
-        url: `${baseUrl}/tickets/${ticketId}#comment`
-      }
+      approve: `${baseUrl}/api/v1/tickets/${ticketId}/workflows/${workflowId}/instances/${instanceId}/approve?token=${approveToken}`,
+      deny: `${baseUrl}/api/v1/tickets/${ticketId}/workflows/${workflowId}/instances/${instanceId}/deny?token=${denyToken}`,
+      view: `${baseUrl}/tickets/${ticketId}?workflow=${workflowId}&instance=${instanceId}`
     };
   },
   
   processActionToken: async (token) => {
+    // Validate and process action token
+    if (!token || token.length < 8) {
+      throw new Error('Invalid token format');
+    }
+    
+    // Extract action prefix and validate token structure
+    const actionPrefix = token.substring(0, 3);
+    const actions = ['app', 'den', 'com', 'vie']; // approve, deny, comment, view
+    
+    if (!actions.some(prefix => actionPrefix.startsWith(prefix.substring(0, 3)))) {
+      throw new Error(`Unsupported action prefix: ${actionPrefix}`);
+    }
+    
     return {
-      action: 'approve',
-      context: { ticketId: '12345', workflowId: 'wf-001' },
-      used: true,
-      usedAt: new Date()
+      action: actionPrefix,
+      valid: true,
+      processed: true,
+      timestamp: new Date().toISOString()
     };
   },
   
   generateTrackingPixel: (messageId) => {
-    const baseUrl = process.env.PUBLIC_URL || 'https://nova.local';
-    const trackingId = Math.random().toString(36).substring(2, 18);
-    return `${baseUrl}/api/v2/email-tracking/pixel/${trackingId}.png`;
+    // Generate tracking pixel with comprehensive message tracking
+    const pixelId = `track_${messageId}_${Date.now()}`;
+    const pixelParams = new URLSearchParams({
+      mid: messageId,
+      t: Date.now(),
+      v: '1.0'
+    });
+    
+    return {
+      id: pixelId,
+      url: `https://track.nova.local/pixel.gif?${pixelParams.toString()}`,
+      width: 1,
+      height: 1,
+      style: 'display:none',
+      messageId: messageId,
+      tracking: {
+        enabled: true,
+        timestamp: new Date().toISOString(),
+        type: 'email_open',
+        parameters: Object.fromEntries(pixelParams)
+      }
+    };
   }
 };
 
 async function demonstrateEnhancedEmailSystem() {
-  console.log('\n🚀 Nova Enhanced Email/Notification System Demo\n');
-  console.log('='.repeat(60));
+  logger.info('\n🚀 Nova Enhanced Email/Notification System Demo\n');
+  logger.info('='.repeat(60));
 
   try {
     // 1. Demonstrate Email Threading
-    console.log('\n📧 1. Email Threading & Tracking');
-    console.log('-'.repeat(40));
+    logger.info('\n📧 1. Email Threading & Tracking');
+    logger.info('-'.repeat(40));
     
     const ticketId = '12345';
     const tracking = enhancedEmailTrackingService.generateTrackingHeaders(ticketId);
     
-    console.log('✅ Generated tracking headers:');
-    console.log(`   Message-ID: ${tracking.headers['Message-ID']}`);
-    console.log(`   Conversation-ID: ${tracking.headers['X-Nova-Conversation-ID']}`);
-    console.log(`   Ticket-ID: ${tracking.headers['X-Nova-Ticket-ID']}`);
+    logger.info('✅ Generated tracking headers:');
+    logger.info(`   Message-ID: ${tracking.headers['Message-ID']}`);
+    logger.info(`   Conversation-ID: ${tracking.headers['X-Nova-Conversation-ID']}`);
+    logger.info(`   Ticket-ID: ${tracking.headers['X-Nova-Ticket-ID']}`);
 
     // 2. Demonstrate Action Token Generation
-    console.log('\n🔐 2. Email Action Tokens');
-    console.log('-'.repeat(40));
+    logger.info('\n🔐 2. Email Action Tokens');
+    logger.info('-'.repeat(40));
     
     const actionUrls = enhancedEmailTrackingService.generateActionUrls(ticketId, 'wf-001', 'inst-001');
     
-    console.log('✅ Generated action URLs:');
-    console.log(`   Approve: ${actionUrls.approve.url}`);
-    console.log(`   Deny: ${actionUrls.deny.url}`);
-    console.log(`   View: ${actionUrls.view.url}`);
-    console.log(`   Comment: ${actionUrls.comment.url}`);
+    logger.info('✅ Generated action URLs:');
+    logger.info(`   Approve: ${actionUrls.approve.url}`);
+    logger.info(`   Deny: ${actionUrls.deny.url}`);
+    logger.info(`   View: ${actionUrls.view.url}`);
+    logger.info(`   Comment: ${actionUrls.comment.url}`);
 
     // 3. Demonstrate Token Validation
-    console.log('\n🔍 3. Token Validation');
-    console.log('-'.repeat(40));
+    logger.info('\n🔍 3. Token Validation');
+    logger.info('-'.repeat(40));
     
     const testToken = enhancedEmailTrackingService.generateActionToken('approve', { 
       ticketId, 

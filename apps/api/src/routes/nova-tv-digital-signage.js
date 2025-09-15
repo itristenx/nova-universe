@@ -92,6 +92,9 @@ async function getFileMetadata(filePath, _mimetype) {
     size: stats.size,
     createdAt: stats.birthtime,
     modifiedAt: stats.mtime,
+    mimeType: _mimetype || 'application/octet-stream',
+    type: _mimetype ? (_mimetype.startsWith('image/') ? 'image' : 
+                      _mimetype.startsWith('video/') ? 'video' : 'other') : 'unknown'
   };
 
   // For images and videos, we could add dimension detection here
