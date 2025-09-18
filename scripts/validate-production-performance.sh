@@ -396,7 +396,7 @@ display_results_summary() {
     local pass_rate=0
     
     if [[ $total_tests -gt 0 ]]; then
-        pass_rate=$(echo "scale=1; $TESTS_PASSED * 100 / $total_tests" | bc)
+        pass_rate=$(echo "scale=0; $TESTS_PASSED * 100 / $total_tests" | bc)
     fi
     
     echo "Test Results:"
@@ -407,7 +407,7 @@ display_results_summary() {
     echo ""
     
     # Production readiness assessment
-    if [[ $PERFORMANCE_ISSUES -eq 0 && $pass_rate == "100.0" ]]; then
+    if [[ $PERFORMANCE_ISSUES -eq 0 && $pass_rate -eq 100 ]]; then
         echo -e "${GREEN}🎉 PRODUCTION READY: All performance requirements met!${NC}"
         echo ""
         echo "✅ System meets all critical performance requirements:"
@@ -416,7 +416,7 @@ display_results_summary() {
         echo "   - Infrastructure ready for scaling"
         echo ""
         echo "🚀 RECOMMENDATION: APPROVE FOR PRODUCTION DEPLOYMENT"
-    elif [[ $PERFORMANCE_ISSUES -le 2 && $pass_rate -gt 80 ]]; then
+    elif [[ $PERFORMANCE_ISSUES -le 2 && $pass_rate -ge 80 ]]; then
         echo -e "${YELLOW}⚠️  PRODUCTION READY WITH MINOR ISSUES${NC}"
         echo ""
         echo "System is mostly ready but requires attention to:"
