@@ -1400,5 +1400,34 @@ export class TicketService {
     return { start, end };
   }
 
+  /**
+   * Delete ticket - In production ITSM, this might soft delete or mark as deleted
+   */
+  static async deleteTicket(ticketId, _user) {
+    try {
+      const prismaClient = await getPrismaClient();
+      
+      // First check if ticket exists
+      const existingTicket = await prismaClient.tickets.findUnique({
+        where: { id: ticketId }
+      });
+
+      if (!existingTicket) {
+        return null;
+      }
+
+      // In production ITSM, we often soft delete by changing state
+      // For true deletion, we can use the delete operation
+      await prismaClient.tickets.delete({
+        where: { id: ticketId }
+      });
+
+      return { success: true, id: ticketId };
+    } catch (error) {
+      logger.error('Error in deleteTicket:', error);
+      throw new Error('Failed to delete ticket');
+    }
+  }
+
   // Additional helper methods would be implemented here...
 }

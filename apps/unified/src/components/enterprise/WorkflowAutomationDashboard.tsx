@@ -650,248 +650,66 @@ const WorkflowAutomationDashboard: React.FC<WorkflowAutomationProps> = ({
       setLoading(true);
       setError(null);
 
-      // Mock data for demonstration
-      const mockWorkflows: Workflow[] = [
-        {
-          id: '1',
-          name: 'Employee Onboarding Automation',
-          description:
-            'Automates the complete employee onboarding process including account creation, equipment provisioning, and access requests',
-          status: 'ACTIVE',
-          trigger_type: 'RECORD_CHANGE',
-          trigger_configuration: { table: 'hr_employees', condition: 'state=hired' },
-          version: '2.1.0',
-          is_template: false,
-          category: 'HR',
-          tags: ['onboarding', 'hr', 'automation'],
-          created_by_id: '1',
-          created_by: {
-            id: '1',
-            email: 'admin@company.com',
-            first_name: 'System',
-            last_name: 'Admin',
-            created_at: '',
-            updated_at: '',
-          },
-          last_executed: '2024-01-10T14:30:00Z',
-          execution_count: 127,
-          success_rate: 94.5,
-          average_duration: 185,
-          steps: [],
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-10T14:30:00Z',
-        },
-        {
-          id: '2',
-          name: 'Incident Response Automation',
-          description:
-            'Automatically escalates critical incidents, creates war rooms, and notifies stakeholders',
-          status: 'ACTIVE',
-          trigger_type: 'EVENT_DRIVEN',
-          trigger_configuration: { event: 'incident.created', severity: 'critical' },
-          version: '1.8.3',
-          is_template: false,
-          category: 'IT Operations',
-          tags: ['incident', 'escalation', 'notification'],
-          created_by_id: '2',
-          created_by: {
-            id: '2',
-            email: 'ops@company.com',
-            first_name: 'Operations',
-            last_name: 'Team',
-            created_at: '',
-            updated_at: '',
-          },
-          last_executed: '2024-01-10T16:45:00Z',
-          execution_count: 89,
-          success_rate: 97.8,
-          average_duration: 45,
-          steps: [],
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-10T16:45:00Z',
-        },
-        {
-          id: '3',
-          name: 'Security Vulnerability Remediation',
-          description:
-            'Automatically creates tickets, assigns to security team, and tracks remediation progress',
-          status: 'TESTING',
-          trigger_type: 'API_CALL',
-          trigger_configuration: { endpoint: '/api/vulnerabilities', method: 'POST' },
-          version: '1.0.0',
-          is_template: false,
-          category: 'Security',
-          tags: ['security', 'vulnerability', 'remediation'],
-          created_by_id: '3',
-          created_by: {
-            id: '3',
-            email: 'security@company.com',
-            first_name: 'Security',
-            last_name: 'Team',
-            created_at: '',
-            updated_at: '',
-          },
-          last_executed: '2024-01-10T12:00:00Z',
-          execution_count: 23,
-          success_rate: 87.0,
-          average_duration: 120,
-          steps: [],
-          created_at: '2024-01-05T00:00:00Z',
-          updated_at: '2024-01-10T12:00:00Z',
-        },
-      ];
+      // Fetch real data from API endpoints
+      try {
+        const [workflowsResponse, executionsResponse, analyticsResponse] = await Promise.all([
+          apiClient.get('/api/v1/workflows'),
+          apiClient.get('/api/v1/workflow-executions'),
+          apiClient.get('/api/v1/workflow-analytics'),
+        ]);
 
-      const mockExecutions: WorkflowExecution[] = [
-        {
-          id: '1',
-          workflow_id: '1',
-          workflow: mockWorkflows[0],
-          execution_id: 'WFE-2024-001',
-          status: 'RUNNING',
-          started_at: '2024-01-10T16:30:00Z',
-          triggered_by_id: '1',
-          triggered_by: {
-            id: '1',
-            email: 'hr@company.com',
-            first_name: 'HR',
-            last_name: 'System',
-            created_at: '',
-            updated_at: '',
+        if (workflowsResponse.success) {
+          setWorkflows(workflowsResponse.data || []);
+        }
+
+        if (executionsResponse.success) {
+          setExecutions(executionsResponse.data || []);
+        }
+
+        if (analyticsResponse.success) {
+          setAnalytics(analyticsResponse.data || {
+            totalWorkflows: 0,
+            activeWorkflows: 0,
+            totalExecutions: 0,
+            executionsToday: 0,
+            averageSuccessRate: 0,
+            averageExecutionTime: 0,
+            executionsByStatus: {},
+            workflowsByTrigger: {},
+            popularWorkflows: [],
+            recentFailures: [],
+            performanceMetrics: {
+              throughput: 0,
+              latency: 0,
+              errorRate: 0,
+              availability: 0,
+            },
+          });
+        }
+      } catch (apiError) {
+        console.warn('API endpoints not available, using empty data:', apiError);
+        // Set empty data instead of mock data for production
+        setWorkflows([]);
+        setExecutions([]);
+        setAnalytics({
+          totalWorkflows: 0,
+          activeWorkflows: 0,
+          totalExecutions: 0,
+          executionsToday: 0,
+          averageSuccessRate: 0,
+          averageExecutionTime: 0,
+          executionsByStatus: {},
+          workflowsByTrigger: {},
+          popularWorkflows: [],
+          recentFailures: [],
+          performanceMetrics: {
+            throughput: 0,
+            latency: 0,
+            errorRate: 0,
+            availability: 0,
           },
-          current_step_id: '3',
-          steps_completed: 3,
-          total_steps: 8,
-          execution_log: [
-            {
-              timestamp: '2024-01-10T16:30:00Z',
-              step_name: 'Create AD Account',
-              action: 'CREATE_RECORD',
-              status: 'COMPLETED',
-              message: 'Active Directory account created successfully',
-              duration_ms: 2340,
-            },
-            {
-              timestamp: '2024-01-10T16:30:30Z',
-              step_name: 'Send Welcome Email',
-              action: 'EMAIL_NOTIFICATION',
-              status: 'COMPLETED',
-              message: 'Welcome email sent to new employee',
-              duration_ms: 1250,
-            },
-            {
-              timestamp: '2024-01-10T16:31:00Z',
-              step_name: 'Provision Equipment',
-              action: 'CREATE_RECORD',
-              status: 'RUNNING',
-              message: 'Equipment request submitted to facilities',
-              duration_ms: 0,
-            },
-          ],
-          created_at: '2024-01-10T16:30:00Z',
-          updated_at: '2024-01-10T16:31:00Z',
-        },
-        {
-          id: '2',
-          workflow_id: '2',
-          workflow: mockWorkflows[1],
-          execution_id: 'WFE-2024-002',
-          status: 'COMPLETED',
-          started_at: '2024-01-10T15:45:00Z',
-          completed_at: '2024-01-10T15:46:30Z',
-          duration_seconds: 90,
-          triggered_by_id: '2',
-          triggered_by: {
-            id: '2',
-            email: 'monitoring@company.com',
-            first_name: 'Monitoring',
-            last_name: 'System',
-            created_at: '',
-            updated_at: '',
-          },
-          steps_completed: 4,
-          total_steps: 4,
-          execution_log: [
-            {
-              timestamp: '2024-01-10T15:45:00Z',
-              step_name: 'Escalate Incident',
-              action: 'UPDATE_RECORD',
-              status: 'COMPLETED',
-              message: 'Incident escalated to P1',
-              duration_ms: 890,
-            },
-            {
-              timestamp: '2024-01-10T15:45:15Z',
-              step_name: 'Create War Room',
-              action: 'INTEGRATION_CALL',
-              status: 'COMPLETED',
-              message: 'Slack war room created',
-              duration_ms: 2100,
-            },
-            {
-              timestamp: '2024-01-10T15:45:45Z',
-              step_name: 'Notify Stakeholders',
-              action: 'EMAIL_NOTIFICATION',
-              status: 'COMPLETED',
-              message: 'Stakeholders notified via email and SMS',
-              duration_ms: 1800,
-            },
-            {
-              timestamp: '2024-01-10T15:46:30Z',
-              step_name: 'Update Dashboard',
-              action: 'API_CALL',
-              status: 'COMPLETED',
-              message: 'Operations dashboard updated',
-              duration_ms: 560,
-            },
-          ],
-          created_at: '2024-01-10T15:45:00Z',
-          updated_at: '2024-01-10T15:46:30Z',
-        },
-      ];
-
-      const mockAnalytics: WorkflowAnalytics = {
-        totalWorkflows: 27,
-        activeWorkflows: 19,
-        totalExecutions: 1842,
-        executionsToday: 47,
-        averageSuccessRate: 93.2,
-        averageExecutionTime: 142.5,
-        executionsByStatus: {
-          PENDING: 3,
-          RUNNING: 5,
-          COMPLETED: 1675,
-          FAILED: 89,
-          CANCELLED: 45,
-          TIMEOUT: 25,
-        },
-        workflowsByTrigger: {
-          MANUAL: 8,
-          SCHEDULED: 6,
-          EVENT_DRIVEN: 7,
-          API_CALL: 4,
-          RECORD_CHANGE: 2,
-          APPROVAL_RESPONSE: 0,
-        },
-        popularWorkflows: [
-          { workflow: mockWorkflows[0], execution_count: 127, success_rate: 94.5 },
-          { workflow: mockWorkflows[1], execution_count: 89, success_rate: 97.8 },
-          { workflow: mockWorkflows[2], execution_count: 23, success_rate: 87.0 },
-        ],
-        recentFailures: [],
-        performanceMetrics: {
-          throughput: 23.4,
-          latency: 142.5,
-          errorRate: 6.8,
-          availability: 99.7,
-        },
-      };
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setWorkflows(mockWorkflows);
-      setExecutions(mockExecutions);
-      setAnalytics(mockAnalytics);
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load workflow automation data');
     } finally {
@@ -1299,26 +1117,18 @@ const WorkflowAutomationDashboard: React.FC<WorkflowAutomationProps> = ({
       );
     }
 
-    // Mock workflow nodes for demonstration
-    const mockNodes = [
-      { id: '1', name: 'Start', type: 'start', x: 50, y: 200, icon: '🟢' },
-      { id: '2', name: 'Create Record', type: 'action', x: 200, y: 150, icon: '📝' },
-      { id: '3', name: 'Send Email', type: 'action', x: 200, y: 250, icon: '📧' },
-      { id: '4', name: 'Approval?', type: 'condition', x: 400, y: 200, icon: '❓' },
-      { id: '5', name: 'Complete', type: 'end', x: 600, y: 200, icon: '🔴' },
-    ];
-
-    const connections = [
-      { from: '1', to: '2' },
-      { from: '1', to: '3' },
-      { from: '2', to: '4' },
-      { from: '3', to: '4' },
-      { from: '4', to: '5' },
-    ];
+    // Use workflow data from API
+    const workflowNodes = selectedWorkflow?.nodes || [];
+    const connections = selectedWorkflow?.connections || [];
 
     return (
       <div style={styles.visualDesigner}>
-        {mockNodes.map((node) => (
+        {workflowNodes.length === 0 ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+            {selectedWorkflow ? 'No workflow nodes available' : 'Select a workflow to view its design'}
+          </div>
+        ) : (
+          workflowNodes.map((node: any) => (
           <div
             key={node.id}
             style={{
@@ -1338,11 +1148,11 @@ const WorkflowAutomationDashboard: React.FC<WorkflowAutomationProps> = ({
               {node.type === 'end' && 'Workflow completion'}
             </div>
           </div>
-        ))}
+        )))}
 
-        {connections.map((conn, index) => {
-          const fromNode = mockNodes.find((n) => n.id === conn.from);
-          const toNode = mockNodes.find((n) => n.id === conn.to);
+        {connections.map((conn: any, index: number) => {
+          const fromNode = workflowNodes.find((n: any) => n.id === conn.from);
+          const toNode = workflowNodes.find((n: any) => n.id === conn.to);
           if (!fromNode || !toNode) return null;
 
           const x1 = fromNode.x + 160;

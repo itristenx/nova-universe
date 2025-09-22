@@ -1,0 +1,337 @@
+import express from 'express';
+import { PrismaClient } from '../../../prisma/generated/core/index.js';
+import { z } from 'zod';
+import { authenticateJWT } from '../middleware/auth.js';
+import { logger } from '../logger.js';
+
+const router = express.Router();
+const prisma = new PrismaClient();
+
+// Validation schemas
+const createServiceRequestSchema = z.object({
+  title: z.string().min(1).max(255),
+  description: z.string().optional(),
+  status: z.string().default('open'),
+  userId: z.string().optional(),
+  assigneeId: z.string().optional(),
+});
+
+const updateServiceRequestSchema = z.object({
+  title: z.string().min(1).max(255).optional(),
+  description: z.string().optional(),
+  status: z.string().optional(),
+  assigneeId: z.string().optional(),
+});
+
+// GET /api/v1/service-requests - List service requests (using SupportTicket)
+router.get('/', authenticateJWT, async (req, res) => {
+  try {
+    const { 
+      page = 1, 
+      limit = 50, 
+      status, 
+      assigneeId,
+      search 
+    } = req.query;
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const where = {};
+
+    // Apply filters
+    if (status) where.status = status;
+    if (assigneeId) where.assigneeId = assigneeId;
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [tickets, total] = await Promise.all([
+      prisma.supportTicket.findMany({
+        where,
+        include: {
+          users_support_tickets_userIdTousers: {
+            select: { id: true, email: true, firstName: true, lastName: true }
+          },
+          users_support_tickets_assigneeIdTousers: {
+            select: { id: true, email: true, firstName: true, lastName: true }
+          }
+        },
+        orderBy: [
+          { createdAt: 'desc' }
+        ],
+        skip: offset,
+        take: parseInt(limit)
+      }),
+      prisma.supportTicket.count({ where })
+    ]);
+
+    // Map to expected format
+    const mappedTickets = tickets.map(ticket => ({
+      id: ticket.id.toString(),
+      number: `SR${String(ticket.id).padStart(7, '0')}`,
+      short_description: ticket.title,
+      description: ticket.description,
+      state: ticket.status.toUpperCase(),
+      priority: 'MEDIUM', // Default since not in current schema
+      urgency: 'MEDIUM', // Default since not in current schema
+      impact: 'MEDIUM', // Default since not in current schema
+      category: 'General', // Default since not in current schema
+      requested_by: ticket.users_support_tickets_userIdTousers,
+      assigned_to: ticket.users_support_tickets_assigneeIdTousers,
+      created_at: ticket.createdAt,
+      updated_at: ticket.updatedAt
+    }));
+
+    res.json({
+      success: true,
+      data: mappedTickets,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    logger.error('Error fetching service requests:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch service requests',
+      message: error.message 
+    });
+  }
+});
+
+// GET /api/v1/service-requests/:id - Get specific service request
+router.get('/:id', authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const ticket = await prisma.supportTicket.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        users_support_tickets_userIdTousers: {
+          select: { id: true, email: true, firstName: true, lastName: true }
+        },
+        users_support_tickets_assigneeIdTousers: {
+          select: { id: true, email: true, firstName: true, lastName: true }
+        }
+      }
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Service request not found' 
+      });
+    }
+
+    // Map to expected format
+    const mappedTicket = {
+      id: ticket.id.toString(),
+      number: `SR${String(ticket.id).padStart(7, '0')}`,
+      short_description: ticket.title,
+      description: ticket.description,
+      state: ticket.status.toUpperCase(),
+      priority: 'MEDIUM', // Default since not in current schema
+      urgency: 'MEDIUM', // Default since not in current schema
+      impact: 'MEDIUM', // Default since not in current schema
+      category: 'General', // Default since not in current schema
+      requested_by: ticket.users_support_tickets_userIdTousers,
+      assigned_to: ticket.users_support_tickets_assigneeIdTousers,
+      created_at: ticket.createdAt,
+      updated_at: ticket.updatedAt
+    };
+
+    res.json({
+      success: true,
+      data: mappedTicket
+    });
+  } catch (error) {
+    logger.error('Error fetching service request:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch service request',
+      message: error.message 
+    });
+  }
+});
+
+// POST /api/v1/service-requests - Create new service request
+router.post('/', authenticateJWT, async (req, res) => {
+  try {
+    const validatedData = createServiceRequestSchema.parse(req.body);
+    
+    // Create ticket with SupportTicket schema
+    const ticket = await prisma.supportTicket.create({
+      data: {
+        title: validatedData.short_description,
+        description: validatedData.description,
+        status: validatedData.state ? validatedData.state.toLowerCase() : 'new',
+        userId: req.user.id, // From JWT
+        assigneeId: validatedData.assigned_to_id || null
+      },
+      include: {
+        users_support_tickets_userIdTousers: {
+          select: { id: true, email: true, firstName: true, lastName: true }
+        },
+        users_support_tickets_assigneeIdTousers: {
+          select: { id: true, email: true, firstName: true, lastName: true }
+        }
+      }
+    });
+
+    // Map to expected format
+    const mappedTicket = {
+      id: ticket.id.toString(),
+      number: `SR${String(ticket.id).padStart(7, '0')}`,
+      short_description: ticket.title,
+      description: ticket.description,
+      state: ticket.status.toUpperCase(),
+      priority: validatedData.priority || 'MEDIUM',
+      urgency: validatedData.urgency || 'MEDIUM',
+      impact: validatedData.impact || 'MEDIUM',
+      category: validatedData.category || 'General',
+      requested_by: ticket.users_support_tickets_userIdTousers,
+      assigned_to: ticket.users_support_tickets_assigneeIdTousers,
+      created_at: ticket.createdAt,
+      updated_at: ticket.updatedAt
+    };
+
+    res.status(201).json({
+      success: true,
+      data: mappedTicket
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: error.errors
+      });
+    }
+
+    logger.error('Error creating service request:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to create service request',
+      message: error.message 
+    });
+  }
+});
+
+// PUT /api/v1/service-requests/:id - Update service request
+router.put('/:id', authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const validatedData = updateServiceRequestSchema.parse(req.body);
+
+    // Check if ticket exists
+    const existingTicket = await prisma.supportTicket.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!existingTicket) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Service request not found' 
+      });
+    }
+
+    // Map validated data to SupportTicket schema
+    const updateData = {};
+    if (validatedData.short_description) updateData.title = validatedData.short_description;
+    if (validatedData.description) updateData.description = validatedData.description;
+    if (validatedData.state) updateData.status = validatedData.state.toLowerCase();
+    if (validatedData.assigned_to_id) updateData.assigneeId = validatedData.assigned_to_id;
+
+    const ticket = await prisma.supportTicket.update({
+      where: { id: parseInt(id) },
+      data: updateData,
+      include: {
+        users_support_tickets_userIdTousers: {
+          select: { id: true, email: true, firstName: true, lastName: true }
+        },
+        users_support_tickets_assigneeIdTousers: {
+          select: { id: true, email: true, firstName: true, lastName: true }
+        }
+      }
+    });
+
+    // Map to expected format
+    const mappedTicket = {
+      id: ticket.id.toString(),
+      number: `SR${String(ticket.id).padStart(7, '0')}`,
+      short_description: ticket.title,
+      description: ticket.description,
+      state: ticket.status.toUpperCase(),
+      priority: validatedData.priority || 'MEDIUM',
+      urgency: validatedData.urgency || 'MEDIUM',
+      impact: validatedData.impact || 'MEDIUM',
+      category: validatedData.category || 'General',
+      requested_by: ticket.users_support_tickets_userIdTousers,
+      assigned_to: ticket.users_support_tickets_assigneeIdTousers,
+      created_at: ticket.createdAt,
+      updated_at: ticket.updatedAt
+    };
+
+    res.json({
+      success: true,
+      data: mappedTicket
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: error.errors
+      });
+    }
+
+    logger.error('Error updating service request:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update service request',
+      message: error.message 
+    });
+  }
+});
+
+// DELETE /api/v1/service-requests/:id - Delete service request
+router.delete('/:id', authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if ticket exists
+    const existingTicket = await prisma.supportTicket.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!existingTicket) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Service request not found' 
+      });
+    }
+
+    await prisma.supportTicket.delete({
+      where: { id: parseInt(id) }
+    });
+
+    res.json({
+      success: true,
+      message: 'Service request deleted successfully'
+    });
+  } catch (error) {
+    logger.error('Error deleting service request:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to delete service request',
+      message: error.message 
+    });
+  }
+});
+
+export default router;

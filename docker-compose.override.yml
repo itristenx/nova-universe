@@ -1,4 +1,4 @@
 services:
   nova-api:
     environment:
-      - DISABLE_AUTH=true
+      - DISABLE_AUTH=false

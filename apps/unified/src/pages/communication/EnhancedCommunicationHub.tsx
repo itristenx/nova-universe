@@ -232,7 +232,6 @@ const communicationService = {
       const errorMessage = _error instanceof Error ? _error.message : String(_error);
       console.error('Error creating escalation:', {
         error: errorMessage,
-        fromUserId,
         toUserId,
         reason,
         timestamp: new Date().toISOString()

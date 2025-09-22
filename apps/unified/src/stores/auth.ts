@@ -480,9 +480,9 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // Register user (legacy/E2E or Helix)
-      register: async (data) => {
-        set({ isLoading: true, error: null });
-        try {
+        registerUser: async (data) => {
+          set({ isLoading: true, error: null });
+          try {
           if ((import.meta as any)?.env?.VITE_AUTH_LEGACY === 'true') {
             await apiClient.post('/auth/register', {
               email: data.email,

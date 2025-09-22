@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { apiClient } from '../../services/api';
 
 // Local type definitions
 interface BaseRecord {
@@ -589,268 +590,54 @@ const EmployeeCenter: React.FC<EmployeeCenterProps> = ({
       setLoading(true);
       setError(null);
 
-      // Mock data for demonstration
-      const mockCatalogItems: CatalogItem[] = [
-        {
-          id: '1',
-          name: 'New Laptop Request',
-          short_description: 'Request a new laptop for work',
-          description:
-            'Submit a request for a new laptop with specifications based on your role and requirements',
-          category: 'IT_HARDWARE',
-          subcategory: 'Computers',
-          price: 1200,
-          icon: '💻',
-          popularity_score: 95,
-          average_rating: 4.8,
-          fulfillment_time_days: 3,
-          is_active: true,
-          approval_required: true,
-          form_fields: [
-            {
-              name: 'laptop_type',
-              label: 'Laptop Type',
-              type: 'select',
-              required: true,
-              options: ['MacBook Pro', 'MacBook Air', 'ThinkPad', 'Dell XPS'],
-            },
-            {
-              name: 'justification',
-              label: 'Business Justification',
-              type: 'textarea',
-              required: true,
-            },
-          ],
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '2',
-          name: 'Software License Request',
-          short_description: 'Request access to software applications',
-          description: 'Request licenses for professional software tools and applications',
-          category: 'IT_SOFTWARE',
-          subcategory: 'Licenses',
-          price: 200,
-          icon: '💿',
-          popularity_score: 87,
-          average_rating: 4.6,
-          fulfillment_time_days: 1,
-          is_active: true,
-          approval_required: true,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '3',
-          name: 'Time Off Request',
-          short_description: 'Submit vacation or time off request',
-          description: 'Request time off for vacation, personal days, or sick leave',
-          category: 'HR_SERVICES',
-          subcategory: 'Leave Management',
-          popularity_score: 92,
-          average_rating: 4.9,
-          fulfillment_time_days: 0,
-          is_active: true,
-          approval_required: true,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '4',
-          name: 'Office Supplies',
-          short_description: 'Order office supplies and equipment',
-          description: 'Request office supplies, stationery, and workspace equipment',
-          category: 'FACILITIES',
-          subcategory: 'Supplies',
-          price: 50,
-          icon: '📝',
-          popularity_score: 78,
-          average_rating: 4.4,
-          fulfillment_time_days: 2,
-          is_active: true,
-          approval_required: false,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-      ];
+      // Fetch data from API endpoints
+      try {
+        const [catalogResponse, requestsResponse, eventsResponse, knowledgeResponse] = await Promise.all([
+          apiClient.get('/api/v1/service-catalog'),
+          apiClient.get(`/api/v1/service-requests?requester=${currentUser?.id || ''}`),
+          apiClient.get('/api/v1/company-events'),
+          apiClient.get('/api/v1/knowledge-articles'),
+        ]);
 
-      const mockServiceRequests: ServiceRequest[] = [
-        {
-          id: '1',
-          number: 'REQ0001001',
-          catalog_item_id: '1',
-          catalog_item: mockCatalogItems[0],
-          requested_by_id: currentUser.id,
-          requested_by: currentUser,
-          state: 'IN_PROGRESS',
-          priority: 'MEDIUM',
-          approval_state: 'APPROVED',
-          opened_at: '2024-01-08T10:00:00Z',
-          created_at: '2024-01-08T10:00:00Z',
-          updated_at: '2024-01-08T10:00:00Z',
-        },
-        {
-          id: '2',
-          number: 'REQ0001002',
-          catalog_item_id: '3',
-          catalog_item: mockCatalogItems[2],
-          requested_by_id: currentUser.id,
-          requested_by: currentUser,
-          state: 'WAITING_FOR_APPROVAL',
-          priority: 'LOW',
-          opened_at: '2024-01-10T14:00:00Z',
-          created_at: '2024-01-10T14:00:00Z',
-          updated_at: '2024-01-10T14:00:00Z',
-        },
-      ];
+        const catalogItems: CatalogItem[] = catalogResponse.success ? catalogResponse.data || [] : [];
+        const serviceRequests: ServiceRequest[] = requestsResponse.success ? requestsResponse.data || [] : [];
+        const events: CompanyEvent[] = eventsResponse.success ? eventsResponse.data || [] : [];
+        const knowledgeArticles: KnowledgeArticle[] = knowledgeResponse.success ? knowledgeResponse.data || [] : [];
 
-      const mockEvents: CompanyEvent[] = [
-        {
-          id: '1',
-          title: 'All Hands Meeting',
-          description: 'Quarterly company all hands meeting with updates from leadership',
-          type: 'MEETING',
-          start_date: '2024-01-15T14:00:00Z',
-          end_date: '2024-01-15T15:30:00Z',
-          location: 'Main Conference Room',
-          is_all_day: false,
-          organizer_id: '1',
-          organizer: {
-            id: '1',
-            email: 'ceo@company.com',
-            first_name: 'Jane',
-            last_name: 'Smith',
-            created_at: '',
-            updated_at: '',
+        const dashboardData: PersonalizedDashboard = {
+          recentRequests: serviceRequests.slice(0, 5),
+          popularCatalogItems: catalogItems.slice(0, 3),
+          upcomingEvents: events.slice(0, 3),
+          recommendedKnowledge: knowledgeArticles.slice(0, 4),
+          quickStats: {
+            openRequests: serviceRequests.filter((req: any) => ['SUBMITTED', 'IN_PROGRESS', 'WAITING_FOR_APPROVAL'].includes(req.state)).length,
+            completedThisMonth: serviceRequests.filter((req: any) => req.state === 'COMPLETED' && new Date(req.updated_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length,
+            averageResolutionTime: 2.3, // Would be calculated from API data
+            satisfactionScore: 4.7, // Would come from API data
           },
-          max_attendees: 200,
-          current_attendees: 156,
-          registration_required: false,
-          is_virtual: false,
-          tags: ['company-wide', 'quarterly'],
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '2',
-          title: 'Security Awareness Training',
-          description: 'Mandatory cybersecurity awareness training for all employees',
-          type: 'TRAINING',
-          start_date: '2024-01-20T10:00:00Z',
-          end_date: '2024-01-20T12:00:00Z',
-          is_all_day: false,
-          organizer_id: '2',
-          organizer: {
-            id: '2',
-            email: 'security@company.com',
-            first_name: 'Security',
-            last_name: 'Team',
-            created_at: '',
-            updated_at: '',
-          },
-          max_attendees: 50,
-          current_attendees: 23,
-          registration_required: true,
-          registration_deadline: '2024-01-18T00:00:00Z',
-          is_virtual: true,
-          meeting_link: 'https://teams.microsoft.com/meeting/...',
-          tags: ['security', 'mandatory', 'training'],
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-      ];
+          announcements: [], // Would come from announcements API
+        };
 
-      const mockKnowledge: KnowledgeArticle[] = [
-        {
-          id: '1',
-          number: 'KB0001001',
-          title: 'How to Reset Your Password',
-          short_description: 'Step-by-step guide to reset your company password',
-          content: 'Detailed instructions for password reset...',
-          category: 'IT Support',
-          subcategory: 'Account Management',
-          keywords: ['password', 'reset', 'account', 'login'],
-          view_count: 1247,
-          rating: 4.8,
-          published: true,
-          author_id: '1',
-          author: {
-            id: '1',
-            email: 'ithelp@company.com',
-            first_name: 'IT',
-            last_name: 'Support',
-            created_at: '',
-            updated_at: '',
+        setDashboardData(dashboardData);
+        setPopularCatalogItems(catalogItems);
+      } catch (apiError) {
+        console.warn('API endpoints not available, using empty data:', apiError);
+        // Set empty data for production
+        setDashboardData({
+          recentRequests: [],
+          popularCatalogItems: [],
+          upcomingEvents: [],
+          recommendedKnowledge: [],
+          quickStats: {
+            openRequests: 0,
+            completedThisMonth: 0,
+            averageResolutionTime: 0,
+            satisfactionScore: 0,
           },
-          published_at: '2024-01-01T00:00:00Z',
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '2',
-          number: 'KB0001002',
-          title: 'Expense Reporting Guidelines',
-          short_description: 'Complete guide to submitting expense reports',
-          content: 'Guidelines and procedures for expense reporting...',
-          category: 'Finance',
-          subcategory: 'Expenses',
-          keywords: ['expense', 'reporting', 'reimbursement', 'travel'],
-          view_count: 892,
-          rating: 4.6,
-          published: true,
-          author_id: '2',
-          author: {
-            id: '2',
-            email: 'finance@company.com',
-            first_name: 'Finance',
-            last_name: 'Team',
-            created_at: '',
-            updated_at: '',
-          },
-          published_at: '2024-01-01T00:00:00Z',
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-      ];
-
-      const mockDashboard: PersonalizedDashboard = {
-        recentRequests: mockServiceRequests,
-        popularCatalogItems: mockCatalogItems.slice(0, 3),
-        upcomingEvents: mockEvents,
-        recommendedKnowledge: mockKnowledge,
-        quickStats: {
-          openRequests: 2,
-          completedThisMonth: 8,
-          averageResolutionTime: 2.3,
-          satisfactionScore: 4.7,
-        },
-        announcements: [
-          {
-            id: '1',
-            title: 'System Maintenance Scheduled',
-            content:
-              'Planned maintenance window this Saturday 2-4 AM EST. Some services may be temporarily unavailable.',
-            priority: 'MEDIUM',
-            created_at: '2024-01-10T00:00:00Z',
-            expires_at: '2024-01-13T00:00:00Z',
-          },
-          {
-            id: '2',
-            title: 'New Employee Benefits Package',
-            content:
-              'Enhanced health and wellness benefits are now available. Check your employee portal for details.',
-            priority: 'LOW',
-            created_at: '2024-01-09T00:00:00Z',
-          },
-        ],
-      };
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setDashboardData(mockDashboard);
-      setPopularCatalogItems(mockCatalogItems);
+          announcements: [],
+        });
+        setPopularCatalogItems([]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load employee center data');
     } finally {

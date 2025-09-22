@@ -123,28 +123,33 @@ router.post(
       }
 
       let user = null;
+      console.log('🔍 DEBUG: Looking for user with email:', email);
       try {
         const found = await db.query(
-          'SELECT id, name, email, password_hash as passwordhash, password_hash, password, disabled, locked_until FROM users WHERE email = $1',
+          'SELECT id, name, email, password_hash, disabled FROM users WHERE email = $1',
           [email],
         );
+        console.log('🔍 DEBUG: Query result rows:', found.rows?.length || 0);
         if (found.rows && found.rows.length > 0) {
           const row = found.rows[0] || {};
-          const hash = row.passwordhash || row.password_hash || row.password || row.passwordHash;
+          const hash = row.password_hash;
+          console.log('🔍 DEBUG: User found, has hash:', !!hash);
           user = { ...row, passwordHash: hash };
-          if (user.locked_until && new Date(user.locked_until).getTime() > now) {
-            return res.status(423).json({ error: 'Account temporarily locked' });
-          }
+          // Note: locked_until column doesn't exist in current schema
         }
-      } catch {
+      } catch (dbError) {
+        console.log('🔍 DEBUG: Database error:', dbError.message);
         // ignore DB error and use in-memory
       }
 
       if (!user && inMemoryUsersByEmail.has(email)) {
+        console.log('🔍 DEBUG: Using in-memory user');
         user = inMemoryUsersByEmail.get(email);
       }
 
+      console.log('🔍 DEBUG: Final user check - user exists:', !!user, 'has password:', !!user?.passwordHash);
       if (!user || !user.passwordHash || !bcrypt.compareSync(password, user.passwordHash)) {
+        console.log('🔍 DEBUG: Auth failed - user:', !!user, 'hash:', !!user?.passwordHash, 'compare result:', user?.passwordHash ? bcrypt.compareSync(password, user.passwordHash) : 'no hash');
         // Increment attempts and possibly lock
         attempt.count += 1;
         if (attempt.count >= 10) {
@@ -154,6 +159,7 @@ router.post(
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
+      console.log('🔍 DEBUG: Auth successful for user:', user.email);
       // Reset attempts on success
       failedLoginAttempts.delete(email);
 

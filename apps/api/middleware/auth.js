@@ -1,16 +1,46 @@
 // middleware/auth.js
 // Centralized authentication and authorization middleware for Nova Universe API
+// Enhanced with comprehensive security features and integration
+
 import jwt from 'jsonwebtoken';
-// import db from '../db.js'; // Currently unused but may be needed for future auth features
-import { verify as verifyJwtToken } from '../jwt.js';
 import { logger } from '../logger.js';
+import { verifyAccessToken } from './enhanced-jwt.js';
+import { logSecurityEvent } from './security-monitoring.js';
+import { recordFailedAttempt, clearFailedAttempts } from './account-lockout.js';
+import { auditAuthentication } from './audit-logging.js';
+import { monitorSecurityEvent } from './realtime-security-monitoring.js';
 
 /**
- * Middleware to verify JWT and attach user info to req.user
+ * Enhanced middleware to verify JWT and attach user info to req.user
  */
 export function authenticateJWT(req, res, next) {
   const authHeader = req.headers.authorization;
+  
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Log unauthorized access attempt
+    const securityEvent = {
+      eventType: 'UNAUTHORIZED_ACCESS',
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      resource: req.originalUrl,
+      action: req.method,
+      metadata: { result: 'missing_token' }
+    };
+    
+    logSecurityEvent('UNAUTHORIZED_ACCESS', securityEvent);
+    monitorSecurityEvent(securityEvent);
+    
+    auditAuthentication({
+      eventType: 'AUTH_MISSING_TOKEN',
+      level: 'WARN',
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      resource: req.originalUrl,
+      action: req.method,
+      outcome: 'FAILURE',
+      details: { reason: 'Missing or invalid Authorization header' }
+    });
+
     return res.status(401).json({
       error: 'Missing or invalid Authorization header',
       errorCode: 'AUTH_HEADER_MISSING',
@@ -21,6 +51,29 @@ export function authenticateJWT(req, res, next) {
 
   // Basic token format validation
   if (!token || token.length < 10) {
+    const securityEvent = {
+      eventType: 'UNAUTHORIZED_ACCESS',
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      resource: req.originalUrl,
+      action: req.method,
+      metadata: { result: 'invalid_token_format' }
+    };
+    
+    logSecurityEvent('UNAUTHORIZED_ACCESS', securityEvent);
+    monitorSecurityEvent(securityEvent);
+    
+    auditAuthentication({
+      eventType: 'AUTH_INVALID_TOKEN',
+      level: 'WARN',
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      resource: req.originalUrl,
+      action: req.method,
+      outcome: 'FAILURE',
+      details: { reason: 'Invalid token format' }
+    });
+
     return res.status(401).json({
       error: 'Invalid token format',
       errorCode: 'INVALID_TOKEN_FORMAT',
@@ -28,23 +81,73 @@ export function authenticateJWT(req, res, next) {
   }
 
   try {
-    const user = verifyJwtToken(token);
+    // Use enhanced JWT verification
+    const user = verifyAccessToken(token, {
+      ipAddress: req.ip,
+      verifyIpAddress: process.env.STRICT_IP_VERIFICATION === 'true'
+    });
+
     if (!user || !user.id || !user.email) {
+      logSecurityEvent('UNAUTHORIZED_ACCESS', {
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        resource: req.originalUrl,
+        action: req.method,
+        result: 'invalid_token_payload'
+      });
+
       return res.status(403).json({
         error: 'Invalid token payload',
         errorCode: 'INVALID_TOKEN_PAYLOAD',
       });
     }
+
+    // Clear any failed attempts on successful authentication
+    clearFailedAttempts(user.email);
+
+    // Log successful authentication
+    logSecurityEvent('LOGIN_SUCCESS', {
+      userId: user.id,
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      resource: req.originalUrl,
+      action: req.method,
+      result: 'success'
+    });
+
     req.user = user;
+    req.authToken = token; // Store token for potential blacklisting
     next();
   } catch (err) {
+    // Record failed attempt if it looks like a real user trying to authenticate
+    if (token.length > 20) {
+      recordFailedAttempt(req.body.email || 'unknown', req.ip);
+    }
+
     logger.warn('JWT verification failed', {
       error: err.message,
       ip: req.ip,
       userAgent: req.get('User-Agent'),
     });
+
+    logSecurityEvent('LOGIN_FAILURE', {
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      resource: req.originalUrl,
+      action: req.method,
+      result: err.name || 'verification_failed',
+      metadata: { error: err.message }
+    });
+
+    let errorMessage = 'Invalid or expired token';
+    if (err.name === 'TokenExpiredError') {
+      errorMessage = 'Token has expired';
+    } else if (err.name === 'JsonWebTokenError') {
+      errorMessage = 'Invalid token';
+    }
+
     return res.status(403).json({
-      error: 'Invalid or expired token',
+      error: errorMessage,
       errorCode: 'INVALID_TOKEN',
     });
   }
@@ -56,6 +159,14 @@ export function authenticateJWT(req, res, next) {
 export function requireRole(role) {
   return (req, res, next) => {
     if (!req.user) {
+      logSecurityEvent('UNAUTHORIZED_ACCESS', {
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        resource: req.originalUrl,
+        action: req.method,
+        result: 'no_user_context'
+      });
+
       return res.status(401).json({
         error: 'Authentication required',
         errorCode: 'AUTH_REQUIRED',
@@ -63,6 +174,15 @@ export function requireRole(role) {
     }
 
     if (!req.user.roles || !Array.isArray(req.user.roles)) {
+      logSecurityEvent('UNAUTHORIZED_ACCESS', {
+        userId: req.user.id,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        resource: req.originalUrl,
+        action: req.method,
+        result: 'invalid_role_data'
+      });
+
       return res.status(403).json({
         error: 'Invalid user role data',
         errorCode: 'INVALID_ROLE_DATA',
@@ -77,9 +197,35 @@ export function requireRole(role) {
         ip: req.ip,
       });
 
+      logSecurityEvent('UNAUTHORIZED_ACCESS', {
+        userId: req.user.id,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        resource: req.originalUrl,
+        action: req.method,
+        result: 'insufficient_role',
+        metadata: {
+          requiredRole: role,
+          userRoles: req.user.roles
+        }
+      });
+
       return res.status(403).json({
         error: 'Insufficient permissions',
         errorCode: 'INSUFFICIENT_PERMISSIONS',
+      });
+    }
+
+    // Log admin access for monitoring
+    if (['admin', 'superadmin'].includes(role)) {
+      logSecurityEvent('ADMIN_ACCESS', {
+        userId: req.user.id,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        resource: req.originalUrl,
+        action: req.method,
+        result: 'success',
+        metadata: { role }
       });
     }
 

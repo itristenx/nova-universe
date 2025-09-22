@@ -49,8 +49,8 @@
     "test:ui:performance-full": "playwright test tests/performance/ --workers 2 --timeout 180000",
     "test:ui:security-full": "playwright test tests/security/ --workers 1 --timeout 120000",
     "test:ui:mobile-full": "playwright test tests/mobile/ --workers 2 --timeout 120000",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint src --ext ts,tsx --fix",
+    "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint src --fix",
     "type-check": "tsc --noEmit",
     "format": "prettier --write src/**/*.{ts,tsx,json,css,md}",
     "analyze": "vite-bundle-analyzer"

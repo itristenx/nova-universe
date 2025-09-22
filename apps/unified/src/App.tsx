@@ -14,7 +14,7 @@ import KioskRedirect from '@components/KioskRedirect';
 import { lazy, Suspense } from 'react';
 
 // Authentication pages
-const LoginPage = lazy(() => import('@pages/auth/LoginPage'));
+const LoginPage = lazy(() => import('@pages/auth/AppleInspiredLoginPage'));
 const RegisterPage = lazy(() => import('@pages/auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('@pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@pages/auth/ResetPasswordPage'));
@@ -29,6 +29,12 @@ const AdminDashboard = lazy(() => import('@pages/dashboard/AdminDashboard'));
 const AgentDashboard = lazy(() => import('@pages/dashboard/AgentDashboard'));
 const UserDashboard = lazy(() => import('@pages/dashboard/UserDashboard'));
 const EnhancedUserDashboard = lazy(() => import('@pages/dashboard/EnhancedUserDashboard'));
+
+// Apple-inspired ITSM Dashboard
+const AppleInspiredITSMDashboard = lazy(() => import('@pages/itsm/AppleInspiredITSMDashboard'));
+const AppleInspiredCreateTicket = lazy(() => import('@pages/itsm/AppleInspiredCreateTicket'));
+const AppleInspiredTicketsList = lazy(() => import('@pages/itsm/AppleInspiredTicketsList'));
+const AppleInspiredTicketDetail = lazy(() => import('@pages/itsm/AppleInspiredTicketDetail'));
 
 // Ticket pages
 const TicketsPage = lazy(() => import('@pages/tickets/TicketsPage'));
@@ -238,10 +244,14 @@ function App() {
                       <Route path="/dashboard/agent" element={<AgentDashboard />} />
                       <Route path="/dashboard/user" element={<UserDashboard />} />
                       <Route path="/dashboard/enhanced" element={<EnhancedUserDashboard />} />
+                      <Route path="/dashboard/apple" element={<AppleInspiredITSMDashboard />} />
 
                       {/* Ticket management routes */}
                       <Route path="/tickets" element={<TicketsPage />} />
+                      <Route path="/tickets/apple" element={<AppleInspiredTicketsList />} />
+                      <Route path="/tickets/apple/:id" element={<AppleInspiredTicketDetail />} />
                       <Route path="/tickets/new" element={<CreateTicketPage />} />
+                      <Route path="/tickets/create" element={<AppleInspiredCreateTicket />} />
                       <Route path="/tickets/:id" element={<TicketDetailPage />} />
                       <Route path="/tickets/grid" element={<EnhancedTicketGrid />} />
 

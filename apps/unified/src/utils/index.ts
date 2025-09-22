@@ -665,7 +665,7 @@ export const withProductionErrorHandling = async <T>(
   try {
     return await apiCall();
   } catch (error) {
-    logger.error('API call failed:', {
+    console.error('API call failed:', {
       error: error instanceof Error ? error.message : String(error),
       timestamp: new Date().toISOString()
     });

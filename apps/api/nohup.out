@@ -1,0 +1,329 @@
+[2025-09-22T00:33:42.853Z] ℹ️ Hybrid storage initialized: local + S3
+[2025-09-22T00:33:42.855Z] ⚠️ Using fallback password for development only
+[2025-09-22T00:33:42.855Z] ⚠️ ⚠️  Database password generated automatically. Please set proper credentials in environment variables.
+[2025-09-22T00:33:42.855Z] ⚠️ Using fallback password for development only
+[2025-09-22T00:33:42.855Z] ⚠️ ⚠️  Database password generated automatically. Please set proper credentials in environment variables.
+[2025-09-22T00:33:42.855Z] ⚠️ Using fallback password for development only
+[2025-09-22T00:33:42.882Z] ℹ️ Metrics collection started
+[2025-09-22T00:33:42.882Z] ℹ️ Alert processing started
+[dotenv@17.2.1] injecting env (14) from .env -- tip: 📡 version env with Radar: https://dotenvx.com/radar
+[2025-09-22T00:33:43.137Z] ℹ️ Space Analytics initializing...
+[2025-09-22T00:33:43.137Z] 🐛 Setting up analytics engine
+[2025-09-22T00:33:43.706Z] ℹ️ Space Analytics initialized successfully
+[2025-09-22T00:33:43.706Z] ℹ️ Space Integrations initializing...
+[2025-09-22T00:33:43.706Z] 🐛 Setting up space integrations
+[2025-09-22T00:33:43.707Z] 🐛 Integration for zoom initialized
+[2025-09-22T00:33:43.707Z] 🐛 Integration for teams initialized
+[2025-09-22T00:33:43.707Z] 🐛 Integration for webex initialized
+[2025-09-22T00:33:43.707Z] 🐛 Integration for google initialized
+[2025-09-22T00:33:43.707Z] 🐛 Integration for slack initialized
+[2025-09-22T00:33:43.707Z] ℹ️ Space Integrations initialized successfully
+[2025-09-22T00:33:43.707Z] ℹ️ Booking Engine initializing...
+[2025-09-22T00:33:43.707Z] 🐛 Setting up booking system
+[2025-09-22T00:33:43.707Z] ℹ️ Booking Engine initialized successfully
+[2025-09-22T00:33:43.707Z] ℹ️ Visitor Manager initializing...
+[2025-09-22T00:33:43.707Z] 🐛 Setting up visitor management system
+[2025-09-22T00:33:43.707Z] ℹ️ Visitor Manager initialized successfully
+[2025-09-22T00:33:43.708Z] ℹ️ IoT Manager initializing...
+[2025-09-22T00:33:43.708Z] 🐛 Setting up IoT system
+[2025-09-22T00:33:43.708Z] ℹ️ IoT Manager initialized successfully
+[2025-09-22T00:33:43.719Z] ℹ️ Nova Spaces Service initialized successfully
+[2025-09-22T00:33:43.719Z] ℹ️ Enhanced Nova Spaces Service ready
+[dotenv@17.2.1] injecting env (0) from .env -- tip: 📡 version env with Radar: https://dotenvx.com/radar
+[2025-09-22T00:33:44.093Z] 🐛 Loaded file template: auto-reply-received-subject
+[2025-09-22T00:33:44.095Z] 🐛 Loaded file template: auto-reply-received
+[2025-09-22T00:33:44.096Z] 🐛 Loaded file template: password-reset-subject
+[2025-09-22T00:33:44.097Z] 🐛 Loaded file template: password-reset
+[2025-09-22T00:33:44.097Z] 🐛 Loaded file template: ticket-assigned-agent-subject
+[2025-09-22T00:33:44.097Z] 🐛 Loaded file template: ticket-assigned-agent
+[2025-09-22T00:33:44.098Z] 🐛 Loaded file template: ticket-created-customer-subject
+[2025-09-22T00:33:44.098Z] 🐛 Loaded file template: ticket-created-customer
+[2025-09-22T00:33:44.098Z] 🐛 Loaded file template: ticket-escalated-agent-subject
+[2025-09-22T00:33:44.099Z] 🐛 Loaded file template: ticket-escalated-agent
+[2025-09-22T00:33:44.099Z] 🐛 Loaded file template: ticket-resolved-customer-subject
+[2025-09-22T00:33:44.099Z] 🐛 Loaded file template: ticket-resolved-customer
+[2025-09-22T00:33:44.099Z] 🐛 Loaded file template: ticket-updated-customer-subject
+[2025-09-22T00:33:44.100Z] 🐛 Loaded file template: ticket-updated-customer
+[2025-09-22T00:33:44.100Z] 🐛 Loaded file template: ticket-updated-enhanced-subject
+[2025-09-22T00:33:44.100Z] 🐛 Loaded file template: ticket-updated-enhanced
+[2025-09-22T00:33:44.101Z] 🐛 Loaded file template: welcome-new-user-subject
+[2025-09-22T00:33:44.101Z] 🐛 Loaded file template: welcome-new-user
+[2025-09-22T00:33:44.101Z] 🐛 Loaded file template: workflow-approval-subject
+[2025-09-22T00:33:44.102Z] 🐛 Loaded file template: workflow-approval
+[2025-09-22T00:33:44.102Z] ℹ️ Registered email placeholder helpers
+[2025-09-22T00:33:44.102Z] ℹ️ Loaded 20 file-based email templates
+[dotenv@17.2.1] injecting env (0) from ../.env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+[2025-09-22T00:33:44.114Z] ℹ️ 🔍 Validating production environment configuration...
+[2025-09-22T00:33:44.114Z] ℹ️ ✅ Environment validation passed
+[2025-09-22T00:33:44.115Z] ℹ️ WebSocket event listeners initialized
+[2025-09-22T00:33:44.115Z] ℹ️ Uptime Kuma integration disabled (set UPTIME_KUMA_URL or ENABLE_UPTIME_KUMA=true to enable)
+[2025-09-22T00:33:44.231Z] ℹ️ 📋 Loaded comprehensive OpenAPI v3 specification
+[2025-09-22T00:33:44.357Z] ℹ️ 📋 Merged comprehensive OpenAPI specification with JSDoc spec
+[2025-09-22T00:33:44.357Z] 🐛 📋 Swagger spec generated with paths: [
+  '/api/ai-agent/chat',
+  '/api/ai-agent/capabilities',
+  '/api/ai-agent/channels',
+  '/api/ai-agent/sessions',
+  '/api/ai-agent/sessions/{sessionId}/close',
+  '/api/ai-agent/feedback',
+  '/api/ai-agent/analytics',
+  '/api/ai-agent/analytics/summary',
+  '/api/ai-agent/ab-tests',
+  '/api/ai-agent/ab-tests/{experimentId}/start',
+  '/api/ai-agent/bias-detection',
+  '/api/ai-agent/performance',
+  '/api/ai-agent/capabilities/{capabilityName}',
+  '/api/ai-control-tower/towers',
+  '/api/ai-control-tower/towers/{towerId}/metrics',
+  '/api/ai-control-tower/models',
+  '/api/ai-control-tower/datasets',
+  '/api/ai-control-tower/training',
+  '/api/ai-control-tower/rag',
+  '/api/ai-control-tower/rag/{ragId}/documents',
+  '/api/ai-control-tower/rag/{ragId}/query',
+  '/api/ai-control-tower/external-providers/config',
+  '/api/ai-control-tower/external-providers/enable',
+  '/api/ai-control-tower/external-providers/disable',
+  '/api/ai-control-tower/external-providers/update',
+  '/api/ai-control-tower/providers/status',
+  '/api/ai-control-tower/providers/validate-config',
+  '/api/ai-control-tower/audit/{towerId}',
+  '/api/ai-fabric/status',
+  '/api/ai-fabric/process',
+  '/api/ai-fabric/rag/query',
+  '/api/ai-fabric/rag/documents',
+  '/api/ai-fabric/monitoring/metrics',
+  '/api/ai-fabric/monitoring/bias',
+  '/api/ai-fabric/monitoring/compliance',
+  '/api/ai-fabric/monitoring/explain',
+  '/api/ai-fabric/providers',
+  '/api/ai-fabric/models',
+  '/api/ai-fabric/models/{modelId}/control',
+  '/api/ai-fabric/sessions',
+  '/api/ai-fabric/metrics/dashboard',
+  '/api/ai-fabric/providers/{providerId}/health',
+  '/api/ai-fabric/learning/feedback',
+  '/api/ai-fabric/initialize',
+  '/api/v2/alerts/create',
+  '/api/v2/alerts/escalate/{ticketId}',
+  '/api/v2/alerts/status/{alertId}',
+  '/api/v2/alerts/schedules',
+  '/api/v2/alerts/schedules/{scheduleId}',
+  '/api/v2/alerts/rotate/{scheduleId}',
+  '/api/v2/alerts/services',
+  '/api/v2/alerts/escalation-policies',
+  '/api/v2/alerts/history',
+  '/api/v2/alerts/health',
+  '/api/analytics/dashboard',
+  '/api/analytics/real-time',
+  '/api/analytics/executive',
+  '/api/v1/assets',
+  '/api/v2/beacon/config',
+  '/api/v2/beacon/ticket',
+  '/api/v2/beacon/assets',
+  '/api/v2/beacon/activate',
+  '/api/v1/cmdb/cis',
+  '/api/v1/cmdb/cis/{id}',
+  '/api/v1/cmdb/ci-types',
+  '/api/v1/cmdb/cis/{id}/relationships',
+  '/api/v1/cmdb/relationships',
+  '/api/v1/cmdb/discovery/run',
+  '/api/v1/cmdb/discovery/runs',
+  '/api/v1/cmdb/business-services',
+  '/api/v1/cmdb/health',
+  '/api/v1/cmdb/reports/impact-analysis',
+  '/api/v1/comms/health',
+  '/api/v1/comms/slack/status',
+  '/api/v1/comms/slack/initialize',
+  '/api/v1/comms/slack/test',
+  '/api/v1/comms/slack/commands',
+  '/api/v1/comms/slack/message-to-ticket',
+  '/api/v1/configuration',
+  '/api/v1/configuration/public',
+  '/api/v1/configuration/{key}',
+  '/api/v1/configuration/bulk',
+  '/api/v1/configuration/export',
+  '/api/v1/configuration/import',
+  '/api/v1/directory/config',
+  '/api/v1/directory/search',
+  '/api/v1/directory/user',
+  '/api/enhanced-monitoring/monitors',
+  '/api/enhanced-monitoring/monitors/{id}/check',
+  '/api/enhanced-monitoring/notification-providers',
+  '/api/enhanced-monitoring/tags',
+  '/api/enhanced-monitoring/maintenance-windows',
+  '/api/enhanced-monitoring/status-pages',
+  '/api/v2/files/upload',
+  '/api/v2/files/{id}',
+  '/api/v2/files/{id}/metadata',
+  '/api/v2/goalert/admin/sync-users',
+  '/api/v2/goalert/admin/health',
+  '/api/v2/goalert/services',
+  '/api/v2/goalert/services/{id}',
+  ... 227 more items
+]
+[2025-09-22T00:33:44.358Z] 🐛 📋 API version: 1.0.0
+[2025-09-22T00:33:44.360Z] ℹ️ 🚀 Initializing database connections...
+[2025-09-22T00:33:44.364Z] ℹ️ v2 MCP/Synth routes disabled (ENABLE_AI_COMPONENTS not true)
+[2025-09-22T00:33:44.365Z] ℹ️ AI Control Tower disabled (ENABLE_AI_COMPONENTS not true)
+[2025-09-22T00:33:44.365Z] ℹ️ AI Fabric routes disabled (ENABLE_AI_COMPONENTS not true)
+[2025-09-22T00:33:44.365Z] ℹ️ v1 Cosmo routes disabled (ENABLE_AI_COMPONENTS not true)
+[2025-09-22T00:33:44.365Z] ❌ ❌ PostgreSQL initialization failed: Cannot read properties of undefined (reading 'searchParams')
+[2025-09-22T00:33:44.366Z] ℹ️ 🔄 Retrying PostgreSQL connection in 5 seconds... (attempt 1/5)
+[2025-09-22T00:33:49.368Z] ℹ️ 🔄 Retrying PostgreSQL connection in 5 seconds... (attempt 2/5)
+[2025-09-22T00:34:04.374Z] ❌ 💀 PostgreSQL connection failed after maximum attempts
+[2025-09-22T00:34:04.376Z] ❌ ❌ PostgreSQL initialization failed: PostgreSQL connection failed: Cannot read properties of undefined (reading 'searchParams')
+[2025-09-22T00:34:04.405Z] ❌ ❌ PostgreSQL initialization failed: password authentication failed for user "nova_admin"
+[2025-09-22T00:34:04.406Z] ℹ️ 🔄 Retrying PostgreSQL connection in 5 seconds... (attempt 1/5)
+[2025-09-22T00:34:09.424Z] ℹ️ 🔄 Retrying PostgreSQL connection in 5 seconds... (attempt 2/5)
+[2025-09-22T00:34:24.499Z] ❌ 💀 PostgreSQL connection failed after maximum attempts
+[2025-09-22T00:34:24.500Z] ❌ ❌ Auth PostgreSQL initialization failed: PostgreSQL connection failed: password authentication failed for user "nova_admin"
+[2025-09-22T00:34:24.500Z] ❌ ❌ Database initialization failed: No databases available. At least one database must be configured.
+[2025-09-22T00:34:24.501Z] ❌ Failed to initialize database factory: Error: No databases available. At least one database must be configured.
+    at file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:65:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-09-22T00:34:24.502Z] ❌ Failed to initialize database factory: Error: No databases available. At least one database must be configured.
+    at file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:65:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-09-22T00:34:24.502Z] ❌ Failed to purge old logs: Error: No databases available. At least one database must be configured.
+    at file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:65:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-09-22T00:34:24.502Z] ❌ Failed to purge old logs: No databases available. At least one database must be configured.
+[2025-09-22T00:34:24.502Z] ❌ Error loading configuration from database: Error: No databases available. At least one database must be configured.
+    at file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:65:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[2025-09-22T00:34:24.504Z] 🐛 📋 Updated Swagger server URLs: [
+  {
+    url: 'http://localhost:3000/api/v2',
+    description: 'Current API (v2) - Latest features and improvements'
+  },
+  {
+    url: 'http://localhost:3000/api/v1',
+    description: 'Legacy API (v1) - Deprecated, maintained for backward compatibility'
+  }
+]
+[2025-09-22T00:34:24.504Z] ℹ️ 🚀 Initializing database connections...
+[2025-09-22T00:34:24.505Z] ❌ 💀 PostgreSQL connection failed after maximum attempts
+[2025-09-22T00:34:24.505Z] ❌ ❌ PostgreSQL initialization failed: PostgreSQL connection failed: Cannot read properties of undefined (reading 'searchParams')
+[2025-09-22T00:34:24.506Z] ❌ Unhandled Promise Rejection {
+  reason: {
+    name: 'Error',
+    message: 'No databases available. At least one database must be configured.',
+    stack: 'Error: No databases available. At least one database must be configured.\n' +
+      '    at file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:65:17\n' +
+      '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)'
+  },
+  promise: Promise {
+    <rejected> Error: No databases available. At least one database must be configured.
+        at file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:65:17
+        at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+  }
+}
+[2025-09-22T00:34:24.519Z] ❌ 💀 PostgreSQL connection failed after maximum attempts
+[2025-09-22T00:34:24.519Z] ❌ ❌ Auth PostgreSQL initialization failed: PostgreSQL connection failed: password authentication failed for user "nova_admin"
+[2025-09-22T00:34:24.519Z] ❌ ❌ Database initialization failed: No databases available. At least one database must be configured.
+[2025-09-22T00:34:24.519Z] ❌ Failed to initialize database factory: Error: No databases available. At least one database must be configured.
+    at file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:65:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async initializeDatabase (file:///Users/tneibarger/nova-universe/apps/api/db.js:67:5)
+    at async DatabaseWrapper.ensureReady (file:///Users/tneibarger/nova-universe/apps/api/db.js:865:17)
+    at async DatabaseWrapper.query (file:///Users/tneibarger/nova-universe/apps/api/db.js:872:22)
+[2025-09-22T00:34:24.520Z] ❌ Failed to initialize configuration system: Error: No databases available. At least one database must be configured.
+    at file:///Users/tneibarger/nova-universe/apps/api/database/factory.js:65:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async initializeDatabase (file:///Users/tneibarger/nova-universe/apps/api/db.js:67:5)
+    at async DatabaseWrapper.ensureReady (file:///Users/tneibarger/nova-universe/apps/api/db.js:865:17)
+    at async DatabaseWrapper.query (file:///Users/tneibarger/nova-universe/apps/api/db.js:872:22)
+[2025-09-22T00:34:24.520Z] ℹ️ Configuration management system initialized
+[2025-09-22T00:34:24.561Z] ℹ️ ✅ Elasticsearch connected successfully
+[2025-09-22T00:34:24.599Z] ℹ️ 📝 Elasticsearch indices verified/created successfully
+[2025-09-22T00:34:24.600Z] ℹ️ Elasticsearch initialized successfully
+[2025-09-22T00:34:24.634Z] ℹ️ GraphQL server setup complete
+[2025-09-22T00:34:24.634Z] ℹ️ Slack credentials not found - Slack integration disabled
+[2025-09-22T00:34:24.634Z] ℹ️ 🔗 API Versioning Strategy:
+[2025-09-22T00:34:24.634Z] ℹ️   • v2 (Current): /api/v2/* - Latest features and improvements
+[2025-09-22T00:34:24.635Z] ℹ️   • v1 (Deprecated): /api/v1/* - Legacy version with sunset warnings
+[2025-09-22T00:34:24.635Z] ℹ️   • Backward compatibility: /api/* routes map to v1 with deprecation headers
+[2025-09-22T00:34:24.635Z] ℹ️ 📋 API Documentation available at http://localhost:3000/api-docs
+[2025-09-22T00:34:24.636Z] ❌ Uncaught Exception {
+  error: {
+    name: 'Error',
+    message: 'listen EADDRINUSE: address already in use :::3000',
+    stack: 'Error: listen EADDRINUSE: address already in use :::3000\n' +
+      '    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n' +
+      '    at listenInCluster (node:net:1997:12)\n' +
+      '    at Server.listen (node:net:2102:7)\n' +
+      '    at file:///Users/tneibarger/nova-universe/apps/api/index.js:2614:12'
+  }
+}
+[2025-09-22T00:38:43.711Z] 🐛 Collecting all metrics...
+[2025-09-22T00:38:43.715Z] 🐛 Metrics collection completed
+[2025-09-22T00:38:43.717Z] 🐛 Syncing all calendars
+[2025-09-22T00:38:43.717Z] 🐛 Starting sync for zoom with config: { enabled: true, lastSync: null, rateLimitRemaining: undefined }
+[2025-09-22T00:38:43.718Z] 🐛 Syncing zoom platform for user [object Object]
+[2025-09-22T00:38:43.719Z] 🐛 zoom sync completed: 16 events
+[2025-09-22T00:38:43.720Z] 🐛 Starting sync for teams with config: { enabled: true, lastSync: null, rateLimitRemaining: undefined }
+[2025-09-22T00:38:43.720Z] 🐛 Syncing teams platform for user [object Object]
+[2025-09-22T00:38:43.720Z] 🐛 teams sync completed: 15 events
+[2025-09-22T00:38:43.720Z] 🐛 Starting sync for webex with config: { enabled: true, lastSync: null, rateLimitRemaining: undefined }
+[2025-09-22T00:38:43.720Z] 🐛 Syncing webex platform for user [object Object]
+[2025-09-22T00:38:43.720Z] 🐛 webex sync completed: 10 events
+[2025-09-22T00:38:43.720Z] 🐛 Starting sync for google with config: { enabled: true, lastSync: null, rateLimitRemaining: undefined }
+[2025-09-22T00:38:43.720Z] 🐛 Syncing google platform for user [object Object]
+[2025-09-22T00:38:43.720Z] 🐛 google sync completed: 18 events
+[2025-09-22T00:38:43.720Z] 🐛 Starting sync for slack with config: { enabled: true, lastSync: null, rateLimitRemaining: undefined }
+[2025-09-22T00:38:43.720Z] 🐛 Syncing slack platform for user [object Object]
+[2025-09-22T00:38:43.720Z] 🐛 slack sync completed: 7 events
+[2025-09-22T00:38:43.721Z] 🐛 Performing IoT system health check
+[2025-09-22T00:38:43.722Z] 🐛 IoT system health check completed
+[2025-09-22T00:38:43.722Z] 🐛 Cleaning up inactive IoT devices
+[2025-09-22T00:38:43.722Z] 🐛 IoT device cleanup completed
+[2025-09-22T00:43:43.725Z] 🐛 Cleaning up expired bookings
+[2025-09-22T00:43:43.728Z] 🐛 Updating availability metrics
+[2025-09-22T00:43:43.728Z] 🐛 Availability metrics updated
+[2025-09-22T00:43:43.734Z] 🐛 Collecting all metrics...
+[2025-09-22T00:43:43.734Z] 🐛 Metrics collection completed
+[2025-09-22T00:43:43.735Z] 🐛 Syncing all calendars
+[2025-09-22T00:43:43.735Z] 🐛 Starting sync for zoom with config: {
+  enabled: true,
+  lastSync: '2025-09-22T00:38:43.719Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-22T00:43:43.737Z] 🐛 Syncing zoom platform for user [object Object]
+[2025-09-22T00:43:43.737Z] 🐛 zoom sync completed: 14 events
+[2025-09-22T00:43:43.738Z] 🐛 Starting sync for teams with config: {
+  enabled: true,
+  lastSync: '2025-09-22T00:38:43.720Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-22T00:43:43.738Z] 🐛 Syncing teams platform for user [object Object]
+[2025-09-22T00:43:43.738Z] 🐛 teams sync completed: 15 events
+[2025-09-22T00:43:43.738Z] 🐛 Starting sync for webex with config: {
+  enabled: true,
+  lastSync: '2025-09-22T00:38:43.720Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-22T00:43:43.738Z] 🐛 Syncing webex platform for user [object Object]
+[2025-09-22T00:43:43.738Z] 🐛 webex sync completed: 8 events
+[2025-09-22T00:43:43.738Z] 🐛 Starting sync for google with config: {
+  enabled: true,
+  lastSync: '2025-09-22T00:38:43.720Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-22T00:43:43.738Z] 🐛 Syncing google platform for user [object Object]
+[2025-09-22T00:43:43.738Z] 🐛 google sync completed: 12 events
+[2025-09-22T00:43:43.738Z] 🐛 Starting sync for slack with config: {
+  enabled: true,
+  lastSync: '2025-09-22T00:38:43.720Z',
+  rateLimitRemaining: undefined
+}
+[2025-09-22T00:43:43.738Z] 🐛 Syncing slack platform for user [object Object]
+[2025-09-22T00:43:43.738Z] 🐛 slack sync completed: 20 events
+[2025-09-22T00:43:43.739Z] 🐛 Performing IoT system health check
+[2025-09-22T00:43:43.739Z] 🐛 IoT system health check completed
+[2025-09-22T00:43:43.739Z] 🐛 Cleaning up inactive IoT devices
+[2025-09-22T00:43:43.739Z] 🐛 IoT device cleanup completed
+[2025-09-22T00:45:06.168Z] ℹ️ Received SIGTERM. Starting graceful shutdown...
+[2025-09-22T00:45:06.170Z] ℹ️ Received SIGTERM, shutting down gracefully
+[2025-09-22T00:45:06.171Z] ℹ️ Shutting down Uptime Kuma WebSocket handler

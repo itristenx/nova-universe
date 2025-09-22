@@ -46,6 +46,14 @@ let aiControlTowerRouter = null;
 import authRouter from './routes/auth.js';
 import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
+import serviceRequestsRouter from './routes/service-requests.js'; // Service Requests API
+// TEMPORARILY COMMENTED OUT - ESM IMPORT ISSUES WITH @prisma/client
+// import serviceCatalogAPIRouter from './routes/service-catalog.js'; // Service Catalog API  
+// import incidentsRouter from './routes/incidents.js'; // Incidents API
+// import changesRouter from './routes/changes.js'; // Changes API
+// import problemsRouter from './routes/problems.js'; // Problems API
+// import knowledgeArticlesRouter from './routes/knowledge-articles.js'; // Knowledge Articles API
+// import workflowAnalyticsRouter from './routes/workflow-analytics.js'; // Workflow Analytics API
 // import mlPipelineRouter from './routes/ml-pipeline.js'; // ML Pipeline Management - TEMPORARILY DISABLED
 // import novaRAGRouter from './routes/nova-rag.js'; // Nova RAG with RBAC - TEMPORARILY DISABLED
 // import aiAgentRouter from './routes/ai-agent.js'; // Nova AI Agent Framework - TEMPORARILY DISABLED
@@ -2433,6 +2441,14 @@ v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
   }
 v1Router.use('/tickets', ticketsRouter);
 v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
+v1Router.use('/service-requests', serviceRequestsRouter); // Service Requests API
+// TEMPORARILY COMMENTED OUT - ESM IMPORT ISSUES WITH @prisma/client
+// v1Router.use('/service-catalog', serviceCatalogAPIRouter); // Service Catalog API
+// v1Router.use('/incidents', incidentsRouter); // Incidents API
+// v1Router.use('/changes', changesRouter); // Changes API
+// v1Router.use('/problems', problemsRouter); // Problems API
+// v1Router.use('/knowledge-articles', knowledgeArticlesRouter); // Knowledge Articles API
+// v1Router.use('/workflow-analytics', workflowAnalyticsRouter); // Workflow Analytics API
 // v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI - TEMPORARILY DISABLED
 // v1Router.use('/nova-rag', novaRAGRouter); // Nova RAG with RBAC and Synth Integration - TEMPORARILY DISABLED
 v1Router.use('/spaces', spacesRouter);

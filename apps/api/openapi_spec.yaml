@@ -274,7 +274,6 @@ paths:
                         responseTime: 5.2
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
-paths:
   /auth/login:
     post:
       summary: User login
@@ -669,10 +668,3 @@ paths:
           description: Too many requests
         '500':
           description: Internal server error
-
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT

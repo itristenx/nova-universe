@@ -250,12 +250,11 @@ export function NetworkStatusIndicator() {
 
   const status = getStatusInfo();
 
-  return (
-    <div className={`network-status ${status.className}`}>
-      <span className="mr-2">{status.icon}</span>
-      {status.message}
-    </div>
-  );
+  return {
+    className: status.className,
+    icon: status.icon,
+    message: status.message
+  };
 }
 
 // Offline-aware API wrapper

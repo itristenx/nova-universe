@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { apiClient } from '../../services/api';
 
 // Local type definitions
 interface BaseRecord {
@@ -487,7 +488,7 @@ const ServiceOperationsWorkspace: React.FC<ServiceOperationsWorkspaceProps> = ({
       setLoading(true);
       setError(null);
 
-      // Mock data for demonstration
+
       const mockServiceRequests: ServiceRequest[] = [
         {
           id: '1',
@@ -678,14 +679,47 @@ const ServiceOperationsWorkspace: React.FC<ServiceOperationsWorkspaceProps> = ({
         timestamp: new Date().toISOString(),
       };
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Fetch real data from API endpoints
+      try {
+        const [requestsResponse, incidentsResponse, changesResponse, problemsResponse] = await Promise.all([
+          apiClient.get('/api/v1/service-requests'),
+          apiClient.get('/api/v1/incidents'),
+          apiClient.get('/api/v1/changes'),
+          apiClient.get('/api/v1/problems'),
+        ]);
 
-      setServiceRequests(mockServiceRequests);
-      setIncidents(mockIncidents);
-      setChanges(mockChanges);
-      setProblems(mockProblems);
-      setDashboardData(mockDashboard);
+        const serviceRequests = Array.isArray(requestsResponse.data) ? requestsResponse.data : [];
+        const incidents = Array.isArray(incidentsResponse.data) ? incidentsResponse.data : [];
+        const changes = Array.isArray(changesResponse.data) ? changesResponse.data : [];
+        const problems = Array.isArray(problemsResponse.data) ? problemsResponse.data : [];
+
+        setServiceRequests(serviceRequests);
+        setIncidents(incidents);
+        setChanges(changes);
+        setProblems(problems);
+        
+        // Generate dashboard metrics from real data
+        const dashboardData = {
+          totalServiceRequests: serviceRequests.length,
+          openIncidents: incidents.filter((i: any) => ['NEW', 'IN_PROGRESS'].includes(i.state)).length,
+          scheduledChanges: changes.filter((c: any) => c.state === 'SCHEDULED').length,
+          activeProblems: problems.filter((p: any) => ['NEW', 'INVESTIGATION', 'ROOT_CAUSE_ANALYSIS'].includes(p.state)).length,
+        };
+        setDashboardData(dashboardData);
+      } catch (apiError) {
+        console.warn('API endpoints not available, using empty data:', apiError);
+        // Set empty data when API is not available
+        setServiceRequests([]);
+        setIncidents([]);
+        setChanges([]);
+        setProblems([]);
+        setDashboardData({
+          totalServiceRequests: 0,
+          openIncidents: 0,
+          scheduledChanges: 0,
+          activeProblems: 0,
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load service operations data');
     } finally {
