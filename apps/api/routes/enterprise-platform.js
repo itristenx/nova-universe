@@ -1,6 +1,7 @@
 import express from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import NovaEnterprisePlatform from '../lib/enterprise-platform.js';
+import { ensureAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 const enterprisePlatform = new NovaEnterprisePlatform();
@@ -467,9 +468,10 @@ router.post(
 // WORKFLOW AUTOMATION ENDPOINTS
 // =============================================================================
 
-// Trigger workflow
+// Trigger workflow (requires authentication)
 router.post(
   '/workflows/trigger',
+  ensureAuth,
   [
     body('trigger_type').notEmpty().withMessage('Trigger type is required'),
     body('record_id').isUUID().withMessage('Invalid record ID'),
@@ -491,9 +493,10 @@ router.post(
   }),
 );
 
-// Execute specific workflow
+// Execute specific workflow (requires authentication)
 router.post(
   '/workflows/:id/execute',
+  ensureAuth,
   [
     param('id').isUUID().withMessage('Invalid workflow ID'),
     body('record_id').isUUID().withMessage('Invalid record ID'),

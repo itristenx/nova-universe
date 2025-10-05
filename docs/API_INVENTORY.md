@@ -1,9 +1,9 @@
 # Nova Universe API Endpoint Inventory
 
-Generated: 2025-10-05T22:44:24.905Z
+Generated: 2025-10-05T23:17:23.187Z
 
-Total Endpoints: 926
-Total Route Files: 92
+Total Endpoints: 890
+Total Route Files: 89
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ Total Route Files: 92
 
 ### Analytics & Reporting
 
-Total: 29 endpoints
+Total: 27 endpoints
 
 | Method | Path | Auth | File |
 |--------|------|------|------|
@@ -29,40 +29,36 @@ Total: 29 endpoints
 | GET | /real-time | 🔒 Yes | analytics.js |
 | GET | /realtime | 🔒 Yes | analytics.js |
 | GET | /executive | 🔒 Yes | analytics.js |
-| GET | /analytics | 🔒 Yes | app-switcher-enhanced.js |
 | GET | /analytics | 🔒 Yes | app-switcher.js |
 | GET | /analytics/dashboard | 🔓 No | approvals.js |
 | POST | /reports/impact-analysis | 🔓 No | cmdb.js |
 | GET | /:id/analytics | 🔓 No | costCenters.js |
 | GET | /analytics/dashboard | 🔓 No | costCenters.js |
-| GET | /analytics/emails | 🔒 Yes | customer-activity-clean.js |
 | GET | /analytics/emails | 🔒 Yes | customer-activity.js |
 | GET | /analytics/enterprise-metrics | 🔓 No | enterprise-platform.js |
 | GET | /analytics/dashboard | 🔓 No | featureFlags.js |
 | GET | /admin/analytics | 🔓 No | notifications.js |
 | GET | /analytics/dashboard | 🔒 Yes | problems.js |
 | GET | /usage | 🔓 No | reports.js |
+| GET | /insights | 🔓 No | reports.js |
+| GET | /vip-heatmap | 🔓 No | reports.js |
 
-*... and 9 more endpoints*
+*... and 7 more endpoints*
 
 ### Configuration & Settings
 
-Total: 54 endpoints
+Total: 50 endpoints
 
 | Method | Path | Auth | File |
 |--------|------|------|------|
 | GET | /external-providers/config | 🔓 No | ai-control-tower.js |
 | POST | /providers/validate-config | 🔓 No | ai-control-tower.js |
-| GET | /config | 🔒 Yes | app-switcher-enhanced.js |
-| PUT | /config | 🔒 Yes | app-switcher-enhanced.js |
-| GET | /config | 🔒 Yes | app-switcher-old.js |
-| PUT | /config | 🔒 Yes | app-switcher-old.js |
 | GET | /config | 🔒 Yes | app-switcher.js |
 | PUT | /config | 🔒 Yes | app-switcher.js |
-| GET | / | 🔓 No | config.js |
+| GET | / | 🔒 Yes | config.js |
 | GET | /admin | 🔒 Yes | config.js |
-| GET | /:key | 🔓 No | config.js |
-| PUT | /:key | 🔓 No | config.js |
+| GET | /:key | 🔒 Yes | config.js |
+| PUT | /:key | 🔒 Yes | config.js |
 | POST | /organization | 🔒 Yes | config.js |
 | GET | /organization | 🔒 Yes | config.js |
 | POST | /bulk | 🔒 Yes | config.js |
@@ -71,8 +67,12 @@ Total: 54 endpoints
 | GET | /schema/validation | 🔒 Yes | config.js |
 | GET | /templates | 🔒 Yes | config.js |
 | POST | /templates/:id/apply | 🔒 Yes | config.js |
+| GET | /categories/all | 🔒 Yes | config.js |
+| GET | /categories/messages | 🔓 No | config.js |
+| POST | /categories/messages | 🔓 No | config.js |
+| GET | /categories/features | 🔒 Yes | config.js |
 
-*... and 34 more endpoints*
+*... and 30 more endpoints*
 
 ### Monitoring & Alerting
 
@@ -105,32 +105,32 @@ Total: 104 endpoints
 
 ### User Management
 
-Total: 38 endpoints
+Total: 36 endpoints
 
 | Method | Path | Auth | File |
 |--------|------|------|------|
-| POST | /apps/:appId/assign-users | 🔒 Yes | app-switcher-enhanced.js |
-| POST | /apps/:appId/assign-users | 🔒 Yes | app-switcher-old.js |
 | POST | /apps/:appId/assign-users | 🔒 Yes | app-switcher.js |
 | DELETE | /support-groups/:id/members/:userId | 🔓 No | cmdbExtended.js |
 | PUT | /support-groups/:id/members/:userId | 🔓 No | cmdbExtended.js |
-| GET | /users/:userId/permissions | 🔓 No | cmdbExtended.js |
-| POST | /users/:userId/permissions/check | 🔓 No | cmdbExtended.js |
+| GET | /users/:userId/permissions | 🔒 Yes | cmdbExtended.js |
+| POST | /users/:userId/permissions/check | 🔒 Yes | cmdbExtended.js |
 | DELETE | /cis/:ciId/ownership/:ownershipType/:userId | 🔓 No | cmdbExtended.js |
 | PUT | /cis/:ciId/ownership/:ownershipType/:userId | 🔓 No | cmdbExtended.js |
-| GET | /users/:userId/owned-cis | 🔓 No | cmdbExtended.js |
-| GET | /config | 🔓 No | directory.js |
-| PUT | /config | 🔓 No | directory.js |
-| GET | /search | 🔓 No | directory.js |
-| POST | /user | 🔓 No | directory.js |
+| GET | /users/:userId/owned-cis | 🔒 Yes | cmdbExtended.js |
+| GET | /config | 🔒 Yes | directory.js |
+| PUT | /config | 🔒 Yes | directory.js |
+| GET | /search | 🔒 Yes | directory.js |
+| POST | /user | 🔒 Yes | directory.js |
 | GET | /employee-center/dashboard/:userId | 🔓 No | enterprise-platform.js |
 | POST | /admin/sync-users | 🔓 No | goalert-proxy.js |
 | GET | /users | 🔓 No | goalert-proxy.js |
 | GET | /users/:id/contact-methods | 🔓 No | goalert-proxy.js |
 | POST | /users/:id/contact-methods | 🔓 No | goalert-proxy.js |
 | GET | /users/:id/notification-rules | 🔓 No | goalert-proxy.js |
+| POST | /users/:id/notification-rules | 🔓 No | goalert-proxy.js |
+| GET | /user/preferences | 🔒 Yes | goalert-proxy.js |
 
-*... and 18 more endpoints*
+*... and 16 more endpoints*
 
 ### Workflows
 
@@ -290,11 +290,10 @@ Total: 23 endpoints
 
 ### Ticketing
 
-Total: 62 endpoints
+Total: 61 endpoints
 
 | Method | Path | Auth | File |
 |--------|------|------|------|
-| GET | /tickets/:ticketId/communications | 🔓 No | customer-activity-clean.js |
 | GET | /tickets/:ticketId/communications | 🔓 No | customer-activity.js |
 | GET | / | 🔒 Yes | enhanced-tickets.js |
 | GET | /:id | 🔓 No | enhanced-tickets.js |
@@ -314,16 +313,16 @@ Total: 62 endpoints
 | POST | /bulk | 🔓 No | enhanced-tickets.js |
 | GET | /export | 🔓 No | enhanced-tickets.js |
 | GET | /templates | 🔒 Yes | enhanced-tickets.js |
+| POST | /templates/:id/apply | 🔓 No | enhanced-tickets.js |
 
-*... and 42 more endpoints*
+*... and 41 more endpoints*
 
 ### Notifications
 
-Total: 47 endpoints
+Total: 46 endpoints
 
 | Method | Path | Auth | File |
 |--------|------|------|------|
-| POST | /emails/track | 🔓 No | customer-activity-clean.js |
 | POST | /emails/track | 🔓 No | customer-activity.js |
 | POST | /emails/schedule | 🔓 No | customer-activity.js |
 | DELETE | /emails/schedule/:ticketId | 🔓 No | customer-activity.js |
@@ -343,8 +342,9 @@ Total: 47 endpoints
 | GET | /status | 🔒 Yes | email-integration.js |
 | POST | /webhook | 🔓 No | email-integration.js |
 | POST | /analyze-email | 🔒 Yes | email-integration.js |
+| GET | /templates | 🔒 Yes | email-templates.js |
 
-*... and 27 more endpoints*
+*... and 26 more endpoints*
 
 ### Nova Synth (AI Engine)
 
@@ -469,7 +469,7 @@ Total: 25 endpoints
 
 ## Duplicate Endpoints
 
-⚠️ Found 107 duplicate endpoint registrations:
+⚠️ Found 88 duplicate endpoint registrations:
 
 ### GET:/experiments
 
@@ -511,7 +511,6 @@ Registered in:
 
 Registered in:
 - ai-agent.js
-- app-switcher-enhanced.js
 - app-switcher.js
 - search.js
 
@@ -593,8 +592,6 @@ Registered in:
 
 Registered in:
 - analytics.js
-- app-switcher-enhanced.js
-- app-switcher-old.js
 - app-switcher.js
 - pulse.js
 - sla.js
@@ -655,8 +652,6 @@ Registered in:
 ### GET:/config
 
 Registered in:
-- app-switcher-enhanced.js
-- app-switcher-old.js
 - app-switcher.js
 - beacon.js
 - core.js
@@ -666,96 +661,27 @@ Registered in:
 ### PUT:/config
 
 Registered in:
-- app-switcher-enhanced.js
-- app-switcher-old.js
 - app-switcher.js
 - directory.js
-
-### GET:/apps
-
-Registered in:
-- app-switcher-enhanced.js
-- app-switcher-old.js
-- app-switcher.js
-
-### POST:/apps
-
-Registered in:
-- app-switcher-enhanced.js
-- app-switcher-old.js
-- app-switcher.js
-
-### PUT:/apps/:appId
-
-Registered in:
-- app-switcher-enhanced.js
-- app-switcher-old.js
-- app-switcher.js
-
-### DELETE:/apps/:appId
-
-Registered in:
-- app-switcher-enhanced.js
-- app-switcher-old.js
-- app-switcher.js
-
-### POST:/apps/:appId/launch
-
-Registered in:
-- app-switcher-enhanced.js
-- app-switcher.js
-
-### POST:/apps/:appId/favorite
-
-Registered in:
-- app-switcher-enhanced.js
-- app-switcher.js
-
-### POST:/apps/:appId/assign-users
-
-Registered in:
-- app-switcher-enhanced.js
-- app-switcher-old.js
-- app-switcher.js
 
 ### GET:/search
 
 Registered in:
-- app-switcher-enhanced.js
 - app-switcher.js
 - directory.js
 - enhanced-tickets.js
 - lore.js
 - tickets.js
 
-### GET:/recommendations
-
-Registered in:
-- app-switcher-enhanced.js
-- app-switcher.js
-
 ### GET:/categories
 
 Registered in:
-- app-switcher-enhanced.js
 - app-switcher.js
 - itsm.js
 - knowledge-articles.js
 - orbit.js
 - service-catalog.js
 - serviceCatalog.js
-
-### POST:/track-usage
-
-Registered in:
-- app-switcher-enhanced.js
-- app-switcher.js
-
-### GET:/sso/callback/:appId
-
-Registered in:
-- app-switcher-enhanced.js
-- app-switcher.js
 
 ### DELETE:/:id
 
@@ -918,60 +844,6 @@ Registered in:
 Registered in:
 - costCenters.js
 - workflows.js
-
-### GET:/customers/:customerId/timeline
-
-Registered in:
-- customer-activity-clean.js
-- customer-activity.js
-
-### GET:/tickets/:ticketId/communications
-
-Registered in:
-- customer-activity-clean.js
-- customer-activity.js
-
-### GET:/conversations/:threadId
-
-Registered in:
-- customer-activity-clean.js
-- customer-activity.js
-
-### POST:/emails/track
-
-Registered in:
-- customer-activity-clean.js
-- customer-activity.js
-
-### POST:/customers/:customerId/timeline
-
-Registered in:
-- customer-activity-clean.js
-- customer-activity.js
-
-### GET:/analytics/emails
-
-Registered in:
-- customer-activity-clean.js
-- customer-activity.js
-
-### GET:/customers/:customerId/communications/summary
-
-Registered in:
-- customer-activity-clean.js
-- customer-activity.js
-
-### GET:/track/pixel/:messageId
-
-Registered in:
-- customer-activity-clean.js
-- customer-activity.js
-
-### GET:/track/click/:messageId
-
-Registered in:
-- customer-activity-clean.js
-- customer-activity.js
 
 ### POST:/send
 
@@ -1275,7 +1147,7 @@ Registered in:
 
 ## Consolidation Opportunities
 
-💡 Found 46 potential consolidation opportunities:
+💡 Found 42 potential consolidation opportunities:
 
 ### /experiments/*
 
@@ -1286,9 +1158,9 @@ Registered in:
 
 ### /analytics/*
 
-- **Routes**: 19
-- **Files**: 17
-- **Files involved**: abTesting.js, ai-agent.js, app-switcher-enhanced.js, app-switcher.js, approvals.js, costCenters.js, customer-activity-clean.js, customer-activity.js, enterprise-platform.js, featureFlags.js, itsm.js, monitoring.js, problems.js, search.js, serviceCatalogRequests.js, spaces.js, user360-interactions.js
+- **Routes**: 17
+- **Files**: 15
+- **Files involved**: abTesting.js, ai-agent.js, app-switcher.js, approvals.js, costCenters.js, customer-activity.js, enterprise-platform.js, featureFlags.js, itsm.js, monitoring.js, problems.js, search.js, serviceCatalogRequests.js, spaces.js, user360-interactions.js
 - **Recommendation**: Consider consolidating these routes into a single router file.
 
 ### /rag/*
@@ -1356,9 +1228,9 @@ Registered in:
 
 ### /dashboard/*
 
-- **Routes**: 7
-- **Files**: 7
-- **Files involved**: analytics.js, app-switcher-enhanced.js, app-switcher-old.js, app-switcher.js, pulse.js, sla.js, workflow-analytics.js
+- **Routes**: 5
+- **Files**: 5
+- **Files involved**: analytics.js, app-switcher.js, pulse.js, sla.js, workflow-analytics.js
 - **Recommendation**: Consider consolidating these routes into a single router file.
 
 ### ///*
@@ -1377,37 +1249,30 @@ Registered in:
 
 ### /config/*
 
-- **Routes**: 11
-- **Files**: 7
-- **Files involved**: app-switcher-enhanced.js, app-switcher-old.js, app-switcher.js, beacon.js, core.js, directory.js, organizations.js
-- **Recommendation**: Consider consolidating these routes into a single router file.
-
-### /apps/*
-
-- **Routes**: 21
-- **Files**: 3
-- **Files involved**: app-switcher-enhanced.js, app-switcher-old.js, app-switcher.js
+- **Routes**: 7
+- **Files**: 5
+- **Files involved**: app-switcher.js, beacon.js, core.js, directory.js, organizations.js
 - **Recommendation**: Consider consolidating these routes into a single router file.
 
 ### /search/*
 
-- **Routes**: 7
-- **Files**: 7
-- **Files involved**: app-switcher-enhanced.js, app-switcher.js, directory.js, enhanced-tickets.js, itsm.js, lore.js, tickets.js
+- **Routes**: 6
+- **Files**: 6
+- **Files involved**: app-switcher.js, directory.js, enhanced-tickets.js, itsm.js, lore.js, tickets.js
 - **Recommendation**: Consider consolidating these routes into a single router file.
 
 ### /categories/*
 
-- **Routes**: 20
-- **Files**: 8
-- **Files involved**: app-switcher-enhanced.js, app-switcher.js, config.js, itsm.js, knowledge-articles.js, orbit.js, service-catalog.js, serviceCatalog.js
+- **Routes**: 19
+- **Files**: 7
+- **Files involved**: app-switcher.js, config.js, itsm.js, knowledge-articles.js, orbit.js, service-catalog.js, serviceCatalog.js
 - **Recommendation**: Consider consolidating these routes into a single router file.
 
 ### /sso/*
 
-- **Routes**: 8
-- **Files**: 4
-- **Files involved**: app-switcher-enhanced.js, app-switcher.js, helix-universal-login.js, helix.js
+- **Routes**: 7
+- **Files**: 3
+- **Files involved**: app-switcher.js, helix-universal-login.js, helix.js
 - **Recommendation**: Consider consolidating these routes into a single router file.
 
 ### /workflows/*
@@ -1475,37 +1340,16 @@ Registered in:
 
 ### /customers/*
 
-- **Routes**: 8
-- **Files**: 3
-- **Files involved**: customer-activity-clean.js, customer-activity.js, synth.js
+- **Routes**: 5
+- **Files**: 2
+- **Files involved**: customer-activity.js, synth.js
 - **Recommendation**: Consider consolidating these routes into a single router file.
 
 ### /tickets/*
 
-- **Routes**: 24
-- **Files**: 8
-- **Files involved**: customer-activity-clean.js, customer-activity.js, itsm.js, orbit.js, pulse.js, search.js, synth.js, user360.js
-- **Recommendation**: Consider consolidating these routes into a single router file.
-
-### /conversations/*
-
-- **Routes**: 4
-- **Files**: 3
-- **Files involved**: customer-activity-clean.js, customer-activity.js, user360-interactions.js
-- **Recommendation**: Consider consolidating these routes into a single router file.
-
-### /emails/*
-
-- **Routes**: 4
-- **Files**: 2
-- **Files involved**: customer-activity-clean.js, customer-activity.js
-- **Recommendation**: Consider consolidating these routes into a single router file.
-
-### /track/*
-
-- **Routes**: 4
-- **Files**: 2
-- **Files involved**: customer-activity-clean.js, customer-activity.js
+- **Routes**: 23
+- **Files**: 7
+- **Files involved**: customer-activity.js, itsm.js, orbit.js, pulse.js, search.js, synth.js, user360.js
 - **Recommendation**: Consider consolidating these routes into a single router file.
 
 ### /user/*
@@ -1601,8 +1445,8 @@ Registered in:
 
 ## Security Analysis
 
-- **Protected Endpoints**: 348 (37.6%)
-- **Public Endpoints**: 578 (62.4%)
+- **Protected Endpoints**: 330 (37.1%)
+- **Public Endpoints**: 560 (62.9%)
 
 ### Public Endpoints Requiring Review
 
@@ -1626,25 +1470,25 @@ These endpoints do not appear to have authentication:
 | POST | /ab-tests | ai-agent.js |
 | POST | /ab-tests/:experimentId/start | ai-agent.js |
 
-*... and 563 more*
+*... and 545 more*
 
 ## API Versioning
 
 - **v1 Endpoints**: 2
 - **v2 Endpoints**: 0
-- **Unversioned Endpoints**: 924
+- **Unversioned Endpoints**: 888
 
 ## Recommendations
 
 ### High Priority
 
-1. **Remove Duplicate Registrations**: 107 duplicate endpoints should be consolidated.
-2. **Review Public Endpoints**: 578 endpoints (62.4%) lack authentication. Verify this is intentional.
-3. **Consolidate Route Files**: 46 groups of related endpoints spread across multiple files could be consolidated.
+1. **Remove Duplicate Registrations**: 88 duplicate endpoints should be consolidated.
+2. **Review Public Endpoints**: 560 endpoints (62.9%) lack authentication. Verify this is intentional.
+3. **Consolidate Route Files**: 42 groups of related endpoints spread across multiple files could be consolidated.
 
 ### Medium Priority
 
-1. **API Versioning**: 924 unversioned endpoints should be migrated to versioned routes.
+1. **API Versioning**: 888 unversioned endpoints should be migrated to versioned routes.
 2. **OpenAPI Specification**: Ensure all endpoints are documented in the OpenAPI spec.
 3. **Rate Limiting**: Verify rate limiting is applied consistently across all endpoints.
 
