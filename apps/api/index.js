@@ -2117,11 +2117,10 @@ v1Router.delete('/api/notifications', ensureAuth, (req, res) => {
 });
 
 // --- API v1 Kiosks endpoints ---
+// Mount kiosks router at versioned endpoint (primary)
 app.use('/api/v1/kiosks', kioskOrAuth, kiosksRouter);
-
-// Mount at both /api/kiosks and /api/v1/kiosks
+// Legacy endpoint for backward compatibility
 app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
-app.use('/api/v1/kiosks', kioskOrAuth, kiosksRouter);
 
 // Register v1 router for legacy API endpoints
 app.use('/api/v1', v1Router);
@@ -2361,8 +2360,7 @@ app.use(
 // - Breaking changes require a new major version
 // - Deprecation notices are sent via response headers
 
-// Register versioned routers first
-app.use('/api/v1', v1Router);
+// Register versioned routers first (v1 already registered above - removed duplicate)
 app.use('/api/v2', v2Router);
 
 // === API v2 ROUTES (Current Stable Version) ===
@@ -2516,9 +2514,10 @@ if (aiFabricRouter) {
 // app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework - TEMPORARILY DISABLED
 app.use('/api/setup', setupRouter);
 app.use('/api/nova-tv', novaTVRouter);
-app.use('/api/nova-tv/digital-signage', novaTVDigitalSignageRouter);
+// Digital signage endpoint - versioned path is primary
 app.use('/api/v1/nova-tv/digital-signage', novaTVDigitalSignageRouter);
-app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
+// Legacy unversioned path for backward compatibility
+app.use('/api/nova-tv/digital-signage', novaTVDigitalSignageRouter);
 
 // Service Catalog API routes
 app.use('/api/service-catalog', serviceCatalogRouter);
@@ -2534,9 +2533,8 @@ app.use('/api/customer-activity', customerActivityRouter);
 
 // Special routes that maintain their own paths
 app.use('/scim/v2', ensureScimAuth, scimRouter); // SCIM 2.0 Provisioning API with authentication
-app.use('/api/v1/oauth', oauth2Router); // OAuth 2.0 Authorization Server (RFC 6749)
-app.use('/api/v1/oauth', oauth2Router); // OAuth 2.0 metadata endpoint
-app.use('/.well-known', oauth2Router); // OAuth 2.0 well-known endpoints
+app.use('/api/v1/oauth', oauth2Router); // OAuth 2.0 Authorization Server (RFC 6749) - includes metadata and well-known endpoints
+app.use('/.well-known', oauth2Router); // OAuth 2.0 well-known endpoints (separate mount for standard path)
 app.use('/api/v1/tenants', tenantDiscoveryRouter); // Enhanced Tenant Discovery (API & UI)
 app.use('/core', coreRouter);
 
@@ -2769,6 +2767,30 @@ for (const sig of shutdownSignals) {
     }
   });
 }
+
+// Global error handlers for uncaught exceptions and unhandled rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Promise Rejection detected:', {
+    reason: reason instanceof Error ? reason.message : reason,
+    stack: reason instanceof Error ? reason.stack : undefined,
+    promise: promise
+  });
+  // In production, log and monitor but don't crash immediately
+  if (process.env.NODE_ENV === 'production') {
+    logger.error('Unhandled rejection - monitoring for recovery');
+    // Could add alerting here
+  }
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception detected:', {
+    error: error.message,
+    stack: error.stack
+  });
+  // Uncaught exceptions are severe - shutdown gracefully
+  logger.error('Initiating shutdown due to uncaught exception');
+  process.exit(1);
+});
 
 // --- Kiosks Router ---
 // Router declaration moved to top of file
