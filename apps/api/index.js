@@ -2498,38 +2498,53 @@ v2Router.use('/kiosks', kioskOrAuth, kiosksRouter);
 
 // === BACKWARD COMPATIBILITY ROUTES ===
 // Map legacy unversioned routes to v1 for backward compatibility
-// These routes include deprecation warnings via the v1Router middleware
+// These routes include deprecation warnings via middleware
 
-app.use('/api/catalog-items', catalogItemsRouter);
-app.use('/api/reports', reportsRouter);
-app.use('/api/workflows', workflowsRouter);
-app.use('/api/helpscout', helpscoutRouter);
-app.use('/api/analytics', analyticsRouter);
-app.use('/api/monitoring', monitoringRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/tickets', ticketLimiter, ticketsRouter);
-app.use('/api/spaces', spacesRouter);
+// Middleware to add deprecation warnings to unversioned /api/* routes
+const addUnversionedDeprecationHeaders = (req, res, next) => {
+  res.set({
+    Deprecation: 'true',
+    Sunset: '2025-06-30T23:59:59Z', // Extended sunset for backward compatibility
+    Link: '</api/v2>; rel="successor-version"; type="application/json"',
+    Warning:
+      '299 "Unversioned API routes are deprecated. Please use /api/v2/* endpoints. See https://docs.nova-universe.com/api/migration"',
+    'X-API-Version': 'unversioned-legacy',
+    'X-API-Deprecation-Notice':
+      'Unversioned routes will be removed on 2025-06-30. Please migrate to /api/v2/* endpoints.',
+  });
+  next();
+};
+
+app.use('/api/catalog-items', addUnversionedDeprecationHeaders, catalogItemsRouter);
+app.use('/api/reports', addUnversionedDeprecationHeaders, reportsRouter);
+app.use('/api/workflows', addUnversionedDeprecationHeaders, workflowsRouter);
+app.use('/api/helpscout', addUnversionedDeprecationHeaders, helpscoutRouter);
+app.use('/api/analytics', addUnversionedDeprecationHeaders, analyticsRouter);
+app.use('/api/monitoring', addUnversionedDeprecationHeaders, monitoringRouter);
+app.use('/api/auth', addUnversionedDeprecationHeaders, authRouter);
+app.use('/api/tickets', addUnversionedDeprecationHeaders, ticketLimiter, ticketsRouter);
+app.use('/api/spaces', addUnversionedDeprecationHeaders, spacesRouter);
 if (aiFabricRouter) {
-  app.use('/api/ai-fabric', aiFabricRouter);
+  app.use('/api/ai-fabric', addUnversionedDeprecationHeaders, aiFabricRouter);
 }
 // app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework - TEMPORARILY DISABLED
-app.use('/api/setup', setupRouter);
-app.use('/api/nova-tv', novaTVRouter);
-app.use('/api/nova-tv/digital-signage', novaTVDigitalSignageRouter);
+app.use('/api/setup', addUnversionedDeprecationHeaders, setupRouter);
+app.use('/api/nova-tv', addUnversionedDeprecationHeaders, novaTVRouter);
+app.use('/api/nova-tv/digital-signage', addUnversionedDeprecationHeaders, novaTVDigitalSignageRouter);
 app.use('/api/v1/nova-tv/digital-signage', novaTVDigitalSignageRouter);
-app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
+app.use('/api/kiosks', addUnversionedDeprecationHeaders, kioskOrAuth, kiosksRouter);
 
 // Service Catalog API routes
-app.use('/api/service-catalog', serviceCatalogRouter);
-app.use('/api/service-catalog-requests', serviceCatalogRequestsRouter);
-app.use('/api/rbac', rbacRouter);
-app.use('/api/approvals', approvalsRouter);
-app.use('/api/feature-flags', featureFlagsRouter);
-app.use('/api/ab-testing', abTestingRouter);
-app.use('/api/cost-centers', costCentersRouter);
+app.use('/api/service-catalog', addUnversionedDeprecationHeaders, serviceCatalogRouter);
+app.use('/api/service-catalog-requests', addUnversionedDeprecationHeaders, serviceCatalogRequestsRouter);
+app.use('/api/rbac', addUnversionedDeprecationHeaders, rbacRouter);
+app.use('/api/approvals', addUnversionedDeprecationHeaders, approvalsRouter);
+app.use('/api/feature-flags', addUnversionedDeprecationHeaders, featureFlagsRouter);
+app.use('/api/ab-testing', addUnversionedDeprecationHeaders, abTestingRouter);
+app.use('/api/cost-centers', addUnversionedDeprecationHeaders, costCentersRouter);
 // app.use('/api/email', emailIntegrationRouter); // TEMPORARILY DISABLED
-app.use('/api/email-templates', emailTemplatesRouter);
-app.use('/api/customer-activity', customerActivityRouter);
+app.use('/api/email-templates', addUnversionedDeprecationHeaders, emailTemplatesRouter);
+app.use('/api/customer-activity', addUnversionedDeprecationHeaders, customerActivityRouter);
 
 // Special routes that maintain their own paths
 app.use('/scim/v2', ensureScimAuth, scimRouter); // SCIM 2.0 Provisioning API with authentication
