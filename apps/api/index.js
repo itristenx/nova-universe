@@ -2117,11 +2117,9 @@ v1Router.delete('/api/notifications', ensureAuth, (req, res) => {
 });
 
 // --- API v1 Kiosks endpoints ---
+// Kiosk routes are mounted at both /api/kiosks (backward compatibility) and /api/v1/kiosks
 app.use('/api/v1/kiosks', kioskOrAuth, kiosksRouter);
-
-// Mount at both /api/kiosks and /api/v1/kiosks
 app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
-app.use('/api/v1/kiosks', kioskOrAuth, kiosksRouter);
 
 // Register v1 router for legacy API endpoints
 app.use('/api/v1', v1Router);
@@ -2361,15 +2359,16 @@ app.use(
 // - Breaking changes require a new major version
 // - Deprecation notices are sent via response headers
 
-// Register versioned routers first
+// Register versioned routers first (only once)
 app.use('/api/v1', v1Router);
 app.use('/api/v2', v2Router);
 
 // === API v2 ROUTES (Current Stable Version) ===
 
 // Core v2 endpoints
-v2Router.use('/user360', user360Router); // User 360 API (v2 only)
-v2Router.use('/user360', user360InteractionsRouter); // User 360 Interactions API (v2 only)
+// User 360 API - mount the interactions router at a sub-path to avoid conflicts
+v2Router.use('/user360', user360Router); // Main User 360 API
+v2Router.use('/user360/interactions', user360InteractionsRouter); // User 360 Interactions (sub-path)
 // Conditionally enable v2 MCP & Synth (AI-dependent)
 if (process.env.ENABLE_AI_COMPONENTS === 'true') {
   try {
@@ -2407,8 +2406,10 @@ v1Router.use('/directory', directoryRouter);
 v1Router.use('/roles', rolesRouter);
 v1Router.use('/assets', assetsRouter);
 v1Router.use('/inventory', inventoryRouter);
+// CMDB routes - both base and extended functionality on same path
+// cmdbRouter handles basic CMDB, cmdbExtendedRouter adds extended functionality
 v1Router.use('/cmdb', cmdbRouter);
-v1Router.use('/cmdb', cmdbExtendedRouter);
+v1Router.use('/cmdb/extended', cmdbExtendedRouter); // Mount extended CMDB at sub-path
 v1Router.use('/integrations', integrationsRouter);
 v1Router.use('/catalog-items', catalogItemsRouter);
 v1Router.use('/search', searchRouter);
@@ -2469,9 +2470,7 @@ v1Router.use('/setup', setupRouter);
 v1Router.use('/comms', commsRouter); // Nova Comms - Slack integration
 v1Router.use('/nova-tv', novaTVRouter); // Nova TV - Channel Management
 v1Router.use('/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
-v1Router.use('/core', coreRouter);
-v1Router.use('/status', statusSummaryRouter);
-v1Router.use('/announcements', announcementsRouter);
+// Note: /core, /status, and /announcements are mounted at app level for backward compatibility
 // Conditionally mount Cosmo (AI) under v1
 if (process.env.ENABLE_AI_COMPONENTS === 'true') {
   try {
@@ -2534,10 +2533,12 @@ app.use('/api/customer-activity', customerActivityRouter);
 
 // Special routes that maintain their own paths
 app.use('/scim/v2', ensureScimAuth, scimRouter); // SCIM 2.0 Provisioning API with authentication
-app.use('/api/v1/oauth', oauth2Router); // OAuth 2.0 Authorization Server (RFC 6749)
-app.use('/api/v1/oauth', oauth2Router); // OAuth 2.0 metadata endpoint
+app.use('/api/v1/oauth', oauth2Router); // OAuth 2.0 Authorization Server (RFC 6749) and metadata
 app.use('/.well-known', oauth2Router); // OAuth 2.0 well-known endpoints
 app.use('/api/v1/tenants', tenantDiscoveryRouter); // Enhanced Tenant Discovery (API & UI)
+
+// Core status and announcements routes (non-versioned for backward compatibility)
+// Only mount once at the top level, not in v1Router
 app.use('/core', coreRouter);
 
 // Feature-gated status pages
@@ -2550,10 +2551,11 @@ try {
 if (featureStatusPagesEnv || featureStatusPagesConfig) {
   app.use('/status', statusSummaryRouter);
 } else {
-  // Still expose summary for legacy clients without pages
+  // Still expose summary for legacy clients without pages (only in v1)
   v1Router.use('/status', statusSummaryRouter);
 }
 
+// Announcements route (non-versioned for backward compatibility)
 app.use('/announcements', announcementsRouter);
 
 // Wrap all app setup in an async function

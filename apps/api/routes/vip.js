@@ -1,12 +1,12 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import db from '../db.js';
-import { authenticateJWT } from '../middleware/auth.js';
+import { authenticateJWT, requirePermission } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
-router.get('/proxies', authenticateJWT, createRateLimit(15 * 60 * 1000, 50), async (req, res) => {
+router.get('/proxies', authenticateJWT, requirePermission('vip:read'), createRateLimit(15 * 60 * 1000, 50), async (req, res) => {
   try {
     const rows = await db.any(
       'SELECT vp.*, u.name AS proxy_name FROM vip_proxies vp JOIN users u ON vp.proxy_id = u.id',
@@ -30,6 +30,7 @@ router.get('/proxies', authenticateJWT, createRateLimit(15 * 60 * 1000, 50), asy
 router.post(
   '/proxies',
   authenticateJWT,
+  requirePermission('vip:write'),
   createRateLimit(15 * 60 * 1000, 20),
   [body('vipId').isString(), body('proxyId').isString(), body('expiresAt').optional().isISO8601()],
   async (req, res) => {
@@ -69,9 +70,20 @@ router.post(
 router.delete(
   '/proxies/:id',
   authenticateJWT,
+  requirePermission('vip:write'),
   createRateLimit(15 * 60 * 1000, 20),
   async (req, res) => {
     try {
+      // Verify the proxy exists before attempting deletion to prevent information disclosure
+      const existing = await db.oneOrNone('SELECT id FROM vip_proxies WHERE id = $1', [req.params.id]);
+      if (!existing) {
+        return res.status(404).json({
+          success: false,
+          error: 'Proxy not found',
+          errorCode: 'PROXY_NOT_FOUND'
+        });
+      }
+
       await db.none('DELETE FROM vip_proxies WHERE id = $1', [req.params.id]);
       res.json({ success: true });
     } catch (err) {
@@ -91,7 +103,7 @@ router.delete(
   },
 );
 
-router.get('/metrics', authenticateJWT, createRateLimit(15 * 60 * 1000, 50), async (req, res) => {
+router.get('/metrics', authenticateJWT, requirePermission('vip:read'), createRateLimit(15 * 60 * 1000, 50), async (req, res) => {
   try {
     const vipCountRow = await db.one('SELECT COUNT(*) AS count FROM users WHERE is_vip = true');
     const ticketRow = await db.one(
