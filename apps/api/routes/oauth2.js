@@ -467,6 +467,21 @@ router.post(
             throw new Error('Invalid refresh token');
           }
 
+          // Check if token has been revoked
+          if (decoded.jti) {
+            const revoked = await db.oneOrNone(
+              'SELECT jti FROM oauth_revoked_tokens WHERE jti = $1',
+              [decoded.jti]
+            );
+            
+            if (revoked) {
+              return res.status(400).json({
+                error: 'invalid_grant',
+                error_description: 'Refresh token has been revoked',
+              });
+            }
+          }
+
           user_id = decoded.user_id;
           tenant_id = decoded.tenant_id;
           token_scope = scope || decoded.scope;

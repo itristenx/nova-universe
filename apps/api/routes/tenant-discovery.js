@@ -507,13 +507,15 @@ async function discoverBySubdomain(subdomain) {
 }
 
 async function discoverByAPIKey(apiKey) {
-  // API keys should be linked to tenants - this is a placeholder
-  // In production, you'd query an api_keys table
+  // Hash the API key to compare with stored hash
+  const crypto = await import('crypto');
+  const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
+  
   const result = await db.query(
     `SELECT t.* FROM api_keys ak
      JOIN tenants t ON ak.tenant_id = t.id
-     WHERE ak.key_hash = $1 AND ak.active = true AND t.active = true`,
-    [apiKey]
+     WHERE ak.key_hash = $1 AND ak.is_active = true AND t.active = true`,
+    [keyHash]
   );
   return result.rows[0] || null;
 }
