@@ -107,6 +107,7 @@ import pulseRouter from './routes/pulse.js';
 import inventoryRouter from './routes/inventory.js';
 import scimRouter from './routes/scim.js';
 import scimMonitorRouter from './routes/scimMonitor.js';
+import oauth2Router from './routes/oauth2.js';
 import synthRouter from './routes/synth.js';
 // Synth v2 routes also use AI Fabric; load conditionally
 let synthV2Router = null;
@@ -2532,6 +2533,9 @@ app.use('/api/customer-activity', customerActivityRouter);
 
 // Special routes that maintain their own paths
 app.use('/scim/v2', ensureScimAuth, scimRouter); // SCIM 2.0 Provisioning API with authentication
+app.use('/api/v1/oauth', oauth2Router); // OAuth 2.0 Authorization Server (RFC 6749)
+app.use('/api/v1/oauth', oauth2Router); // OAuth 2.0 metadata endpoint
+app.use('/.well-known', oauth2Router); // OAuth 2.0 well-known endpoints
 app.use('/core', coreRouter);
 
 // Feature-gated status pages
