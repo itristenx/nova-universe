@@ -1,5 +1,6 @@
 import express from 'express';
 import { getConfig, searchDirectory, createUser } from '../directory.js';
+import { ensureAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ const router = express.Router();
  *                 errorCode:
  *                   type: string
  */
-router.get('/config', async (req, res) => {
+router.get('/config', ensureAuth, async (req, res) => {
   try {
     const cfg = await getConfig();
     res.json(cfg);
@@ -72,7 +73,7 @@ router.get('/config', async (req, res) => {
  *                 errorCode:
  *                   type: string
  */
-router.get('/search', async (req, res) => {
+router.get('/search', ensureAuth, async (req, res) => {
   try {
     const q = (req.query.q || '').toLowerCase();
     const results = await searchDirectory(q);
@@ -138,7 +139,7 @@ router.get('/search', async (req, res) => {
  *                 errorCode:
  *                   type: string
  */
-router.post('/user', async (req, res) => {
+router.post('/user', ensureAuth, async (req, res) => {
   const { name, email } = req.body;
   if (!name || !email) {
     return res

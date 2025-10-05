@@ -262,8 +262,8 @@ class ConfigurationManager {
   }
 }
 
-// GET /api/v1/config - Get all public configuration
-router.get('/', async (req, res) => {
+// GET /api/v1/config - Get all public configuration (now requires authentication)
+router.get('/', ensureAuth, async (req, res) => {
   try {
     const { category, includeAdvanced = false } = req.query;
 
@@ -343,8 +343,8 @@ router.get('/admin', ensureAuth, async (req, res) => {
   }
 });
 
-// GET /api/v1/config/:key - Get specific configuration value
-router.get('/:key', async (req, res) => {
+// GET /api/v1/config/:key - Get specific configuration value (now requires authentication)
+router.get('/:key', ensureAuth, async (req, res) => {
   try {
     const { key } = req.params;
 
@@ -357,11 +357,6 @@ router.get('/:key', async (req, res) => {
       return res.status(404).json({ error: 'Configuration not found' });
     }
 
-    // Check if public or user is authenticated
-    if (!config.isPublic && !req.user) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
     const resolved = await ConfigurationManager.getValue(key);
     if (!resolved) {
       return res.status(404).json({ error: 'Configuration value not found' });
@@ -371,17 +366,13 @@ router.get('/:key', async (req, res) => {
       key,
       value: resolved.value,
       source: resolved.source,
-      ...(req.user
-        ? {
-            metadata: {
-              description: config.description,
-              category: config.category,
-              subcategory: config.subcategory,
-              valueType: config.valueType,
-              helpText: config.helpText,
-            },
-          }
-        : {}),
+      metadata: {
+        description: config.description,
+        category: config.category,
+        subcategory: config.subcategory,
+        valueType: config.valueType,
+        helpText: config.helpText,
+      },
     });
   } catch (error) {
     logger.error(`Error getting configuration for key ${req.params.key}:`, error);

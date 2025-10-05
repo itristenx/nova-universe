@@ -3,6 +3,7 @@ import { SupportGroupService } from '../services/cmdb/SupportGroupService.js';
 import { CmdbInventoryIntegrationService } from '../services/cmdb/CmdbInventoryIntegrationService.js';
 import { CmdbService } from '../services/cmdb/CmdbService.js';
 import { logger } from '../logger.js';
+import { ensureAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 const supportGroupService = new SupportGroupService();
@@ -143,8 +144,8 @@ router.delete('/support-groups/:id/permissions/:resource/:action', async (req, r
   }
 });
 
-// Get user permissions
-router.get('/users/:userId/permissions', async (req, res) => {
+// Get user permissions (requires authentication)
+router.get('/users/:userId/permissions', ensureAuth, async (req, res) => {
   try {
     const permissions = await supportGroupService.getUserPermissions(req.params.userId);
     res.json(permissions);
@@ -153,8 +154,8 @@ router.get('/users/:userId/permissions', async (req, res) => {
   }
 });
 
-// Check user permission
-router.post('/users/:userId/permissions/check', async (req, res) => {
+// Check user permission (requires authentication)
+router.post('/users/:userId/permissions/check', ensureAuth, async (req, res) => {
   try {
     const { resource, action, context } = req.body;
     const hasPermission = await supportGroupService.checkPermission(
@@ -221,8 +222,8 @@ router.put('/cis/:ciId/ownership/:ownershipType/:userId', async (req, res) => {
   }
 });
 
-// Get user owned CIs
-router.get('/users/:userId/owned-cis', async (req, res) => {
+// Get user owned CIs (requires authentication)
+router.get('/users/:userId/owned-cis', ensureAuth, async (req, res) => {
   try {
     const ownershipType = req.query.ownershipType;
     const cis = await cmdbService.getUserOwnedCis(req.params.userId, ownershipType);
