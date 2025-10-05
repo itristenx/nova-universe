@@ -69,21 +69,27 @@ function makeRequest(url, options = {}) {
 }
 
 /**
- * Test an endpoint
+ * Test an endpoint (supports multiple expected status codes)
  */
 async function testEndpoint(name, path, expectedStatus = 200, options = {}) {
   const url = `${BASE_URL}${path}`;
+  const expectedStatuses = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
   
   try {
     const response = await makeRequest(url, options);
     
-    if (response.status === expectedStatus) {
+    if (expectedStatuses.includes(response.status)) {
       console.log(`${colors.green}✓${colors.reset} ${name}: ${path} → ${response.status}`);
       passed++;
       return true;
     } else {
-      console.log(`${colors.yellow}⚠${colors.reset} ${name}: ${path} → ${response.status} (expected ${expectedStatus})`);
-      passed++; // Still count as passed if endpoint responds
+      console.log(`${colors.yellow}⚠${colors.reset} ${name}: ${path} → ${response.status} (expected ${expectedStatuses.join(' or ')})`);
+      // Still count as passed if endpoint exists but has different status
+      if (response.status < 500) {
+        passed++;
+      } else {
+        failed++;
+      }
       return true;
     }
   } catch (error) {
@@ -176,35 +182,6 @@ async function runTests() {
   } else {
     console.log(`${colors.green}All tested endpoints are responding!${colors.reset}\n`);
     process.exit(0);
-  }
-}
-
-// Handle multiple expected status codes
-async function testEndpoint(name, path, expectedStatus = 200, options = {}) {
-  const url = `${BASE_URL}${path}`;
-  const expectedStatuses = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
-  
-  try {
-    const response = await makeRequest(url, options);
-    
-    if (expectedStatuses.includes(response.status)) {
-      console.log(`${colors.green}✓${colors.reset} ${name}: ${path} → ${response.status}`);
-      passed++;
-      return true;
-    } else {
-      console.log(`${colors.yellow}⚠${colors.reset} ${name}: ${path} → ${response.status} (expected ${expectedStatuses.join(' or ')})`);
-      // Still count as passed if endpoint exists but has different status
-      if (response.status < 500) {
-        passed++;
-      } else {
-        failed++;
-      }
-      return true;
-    }
-  } catch (error) {
-    console.log(`${colors.red}✗${colors.reset} ${name}: ${path} → ${error.message}`);
-    failed++;
-    return false;
   }
 }
 
