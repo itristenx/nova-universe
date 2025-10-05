@@ -30,17 +30,24 @@ if (missing.length && process.env.NODE_ENV === 'production') {
 
 // In development, set defaults for missing values
 if (process.env.NODE_ENV !== 'production') {
+  // Generate secure secrets for development if not provided
+  const crypto = await import('crypto');
+  
   if (!process.env.SESSION_SECRET) {
-    process.env.SESSION_SECRET = 'dev-session-secret-change-in-production';
+    // Generate a secure random secret for development
+    process.env.SESSION_SECRET = crypto.randomBytes(64).toString('hex');
+    console.warn('⚠️  Generated temporary SESSION_SECRET for development. Set SESSION_SECRET in .env for persistence.');
   }
   if (!process.env.JWT_SECRET) {
-    process.env.JWT_SECRET = 'dev-jwt-secret-change-in-production';
+    // Generate a secure random secret for development
+    process.env.JWT_SECRET = crypto.randomBytes(64).toString('hex');
+    console.warn('⚠️  Generated temporary JWT_SECRET for development. Set JWT_SECRET in .env for persistence.');
   }
   if (!process.env.KIOSK_TOKEN) {
-    process.env.KIOSK_TOKEN = 'dev-kiosk-token';
+    process.env.KIOSK_TOKEN = crypto.randomBytes(32).toString('hex');
   }
   if (!process.env.SCIM_TOKEN) {
-    process.env.SCIM_TOKEN = 'dev-scim-token';
+    process.env.SCIM_TOKEN = crypto.randomBytes(32).toString('hex');
   }
   if (!process.env.POSTGRES_HOST) {
     process.env.POSTGRES_HOST = 'localhost';
@@ -54,6 +61,30 @@ if (process.env.NODE_ENV !== 'production') {
   if (!process.env.POSTGRES_DB) {
     process.env.POSTGRES_DB = 'nova_universe';
   }
+}
+
+// Validate secret strength in all environments
+const validateSecretStrength = (secret, name) => {
+  const weakSecrets = ['dev', 'secret', 'test', 'admin', 'password', 'nova-mcp-secret'];
+  
+  if (weakSecrets.includes(secret)) {
+    throw new Error(`${name} cannot be a weak value like: ${weakSecrets.join(', ')}`);
+  }
+  
+  if (secret.length < 32) {
+    throw new Error(`${name} must be at least 32 characters long (current: ${secret.length})`);
+  }
+  
+  // Check for common weak patterns
+  if (secret.includes('dev-') || secret.includes('change-in-production')) {
+    throw new Error(`${name} contains weak pattern. Generate a secure random secret.`);
+  }
+};
+
+// Validate critical secrets in production
+if (process.env.NODE_ENV === 'production') {
+  validateSecretStrength(process.env.JWT_SECRET, 'JWT_SECRET');
+  validateSecretStrength(process.env.SESSION_SECRET, 'SESSION_SECRET');
 }
 
 const config = {

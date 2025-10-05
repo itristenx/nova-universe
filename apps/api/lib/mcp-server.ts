@@ -537,15 +537,44 @@ export class NovaMCPServer {
   }
 
   private async authenticateAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
-    // Admin authentication logic
-    const adminToken = req.headers.authorization?.substring(7);
-
-    if (!adminToken || adminToken !== process.env.ADMIN_TOKEN) {
-      res.status(403).json({ error: 'Admin access required' });
+    // Enhanced admin authentication with JWT
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader?.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Admin authentication required' });
       return;
     }
-
-    next();
+    
+    const token = authHeader.substring(7);
+    
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nova-mcp-secret') as any;
+      
+      // Verify admin role
+      if (!decoded.role || !['admin', 'superadmin'].includes(decoded.role)) {
+        res.status(403).json({ error: 'Admin role required' });
+        return;
+      }
+      
+      // Verify MFA if enabled for admin
+      if (decoded.mfaRequired && !decoded.mfaVerified) {
+        res.status(403).json({ error: 'MFA verification required for admin access' });
+        return;
+      }
+      
+      // Check if token is not expired
+      const now = Math.floor(Date.now() / 1000);
+      if (decoded.exp && decoded.exp < now) {
+        res.status(401).json({ error: 'Token expired' });
+        return;
+      }
+      
+      (req as any).admin = decoded;
+      next();
+    } catch (error) {
+      logger.error('Admin authentication error:', error);
+      res.status(401).json({ error: 'Invalid admin token' });
+    }
   }
 
   private applyRateLimit(req: Request, res: Response, next: NextFunction): void {
