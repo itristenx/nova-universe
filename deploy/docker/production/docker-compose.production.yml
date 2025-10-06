@@ -1,0 +1,515 @@
+# =============================================================================
+# Nova Universe - Production Docker Compose Configuration
+# =============================================================================
+# This configuration implements production-grade security, monitoring, and
+# high availability patterns for the Nova Universe platform
+# =============================================================================
+
+version: '3.9'
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  nova-frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  nova-backend:
+    driver: bridge
+    internal: true  # No external access
+    ipam:
+      config:
+        - subnet: 172.20.1.0/24
+  nova-database:
+    driver: bridge
+    internal: true  # Database isolated from external
+    ipam:
+      config:
+        - subnet: 172.20.2.0/24
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/postgres
+  postgres_backups:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./backups/postgres
+  mongodb_data:
+    driver: local
+  mongodb_backups:
+    driver: local
+  redis_data:
+    driver: local
+  api_logs:
+    driver: local
+  api_uploads:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# =============================================================================
+# SECRETS (Using Docker Secrets for Production)
+# =============================================================================
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+  mongodb_root_password:
+    file: ./secrets/mongodb_root_password.txt
+  redis_password:
+    file: ./secrets/redis_password.txt
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
+  session_secret:
+    file: ./secrets/session_secret.txt
+
+# =============================================================================
+# SERVICES
+# =============================================================================
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database (Primary Data Store)
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: nova-postgres-prod
+    restart: always
+    secrets:
+      - postgres_password
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nova_universe_prod}
+      POSTGRES_USER: ${POSTGRES_USER:-nova_admin}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale=en_US.UTF-8'
+      # Performance tuning
+      POSTGRES_SHARED_BUFFERS: ${POSTGRES_SHARED_BUFFERS:-512MB}
+      POSTGRES_EFFECTIVE_CACHE_SIZE: ${POSTGRES_EFFECTIVE_CACHE_SIZE:-2GB}
+      POSTGRES_MAX_CONNECTIONS: ${POSTGRES_MAX_CONNECTIONS:-200}
+    ports:
+      - '127.0.0.1:5432:5432'  # Bind to localhost only
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_backups:/backups
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d:ro
+      - ./config/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    networks:
+      - nova-database
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $POSTGRES_USER -d $POSTGRES_DB']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c ssl=on
+      -c ssl_cert_file=/etc/ssl/certs/server.crt
+      -c ssl_key_file=/etc/ssl/private/server.key
+      -c log_statement=all
+      -c log_duration=on
+      -c log_min_duration_statement=100
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=postgres,environment=production"
+
+  # ---------------------------------------------------------------------------
+  # MongoDB (Audit Logs & Telemetry)
+  # ---------------------------------------------------------------------------
+  mongodb:
+    image: mongo:7.0
+    container_name: nova-mongodb-prod
+    restart: always
+    secrets:
+      - mongodb_root_password
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongodb_root_password
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-nova_audit}
+    ports:
+      - '127.0.0.1:27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_backups:/backups
+      - ./scripts/mongo-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - nova-database
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.runCommand('ping').ok", '--quiet']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    command: >
+      mongod
+      --auth
+      --bind_ip_all
+      --logpath=/var/log/mongodb/mongod.log
+      --logappend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # Redis (Caching & Session Store)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: nova-redis-prod
+    restart: always
+    secrets:
+      - redis_password
+    ports:
+      - '127.0.0.1:6379:6379'
+    volumes:
+      - redis_data:/data
+      - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - nova-backend
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--no-auth-warning', '-a', '$REDIS_PASSWORD', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    command: >
+      sh -c 'redis-server /usr/local/etc/redis/redis.conf
+      --requirepass "$$(cat /run/secrets/redis_password)"'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # Nova Universe API (Application Server)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile.production
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}
+        VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
+        VERSION: ${VERSION:-1.0.0}
+    image: nova-universe/api:${VERSION:-latest}
+    container_name: nova-api-prod
+    restart: always
+    secrets:
+      - postgres_password
+      - mongodb_root_password
+      - redis_password
+      - jwt_secret
+      - session_secret
+    environment:
+      # Application
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      TZ: UTC
+      
+      # Database (PostgreSQL)
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-nova_universe_prod}
+      POSTGRES_USER: ${POSTGRES_USER:-nova_admin}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_SSL: 'true'
+      POSTGRES_POOL_MIN: 5
+      POSTGRES_POOL_MAX: 50
+      
+      # MongoDB
+      MONGO_URL: mongodb://admin:$$(cat /run/secrets/mongodb_root_password)@mongodb:27017/nova_audit?authSource=admin
+      
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+      
+      # Security
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      SESSION_SECRET_FILE: /run/secrets/session_secret
+      BCRYPT_ROUNDS: 14
+      
+      # API Configuration
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://nova.example.com}
+      API_BASE_URL: ${API_BASE_URL:-https://api.nova.example.com}
+      
+      # Rate Limiting
+      RATE_LIMIT_WINDOW: 15
+      RATE_LIMIT_MAX: 100
+      
+      # Logging
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+      
+      # Features
+      DISABLE_AUTH: 'false'
+      
+    ports:
+      - '${API_PORT:-3000}:3000'
+    volumes:
+      - api_logs:/app/logs
+      - api_uploads:/app/uploads
+    networks:
+      - nova-frontend
+      - nova-backend
+      - nova-database
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    read_only: true
+    tmpfs:
+      - /tmp:size=100M,mode=1777
+      - /app/temp:size=100M,uid=1001,gid=1001
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+        labels: "service=api,environment=production"
+
+  # ---------------------------------------------------------------------------
+  # Nginx Reverse Proxy (Load Balancer & SSL Termination)
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: nova-nginx-prod
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./config/nginx/ssl:/etc/nginx/ssl:ro
+      - ./public:/usr/share/nginx/html:ro
+    networks:
+      - nova-frontend
+    depends_on:
+      - api
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # Prometheus (Metrics Collection)
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: nova-prometheus-prod
+    restart: always
+    ports:
+      - '127.0.0.1:9090:9090'
+    volumes:
+      - prometheus_data:/prometheus
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./config/prometheus/alerts:/etc/prometheus/alerts:ro
+    networks:
+      - nova-backend
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # Grafana (Monitoring Dashboard)
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: nova-grafana-prod
+    restart: always
+    ports:
+      - '127.0.0.1:3001:3000'
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-changeme}
+      GF_INSTALL_PLUGINS: ''
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - nova-backend
+    depends_on:
+      - prometheus
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # Backup Service (Automated Database Backups)
+  # ---------------------------------------------------------------------------
+  backup:
+    image: alpine:latest
+    container_name: nova-backup-prod
+    restart: always
+    volumes:
+      - postgres_backups:/backups/postgres
+      - mongodb_backups:/backups/mongodb
+      - ./scripts/backup.sh:/backup.sh:ro
+    networks:
+      - nova-database
+    depends_on:
+      - postgres
+      - mongodb
+    environment:
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-0 2 * * *}  # Daily at 2 AM
+      RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+    command: >
+      sh -c 'apk add --no-cache postgresql-client mongodb-tools
+      && crond -f -l 2 -L /dev/stdout'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# =============================================================================
+# CONFIGURATION NOTES
+# =============================================================================
+# 
+# BEFORE RUNNING:
+# 1. Create secrets directory and generate secure secrets:
+#    mkdir -p secrets
+#    openssl rand -base64 32 > secrets/postgres_password.txt
+#    openssl rand -base64 32 > secrets/mongodb_root_password.txt
+#    openssl rand -base64 32 > secrets/redis_password.txt
+#    openssl rand -base64 48 > secrets/jwt_secret.txt
+#    openssl rand -base64 48 > secrets/session_secret.txt
+#
+# 2. Create data directories:
+#    mkdir -p data/postgres backups/postgres
+#
+# 3. Generate SSL certificates for HTTPS:
+#    mkdir -p config/nginx/ssl
+#    # Use Let's Encrypt or your CA
+#
+# 4. Configure environment variables in .env file
+#
+# DEPLOYMENT:
+#   docker-compose -f docker-compose.production.yml up -d
+#
+# MONITORING:
+#   docker-compose -f docker-compose.production.yml logs -f api
+#   docker-compose -f docker-compose.production.yml ps
+#
+# SCALING:
+#   docker-compose -f docker-compose.production.yml up -d --scale api=3
+#
+# BACKUP:
+#   docker-compose -f docker-compose.production.yml exec backup /backup.sh
+#
+# =============================================================================

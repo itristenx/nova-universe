@@ -57,8 +57,7 @@ ORGANIZATION_NAME=Nova ITSM
 ADMIN_EMAIL=admin@nova.local
 ADMIN_PASSWORD=admin123
 
-# Authentication
-DISABLE_AUTH=false
+# Authentication (always required in production)
 KIOSK_TOKEN=dev_kiosk_token_secure_2024
 SCIM_TOKEN=dev_scim_token_secure_2024
 

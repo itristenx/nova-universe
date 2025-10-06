@@ -148,6 +148,10 @@ const NovaTVBuilder = lazy(() => import('@pages/nova-tv/builder'));
 const TVDisplay = lazy(() => import('@pages/tv/TVDisplay'));
 const TVActivation = lazy(() => import('@pages/tv/TVActivation'));
 
+// Showcase pages (Liquid Glass components demo)
+const LiquidGlassShowcasePage = lazy(() => import('@pages/showcase/LiquidGlassShowcasePage'));
+const Phase2ShowcasePage = lazy(() => import('@pages/showcase/Phase2ShowcasePage'));
+
 // Error pages
 const NotFoundPage = lazy(() => import('@pages/NotFoundPage'));
 
@@ -245,6 +249,11 @@ function App() {
                       <Route path="/dashboard/user" element={<UserDashboard />} />
                       <Route path="/dashboard/enhanced" element={<EnhancedUserDashboard />} />
                       <Route path="/dashboard/apple" element={<AppleInspiredITSMDashboard />} />
+
+                      {/* Showcase routes - Liquid Glass component demos */}
+                      <Route path="/showcase" element={<LiquidGlassShowcasePage />} />
+                      <Route path="/showcase/liquid-glass" element={<LiquidGlassShowcasePage />} />
+                      <Route path="/showcase/phase-2" element={<Phase2ShowcasePage />} />
 
                       {/* Ticket management routes */}
                       <Route path="/tickets" element={<TicketsPage />} />

@@ -13,11 +13,8 @@ import db from '../db.js';
 
 const router = express.Router();
 
-// Conditional authentication based on DISABLE_AUTH setting
-const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true';
-if (!DISABLE_AUTH) {
-  router.use(authenticateJWT);
-}
+// Authentication is always required for monitoring routes
+router.use(authenticateJWT);
 router.use(createRateLimit(60 * 1000, 100)); // 100 requests per minute
 
 // ========================================================================

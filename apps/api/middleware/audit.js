@@ -1,5 +1,6 @@
 import db from '../db.js';
 import { logger } from '../logger.js';
+import auditService, { AuditActions, SecuritySeverity } from '../services/audit.js';
 
 /**
  * Middleware factory to create an audit trail entry for the handled route.
@@ -8,21 +9,41 @@ import { logger } from '../logger.js';
 export function audit(actionKey) {
   return async (req, res, next) => {
     try {
-      const userId = req.user?.id || 'anonymous';
+      const userId = req.user?.id || null;
+      const ipAddress = req.ip || req.connection?.remoteAddress || null;
+      const userAgent = req.get('User-Agent') || null;
+      const sessionId = req.session?.id || req.sessionID || null;
+      const tenantId = req.user?.tenantId || req.tenant?.id || null;
+
       const details = {
         path: req.originalUrl,
         method: req.method,
         params: req.params,
         query: req.query,
-        // Avoid storing secrets; shallow copy body with redactions
         body: redactBody(req.body),
-        ip_address: req.ip,
-        user_agent: req.get('User-Agent') || null,
       };
-      // Fire and forget
-      db.createAuditLog(actionKey, userId, details).catch((err) => {
+
+      // Use new comprehensive audit service
+      auditService.log({
+        userId,
+        action: actionKey,
+        ipAddress,
+        userAgent,
+        requestMethod: req.method,
+        requestPath: req.path,
+        sessionId,
+        tenantId,
+        metadata: details,
+      }).catch((err) => {
         logger.warn('Audit log failed', { actionKey, error: err?.message });
       });
+
+      // Fallback to legacy db.createAuditLog for compatibility
+      if (db.createAuditLog) {
+        db.createAuditLog(actionKey, userId || 'anonymous', details).catch((err) => {
+          logger.warn('Legacy audit log failed', { actionKey, error: err?.message });
+        });
+      }
     } catch (err) {
       logger.warn('Audit middleware error', { actionKey, error: err?.message });
     } finally {

@@ -656,6 +656,41 @@ export async function invalidateCache(keyOrPattern) {
   }
 }
 
+/**
+ * Purge old audit logs (cleanup job)
+ * @param {number} retentionDays - Number of days to retain logs
+ * @param {Function} callback - Optional callback for backward compatibility
+ */
+export async function purgeOldLogs(retentionDays = 30, callback) {
+  try {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+
+    // Delete old audit logs from PostgreSQL
+    const result = await prisma.auditLog.deleteMany({
+      where: {
+        createdAt: {
+          lt: cutoffDate
+        }
+      }
+    });
+
+    logger.info(`✅ Purged ${result.count} old audit logs (older than ${retentionDays} days)`);
+    
+    if (callback) {
+      callback(null, result);
+    }
+    
+    return result;
+  } catch (error) {
+    logger.error('Failed to purge old logs:', error);
+    if (callback) {
+      callback(error);
+    }
+    throw error;
+  }
+}
+
 // ============================================================================
 // EXPORTS
 // ============================================================================
@@ -676,6 +711,7 @@ export default {
   storeDocument,
   findDocuments,
   createAuditLog,
+  purgeOldLogs,
   
   // Caching helpers
   getWithCache,

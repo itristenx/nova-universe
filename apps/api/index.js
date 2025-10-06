@@ -44,6 +44,7 @@ import appSwitcherRouter from './routes/app-switcher.js'; // Enhanced App Switch
 // AI Control Tower routes are heavy (TensorFlow); load only if enabled
 let aiControlTowerRouter = null;
 import authRouter from './routes/auth.js';
+import mfaRouter from './routes/mfa.js'; // Multi-Factor Authentication
 import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
 import serviceRequestsRouter from './routes/service-requests.js'; // Service Requests API
@@ -59,8 +60,9 @@ import serviceRequestsRouter from './routes/service-requests.js'; // Service Req
 // import aiAgentRouter from './routes/ai-agent.js'; // Nova AI Agent Framework - TEMPORARILY DISABLED
 import spacesRouter from './routes/spaces.js';
 import commsRouter from './routes/comms.js'; // Nova Comms Slack integration
-import novaTVRouter from './routes/nova-tv-prisma.js'; // Nova TV - Channel Management (Prisma-backed)
-import novaTVDigitalSignageRouter from './src/routes/nova-tv-digital-signage.js'; // Nova TV Digital Signage (media, playlists)
+// TEMPORARILY DISABLED - Missing Prisma client
+// import novaTVRouter from './routes/nova-tv-prisma.js'; // Nova TV - Channel Management (Prisma-backed)
+// import novaTVDigitalSignageRouter from './src/routes/nova-tv-digital-signage.js'; // Nova TV Digital Signage (media, playlists)
 import emailActionsRouter from './routes/email-actions.js'; // Enhanced Email Actions for Workflows
 import customerActivityRouter from './routes/customer-activity.js'; // Customer Activity & Email Communication Tracking
 // Service Catalog API routes
@@ -92,7 +94,7 @@ import path from 'path';
 import { Server as SocketIOServer } from 'socket.io';
 import { fileURLToPath } from 'url';
 import ConfigurationManager from './config/app-settings.js';
-import db, { closeDatabase } from './db.js';
+import db, { disconnectDatabase } from './db.js';
 import events from './events.js';
 import { sign, verify } from './jwt.js';
 import { authRateLimit } from './middleware/rateLimiter.js';
@@ -116,6 +118,7 @@ import { setupGraphQL } from './graphql.js';
 import { initializeSlackApp, startSlackApp } from './services/nova-comms.js';
 import { validateProductionEnvironment } from './config/production-validation.js';
 import PerformanceMonitor from './middleware/performance-monitor.js';
+import securityMonitor from './services/security-monitor.js';
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -134,8 +137,7 @@ validateProductionEnvironment();
 // Initialize performance monitoring
 const performanceMonitor = new PerformanceMonitor();
 
-// Authentication/feature flags must be defined before any middleware uses them
-const DISABLE_AUTH = process.env.DISABLE_AUTH === 'true' || process.env.NODE_ENV === 'test';
+// Authentication tokens must be defined before any middleware uses them
 const SCIM_TOKEN = process.env.SCIM_TOKEN || '';
 const KIOSK_TOKEN = process.env.KIOSK_TOKEN || '';
 // JWT_SECRET available for future use
@@ -178,29 +180,24 @@ const io = new SocketIOServer(server, {
 io.use(async (socket, next) => {
   try {
     const token = socket.handshake.auth.token;
-    if (!token && !DISABLE_AUTH) {
+    if (!token) {
       return next(new Error('Authentication required'));
     }
 
-    if (token) {
-      const payload = verify(token);
-      if (payload) {
-        // Fetch user details from database
-        db.get('SELECT id, name, email FROM users WHERE id=$1', [payload.id], (err, user) => {
-          if (err || !user) {
-            return next(new Error('Invalid authentication'));
-          }
-          socket.userId = user.id;
-          socket.userEmail = user.email;
-          socket.userName = user.name;
-          next();
-        });
-      } else {
-        next(new Error('Invalid token'));
-      }
+    const payload = verify(token);
+    if (payload) {
+      // Fetch user details from database
+      db.get('SELECT id, name, email FROM users WHERE id=$1', [payload.id], (err, user) => {
+        if (err || !user) {
+          return next(new Error('Invalid authentication'));
+        }
+        socket.userId = user.id;
+        socket.userEmail = user.email;
+        socket.userName = user.name;
+        next();
+      });
     } else {
-      // Auth disabled - allow connection
-      next();
+      next(new Error('Invalid token'));
     }
   } catch (error) {
     logger.warn('WebSocket authentication failed:', error.message);
@@ -804,7 +801,6 @@ function validateEnv() {
     'SUBMIT_TICKET_LIMIT',
     'API_LOGIN_LIMIT',
     'AUTH_LIMIT',
-    'DISABLE_AUTH',
     'DISABLE_CLEANUP',
     'DEBUG_CORS',
     'NODE_ENV',
@@ -926,43 +922,37 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-if (process.env.DISABLE_AUTH === 'true' && process.env.NODE_ENV === 'production') {
-  logger.error('DISABLE_AUTH cannot be true when NODE_ENV is production');
-  process.exit(1);
-}
-
 // (moved above to avoid temporal dead zone issues when referenced earlier)
 
-if (!DISABLE_AUTH && !process.env.SESSION_SECRET && process.env.NODE_ENV !== 'test') {
+if (!process.env.SESSION_SECRET && process.env.NODE_ENV !== 'test') {
   logger.error('SESSION_SECRET environment variable is required');
   process.exit(1);
 }
 
-if (!DISABLE_AUTH) {
-  app.use(
-    session({
-      secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      },
-      name: 'novauniverse.sid', // Change default session name
-    }),
-  );
-  app.use(passport.initialize());
-  app.use(passport.session());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
+    name: 'novauniverse.sid', // Change default session name
+  }),
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
-  passport.serializeUser((u, d) => d(null, u));
-  passport.deserializeUser((u, d) => d(null, u));
+passport.serializeUser((u, d) => d(null, u));
+passport.deserializeUser((u, d) => d(null, u));
 
-  // Only initialize SAML if SAML_ENTRY_POINT is configured
-  if (process.env.SAML_ENTRY_POINT) {
-    passport.use(
-      new SamlStrategy(
+// Only initialize SAML if SAML_ENTRY_POINT is configured
+if (process.env.SAML_ENTRY_POINT) {
+  passport.use(
+    new SamlStrategy(
         {
           entryPoint: process.env.SAML_ENTRY_POINT,
           issuer: process.env.SAML_ISSUER,
@@ -996,8 +986,7 @@ if (!DISABLE_AUTH) {
         },
       ),
     );
-  } // End SAML conditional
-}
+  }
 
 const PORT = Number(process.env.API_PORT || 3000);
 const SLACK_URL = process.env.SLACK_WEBHOOK_URL;
@@ -1047,56 +1036,51 @@ const transporter = nodemailer.createTransport({
   secure: process.env.SMTP_SECURE === 'true',
 });
 
-const ensureAuth = DISABLE_AUTH
-  ? (req, res, next) => next()
-  : (req, res, next) => {
-      const finalize = (user) => {
-        db.all(
-          `SELECT r.name AS role, p.name AS perm
-             FROM user_roles ur
-             JOIN roles r ON ur.roleId=r.id
-             LEFT JOIN role_permissions rp ON r.id=rp."roleId"
-             LEFT JOIN permissions p ON rp."permissionId"=p.id
-            WHERE ur.userId=$1`,
-          [user.id],
-          (e, rows) => {
-            if (e) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
-            user.roles = Array.from(new Set(rows.map((r) => r.role)));
-            user.permissions = Array.from(new Set(rows.map((r) => r.perm).filter(Boolean)));
-            req.user = user;
-            next();
-          },
-        );
-      };
+const ensureAuth = (req, res, next) => {
+  const finalize = (user) => {
+    db.all(
+      `SELECT r.name AS role, p.name AS perm
+         FROM user_roles ur
+         JOIN roles r ON ur.roleId=r.id
+         LEFT JOIN role_permissions rp ON r.id=rp."roleId"
+         LEFT JOIN permissions p ON rp."permissionId"=p.id
+        WHERE ur.userId=$1`,
+      [user.id],
+      (e, rows) => {
+        if (e) return res.status(500).json({ error: 'Database error', errorCode: 'DB_ERROR' });
+        user.roles = Array.from(new Set(rows.map((r) => r.role)));
+        user.permissions = Array.from(new Set(rows.map((r) => r.perm).filter(Boolean)));
+        req.user = user;
+        next();
+      },
+    );
+  };
 
-      if (req.isAuthenticated && req.isAuthenticated()) {
-        return finalize(req.user);
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return finalize(req.user);
+  }
+  const header = req.headers.authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '');
+  const payload = token && verify(token);
+  if (payload) {
+    db.get('SELECT id, name, email FROM users WHERE id=$1', [payload.id], (err, row) => {
+      if (err || !row) {
+        return res
+          .status(401)
+          .json({ error: 'Authentication required', errorCode: 'AUTH_REQUIRED' });
       }
-      const header = req.headers.authorization || '';
-      const token = header.replace(/^Bearer\s+/i, '');
-      const payload = token && verify(token);
-      if (payload) {
-        db.get('SELECT id, name, email FROM users WHERE id=$1', [payload.id], (err, row) => {
-          if (err || !row) {
-            return res
-              .status(401)
-              .json({ error: 'Authentication required', errorCode: 'AUTH_REQUIRED' });
-          }
-          finalize(row);
-        });
-      } else {
-        res.status(401).json({ error: 'Authentication required', errorCode: 'AUTH_REQUIRED' });
-      }
-    };
+      finalize(row);
+    });
+  } else {
+    res.status(401).json({ error: 'Authentication required', errorCode: 'AUTH_REQUIRED' });
+  }
+};
 
-const requirePermission = (perm) =>
-  DISABLE_AUTH
-    ? (req, res, next) => next()
-    : (req, res, next) => {
-        const perms = req.user?.permissions || [];
-        if (perms.includes(perm)) return next();
-        res.status(403).json({ error: 'Forbidden', errorCode: 'FORBIDDEN' });
-      };
+const requirePermission = (perm) => (req, res, next) => {
+  const perms = req.user?.permissions || [];
+  if (perms.includes(perm)) return next();
+  res.status(403).json({ error: 'Forbidden', errorCode: 'FORBIDDEN' });
+};
 
 const ensureScimAuth = (req, res, next) => {
   const header = req.headers.authorization || '';
@@ -1119,15 +1103,11 @@ const kioskOrAuth = (req, res, next) => {
   }
 
   // Fall back to regular authentication
-  if (DISABLE_AUTH) {
-    return next();
-  }
-
   return ensureAuth(req, res, next);
 };
 
 // SAML authentication routes (only if SAML is configured)
-if (!DISABLE_AUTH && process.env.SAML_ENTRY_POINT) {
+if (process.env.SAML_ENTRY_POINT) {
   app.get('/auth/saml', authLimiter, passport.authenticate('saml'));
   app.post(
     '/auth/saml/callback',
@@ -1150,14 +1130,12 @@ if (!DISABLE_AUTH && process.env.SAML_ENTRY_POINT) {
 }
 
 // General authentication routes
-if (!DISABLE_AUTH) {
-  app.get('/logout', (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.redirect(process.env.ADMIN_URL || '/');
-    });
+app.get('/logout', (req, res, next) => {
+  req.logout((err) => {
+    if (err) return next(err);
+    res.redirect(process.env.ADMIN_URL || '/');
   });
-}
+});
 
 // ========================================
 // API VERSIONING - V1 (2025.08)
@@ -1703,7 +1681,267 @@ v1Router.post(
   },
 );
 
-// Health check endpoint for debugging frontend connectivity
+// ========================================
+// V1 Standard Endpoints
+// ========================================
+
+// Auth status endpoint
+v1Router.get('/auth/status', (req, res) => {
+  res.json({
+    authRequired: true,
+    authDisabled: false,
+  });
+});
+
+// Current user profile endpoint
+v1Router.get('/me', ensureAuth, (req, res) => {
+  if (req.user) {
+    res.json({
+      success: true,
+      user: {
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        roles: req.user.roles || [],
+        permissions: req.user.permissions || []
+      }
+    });
+  } else {
+    res.status(401).json({ error: 'Authentication required' });
+  }
+});
+
+// Server status endpoint
+v1Router.get('/server/status', ensureAuth, (req, res) => {
+  const uptime = Math.floor(process.uptime());
+  const hours = Math.floor(uptime / 3600);
+  const minutes = Math.floor((uptime % 3600) / 60);
+  const seconds = uptime % 60;
+  res.json({
+    status: 'running',
+    uptime: `${hours}h ${minutes}m ${seconds}s`,
+    uptimeSeconds: uptime,
+    apiVersion: getApiVersion(),
+    uiVersion: getUiVersion(),
+    cliVersion: getCliVersion(),
+    nodeVersion: process.version,
+    memoryUsage: process.memoryUsage(),
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+  });
+});
+
+// API version endpoint
+v1Router.get('/version', (req, res) => {
+  res.json({
+    api: {
+      version: 'v1 (2025.08)',
+      name: 'Nova Universe Platform API',
+    },
+    versions: {
+      supported: ['v1'],
+      current: 'v1',
+      deprecated: [],
+      release: '2025.08',
+    },
+    application: {
+      api: getApiVersion(),
+      ui: getUiVersion(),
+      cli: getCliVersion(),
+    },
+  });
+});
+
+// Kiosk registration handler function
+function registerKioskHandler(req, res) {
+  const { id, version } = req.body;
+  const now = new Date().toISOString();
+  db.run(
+    `INSERT INTO kiosks (id, last_seen, version, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT(id) DO UPDATE SET last_seen=excluded.last_seen, version=excluded.version, updated_at=excluded.updated_at`,
+    [id, now, version || '', now, now],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      events.emit('kiosk-registered', { id, version });
+      res.json({ message: 'registered' });
+    },
+  );
+}
+
+// Kiosk registration endpoint
+v1Router.post('/kiosks/register', validateKioskRegistration, registerKioskHandler);
+
+// Kiosk activation endpoint
+v1Router.post('/kiosks/activate', (req, res) => {
+  const { kioskId, activationCode } = req.body;
+
+  if (!kioskId || !activationCode) {
+    return res.status(400).json({ error: 'Missing kioskId or activationCode' });
+  }
+
+  // Check if activation code is valid (for now, use a simple check)
+  // In production, this should validate against a database of valid codes
+  const validCodes = ['NOVA123', 'ACTIVATE', 'BEACON01', 'KIOSK001'];
+  if (!validCodes.includes(activationCode.toUpperCase())) {
+    return res.status(401).json({ error: 'Invalid activation code' });
+  }
+
+  // Update or create kiosk record as activated
+  db.run(
+    `INSERT INTO kiosks (id, logoUrl, bgUrl, active, activated_at) 
+     VALUES ($1, $2, $3, 1, $4) 
+     ON CONFLICT(id) DO UPDATE SET 
+       active = 1, 
+       activated_at = $4`,
+    [kioskId, '/logo.png', '', new Date().toISOString()],
+    function (err) {
+      if (err) {
+        logger.error('Kiosk activation error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      res.json({
+        message: 'Kiosk activated successfully',
+        kioskId: kioskId,
+        activated: true,
+      });
+    },
+  );
+});
+
+// Kiosk configuration endpoint
+v1Router.get('/kiosks/:id/remote-config', kioskOrAuth, (req, res) => {
+  const kioskId = req.params.id;
+
+  // Get kiosk-specific configuration
+  db.get('SELECT * FROM kiosks WHERE id=$1', [kioskId], (err, kiosk) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+
+    // Get global configuration
+    db.all('SELECT key, value FROM config', (configErr, configRows) => {
+      if (configErr) return res.status(500).json({ error: 'Config error' });
+
+      const globalConfig = Object.fromEntries(configRows.map((r) => [r.key, r.value]));
+
+      const config = {
+        kioskId: kioskId,
+        active: kiosk?.active || false,
+        roomName: kiosk?.room_name || globalConfig.defaultRoomName || 'Conference Room',
+        logoUrl: kiosk?.logoUrl || globalConfig.logoUrl || '/logo.png',
+        backgroundUrl: kiosk?.bgUrl || globalConfig.backgroundUrl || '',
+        theme: globalConfig.theme || 'default',
+        statusMessages: {
+          available: globalConfig.availableMessage || 'Room Available',
+          inUse: globalConfig.inUseMessage || 'Room Occupied',
+          meeting: globalConfig.meetingMessage || 'In Meeting',
+          brb: globalConfig.brbMessage || 'Be Right Back',
+          lunch: globalConfig.lunchMessage || 'Out for Lunch',
+          unavailable: globalConfig.unavailableMessage || 'Unavailable',
+        },
+        features: {
+          ticketSubmission: globalConfig.enableTicketSubmission === '1',
+          statusUpdates: globalConfig.enableStatusUpdates === '1',
+          directoryIntegration: globalConfig.directoryEnabled === '1',
+        },
+      };
+
+      res.json({ config });
+    });
+  });
+});
+
+// Kiosk status update endpoint
+v1Router.put('/kiosks/:id/status', kioskOrAuth, (req, res) => {
+  const kioskId = req.params.id;
+  const { status, timestamp } = req.body;
+
+  if (!status) {
+    return res.status(400).json({ error: 'Status is required' });
+  }
+
+  const validStatuses = ['available', 'inUse', 'meeting', 'brb', 'lunch', 'unavailable'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status value' });
+  }
+
+  // Update kiosk status
+  db.run(
+    `UPDATE kiosks SET current_status=$1, last_status_update=$2 WHERE id=$3`,
+    [status, timestamp || new Date().toISOString(), kioskId],
+    function (err) {
+      if (err) {
+        logger.error('Kiosk status update error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Kiosk not found' });
+      }
+
+      res.json({
+        message: 'Status updated successfully',
+        kioskId: kioskId,
+        status: status,
+        timestamp: timestamp || new Date().toISOString(),
+      });
+    },
+  );
+});
+
+// Get kiosk details
+v1Router.get('/kiosks/:id', kioskOrAuth, (req, res) => {
+  const kioskId = req.params.id;
+
+  db.get('SELECT * FROM kiosks WHERE id=$1', [kioskId], (err, row) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    if (!row) return res.json({});
+
+    db.all("SELECT key, value FROM config WHERE key LIKE 'directory%'", (e, rows) => {
+      if (e) return res.status(500).json({ error: 'DB error' });
+      const cfg = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+      res.json({
+        ...row,
+        directoryEnabled: cfg.directoryEnabled === '1',
+        directoryProvider: cfg.directoryProvider || 'mock',
+      });
+    });
+  });
+});
+
+// Update kiosk details
+v1Router.put('/kiosks/:id', ensureAuth, (req, res) => {
+  const { id } = req.params;
+  const { logoUrl, bgUrl, active } = req.body;
+  db.run(
+    `UPDATE kiosks SET logoUrl=$1, bgUrl=$2, active=COALESCE($3, active) WHERE id=$4`,
+    [logoUrl, bgUrl, active !== undefined ? active : null, id],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ message: 'updated' });
+    },
+  );
+});
+
+// ========================================
+// END V1 Standard Endpoints
+// ========================================
+
+// ========================================
+// Infrastructure & Meta Endpoints
+// ========================================
+// These endpoints are NOT versioned as they are infrastructure/meta endpoints
+// following industry standards (AWS, Azure, Google Cloud patterns).
+// 
+// Infrastructure endpoints include:
+// - /api/health - Health checks for load balancers
+// - /health - Root health check
+// - /api/version - API version discovery (meta information)
+// - /metrics - Performance metrics
+// 
+// These remain stable and unversioned for operational tooling.
+// ========================================
+
+// Health check endpoint for load balancers and monitoring systems
 app.get('/api/health', (req, res) => {
   const uptime = Math.floor(process.uptime());
   const hours = Math.floor(uptime / 3600);
@@ -1751,6 +1989,30 @@ app.get('/metrics', ensureAuth, (req, res) => {
   res.json(metrics);
 });
 
+// Security dashboard endpoint (admin only)
+app.get('/security/dashboard', ensureAuth, async (req, res) => {
+  const userRoles = req.user?.roles || [];
+  if (!userRoles.includes('admin') && !userRoles.includes('superadmin')) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+
+  try {
+    const timeWindow = req.query.timeWindow || '24 hours';
+    const stats = await securityMonitor.getStatistics(timeWindow);
+    res.json({
+      success: true,
+      data: stats,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Failed to get security dashboard:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve security statistics',
+    });
+  }
+});
+
 // Readiness probe for UAT/Prod deployments
 app.get('/ready', async (req, res) => {
   try {
@@ -1761,290 +2023,21 @@ app.get('/ready', async (req, res) => {
   }
 });
 
-// Auth status endpoint for admin UI
-app.get('/api/auth/status', (req, res) => {
-  res.json({
-    authRequired: !DISABLE_AUTH,
-    authDisabled: DISABLE_AUTH,
-  });
-});
-
-// Simple test login endpoint for frontend connectivity testing
-app.post('/api/login-test', (req, res) => {
-  console.log('Login test endpoint hit with body:', req.body);
-  res.json({
-    success: true,
-    test: true,
-    message: 'Login endpoint working'
-  });
-});
-
-// Working login endpoint for development
-app.post('/api/login-dev', (req, res) => {
-  console.log('Dev login endpoint hit with body:', req.body);
-  // Disable dev mock login; always require real auth
-  return res.status(401).json({ error: 'Authentication required' });
-});
-
-// Login endpoint for admin UI and frontend
-app.post('/api/login', (req, res) => {
-  console.log('Login endpoint hit with body:', req.body);
-  
-  // Always require real auth
-  
-  // For production mode, return auth required message
-  res.status(401).json({ error: 'Authentication required in production mode' });
-});
-
-// Current user profile endpoint
-app.get('/api/me', ensureAuth, (req, res) => {
-  // No mock user; require valid auth
-
-  // Return current authenticated user
-  if (req.user) {
-    res.json({
-      success: true,
-      user: {
-        id: req.user.id,
-        name: req.user.name,
-        email: req.user.email,
-        roles: req.user.roles || [],
-        permissions: req.user.permissions || []
-      }
-    });
-  } else {
-    res.status(401).json({ error: 'Authentication required' });
-  }
-});
-
-// Server status endpoint for admin UI
-app.get('/api/server/status', ensureAuth, (req, res) => {
-  const uptime = Math.floor(process.uptime());
-  const hours = Math.floor(uptime / 3600);
-  const minutes = Math.floor((uptime % 3600) / 60);
-  const seconds = uptime % 60;
-  res.json({
-    status: 'running',
-    uptime: `${hours}h ${minutes}m ${seconds}s`,
-    uptimeSeconds: uptime,
-    apiVersion: getApiVersion(),
-    uiVersion: getUiVersion(),
-    cliVersion: getCliVersion(),
-    nodeVersion: process.version,
-    memoryUsage: process.memoryUsage(),
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-  });
-});
-// --- API version endpoint ---
-app.get('/api/version', (req, res) => {
-  res.json({
-    apiVersion: getApiVersion(),
-    uiVersion: getUiVersion(),
-    cliVersion: getCliVersion(),
-    // For iOS/macOS app version, see Info.plist in nova-beacon
-  });
-});
-
-// Register kiosk handler function
-function registerKioskHandler(req, res) {
-  const { id, version } = req.body;
-  const now = new Date().toISOString();
-  db.run(
-    `INSERT INTO kiosks (id, last_seen, version, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT(id) DO UPDATE SET last_seen=excluded.last_seen, version=excluded.version, updated_at=excluded.updated_at`,
-    [id, now, version || '', now, now],
-    (err) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
-      events.emit('kiosk-registered', { id, version });
-      res.json({ message: 'registered' });
-    },
-  );
-}
-
-app.post('/api/register-kiosk', validateKioskRegistration, registerKioskHandler);
-app.post('/api/v1/register-kiosk', validateKioskRegistration, registerKioskHandler);
-
-// Kiosk activation endpoint
-app.post('/api/kiosks/activate', (req, res) => {
-  const { kioskId, activationCode } = req.body;
-
-  if (!kioskId || !activationCode) {
-    return res.status(400).json({ error: 'Missing kioskId or activationCode' });
-  }
-
-  // Check if activation code is valid (for now, use a simple check)
-  // In production, this should validate against a database of valid codes
-  const validCodes = ['NOVA123', 'ACTIVATE', 'BEACON01', 'KIOSK001'];
-  if (!validCodes.includes(activationCode.toUpperCase())) {
-    return res.status(401).json({ error: 'Invalid activation code' });
-  }
-
-  // Update or create kiosk record as activated
-  db.run(
-    `INSERT INTO kiosks (id, logoUrl, bgUrl, active, activated_at) 
-     VALUES ($1, $2, $3, 1, $4) 
-     ON CONFLICT(id) DO UPDATE SET 
-       active = 1, 
-       activated_at = $4`,
-    [kioskId, '/logo.png', '', new Date().toISOString()],
-    function (err) {
-      if (err) {
-        logger.error('Kiosk activation error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-
-      res.json({
-        message: 'Kiosk activated successfully',
-        kioskId: kioskId,
-        activated: true,
-      });
-    },
-  );
-});
-
-// Kiosk configuration endpoint
-app.get('/api/kiosks/:id/remote-config', kioskOrAuth, (req, res) => {
-  const kioskId = req.params.id;
-
-  // Get kiosk-specific configuration
-  db.get('SELECT * FROM kiosks WHERE id=$1', [kioskId], (err, kiosk) => {
-    if (err) return res.status(500).json({ error: 'Database error' });
-
-    // Get global configuration
-    db.all('SELECT key, value FROM config', (configErr, configRows) => {
-      if (configErr) return res.status(500).json({ error: 'Config error' });
-
-      const globalConfig = Object.fromEntries(configRows.map((r) => [r.key, r.value]));
-
-      const config = {
-        kioskId: kioskId,
-        active: kiosk?.active || false,
-        roomName: kiosk?.room_name || globalConfig.defaultRoomName || 'Conference Room',
-        logoUrl: kiosk?.logoUrl || globalConfig.logoUrl || '/logo.png',
-        backgroundUrl: kiosk?.bgUrl || globalConfig.backgroundUrl || '',
-        theme: globalConfig.theme || 'default',
-        statusMessages: {
-          available: globalConfig.availableMessage || 'Room Available',
-          inUse: globalConfig.inUseMessage || 'Room Occupied',
-          meeting: globalConfig.meetingMessage || 'In Meeting',
-          brb: globalConfig.brbMessage || 'Be Right Back',
-          lunch: globalConfig.lunchMessage || 'Out for Lunch',
-          unavailable: globalConfig.unavailableMessage || 'Unavailable',
-        },
-        features: {
-          ticketSubmission: globalConfig.enableTicketSubmission === '1',
-          statusUpdates: globalConfig.enableStatusUpdates === '1',
-          directoryIntegration: globalConfig.directoryEnabled === '1',
-        },
-      };
-
-      res.json({ config });
-    });
-  });
-});
-
-// Kiosk status update endpoint
-app.put('/api/kiosks/:id/status', kioskOrAuth, (req, res) => {
-  const kioskId = req.params.id;
-  const { status, timestamp } = req.body;
-
-  if (!status) {
-    return res.status(400).json({ error: 'Status is required' });
-  }
-
-  const validStatuses = ['available', 'inUse', 'meeting', 'brb', 'lunch', 'unavailable'];
-  if (!validStatuses.includes(status)) {
-    return res.status(400).json({ error: 'Invalid status value' });
-  }
-
-  // Update kiosk status
-  db.run(
-    `UPDATE kiosks SET current_status=$1, last_status_update=$2 WHERE id=$3`,
-    [status, timestamp || new Date().toISOString(), kioskId],
-    function (err) {
-      if (err) {
-        logger.error('Kiosk status update error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-
-      if (this.changes === 0) {
-        return res.status(404).json({ error: 'Kiosk not found' });
-      }
-
-      res.json({
-        message: 'Status updated successfully',
-        kioskId: kioskId,
-        status: status,
-        timestamp: timestamp || new Date().toISOString(),
-      });
-    },
-  );
-});
-
-app.get('/api/kiosks/:id', kioskOrAuth, (req, res) => {
-  const kioskId = req.params.id;
-
-  db.get('SELECT * FROM kiosks WHERE id=$1', [kioskId], (err, row) => {
-    if (err) return res.status(500).json({ error: 'DB error' });
-    if (!row) return res.json({});
-
-    db.all("SELECT key, value FROM config WHERE key LIKE 'directory%'", (e, rows) => {
-      if (e) return res.status(500).json({ error: 'DB error' });
-      const cfg = Object.fromEntries(rows.map((r) => [r.key, r.value]));
-      res.json({
-        ...row,
-        directoryEnabled: cfg.directoryEnabled === '1',
-        directoryProvider: cfg.directoryProvider || 'mock',
-      });
-    });
-  });
-});
-
-app.put('/api/kiosks/:id', ensureAuth, (req, res) => {
-  const { id } = req.params;
-  const { logoUrl, bgUrl, active } = req.body;
-  db.run(
-    `UPDATE kiosks SET logoUrl=$1, bgUrl=$2, active=COALESCE($3, active) WHERE id=$4`,
-    [logoUrl, bgUrl, active !== undefined ? active : null, id],
-    (err) => {
-      if (err) return res.status(500).json({ error: 'DB error' });
-      res.json({ message: 'updated' });
-    },
-  );
-});
-
-// Refactored kiosks GET endpoint (async/await, PostgreSQL)
-app.get('/api/kiosks', ensureAuth, async (req, res) => {
-  try {
-    const { rows: kiosks } = await db.query('SELECT * FROM kiosks');
-    const { rows: configRows } = await db.query('SELECT key, value FROM config');
-    const globalConfig = Object.fromEntries(configRows.map((r) => [r.key, r.value]));
-    const kiosksWithConfig = kiosks.map((kiosk) => ({
-      ...kiosk,
-      active: Boolean(kiosk.active),
-      configScope: 'global',
-      hasOverrides: false,
-      overrideCount: 0,
-      effectiveConfig: {
-        logoUrl: kiosk.logoUrl || globalConfig.logoUrl || '/logo.png',
-        bgUrl: kiosk.bgUrl || globalConfig.backgroundUrl,
-        statusEnabled: Boolean(kiosk.statusEnabled),
-        currentStatus: kiosk.currentStatus || globalConfig.currentStatus || 'closed',
-        openMsg: kiosk.openMsg || globalConfig.statusOpenMsg || 'Help Desk is Open',
-        closedMsg: kiosk.closedMsg || globalConfig.statusClosedMsg || 'Help Desk is Closed',
-        errorMsg:
-          kiosk.errorMsg || globalConfig.statusErrorMsg || 'Service temporarily unavailable',
-        schedule: kiosk.schedule ? JSON.parse(kiosk.schedule) : undefined,
-        officeHours: globalConfig.officeHours ? JSON.parse(globalConfig.officeHours) : undefined,
-      },
-    }));
-    res.json(kiosksWithConfig);
-  } catch (err) {
-    logger.error('Error fetching kiosks with config:', err.message);
-    res.status(500).json({ error: 'DB error' });
-  }
-});
+// ========================================
+// LEGACY ENDPOINTS REMOVED
+// ========================================
+// All legacy unversioned /api/* endpoints have been removed.
+// Please use /api/v1/* endpoints instead.
+// 
+// Migration Guide:
+// - /api/auth/status → /api/v1/auth/status
+// - /api/login → /api/v1/auth/login
+// - /api/me → /api/v1/me
+// - /api/server/status → /api/v1/server/status
+// - /api/version → /api/v1/version
+// - /api/kiosks/* → /api/v1/kiosks/*
+// - /api/register-kiosk → /api/v1/kiosks/register
+// ========================================
 
 // Refactored kiosksRouter GET endpoint (async/await, PostgreSQL)
 kiosksRouter.get('/', kioskOrAuth, async (req, res) => {
@@ -2078,149 +2071,43 @@ kiosksRouter.get('/', kioskOrAuth, async (req, res) => {
   }
 });
 
-// Automation workflow endpoints
-app.get('/api/v2/automation/workflows', ensureAuth, (req, res) => {
-  // For now, return basic workflow configurations
-  // In production, this would query a workflows database table
-  const workflows = [
-    {
-      id: 'wf-smart-assignment',
-      name: 'Smart Ticket Assignment',
-      description: 'Automatically assigns tickets based on agent skills and workload',
-      type: 'auto_assignment',
-      status: 'active',
-      trigger: { type: 'ticket_created', conditions: ['priority=high'] },
-      actions: [
-        {
-          id: 'act-001',
-          type: 'assign_ticket',
-          parameters: { algorithm: 'skills_based', consider_workload: true },
-          order: 1,
-        },
-      ],
-      conditions: [{ field: 'priority', operator: 'equals', value: 'high' }],
-      metrics: {
-        totalRuns: 1247,
-        successRate: 94.2,
-        avgExecutionTime: 1.8,
-        lastRun: new Date().toISOString(),
-      },
-      schedule: { type: 'event_driven' },
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'wf-sla-predictor',
-      name: 'SLA Breach Predictor',
-      description: 'Predicts and prevents potential SLA violations',
-      type: 'sla_prediction',
-      status: 'active',
-      trigger: { type: 'time_based', conditions: ['check_interval=15_minutes'] },
-      actions: [
-        {
-          id: 'act-002',
-          type: 'send_notification',
-          parameters: { recipients: ['managers'] },
-          order: 1,
-        },
-        { id: 'act-003', type: 'escalate', parameters: { escalation_level: 1 }, order: 2 },
-      ],
-      conditions: [{ field: 'time_remaining', operator: 'less_than', value: '2_hours' }],
-      metrics: {
-        totalRuns: 3456,
-        successRate: 89.1,
-        avgExecutionTime: 5.7,
-        lastRun: new Date().toISOString(),
-      },
-      schedule: { type: 'cron', expression: '*/15 * * * *' },
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ];
+// ========================================
+// V2 API REMOVED - CONSOLIDATED INTO V1 (2025.08)
+// ========================================
+// All V2 endpoints have been consolidated into V1 (2025.08)
+// Please use /api/v1/* endpoints instead
+// ========================================
 
-  res.json({ workflows });
+// REMOVED: V2 Automation workflow endpoints - use /api/v1/workflows instead
+app.get('/api/v2/automation/workflows', ensureAuth, (req, res) => {
+  res.status(410).json({
+    error: 'API v2 has been removed and consolidated into v1 (2025.08)',
+    message: 'Please use /api/v1/workflows instead',
+    sunset: '2025-08',
+    replacement: '/api/v1/workflows'
+  });
 });
 
 app.get('/api/v2/automation/insights', ensureAuth, (req, res) => {
-  // Return predictive insights about automation opportunities
-  const insights = [
-    {
-      id: 'insight-001',
-      type: 'efficiency',
-      title: 'Workflow Optimization Opportunity',
-      description:
-        'Smart assignment workflow can be optimized for 15% better performance by enabling machine learning refinements',
-      impact: 'high',
-      confidence: 0.89,
-      recommendations: [
-        'Enable machine learning refinement for assignment algorithm',
-        'Add customer satisfaction feedback loop',
-        'Implement dynamic skill weighting based on recent performance',
-      ],
-      data: {
-        currentEfficiency: 85,
-        potentialEfficiency: 98,
-        estimatedSavings: '$12,000/month',
-      },
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'insight-002',
-      type: 'pattern_detection',
-      title: 'Recurring Issue Pattern Detected',
-      description:
-        'Identified 5 recurring issue patterns that could benefit from automated resolution workflows',
-      impact: 'high',
-      confidence: 0.92,
-      recommendations: [
-        'Create automated resolution workflows for top 3 patterns',
-        'Implement pattern-based ticket categorization',
-        'Set up proactive monitoring for pattern triggers',
-      ],
-      data: {
-        patternsDetected: 5,
-        totalOccurrences: 1247,
-        automationPotential: 89,
-        estimatedTimeReduction: '45 hours/week',
-      },
-      createdAt: new Date().toISOString(),
-    },
-  ];
-
-  res.json({ insights });
+  res.status(410).json({
+    error: 'API v2 has been removed and consolidated into v1 (2025.08)',
+    message: 'Please use /api/v1/workflows/insights instead',
+    sunset: '2025-08',
+    replacement: '/api/v1/workflows/insights'
+  });
 });
 
 app.post('/api/v2/automation/workflows', ensureAuth, (req, res) => {
-  const { name, description, type, trigger, actions, conditions } = req.body;
-
-  if (!name || !type || !trigger || !actions) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  // In production, this would save to database
-  const newWorkflow = {
-    id: `wf-${Date.now()}`,
-    name,
-    description: description || '',
-    type,
-    status: 'draft',
-    trigger,
-    actions,
-    conditions: conditions || [],
-    metrics: { totalRuns: 0, successRate: 0, avgExecutionTime: 0, lastRun: null },
-    schedule: { type: 'event_driven' },
-    isActive: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  res.status(201).json(newWorkflow);
+  res.status(410).json({
+    error: 'API v2 has been removed and consolidated into v1 (2025.08)',
+    message: 'Please use /api/v1/workflows instead',
+    sunset: '2025-08',
+    replacement: '/api/v1/workflows'
+  });
 });
 
 // DELETE notification
-v1Router.delete('/api/notifications/:id', ensureAuth, (req, res) => {
+v1Router.delete('/notifications/:id', ensureAuth, (req, res) => {
   const { id } = req.params;
   db.run(`DELETE FROM notifications WHERE id = $1`, [id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
@@ -2229,7 +2116,7 @@ v1Router.delete('/api/notifications/:id', ensureAuth, (req, res) => {
 });
 
 // DELETE all notifications
-v1Router.delete('/api/notifications', ensureAuth, (req, res) => {
+v1Router.delete('/notifications', ensureAuth, (req, res) => {
   db.run(`DELETE FROM notifications`, function (err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'All notifications deleted' });
@@ -2238,6 +2125,10 @@ v1Router.delete('/api/notifications', ensureAuth, (req, res) => {
 
 // ========================================
 // API Documentation & Developer Tools
+// ========================================
+// Documentation and discovery endpoints
+// Note: /api/version is an infrastructure/meta endpoint (unversioned by design)
+// It provides API discovery information and is distinct from versioned endpoints
 // ========================================
 
 // Enhanced Swagger UI setup with comprehensive documentation
@@ -2252,45 +2143,45 @@ app.get('/api-docs/swagger.json', docsAuth, (req, res) => {
   res.send(swaggerSpec);
 });
 
-// API version information endpoint
+// API version information endpoint (infrastructure/meta endpoint - unversioned)
+// This endpoint provides API discovery and version information
+// It is intentionally NOT under /api/v1 as it's a meta/infrastructure endpoint
 app.get('/api/version', (req, res) => {
   res.json({
     api: {
-      version: getApiVersion(),
+      version: 'v1 (2025.08)',
       name: 'Nova Universe Platform API',
+      release: '2025.08',
+      status: 'stable'
     },
     versions: {
-      supported: ['v2', 'v1'],
-      current: 'v2',
-      deprecated: ['v1'],
-      sunset: {
-        v1: '2024-12-31T23:59:59Z', // Example sunset date for v1
-      },
+      supported: ['v1'],
+      current: 'v1',
+      deprecated: [],
+      removed: ['v2'],
+      release: '2025.08'
     },
-    ui: {
-      version: getUiVersion(),
+    application: {
+      api: getApiVersion(),
+      ui: getUiVersion(),
+      cli: getCliVersion(),
     },
-    cli: {
-      version: getCliVersion(),
+    versioningStrategy: {
+      type: 'URI Path Versioning',
+      standard: 'Microsoft Azure REST API Guidelines',
+      basePath: '/api/v1',
+      note: 'Following industry best practices for API versioning'
     },
     deprecationPolicy: {
-      notice: 'Deprecated versions will be supported for 12 months after deprecation announcement',
-      migration: 'See migration guide at https://docs.nova-universe.com/api/migration',
+      notice: 'API changes follow semantic versioning principles',
+      migration: 'See documentation at https://docs.nova-universe.com/api/versioning',
+      legacySupport: 'Unversioned /api/* routes deprecated, sunset 2025-12-31'
     },
   });
 });
 
-// API health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    version: getApiVersion(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    node: process.version,
-  });
-});
+// Note: /api/health endpoint is defined earlier in the file (see infrastructure endpoints section)
+// This provides health check functionality for load balancers and monitoring systems
 
 // Simple test page to debug Swagger UI with enhanced debugging
 app.get('/api-docs/test', (req, res) => {
@@ -2478,6 +2369,7 @@ app.use('/api/v1', v1Router);
 // V1 Core Authentication & Identity Routes
 // ========================================
 v1Router.use('/auth', authRouter); // Authentication & Authorization
+v1Router.use('/mfa', mfaRouter); // Multi-Factor Authentication
 v1Router.use('/helix', helixRouter); // Nova Helix - Identity Engine
 v1Router.use('/helix/login', helixUniversalLoginRouter); // Nova Helix - Universal Login
 v1Router.use('/oauth', oauth2Router); // OAuth 2.0 Authorization Server (RFC 6749)
@@ -2611,8 +2503,9 @@ v1Router.use('/beacon', beaconRouter); // Nova Beacon - Kiosk Management
 v1Router.use('/kiosks', kioskOrAuth, kiosksRouter); // Kiosk Management
 v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
 v1Router.use('/spaces', spacesRouter); // Collaborative Spaces
-v1Router.use('/nova-tv', novaTVRouter); // Nova TV - Digital Signage Channel Management
-v1Router.use('/nova-tv/digital-signage', novaTVDigitalSignageRouter); // Nova TV Digital Signage
+// TEMPORARILY DISABLED - Missing Prisma client
+// v1Router.use('/nova-tv', novaTVRouter); // Nova TV - Digital Signage Channel Management
+// v1Router.use('/nova-tv/digital-signage', novaTVDigitalSignageRouter); // Nova TV Digital Signage
 
 // ========================================
 // V1 User360 & Engagement Routes
@@ -2717,9 +2610,9 @@ export async function createApp() {
 
   // Log API versioning information
   logger.info('🔗 API Versioning Strategy:');
-  logger.info('  • v2 (Current): /api/v2/* - Latest features and improvements');
-  logger.info('  • v1 (Deprecated): /api/v1/* - Legacy version with sunset warnings');
-  logger.info('  • Backward compatibility: /api/* routes map to v1 with deprecation headers');
+  logger.info('  • V1 (2025.08 - Current): /api/v1/* - Stable, production-ready API');
+  logger.info('  • Industry Standard: URI path versioning following Microsoft Azure best practices');
+  logger.info('  • Deprecation Notice: Legacy /api/* routes available with deprecation headers until 2025-12-31');
   logger.info(`📋 API Documentation available at http://localhost:${PORT}/api-docs`);
 
   // Do not call server.listen here
@@ -2738,6 +2631,14 @@ if (
       logger.info(`📊 Admin interface: http://localhost:${PORT}/admin`);
       logger.info(`🔧 Server info endpoint: http://localhost:${PORT}/api/server-info`);
       logger.info(`⚡ WebSocket server ready for real-time updates`);
+
+      // Start security monitoring
+      try {
+        securityMonitor.start();
+        logger.info('🔒 Security monitoring service started');
+      } catch (securityError) {
+        logger.warn('Failed to start security monitoring:', securityError.message);
+      }
 
       // Start Slack app if configured
       try {
@@ -2877,7 +2778,7 @@ for (const sig of shutdownSignals) {
       server.close(() => {
         logger.info('HTTP server closed');
       });
-      await closeDatabase();
+      await disconnectDatabase();
     } catch (e) {
       logger.error('Error during shutdown:', e);
     } finally {

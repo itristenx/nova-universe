@@ -277,3 +277,87 @@ model RetentionPolicy {
   @@index([isActive])
   @@map("RetentionPolicy")
 }
+
+// =============================================================================
+// COMPREHENSIVE AUDIT LOGGING (P0 Security Feature)
+// =============================================================================
+
+model AuditLog {
+  id             BigInt    @id @default(autoincrement())
+  
+  // User and Session
+  userId         Int?      @map("user_id")
+  user           User?     @relation("AuditLogUser", fields: [userId], references: [id], onDelete: SetNull)
+  sessionId      String?   @map("session_id") @db.VarChar(255)
+  
+  // Action Details
+  action         String    @db.VarChar(100)
+  resourceType   String?   @map("resource_type") @db.VarChar(50)
+  resourceId     String?   @map("resource_id") @db.VarChar(100)
+  
+  // Request Context
+  ipAddress      String?   @map("ip_address") @db.Inet
+  userAgent      String?   @map("user_agent") @db.Text
+  requestMethod  String?   @map("request_method") @db.VarChar(10)
+  requestPath    String?   @map("request_path") @db.Text
+  statusCode     Int?      @map("status_code")
+  errorMessage   String?   @map("error_message") @db.Text
+  
+  // Additional Context
+  metadata       Json      @default("{}")
+  
+  // Multi-tenancy
+  tenantId       String?   @map("tenant_id") @db.Uuid
+  tenant         Tenant?   @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  
+  // Timestamp
+  createdAt      DateTime  @default(now()) @map("created_at")
+  
+  @@map("audit_logs")
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt(sort: Desc)])
+  @@index([resourceType, resourceId])
+  @@index([ipAddress])
+  @@index([tenantId])
+  @@index([metadata], type: Gin)
+}
+
+model SecurityEvent {
+  id             BigInt    @id @default(autoincrement())
+  
+  // Event Details
+  eventType      String    @db.VarChar(50)
+  severity       SecuritySeverity
+  
+  // User Context
+  userId         Int?      @map("user_id")
+  user           User?     @relation("SecurityEventUser", fields: [userId], references: [id], onDelete: SetNull)
+  ipAddress      String?   @map("ip_address") @db.Inet
+  
+  // Event Data
+  details        Json      @default("{}")
+  
+  // Resolution
+  resolved       Boolean   @default(false)
+  resolvedAt     DateTime? @map("resolved_at")
+  resolvedBy     Int?      @map("resolved_by")
+  resolver       User?     @relation("SecurityEventResolver", fields: [resolvedBy], references: [id], onDelete: SetNull)
+  
+  // Timestamp
+  createdAt      DateTime  @default(now()) @map("created_at")
+  
+  @@map("security_events")
+  @@index([eventType])
+  @@index([severity])
+  @@index([createdAt(sort: Desc)])
+  @@index([resolved])
+  @@index([userId])
+}
+
+enum SecuritySeverity {
+  low
+  medium
+  high
+  critical
+}
