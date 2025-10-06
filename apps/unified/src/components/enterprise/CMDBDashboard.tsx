@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { cmdbService } from '@services/cmdb';
 
 // Local type definitions
 interface BaseRecord {
@@ -584,227 +585,35 @@ const CMDBDashboard: React.FC<CMDBDashboardProps> = ({
       setLoading(true);
       setError(null);
 
-      // Mock data for demonstration
-      const mockCIs: ConfigurationItem[] = [
-        {
-          id: '1',
-          name: 'WEB-SERVER-01',
-          number: 'CI0001001',
-          type: 'SERVER',
-          state: 'OPERATIONAL',
-          environment: 'PRODUCTION',
-          category: 'Hardware',
-          subcategory: 'Physical Server',
-          description: 'Primary web server for customer portal',
-          manufacturer: 'Dell',
-          model: 'PowerEdge R750',
-          version: '1.0',
-          serial_number: 'DL001234567',
-          asset_tag: 'AST-001234',
-          ip_address: '10.1.1.10',
-          location: 'Data Center 1, Rack A1',
-          cost: 8500,
-          business_service: 'Customer Portal',
-          operational_status: 'Active',
-          health_status: 'HEALTHY',
-          owned_by_id: '1',
-          owned_by: {
-            id: '1',
-            email: 'admin@company.com',
-            first_name: 'IT',
-            last_name: 'Admin',
-            created_at: '',
-            updated_at: '',
-          },
-          assignment_group: 'Infrastructure Team',
-          discovery_source: 'Network Discovery',
-          last_discovered: '2024-01-10T08:00:00Z',
-          first_discovered: '2024-01-01T00:00:00Z',
-          install_status: 'Installed',
-          vendor: 'Dell Technologies',
-          purchase_date: '2023-12-01T00:00:00Z',
-          install_date: '2023-12-15T00:00:00Z',
-          warranty_expiration: '2026-12-01T00:00:00Z',
-          support_group: 'Infrastructure Support',
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-10T08:00:00Z',
-        },
-        {
-          id: '2',
-          name: 'CUSTOMER-PORTAL-APP',
-          number: 'CI0001002',
-          type: 'APPLICATION',
-          state: 'OPERATIONAL',
-          environment: 'PRODUCTION',
-          category: 'Software',
-          subcategory: 'Web Application',
-          description: 'Customer self-service portal application',
-          version: '2.4.1',
-          business_service: 'Customer Portal',
-          operational_status: 'Active',
-          health_status: 'HEALTHY',
-          owned_by_id: '2',
-          owned_by: {
-            id: '2',
-            email: 'dev@company.com',
-            first_name: 'Dev',
-            last_name: 'Team',
-            created_at: '',
-            updated_at: '',
-          },
-          assignment_group: 'Application Team',
-          discovery_source: 'Manual Registration',
-          last_discovered: '2024-01-10T08:00:00Z',
-          first_discovered: '2024-01-01T00:00:00Z',
-          install_status: 'Installed',
-          vendor: 'Internal Development',
-          install_date: '2024-01-05T00:00:00Z',
-          support_group: 'Application Support',
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-10T08:00:00Z',
-        },
-        {
-          id: '3',
-          name: 'CUSTOMER-DB-01',
-          number: 'CI0001003',
-          type: 'DATABASE',
-          state: 'OPERATIONAL',
-          environment: 'PRODUCTION',
-          category: 'Software',
-          subcategory: 'Database Instance',
-          description: 'Customer data PostgreSQL database',
-          version: '15.4',
-          business_service: 'Customer Portal',
-          operational_status: 'Active',
-          health_status: 'WARNING',
-          owned_by_id: '3',
-          owned_by: {
-            id: '3',
-            email: 'dba@company.com',
-            first_name: 'DBA',
-            last_name: 'Team',
-            created_at: '',
-            updated_at: '',
-          },
-          assignment_group: 'Database Team',
-          discovery_source: 'Application Discovery',
-          last_discovered: '2024-01-10T08:00:00Z',
-          first_discovered: '2024-01-01T00:00:00Z',
-          install_status: 'Installed',
-          vendor: 'PostgreSQL Global Development Group',
-          install_date: '2024-01-02T00:00:00Z',
-          support_group: 'Database Support',
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-10T08:00:00Z',
-        },
-      ];
+      // Load real data from API
+      const [cisResponse, analyticsData] = await Promise.all([
+        cmdbService.getConfigurationItems({ limit: 100 }),
+        cmdbService.getAnalytics(),
+      ]);
 
-      const mockRelationships: ConfigurationItemRelationship[] = [
-        {
-          id: '1',
-          parent_id: '2',
-          parent: mockCIs[1],
-          child_id: '1',
-          child: mockCIs[0],
-          type: 'RUNS_ON',
-          connection_strength: 90,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '2',
-          parent_id: '2',
-          parent: mockCIs[1],
-          child_id: '3',
-          child: mockCIs[2],
-          type: 'DEPENDS_ON',
-          connection_strength: 95,
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2024-01-01T00:00:00Z',
-        },
-      ];
+      setConfigurationItems(cisResponse.cis || []);
+      setAnalytics(analyticsData);
 
-      const mockAnalytics: CMDBAnalytics = {
-        totalCIs: 1247,
-        cisByType: {
-          COMPUTER: 256,
-          SERVER: 89,
-          NETWORK_GEAR: 45,
-          SOFTWARE: 234,
-          SERVICE: 67,
-          DATABASE: 34,
-          APPLICATION: 123,
-          INFRASTRUCTURE: 78,
-          VIRTUAL_MACHINE: 189,
-          CONTAINER: 167,
-          CLOUD_RESOURCE: 65,
-        },
-        cisByState: {
-          OPERATIONAL: 1089,
-          NON_OPERATIONAL: 23,
-          REPAIR_IN_PROGRESS: 15,
-          DISPOSED: 34,
-          RETIRED: 67,
-          UNDER_DEVELOPMENT: 12,
-          TESTING: 5,
-          PENDING_APPROVAL: 2,
-        },
-        cisByEnvironment: {
-          PRODUCTION: 567,
-          STAGING: 123,
-          DEVELOPMENT: 234,
-          TEST: 189,
-          UAT: 87,
-          DISASTER_RECOVERY: 47,
-        },
-        healthDistribution: {
-          HEALTHY: 978,
-          WARNING: 156,
-          CRITICAL: 34,
-          UNKNOWN: 79,
-        },
-        discoveryStats: {
-          lastScanned: 24,
-          newlyDiscovered: 12,
-          orphanedCIs: 8,
-          duplicateCIs: 3,
-        },
-        relationships: {
-          totalRelationships: 2847,
-          byType: {
-            RUNS_ON: 456,
-            DEPENDS_ON: 678,
-            CONNECTS_TO: 234,
-            INSTALLED_ON: 189,
-            HOSTED_ON: 267,
-            MANAGES: 123,
-            MONITORS: 89,
-            COMMUNICATES_WITH: 345,
-            PROVIDES_SERVICE_TO: 234,
-            CONTAINS: 232,
-          },
-          avgConnectionsPerCI: 2.3,
-        },
-        compliance: {
-          fullyMapped: 89,
-          partiallyMapped: 234,
-          unmapped: 23,
-        },
-      };
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setConfigurationItems(mockCIs);
-      setRelationships(mockRelationships);
-      setAnalytics(mockAnalytics);
+      // Load relationships for all CIs
+      if (cisResponse.cis && cisResponse.cis.length > 0) {
+        const relationshipsPromises = cisResponse.cis.map((ci) =>
+          cmdbService.getRelationships(ci.id).catch(() => [])
+        );
+        const allRelationships = await Promise.all(relationshipsPromises);
+        const flatRelationships = allRelationships.flat();
+        setRelationships(flatRelationships);
+      }
     } catch (err) {
+      console.error('Failed to load CMDB data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load CMDB data');
+      // Set empty state on error
+      setConfigurationItems([]);
+      setRelationships([]);
+      setAnalytics(null);
     } finally {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     loadCMDBData();
   }, [loadCMDBData]);
