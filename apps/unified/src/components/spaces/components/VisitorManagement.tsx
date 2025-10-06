@@ -71,6 +71,7 @@ export function VisitorManagement({
   const [showNewVisitorForm, setShowNewVisitorForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // TODO: Replace with API call to load visitors from /api/v1/spaces/buildings/${buildingId}/visitors
   // Mock data - would come from API based on buildingId
   useEffect(() => {
     const loadVisitors = async () => {

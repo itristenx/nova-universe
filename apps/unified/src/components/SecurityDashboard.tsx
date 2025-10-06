@@ -130,6 +130,7 @@ export const SecurityDashboard: React.FC = () => {
     try {
       setLoading(true);
 
+      // TODO: Replace with actual API calls to /api/v1/security/events
       // Mock data - replace with actual API calls
       setSecurityEvents([
         {

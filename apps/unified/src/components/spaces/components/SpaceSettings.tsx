@@ -116,6 +116,7 @@ export function SpaceSettings({
   const [hasChanges, setHasChanges] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  // TODO: Replace with API call to load spaces from /api/v1/spaces/configurations
   // Mock data - would come from API based on buildingId
   useEffect(() => {
     const loadBuildingSettings = async () => {

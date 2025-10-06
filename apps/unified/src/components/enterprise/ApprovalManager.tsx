@@ -100,6 +100,7 @@ export default function ApprovalManager({ className = '', mode = 'admin' }: Appr
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectReason, setShowRejectReason] = useState(false);
 
+  // TODO: Replace with actual API calls to /api/v1/approvals/flows, /api/v1/approvals/instances
   // Mock data - replace with API calls
   useEffect(() => {
     const mockFlows: ApprovalFlow[] = [

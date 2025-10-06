@@ -63,6 +63,7 @@ export default function CatalogManagement() {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
 
+  // TODO: Replace with actual API calls to /api/v1/catalog
   // Mock data for demo
   useEffect(() => {
     if (categories.length === 0) {

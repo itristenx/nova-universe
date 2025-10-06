@@ -548,6 +548,7 @@ const SecurityOperationsCenter: React.FC<SecurityOperationsCenterProps> = ({
       setLoading(true);
       setError(null);
 
+      // TODO: Replace with actual API calls to /api/v1/security/incidents, /api/v1/security/vulnerabilities
       // Mock data for demonstration
       const mockSecurityIncidents: SecurityIncident[] = [
         {
