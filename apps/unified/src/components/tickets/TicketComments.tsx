@@ -53,33 +53,9 @@ const ClockIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-// Mock comments data
-const mockComments = [
-  {
-    id: '1',
-    content: 'Initial issue report received. Investigating the problem.',
-    author: 'John Smith',
-    role: 'Support Agent',
-    timestamp: '2024-01-15T10:30:00Z',
-    type: 'internal',
-  },
-  {
-    id: '2',
-    content: 'Could you please provide more details about when this started happening?',
-    author: 'Sarah Johnson',
-    role: 'Customer Service',
-    timestamp: '2024-01-15T11:45:00Z',
-    type: 'public',
-  },
-  {
-    id: '3',
-    content: 'The issue appears to be related to network connectivity. Escalating to network team.',
-    author: 'Mike Davis',
-    role: 'Technical Lead',
-    timestamp: '2024-01-15T14:20:00Z',
-    type: 'internal',
-  },
-];
+// Comments should be loaded from ticket API endpoint
+// TODO: Load comments via ticketsService.getComments(ticketId)
+const mockComments: any[] = [];
 
 export function TicketComments({ ticketId }: TicketCommentsProps) {
   const [newComment, setNewComment] = useState('');

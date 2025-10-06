@@ -87,136 +87,18 @@ export function SpaceAnalytics({
   const [isLoading, setIsLoading] = useState(false);
 
   // Mock analytics data
+  // Analytics data should be loaded via spaces service
   const mockAnalyticsData: AnalyticsData = {
-    utilizationRate: 73.5,
-    totalBookings: 1247,
-    averageOccupancy: 8.2,
-    peakHours: ['09:00', '10:00', '14:00', '15:00'],
-    popularSpaces: [
-      { id: 'conf-a', name: 'Conference Room A', bookings: 156, utilization: 89.2 },
-      { id: 'open-1', name: 'Open Workspace 1', bookings: 142, utilization: 76.8 },
-      { id: 'focus-3', name: 'Focus Room 3', bookings: 98, utilization: 85.1 },
-      { id: 'phone-2', name: 'Phone Booth 2', bookings: 87, utilization: 92.3 },
-      { id: 'collab-1', name: 'Collaboration Space 1', bookings: 76, utilization: 68.4 },
-    ],
-    occupancyTrends: [
-      { date: '2024-01-08', occupancy: 68, bookings: 34 },
-      { date: '2024-01-09', occupancy: 72, bookings: 38 },
-      { date: '2024-01-10', occupancy: 78, bookings: 42 },
-      { date: '2024-01-11', occupancy: 85, bookings: 47 },
-      { date: '2024-01-12', occupancy: 81, bookings: 45 },
-      { date: '2024-01-13', occupancy: 65, bookings: 28 },
-      { date: '2024-01-14', occupancy: 58, bookings: 22 },
-    ],
-    spaceTypeMetrics: [
-      { type: 'Conference Room', count: 12, utilization: 78.5, revenue: 15600 },
-      { type: 'Hot Desk', count: 45, utilization: 65.2, revenue: 8900 },
-      { type: 'Focus Room', count: 8, utilization: 82.1, revenue: 3200 },
-      { type: 'Phone Booth', count: 15, utilization: 71.8, revenue: 2250 },
-      { type: 'Open Space', count: 6, utilization: 73.4, revenue: 4800 },
-    ],
-    hourlyUtilization: [
-      { hour: 8, utilization: 35 },
-      { hour: 9, utilization: 68 },
-      { hour: 10, utilization: 85 },
-      { hour: 11, utilization: 79 },
-      { hour: 12, utilization: 45 },
-      { hour: 13, utilization: 52 },
-      { hour: 14, utilization: 82 },
-      { hour: 15, utilization: 88 },
-      { hour: 16, utilization: 76 },
-      { hour: 17, utilization: 62 },
-      { hour: 18, utilization: 28 },
-    ],
+    totalBookings: 0,
+    occupancyRate: 0,
+    peakUtilization: 0,
+    avgBookingDuration: 0,
+    totalRevenue: 0,
+    topSpaces: [],
+    utilizationTrend: [],
   };
 
-  const mockSpaceMetrics: SpaceMetrics[] = [
-    {
-      id: 'conf-a',
-      name: 'Conference Room A',
-      type: 'Conference Room',
-      capacity: 12,
-      totalBookings: 156,
-      totalHours: 312,
-      utilization: 89.2,
-      revenue: 3900,
-      avgRating: 4.6,
-      issues: 2,
-    },
-    {
-      id: 'conf-b',
-      name: 'Conference Room B',
-      type: 'Conference Room',
-      capacity: 8,
-      totalBookings: 98,
-      totalHours: 196,
-      utilization: 67.3,
-      revenue: 2450,
-      avgRating: 4.2,
-      issues: 1,
-    },
-    {
-      id: 'focus-1',
-      name: 'Focus Room 1',
-      type: 'Focus Room',
-      capacity: 2,
-      totalBookings: 76,
-      totalHours: 152,
-      utilization: 85.1,
-      revenue: 760,
-      avgRating: 4.8,
-      issues: 0,
-    },
-    {
-      id: 'open-1',
-      name: 'Open Workspace 1',
-      type: 'Open Space',
-      capacity: 20,
-      totalBookings: 142,
-      totalHours: 568,
-      utilization: 76.8,
-      revenue: 1420,
-      avgRating: 4.1,
-      issues: 3,
-    },
-  ];
-
-  useEffect(() => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setAnalyticsData(mockAnalyticsData);
-      setSpaceMetrics(mockSpaceMetrics);
-      setIsLoading(false);
-    }, 1000);
-  }, [selectedTimeRange, selectedBuilding]);
-
-  const handleRefreshData = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setAnalyticsData(mockAnalyticsData);
-      setSpaceMetrics(mockSpaceMetrics);
-      setIsLoading(false);
-    }, 500);
-  };
-
-  const handleExportData = () => {
-    const exportData = {
-      analytics: analyticsData,
-      metrics: spaceMetrics,
-      timeRange: selectedTimeRange,
-      building: selectedBuilding,
-      exportDate: new Date().toISOString(),
-    };
-    onExportData?.(exportData);
-  };
-
-  const formatPercentage = (value: number) => `${value.toFixed(1)}%`;
-  const formatCurrency = (value: number) => `$${value.toLocaleString()}`;
-
-  if (!analyticsData) {
-    return (
-      <div className="analytics-loading">
+  const mockSpaceMetrics: SpaceMetrics[] = [];
         <div className="loading-spinner"></div>
         <p>Loading analytics data...</p>
       </div>

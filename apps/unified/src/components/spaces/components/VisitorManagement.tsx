@@ -80,60 +80,9 @@ export function VisitorManagement({
         // In real implementation, this would fetch visitors for the specific buildingId
         console.log(`Loading visitors for building: ${buildingId}`);
         
-        const mockVisitors: Visitor[] = [
-      {
-        id: 'vis-001',
-        firstName: 'John',
-        lastName: 'Smith',
-        email: 'john.smith@example.com',
-        phone: '+1-555-0123',
-        company: 'Acme Corp',
-        hostEmployeeId: 'emp-001',
-        hostName: 'Sarah Johnson',
-        purpose: 'Client Meeting',
-        scheduledArrival: '2024-01-20T10:00:00Z',
-        scheduledDeparture: '2024-01-20T12:00:00Z',
-        actualArrival: '2024-01-20T10:05:00Z',
-        status: 'checked_in',
-        badgeNumber: 'TEMP-001',
-        accessLevel: 'floor',
-        emergencyContact: 'Jane Smith +1-555-0124',
-      },
-      {
-        id: 'vis-002',
-        firstName: 'Emily',
-        lastName: 'Davis',
-        email: 'emily.davis@tech.com',
-        company: 'Tech Solutions',
-        hostEmployeeId: 'emp-002',
-        hostName: 'Mike Chen',
-        purpose: 'Technical Interview',
-        scheduledArrival: '2024-01-20T14:00:00Z',
-        scheduledDeparture: '2024-01-20T16:00:00Z',
-        status: 'scheduled',
-        accessLevel: 'lobby',
-      },
-      {
-        id: 'vis-003',
-        firstName: 'Robert',
-        lastName: 'Wilson',
-        email: 'robert@consulting.com',
-        phone: '+1-555-0456',
-        company: 'Wilson Consulting',
-        hostEmployeeId: 'emp-003',
-        hostName: 'Lisa Brown',
-        purpose: 'Project Review',
-        scheduledArrival: '2024-01-20T09:00:00Z',
-        scheduledDeparture: '2024-01-20T11:00:00Z',
-        actualArrival: '2024-01-20T09:00:00Z',
-        actualDeparture: '2024-01-20T11:15:00Z',
-        status: 'checked_out',
-        badgeNumber: 'TEMP-002',
-        accessLevel: 'restricted',
-      },
-    ];
-        
-        setVisitors(mockVisitors);
+// Load visitors via API (when endpoint is available)
+        // TODO: Implement visitor API endpoint at /api/v1/spaces/buildings/${buildingId}/visitors
+        setVisitors([]);
       } catch (error) {
         console.error('Failed to load visitors:', error);
       } finally {

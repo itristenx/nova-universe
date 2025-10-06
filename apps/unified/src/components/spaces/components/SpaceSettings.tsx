@@ -125,58 +125,9 @@ export function SpaceSettings({
         // In real implementation, this would fetch data for the specific buildingId
         console.log(`Loading settings for building: ${buildingId}`);
         
-        const mockSpaces: SpaceConfiguration[] = [
-      {
-        id: 'meeting-001',
-        name: 'Conference Room A',
-        type: 'conference_room',
-        capacity: 8,
-        bookingEnabled: true,
-        autoApproval: true,
-        maxBookingDuration: 240,
-        advanceBookingDays: 30,
-        accessControl: 'public',
-        amenities: ['projector', 'whiteboard', 'video_conferencing'],
-        equipmentIds: ['proj-001', 'board-001', 'vc-001'],
-        sensors: {
-          occupancy: true,
-          temperature: true,
-          lighting: true,
-          airQuality: false,
-        },
-        notifications: {
-          bookingConfirmation: true,
-          capacityAlert: true,
-          maintenanceReminder: true,
-        },
-      },
-      {
-        id: 'desk-001',
-        name: 'Hot Desk Area',
-        type: 'hot_desk',
-        capacity: 20,
-        bookingEnabled: true,
-        autoApproval: false,
-        maxBookingDuration: 480,
-        advanceBookingDays: 7,
-        accessControl: 'restricted',
-        amenities: ['monitors', 'desk_phone', 'storage'],
-        equipmentIds: ['mon-001', 'phone-001'],
-        sensors: {
-          occupancy: true,
-          temperature: false,
-          lighting: false,
-          airQuality: true,
-        },
-        notifications: {
-          bookingConfirmation: true,
-          capacityAlert: false,
-          maintenanceReminder: false,
-        },
-      },
-    ];
-        
-        setSpaceConfigs(mockSpaces);
+// Load space configurations via API
+        const spacesResponse = await spaceService.getSpaces({ buildingId });
+        setSpaceConfigs(spacesResponse.data || []);
       } catch (error) {
         console.error('Failed to load building settings:', error);
       } finally {
