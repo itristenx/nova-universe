@@ -1,0 +1,295 @@
+// =============================================================================
+// ASSET & INVENTORY MANAGEMENT DOMAIN
+// =============================================================================
+// Contains: Assets, mailroom, kiosks, RITM (Requested Items)
+// =============================================================================
+
+model InventoryAsset {
+  id                    String    @id @default(uuid())
+  assetTag              String    @unique @map("asset_tag")
+  typeId                String?   @map("type_id")
+  serialNumber          String?   @map("serial_number")
+  model                 String?
+  vendorId              String?   @map("vendor_id")
+  purchaseDate          DateTime? @map("purchase_date")
+  warrantyExpiry        DateTime? @map("warranty_expiry")
+  assignedToUserId      String?   @map("assigned_to_user_id")
+  assignedToOrgId       String?   @map("assigned_to_org_id")
+  assignedToCustomerId  String?   @map("assigned_to_customer_id")
+  department            String?
+  status                AssetStatus?
+  locationId            String?   @map("location_id")
+  kioskId               String?   @map("kiosk_id")
+  customFields          Json?     @map("custom_fields")
+  notes                 String?   @db.Text
+  createdBy             String?   @map("created_by")
+  updatedBy             String?   @map("updated_by")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  
+  // Enhanced inventory fields
+  serialNumberEnc       String?   @map("serial_number_enc")
+  warrantyInfoEnc       String?   @map("warranty_info_enc")
+  purchaseInfoEnc       String?   @map("purchase_info_enc")
+  maintenanceNotesEnc   String?   @map("maintenance_notes_enc")
+  warrantyAlertDays     Int?      @default(30) @map("warranty_alert_days")
+  warrantyAlertEnabled  Boolean   @default(true) @map("warranty_alert_enabled")
+  lastWarrantyAlertSent DateTime? @map("last_warranty_alert_sent")
+  importBatchId         String?   @map("import_batch_id")
+  importSource          String?   @map("import_source")
+  importValidated       Boolean   @default(false) @map("import_validated")
+  validationErrors      String?   @db.Text @map("validation_errors")
+  
+  statusLogs            AssetStatusLog[]
+  assignments           AssetAssignment[]
+  mailroomPackages      MailroomPackage[]
+  ticketHistory         AssetTicketHistory[]
+  warrantyAlerts        AssetWarrantyAlert[]
+  kioskRegistrations    KioskAssetRegistry[]
+  validationLogs        AssetValidationLog[]
+  syncFailures          HelixSyncFailure[]
+  importBatch           AssetImportBatch? @relation(fields: [importBatchId], references: [id])
+  
+  @@map("inventory_assets")
+  @@index([assetTag])
+  @@index([serialNumber])
+  @@index([status])
+  @@index([assignedToUserId])
+}
+
+enum AssetStatus {
+  IN_STOCK
+  ASSIGNED
+  IN_REPAIR
+  RETIRED
+  LOST
+  STOLEN
+}
+
+model AssetStatusLog {
+  id             String         @id @default(uuid())
+  assetId        String         @map("asset_id")
+  previousStatus String?        @map("previous_status")
+  newStatus      String         @map("new_status")
+  changedByUserId String?       @map("changed_by_user_id")
+  notes          String?        @db.Text
+  timestamp      DateTime       @default(now())
+  
+  asset          InventoryAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  @@map("asset_status_logs")
+  @@index([assetId])
+  @@index([timestamp])
+}
+
+model AssetAssignment {
+  id             String         @id @default(uuid())
+  assetId        String         @map("asset_id")
+  userId         String?        @map("user_id")
+  orgId          String?        @map("org_id")
+  customerId     String?        @map("customer_id")
+  assignedAt     DateTime       @default(now()) @map("assigned_at")
+  returnedAt     DateTime?      @map("returned_at")
+  assignedByUserId String?      @map("assigned_by_user_id")
+  notes          String?        @db.Text
+  
+  asset          InventoryAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  @@map("asset_assignments")
+  @@index([assetId])
+  @@index([userId])
+}
+
+model AssetTicketHistory {
+  id         String         @id @default(uuid())
+  assetId    String         @map("asset_id")
+  ticketId   String         @map("ticket_id")
+  linkedAt   DateTime       @default(now()) @map("linked_at")
+  linkType   String?        @map("link_type") // "repair", "replacement", "request"
+  
+  asset      InventoryAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  @@map("asset_ticket_history")
+  @@index([assetId])
+  @@index([ticketId])
+}
+
+model AssetWarrantyAlert {
+  id         String         @id @default(uuid())
+  assetId    String         @map("asset_id")
+  alertType  String         @map("alert_type") // "warning", "expiring_soon", "expired"
+  sentAt     DateTime       @default(now()) @map("sent_at")
+  recipients String[]       @default([])
+  
+  asset      InventoryAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  @@map("asset_warranty_alerts")
+  @@index([assetId])
+  @@index([sentAt])
+}
+
+model AssetValidationLog {
+  id             String         @id @default(uuid())
+  assetId        String         @map("asset_id")
+  validationType String         @map("validation_type")
+  passed         Boolean
+  errors         Json?
+  validatedAt    DateTime       @default(now()) @map("validated_at")
+  validatedBy    String?        @map("validated_by")
+  
+  asset          InventoryAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  @@map("asset_validation_logs")
+  @@index([assetId])
+  @@index([validatedAt])
+}
+
+model AssetImportBatch {
+  id           String           @id @default(uuid())
+  source       String
+  fileName     String?          @map("file_name")
+  totalRecords Int              @map("total_records")
+  successCount Int              @default(0) @map("success_count")
+  failureCount Int              @default(0) @map("failure_count")
+  status       ImportStatus     @default(PENDING)
+  startedAt    DateTime         @default(now()) @map("started_at")
+  completedAt  DateTime?        @map("completed_at")
+  importedBy   String?          @map("imported_by")
+  errors       Json?
+  
+  assets       InventoryAsset[]
+  
+  @@map("asset_import_batches")
+  @@index([status])
+  @@index([startedAt])
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// =============================================================================
+// MAILROOM
+// =============================================================================
+
+model MailroomPackage {
+  id              String          @id @default(uuid())
+  trackingNumber  String          @unique @map("tracking_number")
+  recipientId     String          @map("recipient_id")
+  carrier         String?
+  assetId         String?         @map("asset_id")
+  ticketId        String?         @map("ticket_id")
+  status          PackageStatus   @default(PENDING)
+  receivedAt      DateTime        @default(now()) @map("received_at")
+  deliveredAt     DateTime?       @map("delivered_at")
+  notes           String?         @db.Text
+  
+  recipient       User            @relation("MailroomPackageRecipient", fields: [recipientId], references: [id])
+  asset           InventoryAsset? @relation(fields: [assetId], references: [id])
+  deliveryEvents  DeliveryEvent[]
+  
+  @@map("mailroom_packages")
+  @@index([trackingNumber])
+  @@index([recipientId])
+  @@index([status])
+}
+
+enum PackageStatus {
+  PENDING
+  READY_FOR_PICKUP
+  DELIVERED
+  RETURNED
+}
+
+model DeliveryEvent {
+  id          String          @id @default(uuid())
+  packageId   String          @map("package_id")
+  eventType   String          @map("event_type")
+  userId      String?         @map("user_id")
+  description String?         @db.Text
+  timestamp   DateTime        @default(now())
+  
+  package     MailroomPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  user        User?           @relation("DeliveryEventUser", fields: [userId], references: [id])
+  
+  @@map("delivery_events")
+  @@index([packageId])
+  @@index([timestamp])
+}
+
+// =============================================================================
+// KIOSKS & SELF-SERVICE
+// =============================================================================
+
+model KioskAssetRegistry {
+  id              String         @id @default(uuid())
+  kioskId         String         @map("kiosk_id")
+  assetId         String         @map("asset_id")
+  registeredAt    DateTime       @default(now()) @map("registered_at")
+  deregisteredAt  DateTime?      @map("deregistered_at")
+  
+  asset           InventoryAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  @@unique([kioskId, assetId])
+  @@map("kiosk_asset_registry")
+  @@index([kioskId])
+  @@index([assetId])
+}
+
+// =============================================================================
+// REQUESTED ITEMS (RITM - ServiceNow style)
+// =============================================================================
+
+model RITM {
+  id           String    @id @default(uuid())
+  ritmNumber   String    @unique @map("ritm_number")
+  ticketId     String    @map("ticket_id")
+  itemName     String    @map("item_name")
+  quantity     Int       @default(1)
+  status       RitmStatus @default(PENDING)
+  requestedBy  String    @map("requested_by")
+  fulfilledBy  String?   @map("fulfilled_by")
+  fulfilledAt  DateTime? @map("fulfilled_at")
+  notes        String?   @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  
+  @@map("ritms")
+  @@index([ritmNumber])
+  @@index([ticketId])
+  @@index([status])
+}
+
+enum RitmStatus {
+  PENDING
+  IN_PROGRESS
+  FULFILLED
+  CANCELLED
+}
+
+// =============================================================================
+// HELIX INTEGRATION
+// =============================================================================
+
+model HelixSyncFailure {
+  id          String         @id @default(uuid())
+  assetId     String         @map("asset_id")
+  errorType   String         @map("error_type")
+  errorMessage String        @db.Text @map("error_message")
+  payload     Json?
+  retryCount  Int            @default(0) @map("retry_count")
+  lastRetry   DateTime?      @map("last_retry")
+  resolved    Boolean        @default(false)
+  resolvedAt  DateTime?      @map("resolved_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  
+  asset       InventoryAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  @@map("helix_sync_failures")
+  @@index([assetId])
+  @@index([resolved])
+  @@index([createdAt])
+}

@@ -1,0 +1,154 @@
+// =============================================================================
+// SYSTEM CONFIGURATION & SETTINGS DOMAIN
+// =============================================================================
+// Contains: System config, feature flags, VIP settings
+// =============================================================================
+
+model Config {
+  key             String   @id
+  value           String?
+  valueType       String?  @map("value_type") // "string", "number", "boolean", "json", "array"
+  description     String?  @db.Text
+  isPublic        Boolean  @default(false) @map("is_public") // Can be exposed to public API
+  category        String?  // "branding", "security", "features", "integrations", "performance"
+  subcategory     String?  @map("subcategory")
+  isUIEditable    Boolean  @default(true) @map("is_ui_editable")
+  isRequired      Boolean  @default(false) @map("is_required")
+  defaultValue    String?  @map("default_value")
+  validationRules Json?    @map("validation_rules")
+  displayOrder    Int?     @map("display_order")
+  helpText        String?  @db.Text @map("help_text")
+  isAdvanced      Boolean  @default(false) @map("is_advanced")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  updatedBy       String?  @map("updated_by")
+  
+  history         ConfigHistory[]
+  
+  @@map("config")
+  @@index([category])
+  @@index([isPublic])
+}
+
+model ConfigHistory {
+  id           String   @id @default(uuid())
+  configKey    String   @map("config_key")
+  oldValue     String?  @map("old_value")
+  newValue     String?  @map("new_value")
+  changedBy    String?  @map("changed_by")
+  changeReason String?  @db.Text @map("change_reason")
+  createdAt    DateTime @default(now()) @map("created_at")
+  
+  config       Config   @relation(fields: [configKey], references: [key], onDelete: Cascade)
+  
+  @@map("config_history")
+  @@index([configKey])
+  @@index([createdAt])
+}
+
+model ConfigTemplate {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?  @db.Text
+  category    String
+  template    Json
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("config_templates")
+  @@index([category])
+}
+
+// =============================================================================
+// VIP MANAGEMENT
+// =============================================================================
+
+model VipSlaHistory {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  vipLevel    String   @map("vip_level")
+  slaOverride Json     @map("sla_override")
+  effectiveFrom DateTime @map("effective_from")
+  effectiveTo DateTime? @map("effective_to")
+  reason      String?  @db.Text
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("vip_sla_history")
+  @@index([userId])
+  @@index([effectiveFrom])
+}
+
+model VipProxy {
+  id        String   @id @default(uuid())
+  vipUserId String   @map("vip_user_id")
+  proxyUserId String @map("proxy_user_id")
+  startDate DateTime @map("start_date")
+  endDate   DateTime? @map("end_date")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  vipUser   User     @relation("VipProxyVip", fields: [vipUserId], references: [id])
+  proxyUser User     @relation("VipProxyUser", fields: [proxyUserId], references: [id])
+  
+  @@unique([vipUserId, proxyUserId])
+  @@map("vip_proxies")
+  @@index([vipUserId])
+  @@index([proxyUserId])
+  @@index([isActive])
+}
+
+model ProxyAuthorization {
+  id          String    @id @default(uuid())
+  recipientId String    @map("recipient_id")
+  proxyUserId String    @map("proxy_user_id")
+  permissions String[]  @default([])
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  recipient   User      @relation("ProxyRecipient", fields: [recipientId], references: [id])
+  proxyUser   User      @relation("ProxyUser", fields: [proxyUserId], references: [id])
+  
+  @@unique([recipientId, proxyUserId])
+  @@map("proxy_authorizations")
+  @@index([recipientId])
+  @@index([proxyUserId])
+  @@index([isActive])
+}
+
+// =============================================================================
+// AGENT AVAILABILITY
+// =============================================================================
+
+model AgentAvailability {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  status      AgentStatus @default(AVAILABLE)
+  statusMessage String? @db.VarChar(255) @map("status_message")
+  availableFrom DateTime? @map("available_from")
+  availableUntil DateTime? @map("available_until")
+  timezone    String   @default("UTC")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  user        User     @relation("AgentAvailabilityUser", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId])
+  @@map("agent_availability")
+  @@index([status])
+}
+
+enum AgentStatus {
+  AVAILABLE
+  BUSY
+  AWAY
+  OFFLINE
+}

@@ -1,0 +1,279 @@
+// =============================================================================
+// AUDIT AND COMPLIANCE SCHEMA
+// =============================================================================
+// Extended audit logging and compliance tracking
+// Note: Basic audit logging is in user.prisma (Log model)
+// This file contains advanced audit and compliance features
+// =============================================================================
+
+// Audit Trail for sensitive operations
+model AuditTrail {
+  id              String   @id @default(uuid())
+  
+  // Actor
+  userId          String?
+  user            User?    @relation("AuditActor", fields: [userId], references: [id])
+  actorType       String   @default("user") // user, system, api, automation
+  actorIdentifier String?  // IP address, service account, etc.
+  
+  // Action
+  action          String   // create, read, update, delete, login, logout, etc.
+  actionCategory  String   // authentication, authorization, data_access, configuration, etc.
+  
+  // Target
+  entityType      String?  // User, Ticket, Asset, etc.
+  entityId        String?
+  entityName      String?
+  
+  // Change tracking
+  before          Json?    @default("{}")
+  after           Json?    @default("{}")
+  changes         Json?    @default("[]") // Array of field changes
+  
+  // Context
+  httpMethod      String?
+  httpPath        String?
+  httpStatus      Int?
+  userAgent       String?
+  ipAddress       String?
+  sessionId       String?
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  tags            String[] @default([])
+  
+  // Risk and compliance
+  riskLevel       RiskLevel @default(LOW)
+  isSensitive     Boolean  @default(false)
+  complianceFlags Json?    @default("[]")
+  
+  // Timestamp
+  timestamp       DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([actionCategory])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+  @@index([riskLevel])
+  @@index([isSensitive])
+  @@map("AuditTrail")
+}
+
+// Compliance Events
+model ComplianceEvent {
+  id              String   @id @default(uuid())
+  
+  // Event details
+  type            String   // data_access, policy_violation, security_incident, etc.
+  category        String   // GDPR, HIPAA, SOX, PCI-DSS, etc.
+  severity        String   // low, medium, high, critical
+  
+  title           String
+  description     String   @db.Text
+  
+  // Related entity
+  entityType      String?
+  entityId        String?
+  
+  // Involved parties
+  userId          String?
+  user            User?    @relation("ComplianceEventUser", fields: [userId], references: [id])
+  affectedUsers   Json?    @default("[]")
+  
+  // Investigation
+  status          String   @default("open") // open, investigating, resolved, closed
+  investigatorId  String?
+  investigator    User?    @relation("ComplianceInvestigator", fields: [investigatorId], references: [id])
+  
+  findings        String?  @db.Text
+  remediation     String?  @db.Text
+  
+  // Timing
+  occurredAt      DateTime @default(now())
+  detectedAt      DateTime @default(now())
+  resolvedAt      DateTime?
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  @@index([type])
+  @@index([category])
+  @@index([severity])
+  @@index([status])
+  @@index([occurredAt])
+  @@map("ComplianceEvent")
+}
+
+// Data Access Log (for sensitive data compliance)
+model DataAccessLog {
+  id              String   @id @default(uuid())
+  
+  // Accessor
+  userId          String
+  user            User     @relation("DataAccessor", fields: [userId], references: [id])
+  
+  // Data accessed
+  dataType        String   // PII, PHI, Financial, etc.
+  dataCategory    String   // User Profile, Medical Record, Payment Info, etc.
+  resourceType    String   // User, Ticket, Asset, etc.
+  resourceId      String
+  
+  // Access details
+  accessType      String   // read, export, print, download
+  accessReason    String?  // Reason for access (required for sensitive data)
+  
+  // Context
+  ipAddress       String?
+  userAgent       String?
+  location        String?  // Geographic location
+  
+  // Authorization
+  isAuthorized    Boolean  @default(true)
+  authorizationMethod String? // role_based, consent, legal_hold, etc.
+  
+  // Compliance
+  complianceFlags String[] @default([]) // GDPR, HIPAA, etc.
+  requiresConsent Boolean  @default(false)
+  consentGiven    Boolean?
+  consentId       String?
+  
+  // Timing
+  timestamp       DateTime @default(now())
+  
+  @@index([userId])
+  @@index([dataType])
+  @@index([resourceType, resourceId])
+  @@index([timestamp])
+  @@index([isAuthorized])
+  @@map("DataAccessLog")
+}
+
+// Security Events
+model SecurityEvent {
+  id              String   @id @default(uuid())
+  
+  // Event details
+  type            String   // failed_login, suspicious_activity, privilege_escalation, etc.
+  severity        String   // low, medium, high, critical
+  title           String
+  description     String   @db.Text
+  
+  // Related user
+  userId          String?
+  user            User?    @relation("SecurityEventUser", fields: [userId], references: [id])
+  username        String?  // Even if user doesn't exist
+  
+  // Source
+  ipAddress       String?
+  userAgent       String?
+  location        String?
+  
+  // Detection
+  detectionMethod String?  // rule_based, ml_based, manual, etc.
+  detectionRule   String?
+  
+  // Status
+  status          String   @default("open") // open, investigating, resolved, false_positive, closed
+  
+  // Response
+  responseAction  String?  // blocked, flagged, notified, etc.
+  respondedById   String?
+  respondedBy     User?    @relation("SecurityResponder", fields: [respondedById], references: [id])
+  
+  responseNotes   String?  @db.Text
+  
+  // Timing
+  occurredAt      DateTime @default(now())
+  detectedAt      DateTime @default(now())
+  resolvedAt      DateTime?
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  @@index([type])
+  @@index([severity])
+  @@index([status])
+  @@index([userId])
+  @@index([occurredAt])
+  @@map("SecurityEvent")
+}
+
+// System Change Log (for infrastructure changes)
+model SystemChangeLog {
+  id              String   @id @default(uuid())
+  
+  // Change details
+  changeType      String   // configuration, deployment, update, patch, etc.
+  component       String   // database, application, infrastructure, etc.
+  description     String   @db.Text
+  
+  // Change author
+  changedById     String?
+  changedBy       User?    @relation("SystemChanger", fields: [changedById], references: [id])
+  changedBySystem String?  // automation, ci/cd, etc.
+  
+  // Change data
+  before          Json?    @default("{}")
+  after           Json?    @default("{}")
+  
+  // Approval
+  approvalRequired Boolean @default(false)
+  approvedById    String?
+  approvedBy      User?    @relation("SystemChangeApprover", fields: [approvedById], references: [id])
+  approvedAt      DateTime?
+  
+  // Impact
+  impactLevel     String   // low, medium, high, critical
+  affectedSystems Json?    @default("[]")
+  downtime        Int?     // Minutes of downtime
+  
+  // Rollback
+  rollbackPlan    String?  @db.Text
+  canRollback     Boolean  @default(false)
+  rolledBackAt    DateTime?
+  
+  // Timing
+  timestamp       DateTime @default(now())
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  @@index([changeType])
+  @@index([component])
+  @@index([changedById])
+  @@index([timestamp])
+  @@map("SystemChangeLog")
+}
+
+// Retention Policy for compliance
+model RetentionPolicy {
+  id              String   @id @default(uuid())
+  
+  name            String
+  description     String?  @db.Text
+  
+  // Scope
+  dataType        String   // audit_logs, user_data, tickets, etc.
+  category        String?
+  
+  // Retention rules
+  retentionPeriod Int      // Days to retain
+  archiveAfter    Int?     // Days before archiving
+  deleteAfter     Int?     // Days before permanent deletion
+  
+  // Compliance
+  regulation      String?  // GDPR, HIPAA, SOX, etc.
+  legalHold       Boolean  @default(false)
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Audit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([dataType])
+  @@index([isActive])
+  @@map("RetentionPolicy")
+}

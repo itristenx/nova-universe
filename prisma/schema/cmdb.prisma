@@ -1,0 +1,183 @@
+// =============================================================================
+// CONFIGURATION MANAGEMENT DATABASE (CMDB) SCHEMA
+// =============================================================================
+// Models for IT infrastructure and configuration management
+// =============================================================================
+
+// Configuration Item - Base model for all IT infrastructure components
+model ConfigurationItem {
+  id               String   @id @default(uuid())
+  name             String
+  type             String   // Server, Network Device, Application, etc.
+  category         String
+  status           String   // Active, Inactive, Retired, Maintenance
+  serialNumber     String?
+  assetTag         String?
+  manufacturer     String?
+  model            String?
+  location         String?
+  
+  // Ownership and responsibility
+  ownerId          String?
+  owner            User?    @relation("CIOwner", fields: [ownerId], references: [id])
+  managedById      String?
+  managedBy        User?    @relation("CIManager", fields: [managedById], references: [id])
+  
+  // Technical details
+  ipAddress        String?
+  macAddress       String?
+  hostname         String?
+  operatingSystem  String?
+  version          String?
+  
+  // Metadata
+  metadata         Json?    @default("{}")
+  attributes       Json?    @default("{}")
+  
+  // Relationships
+  dependencies     CIRelationship[] @relation("CISource")
+  dependents       CIRelationship[] @relation("CITarget")
+  
+  // Audit fields
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  deletedAt        DateTime?
+  
+  @@index([type, status])
+  @@index([ownerId])
+  @@index([managedById])
+  @@map("ConfigurationItem")
+}
+
+// Configuration Item Relationships
+model CIRelationship {
+  id              String   @id @default(uuid())
+  
+  sourceId        String
+  source          ConfigurationItem @relation("CISource", fields: [sourceId], references: [id], onDelete: Cascade)
+  
+  targetId        String
+  target          ConfigurationItem @relation("CITarget", fields: [targetId], references: [id], onDelete: Cascade)
+  
+  type            String   // depends_on, runs_on, connects_to, etc.
+  description     String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([sourceId, targetId, type])
+  @@index([sourceId])
+  @@index([targetId])
+  @@index([type])
+  @@map("CIRelationship")
+}
+
+// Change Management
+model ChangeRequest {
+  id                String   @id @default(uuid())
+  title             String
+  description       String   @db.Text
+  type              String   // Standard, Normal, Emergency
+  priority          String   // Low, Medium, High, Critical
+  status            String   // Draft, Pending Approval, Approved, In Progress, Implemented, Closed, Rejected
+  
+  // Requestor and implementation
+  requestorId       String
+  requestor         User     @relation("ChangeRequestor", fields: [requestorId], references: [id])
+  implementerId     String?
+  implementer       User?    @relation("ChangeImplementer", fields: [implementerId], references: [id])
+  
+  // Scheduling
+  scheduledStart    DateTime?
+  scheduledEnd      DateTime?
+  actualStart       DateTime?
+  actualEnd         DateTime?
+  
+  // Risk assessment
+  riskLevel         RiskLevel @default(MEDIUM)
+  riskAssessment    String?  @db.Text
+  backoutPlan       String?  @db.Text
+  
+  // Approvals
+  approvals         ChangeApproval[]
+  
+  // Affected items
+  affectedCIs       Json?    @default("[]")
+  
+  // Metadata
+  metadata          Json?    @default("{}")
+  
+  // Audit fields
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+  
+  @@index([status])
+  @@index([requestorId])
+  @@index([scheduledStart])
+  @@map("ChangeRequest")
+}
+
+// Change Request Approvals
+model ChangeApproval {
+  id              String   @id @default(uuid())
+  
+  changeId        String
+  change          ChangeRequest @relation(fields: [changeId], references: [id], onDelete: Cascade)
+  
+  approverId      String
+  approver        User     @relation("ChangeApprover", fields: [approverId], references: [id])
+  
+  status          String   // Pending, Approved, Rejected
+  decision        String?  // Approval decision notes
+  decidedAt       DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([changeId])
+  @@index([approverId])
+  @@index([status])
+  @@map("ChangeApproval")
+}
+
+// Service Catalog
+model ServiceCatalogItem {
+  id              String   @id @default(uuid())
+  name            String
+  description     String   @db.Text
+  category        String
+  type            String   // IT Service, Business Service
+  
+  // Availability
+  isActive        Boolean  @default(true)
+  isPublic        Boolean  @default(true)
+  
+  // Ownership
+  ownerId         String
+  owner           User     @relation("ServiceOwner", fields: [ownerId], references: [id])
+  
+  // Service details
+  slaId           String?
+  price           Float?
+  estimatedTime   Int?     // In minutes
+  
+  // Form configuration for service requests
+  formSchema      Json?    @default("{}")
+  
+  // Related CIs
+  supportingCIs   Json?    @default("[]")
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([category])
+  @@index([isActive])
+  @@index([ownerId])
+  @@map("ServiceCatalogItem")
+}

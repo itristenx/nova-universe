@@ -174,13 +174,24 @@ Nova Universe configures itself during setup. For advanced configuration:
 
 Quickest way to bring up API, UI, and core dependencies locally:
 
-1) Optional: copy env template and adjust as needed
+1) Copy env template and adjust as needed
 
-- `cp .env.example .env`
+```bash
+cp .env.example .env
+```
 
 2) Build and start the full stack
 
-- `docker compose -f docker-compose.production-test.yml up -d --build`
+```bash
+# Development (recommended)
+docker-compose up -d --build
+
+# OR Production-test environment
+docker-compose -f deploy/docker/testing/docker-compose.yml up -d --build
+
+# OR Full production setup
+docker-compose -f deploy/docker/production/docker-compose.yml up -d --build
+```
 
 3) Open the apps
 
@@ -189,13 +200,28 @@ Quickest way to bring up API, UI, and core dependencies locally:
 
 4) Stop everything
 
-- `docker compose -f docker-compose.production-test.yml down`
+```bash
+docker-compose down
+# OR for specific environments
+docker-compose -f deploy/docker/testing/docker-compose.yml down
+```
+
+**Deployment Configurations:**
+
+All deployment files are now organized in the `deploy/` directory following industry standards:
+- **Development**: `deploy/docker/development/` - Default for local development
+- **Production**: `deploy/docker/production/` - Production-ready configuration  
+- **Testing**: `deploy/docker/testing/` - Production-test environment
+- **Monitoring**: `deploy/docker/monitoring/` - Monitoring stack (GoAlert, Uptime Kuma, etc.)
+
+📖 **For detailed deployment instructions**, see [`deploy/README.md`](deploy/README.md)
 
 Notes:
 
-- The compose file builds the API and UI images. UI is built with `VITE_API_URL=http://localhost:3000` so it talks to the API directly.
+- The compose files build the API and UI images. UI is built with `VITE_API_URL=http://localhost:3000` so it talks to the API directly.
 - Infrastructure services include Postgres, MongoDB, Redis, Elasticsearch, Uptime-Kuma, Prometheus, Grafana, and GoAlert.
-- If ports are in use, adjust host ports in `docker-compose.production-test.yml`.
+- If ports are in use, adjust host ports in the respective docker-compose.yml files.
+- Environment templates are in `deploy/env/` directory
 
 ---
 

@@ -1,0 +1,69 @@
+// =============================================================================
+// MAIN PRISMA SCHEMA CONFIGURATION
+// =============================================================================
+// This is the main schema file that defines datasource and generator blocks.
+// Individual domain models are organized in the schema/ subdirectory.
+//
+// Prisma v6.7.0+ supports multi-file schemas without preview features.
+// All .prisma files in the schema/ directory are automatically included.
+//
+// Best Practices:
+// - One database for all domains (simpler management, better transactions)
+// - UUID primary keys for distributed systems
+// - Clear domain separation via file organization
+// - Consistent naming conventions
+// =============================================================================
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  // Enable PostgreSQL extensions for AI and advanced search
+  extensions = [pgvector(map: "vector", schema: "public")]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "./generated/client"
+  binaryTargets   = ["native", "debian-openssl-3.0.x", "darwin", "darwin-arm64", "linux-arm64-openssl-3.0.x"]
+  // Enable preview features for PostgreSQL extensions and full-text search
+  previewFeatures = ["postgresqlExtensions", "fullTextSearchPostgres"]
+}
+
+// =============================================================================
+// GLOBAL ENUMS
+// =============================================================================
+// Common enums used across multiple domains
+// =============================================================================
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// =============================================================================
+// NOTE: All models are defined in the schema/ subdirectory
+// =============================================================================
+// Models are organized by domain:
+// - schema/user.prisma          - User management and authentication
+// - schema/itsm.prisma          - IT Service Management (tickets, SLA, etc.)
+// - schema/cmdb.prisma          - Configuration Management Database
+// - schema/asset.prisma         - Asset and inventory management
+// - schema/workflow.prisma      - Workflow and automation
+// - schema/notification.prisma  - Notifications and communications
+// - schema/audit.prisma         - Audit logs and compliance
+// - schema/ai.prisma            - AI and analytics
+// - schema/spaces.prisma        - Physical space management
+// - schema/novatv.prisma        - Nova TV dashboards and digital signage
+// - schema/enterprise.prisma    - Enterprise features (SSO, multi-tenancy, etc.)
+// - schema/knowledge.prisma     - Knowledge base articles
+// - schema/system.prisma        - System configuration
+// =============================================================================

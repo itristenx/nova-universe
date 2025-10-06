@@ -1,0 +1,629 @@
+// =============================================================================
+// IT SERVICE MANAGEMENT (ITSM) DOMAIN
+// =============================================================================
+// Consolidated from: core/schema.prisma, itsm-enhanced.prisma, enhanced-itsm-schema.prisma
+// Contains: Tickets, SLA, Groups, Queues, Approvals, Workflows
+// Industry Standard: ServiceNow/ITIL-compliant ticketing system
+// =============================================================================
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum TicketType {
+  INCIDENT       // INC - Unplanned interruption
+  REQUEST        // REQ - Service request
+  PROBLEM        // PRB - Root cause analysis
+  CHANGE         // CHG - Change management
+  TASK           // TASK - General task
+  HR             // HR - HR service delivery
+  OPS            // OPS - Operations
+  ISAC           // ISAC - Information Security
+  FEEDBACK       // FB - User feedback
+}
+
+enum TicketState {
+  NEW
+  ASSIGNED
+  IN_PROGRESS
+  PENDING
+  PENDING_APPROVAL
+  RESOLVED
+  CLOSED
+  REOPENED
+  CANCELLED
+}
+
+enum Priority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum Urgency {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum Impact {
+  CRITICAL       // Affects multiple users/systems
+  HIGH           // Affects department
+  MEDIUM         // Affects team
+  LOW            // Affects individual
+}
+
+enum TicketSource {
+  PORTAL
+  EMAIL
+  PHONE
+  WALK_IN
+  CHAT
+  SLACK
+  TEAMS
+  API
+  MONITORING
+  SELF_SERVICE
+}
+
+// =============================================================================
+// SUPPORT TICKET (Primary Model)
+// =============================================================================
+
+model SupportTicket {
+  id                     String        @id @default(uuid())
+  ticketNumber           String        @unique @map("ticket_number") // Auto-generated: INC0001234, REQ0001234
+  
+  // Basic Information
+  title                  String        @db.VarChar(255)
+  description            String        @db.Text
+  shortDescription       String?       @db.VarChar(160) @map("short_description")
+  
+  // Classification
+  type                   TicketType    @default(INCIDENT)
+  category               String?       @db.VarChar(100)
+  subcategory            String?       @db.VarChar(100)
+  businessService        String?       @db.VarChar(100) @map("business_service")
+  configurationItem      String?       @db.VarChar(100) @map("configuration_item")
+  
+  // Status and Priority
+  state                  TicketState   @default(NEW)
+  priority               Priority      @default(MEDIUM)
+  urgency                Urgency       @default(MEDIUM)
+  impact                 Impact        @default(MEDIUM)
+  
+  // Assignment
+  userId                 String?       @map("user_id") // Requester
+  assignedToUserId       String?       @map("assigned_to_user_id")
+  assignedToGroupId      String?       @map("assigned_to_group_id")
+  assignedToQueueId      String?       @map("assigned_to_queue_id")
+  
+  // Workflow and Approval
+  workflowStage          String?       @map("workflow_stage")
+  approvalStatus         ApprovalStatus? @map("approval_status")
+  approvedBy             String?       @map("approved_by")
+  approvedAt             DateTime?     @map("approved_at")
+  
+  // SLA Management
+  slaId                  String?       @map("sla_id")
+  responseTimeTarget     Int?          @map("response_time_target") // minutes
+  resolutionTimeTarget   Int?          @map("resolution_time_target") // minutes
+  responseTimeBreached   Boolean       @default(false) @map("response_time_breached")
+  resolutionTimeBreached Boolean       @default(false) @map("resolution_time_breached")
+  responseTime           Int?          @map("response_time") // actual in minutes
+  resolutionTime         Int?          @map("resolution_time") // actual in minutes
+  
+  // Timestamps
+  createdAt              DateTime      @default(now()) @map("created_at")
+  updatedAt              DateTime      @updatedAt @map("updated_at")
+  closedAt               DateTime?     @map("closed_at")
+  resolvedAt             DateTime?     @map("resolved_at")
+  firstResponseAt        DateTime?     @map("first_response_at")
+  lastActivityAt         DateTime?     @map("last_activity_at")
+  dueDate                DateTime?     @map("due_date")
+  
+  // Additional Fields
+  source                 TicketSource  @default(PORTAL)
+  channel                String?       @db.VarChar(50)
+  location               String?       @db.VarChar(100)
+  costCenter             String?       @db.VarChar(50) @map("cost_center")
+  businessJustification  String?       @db.Text @map("business_justification")
+  resolution             String?       @db.Text
+  closeNotes             String?       @db.Text @map("close_notes")
+  parentTicketId         String?       @map("parent_ticket_id")
+  
+  // Flags and Metadata
+  isVip                  Boolean       @default(false) @map("is_vip")
+  isUrgent               Boolean       @default(false) @map("is_urgent")
+  isEscalated            Boolean       @default(false) @map("is_escalated")
+  isWatched              Boolean       @default(false) @map("is_watched")
+  tags                   String[]      @default([])
+  customFields           Json?         @map("custom_fields")
+  
+  // AI and Search Capabilities (Industry Standard 2024/2025)
+  // Full-text search vector for PostgreSQL tsvector - combines title, description, and resolution
+  searchVector           Unsupported("tsvector")?  @map("search_vector")
+  // AI embedding for semantic ticket matching and auto-categorization
+  embedding              Unsupported("vector(1536)")? // pgvector for similarity search
+  
+  // Customer Satisfaction
+  satisfactionRating     Int?          @map("satisfaction_rating") // 1-5
+  satisfactionComment    String?       @db.Text @map("satisfaction_comment")
+  satisfactionSurveyedAt DateTime?     @map("satisfaction_surveyed_at")
+  
+  // Security and Compliance
+  confidentialityLevel   String?       @db.VarChar(20) @map("confidentiality_level") // Public, Internal, Confidential
+  complianceRequired     Boolean       @default(false) @map("compliance_required")
+  dataClassification     String?       @db.VarChar(50) @map("data_classification")
+  
+  // Relationships
+  requester              User?         @relation("TicketRequester", fields: [userId], references: [id])
+  assignedUser           User?         @relation("TicketAssigned", fields: [assignedToUserId], references: [id])
+  assignedGroup          Group?        @relation("TicketGroup", fields: [assignedToGroupId], references: [id])
+  assignedQueue          Queue?        @relation("TicketQueue", fields: [assignedToQueueId], references: [id])
+  parentTicket           SupportTicket? @relation("TicketHierarchy", fields: [parentTicketId], references: [id])
+  childTickets           SupportTicket[] @relation("TicketHierarchy")
+  sla                    SlaDefinition? @relation(fields: [slaId], references: [id])
+  
+  // Related Records
+  comments               TicketComment[]
+  attachments            TicketAttachment[]
+  watchers               TicketWatcher[]
+  history                TicketHistory[]
+  timeEntries            TicketTimeEntry[]
+  linkedTicketsSource    TicketLink[]   @relation("SourceTicket")
+  linkedTicketsTarget    TicketLink[]   @relation("TargetTicket")
+  escalations            TicketEscalation[]
+  approvals              TicketApproval[]
+  workflowInstances      WorkflowInstance[]
+  slaBreaches            SlaBreach[]
+  
+  @@map("support_tickets")
+  @@index([state, priority, assignedToUserId])
+  @@index([createdAt, state])
+  @@index([ticketNumber])
+  @@index([userId])
+  @@index([category, subcategory])
+  @@index([slaId, state])
+  @@index([type])
+  // AI and Search indexes (Industry Standard 2024/2025)
+  @@index([searchVector], type: Gin) // GIN index for full-text search
+  @@index([embedding(ops: raw("vector_cosine_ops"))], type: Hnsw) // HNSW index for vector similarity
+}
+
+// =============================================================================
+// TICKET INTERACTIONS
+// =============================================================================
+
+model TicketComment {
+  id           String        @id @default(uuid())
+  ticketId     String        @map("ticket_id")
+  userId       String        @map("user_id")
+  content      String        @db.Text
+  isInternal   Boolean       @default(false) @map("is_internal")
+  isSystem     Boolean       @default(false) @map("is_system")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id])
+  attachments  CommentAttachment[]
+  
+  @@map("ticket_comments")
+  @@index([ticketId, createdAt])
+  @@index([userId])
+}
+
+model TicketAttachment {
+  id           String        @id @default(uuid())
+  ticketId     String        @map("ticket_id")
+  uploadedBy   String        @map("uploaded_by")
+  filename     String        @db.VarChar(255)
+  originalName String        @db.VarChar(255) @map("original_name")
+  mimeType     String        @db.VarChar(100) @map("mime_type")
+  fileSize     Int           @map("file_size")
+  fileKey      String        @map("file_key") // S3 key or file path
+  isPublic     Boolean       @default(false) @map("is_public")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploader     User          @relation(fields: [uploadedBy], references: [id])
+  
+  @@map("ticket_attachments")
+  @@index([ticketId])
+  @@index([uploadedBy])
+}
+
+model CommentAttachment {
+  id           String        @id @default(uuid())
+  commentId    String        @map("comment_id")
+  filename     String        @db.VarChar(255)
+  originalName String        @db.VarChar(255) @map("original_name")
+  mimeType     String        @db.VarChar(100) @map("mime_type")
+  fileSize     Int           @map("file_size")
+  fileKey      String        @map("file_key")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  
+  comment      TicketComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@map("comment_attachments")
+  @@index([commentId])
+}
+
+model TicketWatcher {
+  id           String        @id @default(uuid())
+  ticketId     String        @map("ticket_id")
+  userId       String        @map("user_id")
+  watchType    WatchType     @default(MANUAL) @map("watch_type")
+  addedBy      String?       @map("added_by")
+  addedAt      DateTime      @default(now()) @map("added_at")
+  
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([ticketId, userId])
+  @@map("ticket_watchers")
+  @@index([ticketId])
+  @@index([userId])
+}
+
+enum WatchType {
+  MANUAL
+  AUTO_REQUESTER
+  AUTO_ASSIGNEE
+  AUTO_GROUP
+  AUTO_ESCALATION
+}
+
+model TicketHistory {
+  id           String        @id @default(uuid())
+  ticketId     String        @map("ticket_id")
+  userId       String?       @map("user_id") // null for system actions
+  action       HistoryAction
+  fieldChanged String?       @map("field_changed")
+  oldValue     String?       @map("old_value")
+  newValue     String?       @map("new_value")
+  description  String?       @db.Text
+  metadata     Json?
+  createdAt    DateTime      @default(now()) @map("created_at")
+  
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id])
+  
+  @@map("ticket_history")
+  @@index([ticketId, createdAt])
+  @@index([action, createdAt])
+  @@index([userId])
+}
+
+enum HistoryAction {
+  CREATED
+  UPDATED
+  ASSIGNED
+  ESCALATED
+  RESOLVED
+  CLOSED
+  REOPENED
+  CANCELLED
+  COMMENT_ADDED
+  ATTACHMENT_ADDED
+  SLA_BREACH
+  APPROVAL_REQUESTED
+  APPROVED
+  REJECTED
+  WORKFLOW_STARTED
+  WORKFLOW_COMPLETED
+}
+
+// =============================================================================
+// ESCALATION & TIME TRACKING
+// =============================================================================
+
+model TicketEscalation {
+  id                   String           @id @default(uuid())
+  ticketId             String           @map("ticket_id")
+  escalationLevel      Int              @map("escalation_level")
+  escalatedBy          String           @map("escalated_by")
+  escalatedTo          String?          @map("escalated_to") // User ID
+  escalatedToGroup     String?          @map("escalated_to_group") // Group ID
+  reason               String           @db.Text
+  status               EscalationStatus @default(ACTIVE)
+  resolvedBy           String?          @map("resolved_by")
+  resolvedAt           DateTime?        @map("resolved_at")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  
+  ticket               SupportTicket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  @@map("ticket_escalations")
+  @@index([ticketId])
+  @@index([status])
+}
+
+enum EscalationStatus {
+  ACTIVE
+  RESOLVED
+  CANCELLED
+}
+
+model TicketTimeEntry {
+  id           String        @id @default(uuid())
+  ticketId     String        @map("ticket_id")
+  userId       String        @map("user_id")
+  timeType     TimeType      @default(WORK) @map("time_type")
+  duration     Int           // minutes
+  description  String?       @db.Text
+  billable     Boolean       @default(true)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id])
+  
+  @@map("ticket_time_entries")
+  @@index([ticketId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum TimeType {
+  WORK
+  RESEARCH
+  DOCUMENTATION
+  TESTING
+  TRAVEL
+  TRAINING
+  ADMIN
+}
+
+// =============================================================================
+// TICKET RELATIONSHIPS
+// =============================================================================
+
+model TicketLink {
+  id                String           @id @default(uuid())
+  sourceTicketId    String           @map("source_ticket_id")
+  targetTicketId    String           @map("target_ticket_id")
+  relationshipType  RelationshipType @map("relationship_type")
+  description       String?          @db.Text
+  createdBy         String?          @map("created_by")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  
+  sourceTicket      SupportTicket    @relation("SourceTicket", fields: [sourceTicketId], references: [id], onDelete: Cascade)
+  targetTicket      SupportTicket    @relation("TargetTicket", fields: [targetTicketId], references: [id], onDelete: Cascade)
+  
+  @@unique([sourceTicketId, targetTicketId, relationshipType])
+  @@map("ticket_links")
+  @@index([sourceTicketId])
+  @@index([targetTicketId])
+}
+
+enum RelationshipType {
+  BLOCKS
+  IS_BLOCKED_BY
+  DUPLICATES
+  IS_DUPLICATED_BY
+  RELATES_TO
+  PARENT_OF
+  CHILD_OF
+  CAUSED_BY
+  CAUSES
+}
+
+// =============================================================================
+// GROUPS & QUEUES
+// =============================================================================
+
+model Group {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  description  String?       @db.Text
+  managerId    String?       @map("manager_id")
+  email        String?
+  isActive     Boolean       @default(true) @map("is_active")
+  category     String?       // Technical, Business, Support, etc.
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  
+  manager      User?         @relation("GroupManager", fields: [managerId], references: [id])
+  tickets      SupportTicket[] @relation("TicketGroup")
+  members      GroupMember[]
+  queues       Queue[]
+  
+  @@map("groups")
+  @@index([isActive])
+}
+
+model GroupMember {
+  id           String   @id @default(uuid())
+  groupId      String   @map("group_id")
+  userId       String   @map("user_id")
+  role         String?  // "member", "lead", "manager"
+  joinedAt     DateTime @default(now()) @map("joined_at")
+  
+  group        Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([groupId, userId])
+  @@map("group_members")
+  @@index([groupId])
+  @@index([userId])
+}
+
+model Queue {
+  id                String          @id @default(uuid())
+  name              String          @unique
+  description       String?         @db.Text
+  groupId           String?         @map("group_id")
+  isActive          Boolean         @default(true) @map("is_active")
+  priority          Int             @default(0) // Queue priority for routing
+  autoAssignment    Boolean         @default(false) @map("auto_assignment")
+  maxCapacity       Int?            @map("max_capacity")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  
+  group             Group?          @relation(fields: [groupId], references: [id])
+  tickets           SupportTicket[] @relation("TicketQueue")
+  
+  @@map("queues")
+  @@index([isActive])
+  @@index([groupId])
+}
+
+// =============================================================================
+// SLA (Service Level Agreement)
+// =============================================================================
+
+model SlaDefinition {
+  id                      String          @id @default(uuid())
+  name                    String          @unique
+  description             String?         @db.Text
+  priority                Priority
+  responseTimeMinutes     Int             @map("response_time_minutes")
+  resolutionTimeMinutes   Int             @map("resolution_time_minutes")
+  isActive                Boolean         @default(true) @map("is_active")
+  businessHoursOnly       Boolean         @default(true) @map("business_hours_only")
+  conditions              Json?           // Conditions for when this SLA applies
+  createdAt               DateTime        @default(now()) @map("created_at")
+  updatedAt               DateTime        @updatedAt @map("updated_at")
+  
+  tickets                 SupportTicket[]
+  breaches                SlaBreach[]
+  
+  @@map("sla_definitions")
+  @@index([isActive])
+  @@index([priority])
+}
+
+model SlaBreach {
+  id           String         @id @default(uuid())
+  ticketId     String         @map("ticket_id")
+  slaId        String         @map("sla_id")
+  breachType   SlaBreachType  @map("breach_type")
+  breachedAt   DateTime       @map("breached_at")
+  targetTime   DateTime       @map("target_time")
+  actualTime   DateTime?      @map("actual_time")
+  acknowledged Boolean        @default(false)
+  
+  ticket       SupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sla          SlaDefinition  @relation(fields: [slaId], references: [id])
+  
+  @@map("sla_breaches")
+  @@index([ticketId])
+  @@index([slaId])
+  @@index([breachedAt])
+}
+
+enum SlaBreachType {
+  RESPONSE
+  RESOLUTION
+}
+
+// =============================================================================
+// APPROVALS
+// =============================================================================
+
+model TicketApproval {
+  id           String         @id @default(uuid())
+  ticketId     String         @map("ticket_id")
+  approverId   String         @map("approver_id")
+  approvalType ApprovalType   @default(REQUIRED) @map("approval_type")
+  status       ApprovalStatus @default(PENDING)
+  requestedAt  DateTime       @default(now()) @map("requested_at")
+  respondedAt  DateTime?      @map("responded_at")
+  comments     String?        @db.Text
+  
+  ticket       SupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  approver     User           @relation(fields: [approverId], references: [id])
+  
+  @@map("ticket_approvals")
+  @@index([ticketId])
+  @@index([approverId])
+  @@index([status])
+}
+
+enum ApprovalType {
+  REQUIRED
+  OPTIONAL
+  INFORMATIONAL
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// =============================================================================
+// WORKFLOW
+// =============================================================================
+
+model WorkflowDefinition {
+  id           String             @id @default(uuid())
+  name         String             @unique
+  description  String?            @db.Text
+  isActive     Boolean            @default(true) @map("is_active")
+  triggerRules Json?              @map("trigger_rules") // Conditions to trigger workflow
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  
+  steps        WorkflowStep[]
+  instances    WorkflowInstance[]
+  
+  @@map("workflow_definitions")
+  @@index([isActive])
+}
+
+model WorkflowStep {
+  id             String             @id @default(uuid())
+  workflowId     String             @map("workflow_id")
+  stepNumber     Int                @map("step_number")
+  name           String
+  stepType       WorkflowStepType   @map("step_type")
+  configuration  Json?              // Step-specific config
+  
+  workflow       WorkflowDefinition @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  
+  @@unique([workflowId, stepNumber])
+  @@map("workflow_steps")
+  @@index([workflowId])
+}
+
+enum WorkflowStepType {
+  ASSIGN
+  APPROVE
+  NOTIFY
+  UPDATE_FIELD
+  WAIT
+  CONDITION
+  PARALLEL
+  SUBPROCESS
+}
+
+model WorkflowInstance {
+  id                String          @id @default(uuid())
+  workflowId        String          @map("workflow_id")
+  ticketId          String          @map("ticket_id")
+  currentStepNumber Int?            @map("current_step_number")
+  status            WorkflowStatus  @default(ACTIVE)
+  startedAt         DateTime        @default(now()) @map("started_at")
+  completedAt       DateTime?       @map("completed_at")
+  data              Json?           // Runtime data
+  
+  workflow          WorkflowDefinition @relation(fields: [workflowId], references: [id])
+  ticket            SupportTicket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  @@map("workflow_instances")
+  @@index([workflowId])
+  @@index([ticketId])
+  @@index([status])
+}
+
+enum WorkflowStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+  CANCELLED
+  PAUSED
+}

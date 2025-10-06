@@ -1,0 +1,391 @@
+// =============================================================================
+// ARTIFICIAL INTELLIGENCE SCHEMA
+// =============================================================================
+// Models for AI/ML features, sentiment analysis, and intelligent automation
+// =============================================================================
+
+// AI Model Registry
+model AIModel {
+  id              String   @id @default(uuid())
+  
+  name            String
+  description     String?  @db.Text
+  version         String
+  
+  // Model details
+  type            String   // sentiment, classification, prediction, recommendation, etc.
+  framework       String?  // tensorflow, pytorch, scikit-learn, openai, etc.
+  
+  // Model location
+  modelPath       String?
+  endpoint        String?  // API endpoint for hosted models
+  
+  // Configuration
+  config          Json?    @default("{}")
+  parameters      Json?    @default("{}")
+  
+  // Performance metrics
+  accuracy        Float?
+  precision       Float?
+  recall          Float?
+  f1Score         Float?
+  lastEvaluatedAt DateTime?
+  
+  // Status
+  status          String   @default("training") // training, active, deprecated, archived
+  isActive        Boolean  @default(false)
+  
+  // Predictions
+  predictions     AIPrediction[]
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([type])
+  @@index([status])
+  @@index([isActive])
+  @@map("AIModel")
+}
+
+// AI Predictions and Inferences
+model AIPrediction {
+  id              String   @id @default(uuid())
+  
+  modelId         String
+  model           AIModel  @relation(fields: [modelId], references: [id])
+  
+  // Input
+  input           Json     @default("{}")
+  inputText       String?  @db.Text
+  
+  // Prediction
+  prediction      Json     @default("{}")
+  confidence      Float?
+  
+  // Classification
+  category        String?
+  subcategory     String?
+  sentiment       String?  // positive, negative, neutral
+  sentimentScore  Float?   // -1.0 to 1.0
+  
+  // Related entity
+  entityType      String?
+  entityId        String?
+  
+  // Feedback
+  wasCorrect      Boolean?
+  correctedValue  String?
+  feedbackAt      DateTime?
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Timing
+  createdAt       DateTime @default(now())
+  processingTime  Int?     // Milliseconds
+  
+  @@index([modelId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("AIPrediction")
+}
+
+// Sentiment Analysis Results
+model SentimentAnalysis {
+  id              String   @id @default(uuid())
+  
+  // Source
+  sourceType      String   // ticket, comment, feedback, survey, etc.
+  sourceId        String
+  text            String   @db.Text
+  
+  // Sentiment scores
+  overall         String   // positive, negative, neutral, mixed
+  score           Float    // -1.0 (negative) to 1.0 (positive)
+  confidence      Float
+  
+  // Detailed sentiment
+  positive        Float    @default(0)
+  negative        Float    @default(0)
+  neutral         Float    @default(0)
+  mixed           Float    @default(0)
+  
+  // Emotion detection
+  emotions        Json?    @default("{}") // joy, anger, sadness, fear, surprise, etc.
+  
+  // Key phrases and entities
+  keyPhrases      Json?    @default("[]")
+  entities        Json?    @default("[]")
+  
+  // Language
+  language        String   @default("en")
+  
+  // Model used
+  modelId         String?
+  model           AIModel? @relation("SentimentModel", fields: [modelId], references: [id])
+  
+  // Timing
+  analyzedAt      DateTime @default(now())
+  
+  @@index([sourceType, sourceId])
+  @@index([overall])
+  @@index([analyzedAt])
+  @@map("SentimentAnalysis")
+}
+
+// Knowledge Base Article Embeddings for semantic search
+model KbEmbedding {
+  id              String   @id @default(uuid())
+  
+  articleId       String
+  article         KbArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  
+  // Embedding vector (1536 dimensions for OpenAI embeddings)
+  embedding       Unsupported("vector(1536)")?
+  
+  // Metadata
+  model           String   @default("text-embedding-ada-002")
+  chunkIndex      Int      @default(0)
+  chunkText       String   @db.Text
+  
+  // Timing
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([articleId, chunkIndex])
+  @@index([articleId])
+  @@map("KbEmbedding")
+}
+
+// Ticket Embeddings for similarity detection
+model TicketEmbedding {
+  id              String   @id @default(uuid())
+  
+  ticketId        String
+  ticket          SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  // Embedding vector
+  embedding       Unsupported("vector(1536)")?
+  
+  // Source text (subject + description)
+  sourceText      String   @db.Text
+  
+  // Model
+  model           String   @default("text-embedding-ada-002")
+  
+  // Timing
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([ticketId])
+  @@index([ticketId])
+  @@map("TicketEmbedding")
+}
+
+// Intelligent Routing Suggestions
+model RoutingSuggestion {
+  id              String   @id @default(uuid())
+  
+  ticketId        String
+  ticket          SupportTicket @relation("RoutingSuggestions", fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  // Suggestion
+  suggestedQueueId String?
+  suggestedQueue   Queue?  @relation("SuggestedQueue", fields: [suggestedQueueId], references: [id])
+  
+  suggestedAssigneeId String?
+  suggestedAssignee   User?   @relation("SuggestedAssignee", fields: [suggestedAssigneeId], references: [id])
+  
+  // Confidence
+  confidence      Float
+  reason          String?  @db.Text
+  
+  // Model used
+  modelId         String?
+  model           AIModel? @relation("RoutingModel", fields: [modelId], references: [id])
+  
+  // Feedback
+  wasAccepted     Boolean?
+  wasCorrect      Boolean?
+  feedbackAt      DateTime?
+  
+  // Timing
+  createdAt       DateTime @default(now())
+  
+  @@index([ticketId])
+  @@index([suggestedQueueId])
+  @@index([suggestedAssigneeId])
+  @@map("RoutingSuggestion")
+}
+
+// Similar Ticket Detection
+model SimilarTicket {
+  id              String   @id @default(uuid())
+  
+  ticketId        String
+  ticket          SupportTicket @relation("SourceTicket", fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  similarTicketId String
+  similarTicket   SupportTicket @relation("SimilarToTicket", fields: [similarTicketId], references: [id], onDelete: Cascade)
+  
+  // Similarity metrics
+  similarity      Float    // 0.0 to 1.0
+  method          String   // embedding, text_similarity, classification, etc.
+  
+  // Helpful for resolution
+  isHelpful       Boolean?
+  wasViewed       Boolean  @default(false)
+  viewedAt        DateTime?
+  
+  // Timing
+  detectedAt      DateTime @default(now())
+  
+  @@unique([ticketId, similarTicketId])
+  @@index([ticketId])
+  @@index([similarity])
+  @@map("SimilarTicket")
+}
+
+// Auto-tagging Results
+model AutoTag {
+  id              String   @id @default(uuid())
+  
+  // Source
+  entityType      String   // ticket, article, asset, etc.
+  entityId        String
+  
+  // Tag
+  tag             String
+  category        String?  // technical, business, priority, etc.
+  
+  // Confidence
+  confidence      Float
+  
+  // Model used
+  modelId         String?
+  model           AIModel? @relation("TaggingModel", fields: [modelId], references: [id])
+  
+  // Status
+  isApproved      Boolean  @default(false)
+  approvedById    String?
+  approvedBy      User?    @relation("TagApprover", fields: [approvedById], references: [id])
+  approvedAt      DateTime?
+  
+  // Timing
+  createdAt       DateTime @default(now())
+  
+  @@index([entityType, entityId])
+  @@index([tag])
+  @@index([isApproved])
+  @@map("AutoTag")
+}
+
+// Chatbot Conversations
+model ChatbotConversation {
+  id              String   @id @default(uuid())
+  
+  userId          String?
+  user            User?    @relation("ChatbotUser", fields: [userId], references: [id])
+  
+  // Conversation details
+  sessionId       String
+  channel         String   @default("web") // web, slack, teams, etc.
+  
+  // Messages
+  messages        ChatbotMessage[]
+  
+  // Intent classification
+  primaryIntent   String?
+  intentConfidence Float?
+  
+  // Resolution
+  wasResolved     Boolean  @default(false)
+  resolvedAt      DateTime?
+  escalatedToTicket Boolean @default(false)
+  ticketId        String?
+  
+  // Satisfaction
+  rating          Int?     // 1-5
+  feedback        String?  @db.Text
+  
+  // Timing
+  startedAt       DateTime @default(now())
+  endedAt         DateTime?
+  
+  @@index([sessionId])
+  @@index([userId])
+  @@index([startedAt])
+  @@map("ChatbotConversation")
+}
+
+// Chatbot Messages
+model ChatbotMessage {
+  id              String   @id @default(uuid())
+  
+  conversationId  String
+  conversation    ChatbotConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  // Message details
+  role            String   // user, assistant, system
+  content         String   @db.Text
+  
+  // Intent and entities
+  intent          String?
+  entities        Json?    @default("{}")
+  confidence      Float?
+  
+  // Response metadata
+  responseType    String?  // text, quick_reply, card, etc.
+  suggestions     Json?    @default("[]")
+  
+  // Timing
+  timestamp       DateTime @default(now())
+  
+  @@index([conversationId])
+  @@index([timestamp])
+  @@map("ChatbotMessage")
+}
+
+// Anomaly Detection
+model Anomaly {
+  id              String   @id @default(uuid())
+  
+  // Anomaly details
+  type            String   // usage_spike, unusual_pattern, security_anomaly, etc.
+  severity        String   // low, medium, high, critical
+  
+  // Detection
+  metric          String   // ticket_volume, login_attempts, response_time, etc.
+  expectedValue   Float?
+  actualValue     Float
+  deviation       Float    // Standard deviations from normal
+  
+  // Context
+  entityType      String?
+  entityId        String?
+  timeRange       String?  // 1h, 1d, 1w, etc.
+  
+  // Model used
+  modelId         String?
+  model           AIModel? @relation("AnomalyModel", fields: [modelId], references: [id])
+  
+  // Status
+  status          String   @default("open") // open, investigating, resolved, false_positive
+  
+  investigatedById String?
+  investigatedBy  User?    @relation("AnomalyInvestigator", fields: [investigatedById], references: [id])
+  
+  notes           String?  @db.Text
+  
+  // Timing
+  detectedAt      DateTime @default(now())
+  resolvedAt      DateTime?
+  
+  @@index([type])
+  @@index([severity])
+  @@index([status])
+  @@index([detectedAt])
+  @@map("Anomaly")
+}

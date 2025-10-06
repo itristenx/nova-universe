@@ -10,13 +10,17 @@ dist/
 .next/
 out/
 
-# Environment variables
+# Environment variables (actual configs - never commit!)
 .env
 .env.local
+.env.development
 .env.development.local
 .env.test.local
-.env.production.local
 .env.production
+.env.production.local
+.env.staging
+.env.staging.local
+.env.monitoring
 
 # Production secrets and configuration
 production-secrets.env
@@ -25,6 +29,7 @@ production-secrets-backup-*.env
 *.pem
 *.p12
 *.pfx
+*.secure
 
 # Database
 *.db
@@ -33,15 +38,13 @@ production-secrets-backup-*.env
 /prisma/dev.db
 /packages/database/dev.db
 
-# Logs
+# Logs and runtime data
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
-
-# Runtime data
 pids/
 *.pid
 *.seed
@@ -54,9 +57,6 @@ coverage/
 # nyc test coverage
 .nyc_output
 
-# Dependency directories
-jspm_packages/
-
 # TypeScript cache
 *.tsbuildinfo
 
@@ -66,37 +66,22 @@ jspm_packages/
 # Optional eslint cache
 .eslintcache
 
-# Microbundle cache
+# Build and bundler caches
 .rpt2_cache/
 .rts2_cache_cjs/
 .rts2_cache_es/
 .rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
 
-# Next.js build output
-.next
+# Package manager files
+.node_repl_history
+*.tgz
+.yarn-integrity
 
-# Nuxt.js build / generate output
+# Framework-specific outputs
 .nuxt
-dist
-
-# Gatsby files
-.cache/
 public
-
-# Storybook build outputs
 .out
 .storybook-out
 
@@ -134,33 +119,44 @@ mongodb-data/
 redis-data/
 elasticsearch-data/
 
-<<<<<<< Current (Your changes)
 # Backup and temp files
 *.orig
 *.bak
 *.tmp
 
-# Xcode user data and build products
-*.xcodeproj/**/xcuserdata/
-*.xcworkspace/**/xcuserdata/
-*.xcuserstate
-DerivedData/
-xcuserdata/
-
-# CocoaPods
-Pods/
-Podfile.lock
-
-# fastlane output (iOS CI/CD)
-fastlane/report.xml
-fastlane/test_output/
-=======
 # CI/CD artifacts
-.github/
 deployment-logs/
 *.deployment.log
->>>>>>> Incoming (Background Agent changes)
 
 # Prisma generated clients (build artifacts)
 prisma/generated/*/
 !prisma/generated/**/schema.prisma
+
+# =============================================================================
+# DEPLOYMENT CONFIGURATION (2024-2025 Industry Standards)
+# =============================================================================
+# Templates in deploy/env/ ARE tracked in git (*.template, *.example files)
+# Active/actual .env files should NEVER be committed
+
+# Ignore all active .env files in deploy/env/ (keep templates only)
+deploy/env/.env
+deploy/env/.env.development
+deploy/env/.env.production
+deploy/env/.env.staging
+deploy/env/.env.local
+deploy/env/special/.env
+deploy/env/special/.env.*
+!deploy/env/special/.env.ai-fabric
+
+# Ignore any secret/secure variants
+*.secret
+*.secure
+
+# Docker override files (user-specific)
+docker-compose.override.local.yml
+docker-compose.local.yml
+
+# Keep in git: Templates and examples
+# !deploy/env/.env.example
+# !deploy/env/.env.*.template
+# !deploy/env/.env.*.example

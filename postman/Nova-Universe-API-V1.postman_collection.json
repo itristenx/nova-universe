@@ -1,0 +1,1204 @@
+{
+  "info": {
+    "name": "Nova Universe API V1",
+    "description": "Complete API collection for Nova Universe Platform v1 endpoints. Includes authentication, ITSM, monitoring, AI services, and more.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "nova-universe-v1-api",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "apiVersion",
+      "value": "v1",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and session management endpoints",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('authToken', response.token);",
+                  "    if (response.refreshToken) {",
+                  "        pm.collectionVariables.set('refreshToken', response.refreshToken);",
+                  "    }",
+                  "    pm.test('Login successful', () => {",
+                  "        pm.expect(response.token).to.exist;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin@example.com\",\n  \"password\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "auth", "login"]
+            },
+            "description": "Authenticate a user and obtain a JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "auth", "refresh"]
+            },
+            "description": "Refresh an expired JWT token using a refresh token"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "auth", "logout"]
+            },
+            "description": "Logout and invalidate current session"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Organizations",
+      "description": "Organization management endpoints",
+      "item": [
+        {
+          "name": "List Organizations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/organizations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "organizations"]
+            },
+            "description": "Get list of all organizations"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Organization Config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/organizations/config",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "organizations", "config"]
+            },
+            "description": "Get organization configuration"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Organization",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Organization\",\n  \"domain\": \"neworg.example.com\",\n  \"settings\": {\n    \"timezone\": \"America/New_York\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/organizations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "organizations"]
+            },
+            "description": "Create a new organization"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Directory & Users",
+      "description": "User directory and LDAP integration endpoints",
+      "item": [
+        {
+          "name": "List Directory Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/directory?page=1&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "directory"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "List users from directory"
+          },
+          "response": []
+        },
+        {
+          "name": "Sync Directory",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/directory/sync",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "directory", "sync"]
+            },
+            "description": "Trigger directory synchronization"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/directory/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "directory", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get user details by ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Roles & RBAC",
+      "description": "Role-based access control endpoints",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "roles"]
+            },
+            "description": "Get list of all roles"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom Role\",\n  \"permissions\": [\"read:tickets\", \"create:tickets\"],\n  \"description\": \"Custom role for team members\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "roles"]
+            },
+            "description": "Create a new role"
+          },
+          "response": []
+        },
+        {
+          "name": "Get RBAC Configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/rbac",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "rbac"]
+            },
+            "description": "Get RBAC configuration"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tickets",
+      "description": "IT support ticket management endpoints",
+      "item": [
+        {
+          "name": "List Tickets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/tickets?page=1&limit=50&status=open&sort=priority&order=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "tickets"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "status",
+                  "value": "open"
+                },
+                {
+                  "key": "sort",
+                  "value": "priority"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Get paginated list of tickets with filters"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Cannot access network drive\",\n  \"description\": \"Getting permission denied error when trying to access shared drive\",\n  \"priority\": \"high\",\n  \"category\": \"network\",\n  \"requester_email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "tickets"]
+            },
+            "description": "Create a new support ticket"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Ticket by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/tickets/:ticketId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "tickets", ":ticketId"],
+              "variable": [
+                {
+                  "key": "ticketId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get ticket details by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Ticket",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\",\n  \"priority\": \"urgent\",\n  \"assigned_to\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/tickets/:ticketId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "tickets", ":ticketId"],
+              "variable": [
+                {
+                  "key": "ticketId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Update ticket properties"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Comment to Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Working on resolving this issue\",\n  \"type\": \"internal\",\n  \"is_public\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/tickets/:ticketId/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "tickets", ":ticketId", "comments"],
+              "variable": [
+                {
+                  "key": "ticketId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Add a comment to a ticket"
+          },
+          "response": []
+        },
+        {
+          "name": "Close Ticket",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"closed\",\n  \"resolution\": \"Issue resolved by resetting permissions\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/tickets/:ticketId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "tickets", ":ticketId"],
+              "variable": [
+                {
+                  "key": "ticketId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Close a ticket with resolution"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ITSM",
+      "description": "Enhanced ITSM management endpoints",
+      "item": [
+        {
+          "name": "Get ITSM Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/itsm",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "itsm"]
+            },
+            "description": "Get ITSM dashboard overview"
+          },
+          "response": []
+        },
+        {
+          "name": "List Service Requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/service-requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "service-requests"]
+            },
+            "description": "Get list of service requests"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Service Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"service_id\": \"svc_001\",\n  \"title\": \"Request new laptop\",\n  \"description\": \"Need a new laptop for development work\",\n  \"priority\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/service-requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "service-requests"]
+            },
+            "description": "Create a new service request"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Service Catalog",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/service-catalog",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "service-catalog"]
+            },
+            "description": "Get available services from catalog"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Assets & CMDB",
+      "description": "Asset and configuration management database endpoints",
+      "item": [
+        {
+          "name": "List Assets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/assets?page=1&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "assets"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Get list of assets"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"LAPTOP-001\",\n  \"type\": \"laptop\",\n  \"serial_number\": \"SN123456789\",\n  \"location\": \"Office - Floor 3\",\n  \"assigned_to\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/assets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "assets"]
+            },
+            "description": "Create a new asset"
+          },
+          "response": []
+        },
+        {
+          "name": "List Configuration Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/cmdb/cis",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "cmdb", "cis"]
+            },
+            "description": "Get list of configuration items"
+          },
+          "response": []
+        },
+        {
+          "name": "Get CI by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/cmdb/cis/:ciId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "cmdb", "cis", ":ciId"],
+              "variable": [
+                {
+                  "key": "ciId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get configuration item details"
+          },
+          "response": []
+        },
+        {
+          "name": "List CI Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/cmdb/ci-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "cmdb", "ci-types"]
+            },
+            "description": "Get list of CI types"
+          },
+          "response": []
+        },
+        {
+          "name": "Get CI Relationships",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/cmdb/cis/:ciId/relationships",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "cmdb", "cis", ":ciId", "relationships"],
+              "variable": [
+                {
+                  "key": "ciId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get relationships for a CI"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Workflows",
+      "description": "Workflow and approval management endpoints",
+      "item": [
+        {
+          "name": "List Workflows",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/workflows",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "workflows"]
+            },
+            "description": "Get list of workflows"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Approval Workflow\",\n  \"description\": \"Standard approval process\",\n  \"steps\": [\n    {\n      \"type\": \"approval\",\n      \"approvers\": [\"manager@example.com\"]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/workflows",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "workflows"]
+            },
+            "description": "Create a new workflow"
+          },
+          "response": []
+        },
+        {
+          "name": "List Approvals",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/approvals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "approvals"]
+            },
+            "description": "Get pending approvals"
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\",\n  \"comments\": \"Approved for processing\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/approvals/:approvalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "approvals", ":approvalId"],
+              "variable": [
+                {
+                  "key": "approvalId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Approve or reject an approval request"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Monitoring & Alerts",
+      "description": "System monitoring and alerting endpoints",
+      "item": [
+        {
+          "name": "Get Monitoring Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/monitoring",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "monitoring"]
+            },
+            "description": "Get monitoring dashboard data"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/monitoring/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "monitoring", "health"]
+            },
+            "description": "Get detailed system health status"
+          },
+          "response": []
+        },
+        {
+          "name": "List Alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/alerts?status=active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "alerts"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            },
+            "description": "Get list of alerts"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"High CPU Usage\",\n  \"severity\": \"warning\",\n  \"source\": \"monitoring-system\",\n  \"description\": \"CPU usage above 80%\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "alerts"]
+            },
+            "description": "Create a new alert"
+          },
+          "response": []
+        },
+        {
+          "name": "Acknowledge Alert",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"acknowledged\",\n  \"acknowledged_by\": \"admin@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/alerts/:alertId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "alerts", ":alertId"],
+              "variable": [
+                {
+                  "key": "alertId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Acknowledge an alert"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "notifications"]
+            },
+            "description": "Get user notifications"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "AI Services",
+      "description": "AI and automation service endpoints",
+      "item": [
+        {
+          "name": "Get AI Synth Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/synth",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "synth"]
+            },
+            "description": "Get Nova Synth AI orchestration status"
+          },
+          "response": []
+        },
+        {
+          "name": "Process with Synth",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": \"Analyze this ticket and suggest resolution\",\n  \"context\": {\n    \"ticket_id\": 123\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/synth/process",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "synth", "process"]
+            },
+            "description": "Process request through Synth AI"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Cosmo Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/cosmo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "cosmo"]
+            },
+            "description": "Get Nova Cosmo conversational AI status"
+          },
+          "response": []
+        },
+        {
+          "name": "Chat with Cosmo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"What are my open tickets?\",\n  \"session_id\": \"session-123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/cosmo/chat",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "cosmo", "chat"]
+            },
+            "description": "Send message to Cosmo AI assistant"
+          },
+          "response": []
+        },
+        {
+          "name": "Get AI Fabric Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/ai-fabric",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "ai-fabric"]
+            },
+            "description": "Get AI Fabric platform status"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analytics & Reports",
+      "description": "Analytics and reporting endpoints",
+      "item": [
+        {
+          "name": "Get Analytics Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/analytics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "analytics"]
+            },
+            "description": "Get analytics dashboard data"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Ticket Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/analytics/tickets?period=7d",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "analytics", "tickets"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "7d"
+                }
+              ]
+            },
+            "description": "Get ticket metrics and trends"
+          },
+          "response": []
+        },
+        {
+          "name": "List Reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/reports",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "reports"]
+            },
+            "description": "Get list of available reports"
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"ticket_summary\",\n  \"period\": \"monthly\",\n  \"format\": \"pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/reports/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "reports", "generate"]
+            },
+            "description": "Generate a new report"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Integrations",
+      "description": "Integration and webhook endpoints",
+      "item": [
+        {
+          "name": "List Integrations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/integrations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "integrations"]
+            },
+            "description": "Get list of configured integrations"
+          },
+          "response": []
+        },
+        {
+          "name": "Configure Integration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"slack\",\n  \"name\": \"Slack Integration\",\n  \"config\": {\n    \"webhook_url\": \"https://hooks.slack.com/...\",\n    \"channel\": \"#it-alerts\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/integrations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "integrations"]
+            },
+            "description": "Configure a new integration"
+          },
+          "response": []
+        },
+        {
+          "name": "List Webhooks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/webhooks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "webhooks"]
+            },
+            "description": "Get list of configured webhooks"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://example.com/webhook\",\n  \"events\": [\"ticket.created\", \"ticket.updated\"],\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/webhooks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "webhooks"]
+            },
+            "description": "Create a new webhook"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "description": "Global search endpoints",
+      "item": [
+        {
+          "name": "Global Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/search?q=network&type=tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "network"
+                },
+                {
+                  "key": "type",
+                  "value": "tickets"
+                }
+              ]
+            },
+            "description": "Search across all resources"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Configuration",
+      "description": "System configuration endpoints",
+      "item": [
+        {
+          "name": "Get System Configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/configuration",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "configuration"]
+            },
+            "description": "Get system configuration"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Configuration",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"settings\": {\n    \"email_notifications\": true,\n    \"auto_assign\": false\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/configuration",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "configuration"]
+            },
+            "description": "Update system configuration"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

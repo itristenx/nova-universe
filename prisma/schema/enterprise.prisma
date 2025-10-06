@@ -1,0 +1,503 @@
+// =============================================================================
+// ENTERPRISE FEATURES SCHEMA
+// =============================================================================
+// Models for advanced enterprise features like SSO, SCIM, multi-tenancy, etc.
+// =============================================================================
+
+// Tenant/Organization (Multi-tenancy)
+model Tenant {
+  id              String   @id @default(uuid())
+  
+  // Tenant details
+  name            String
+  slug            String   @unique // URL-safe identifier
+  domain          String?  @unique // Custom domain
+  
+  // Branding
+  logoUrl         String?
+  primaryColor    String?
+  secondaryColor  String?
+  
+  // Subscription
+  plan            String   @default("free") // free, starter, professional, enterprise
+  status          String   @default("active") // active, suspended, cancelled, trial
+  
+  // Limits
+  maxUsers        Int      @default(10)
+  maxStorage      BigInt   @default(1073741824) // 1GB in bytes
+  maxTickets      Int      @default(100)
+  
+  // Features (JSON object of feature flags)
+  features        Json     @default("{}")
+  
+  // Billing
+  billingEmail    String?
+  billingAddress  Json?    @default("{}")
+  
+  // Subscription dates
+  trialEndsAt     DateTime?
+  subscriptionStartedAt DateTime?
+  subscriptionEndsAt DateTime?
+  
+  // Users in this tenant
+  users           User[]   @relation("TenantUsers")
+  
+  // SSO Configuration
+  ssoProviders    SSOProvider[]
+  
+  // API Keys
+  apiKeys         TenantApiKey[]
+  
+  // Settings
+  settings        Json?    @default("{}")
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([slug])
+  @@index([status])
+  @@map("Tenant")
+}
+
+// SSO Provider Configuration
+model SSOProvider {
+  id              String   @id @default(uuid())
+  
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Provider details
+  name            String
+  type            String   // saml, oidc, oauth2, ldap
+  
+  // Configuration (provider-specific settings)
+  config          Json     @default("{}")
+  
+  // SAML specific
+  entityId        String?
+  ssoUrl          String?
+  certificate     String?  @db.Text
+  
+  // OIDC specific
+  clientId        String?
+  clientSecret    String?
+  discoveryUrl    String?
+  
+  // Domain restriction
+  domains         String[] @default([])
+  
+  // Provisioning
+  enableProvisioning Boolean @default(false)
+  provisioningConfig Json?  @default("{}")
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([tenantId])
+  @@index([type])
+  @@map("SSOProvider")
+}
+
+// SCIM Provisioning Logs
+model ScimLog {
+  id              String   @id @default(uuid())
+  
+  tenantId        String?
+  
+  // Request details
+  method          String   // GET, POST, PUT, PATCH, DELETE
+  endpoint        String
+  resourceType    String?  // User, Group
+  resourceId      String?
+  
+  // Request/Response
+  requestBody     Json?    @default("{}")
+  responseStatus  Int
+  responseBody    Json?    @default("{}")
+  
+  // Error tracking
+  isError         Boolean  @default(false)
+  errorMessage    String?  @db.Text
+  
+  // Source
+  sourceIp        String?
+  userAgent       String?
+  
+  // Timing
+  timestamp       DateTime @default(now())
+  duration        Int?     // Milliseconds
+  
+  @@index([tenantId])
+  @@index([resourceType])
+  @@index([timestamp])
+  @@map("ScimLog")
+}
+
+// Tenant API Keys
+model TenantApiKey {
+  id              String   @id @default(uuid())
+  
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Key details
+  name            String
+  description     String?
+  
+  // The actual key (hashed)
+  keyHash         String   @unique
+  keyPrefix       String   // First few characters for identification
+  
+  // Permissions
+  scopes          String[] @default([]) // read:tickets, write:users, etc.
+  
+  // Rate limiting
+  rateLimit       Int      @default(1000) // Requests per hour
+  
+  // Usage tracking
+  lastUsedAt      DateTime?
+  usageCount      Int      @default(0)
+  
+  // Status
+  isActive        Boolean  @default(true)
+  expiresAt       DateTime?
+  
+  // Created by
+  createdById     String
+  createdBy       User     @relation("ApiKeyCreator", fields: [createdById], references: [id])
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([tenantId])
+  @@index([keyHash])
+  @@index([isActive])
+  @@map("TenantApiKey")
+}
+
+// Department/Business Unit
+model Department {
+  id              String   @id @default(uuid())
+  
+  tenantId        String?
+  
+  // Department details
+  name            String
+  code            String?  @unique
+  description     String?  @db.Text
+  
+  // Hierarchy
+  parentId        String?
+  parent          Department? @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children        Department[] @relation("DepartmentHierarchy")
+  
+  // Leadership
+  managerId       String?
+  manager         User?    @relation("DepartmentManager", fields: [managerId], references: [id])
+  
+  // Members
+  members         User[]   @relation("DepartmentMembers")
+  
+  // Budget
+  budget          Float?
+  costCenter      String?
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([code])
+  @@index([parentId])
+  @@index([managerId])
+  @@map("Department")
+}
+
+// Cost Centers for financial tracking
+model CostCenter {
+  id              String   @id @default(uuid())
+  
+  tenantId        String?
+  
+  // Cost center details
+  code            String   @unique
+  name            String
+  description     String?  @db.Text
+  
+  // Ownership
+  ownerId         String
+  owner           User     @relation("CostCenterOwner", fields: [ownerId], references: [id])
+  
+  // Budget
+  budget          Float?
+  fiscalYear      Int?
+  
+  // Tracking
+  expenses        Expense[]
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([code])
+  @@index([ownerId])
+  @@map("CostCenter")
+}
+
+// Expense Tracking
+model Expense {
+  id              String   @id @default(uuid())
+  
+  // Expense details
+  description     String
+  amount          Float
+  currency        String   @default("USD")
+  category        String   // hardware, software, services, travel, etc.
+  
+  // Cost center
+  costCenterId    String?
+  costCenter      CostCenter? @relation(fields: [costCenterId], references: [id])
+  
+  // Submitted by
+  submittedById   String
+  submittedBy     User     @relation("ExpenseSubmitter", fields: [submittedById], references: [id])
+  
+  // Approval
+  status          String   @default("pending") // pending, approved, rejected, reimbursed
+  approvedById    String?
+  approvedBy      User?    @relation("ExpenseApprover", fields: [approvedById], references: [id])
+  approvedAt      DateTime?
+  
+  // Receipt
+  receiptUrl      String?
+  receiptDate     DateTime?
+  vendor          String?
+  
+  // Related entities
+  relatedTicketId String?
+  relatedAssetId  String?
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([costCenterId])
+  @@index([submittedById])
+  @@index([status])
+  @@index([receiptDate])
+  @@map("Expense")
+}
+
+// License Management
+model License {
+  id              String   @id @default(uuid())
+  
+  // License details
+  name            String
+  vendor          String
+  licenseKey      String?  // Encrypted
+  
+  // Type
+  type            String   // perpetual, subscription, concurrent, per_user
+  category        String?  // software, service, certification, etc.
+  
+  // Quantity
+  totalLicenses   Int
+  assignedLicenses Int     @default(0)
+  availableLicenses Int    @default(0)
+  
+  // Assignments
+  assignments     LicenseAssignment[]
+  
+  // Cost
+  cost            Float?
+  costPer         String?  // user, device, month, year
+  currency        String   @default("USD")
+  
+  // Dates
+  purchaseDate    DateTime?
+  startDate       DateTime?
+  expiryDate      DateTime?
+  renewalDate     DateTime?
+  
+  // Auto-renewal
+  autoRenew       Boolean  @default(false)
+  renewalNotifyDays Int?   // Days before expiry to notify
+  
+  // Vendor contact
+  vendorContact   String?
+  vendorEmail     String?
+  supportUrl      String?
+  
+  // Owner
+  ownerId         String
+  owner           User     @relation("LicenseOwner", fields: [ownerId], references: [id])
+  
+  // Status
+  status          String   @default("active") // active, expired, cancelled, suspended
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([vendor])
+  @@index([status])
+  @@index([expiryDate])
+  @@index([ownerId])
+  @@map("License")
+}
+
+// License Assignments
+model LicenseAssignment {
+  id              String   @id @default(uuid())
+  
+  licenseId       String
+  license         License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  
+  // Assigned to
+  userId          String
+  user            User     @relation("AssignedLicenses", fields: [userId], references: [id])
+  
+  // Assignment details
+  assignedAt      DateTime @default(now())
+  assignedById    String
+  assignedBy      User     @relation("LicenseAssigner", fields: [assignedById], references: [id])
+  
+  // Revocation
+  revokedAt       DateTime?
+  revokedById     String?
+  revokedBy       User?    @relation("LicenseRevoker", fields: [revokedById], references: [id])
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Usage tracking
+  lastUsedAt      DateTime?
+  usageCount      Int      @default(0)
+  
+  @@unique([licenseId, userId])
+  @@index([licenseId])
+  @@index([userId])
+  @@index([isActive])
+  @@map("LicenseAssignment")
+}
+
+// Contract Management
+model Contract {
+  id              String   @id @default(uuid())
+  
+  // Contract details
+  title           String
+  description     String?  @db.Text
+  type            String   // vendor, customer, service, license, nda, etc.
+  
+  // Parties
+  vendor          String?
+  vendorContact   String?
+  
+  // Contract value
+  value           Float?
+  currency        String   @default("USD")
+  
+  // Dates
+  startDate       DateTime
+  endDate         DateTime?
+  signedDate      DateTime?
+  
+  // Renewal
+  autoRenew       Boolean  @default(false)
+  renewalDate     DateTime?
+  renewalNotifyDays Int?
+  
+  // Documents
+  documentUrl     String?
+  
+  // Owner
+  ownerId         String
+  owner           User     @relation("ContractOwner", fields: [ownerId], references: [id])
+  
+  // Approvals
+  approvedById    String?
+  approvedBy      User?    @relation("ContractApprover", fields: [approvedById], references: [id])
+  approvedAt      DateTime?
+  
+  // Status
+  status          String   @default("draft") // draft, active, expired, cancelled, renewed
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  tags            String[] @default([])
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([type])
+  @@index([status])
+  @@index([endDate])
+  @@index([ownerId])
+  @@map("Contract")
+}
+
+// Feature Flags for gradual rollout
+model FeatureFlag {
+  id              String   @id @default(uuid())
+  
+  // Flag details
+  key             String   @unique
+  name            String
+  description     String?  @db.Text
+  
+  // Status
+  isEnabled       Boolean  @default(false)
+  
+  // Targeting
+  targetType      String   @default("all") // all, percentage, users, roles, tenants
+  targetPercentage Float?  // 0-100
+  targetUsers     String[] @default([])
+  targetRoles     String[] @default([])
+  targetTenants   String[] @default([])
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([key])
+  @@index([isEnabled])
+  @@map("FeatureFlag")
+}

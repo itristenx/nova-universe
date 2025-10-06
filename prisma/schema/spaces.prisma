@@ -1,0 +1,394 @@
+// =============================================================================
+// PHYSICAL SPACES SCHEMA
+// =============================================================================
+// Models for office spaces, rooms, desks, and facility management
+// =============================================================================
+
+// Buildings
+model Building {
+  id              String   @id @default(uuid())
+  
+  name            String
+  code            String   @unique // Building code (e.g., "HQ", "WEST")
+  address         String
+  city            String
+  state           String?
+  country         String
+  postalCode      String?
+  
+  // Details
+  floors          Int      @default(1)
+  totalArea       Float?   // Square meters/feet
+  
+  // Contact
+  facilityManagerId String?
+  facilityManager User?    @relation("BuildingManager", fields: [facilityManagerId], references: [id])
+  
+  phone           String?
+  email           String?
+  
+  // Spaces
+  floors_list     Floor[]
+  rooms           Room[]
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([code])
+  @@index([city, country])
+  @@map("Building")
+}
+
+// Floors within buildings
+model Floor {
+  id              String   @id @default(uuid())
+  
+  buildingId      String
+  building        Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  
+  name            String   // "1st Floor", "Mezzanine", etc.
+  number          Int      // Floor number (0 for ground, -1 for basement, etc.)
+  
+  // Details
+  totalArea       Float?   // Square meters/feet
+  
+  // Rooms on this floor
+  rooms           Room[]
+  
+  // Status
+  isAccessible    Boolean  @default(true)
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@unique([buildingId, number])
+  @@index([buildingId])
+  @@map("Floor")
+}
+
+// Rooms and spaces
+model Room {
+  id              String   @id @default(uuid())
+  
+  buildingId      String
+  building        Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  
+  floorId         String?
+  floor           Floor?   @relation(fields: [floorId], references: [id])
+  
+  // Room details
+  name            String
+  roomNumber      String
+  type            String   // office, meeting_room, workspace, kitchen, bathroom, storage, etc.
+  
+  // Capacity
+  capacity        Int?     // Number of people
+  area            Float?   // Square meters/feet
+  
+  // Features
+  amenities       String[] @default([]) // projector, whiteboard, video_conferencing, etc.
+  equipment       Json?    @default("[]")
+  
+  // Booking
+  isBookable      Boolean  @default(false)
+  bookings        RoomBooking[]
+  
+  // Desks in this room
+  desks           Desk[]
+  
+  // Status
+  isAvailable     Boolean  @default(true)
+  isAccessible    Boolean  @default(true)
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@unique([buildingId, roomNumber])
+  @@index([buildingId])
+  @@index([floorId])
+  @@index([type])
+  @@index([isBookable])
+  @@map("Room")
+}
+
+// Desks and workstations
+model Desk {
+  id              String   @id @default(uuid())
+  
+  roomId          String
+  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  // Desk details
+  number          String
+  type            String   @default("standard") // standard, standing, adjustable, hot_desk, etc.
+  
+  // Assignment
+  assignedToId    String?  @unique
+  assignedTo      User?    @relation("AssignedDesk", fields: [assignedToId], references: [id])
+  
+  // Booking (for hot desks)
+  isHotDesk       Boolean  @default(false)
+  bookings        DeskBooking[]
+  
+  // Equipment
+  hasMonitor      Boolean  @default(false)
+  hasKeyboard     Boolean  @default(false)
+  hasMouse        Boolean  @default(false)
+  hasDockingStation Boolean @default(false)
+  equipment       Json?    @default("[]")
+  
+  // Status
+  isAvailable     Boolean  @default(true)
+  isAccessible    Boolean  @default(true)
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@unique([roomId, number])
+  @@index([roomId])
+  @@index([assignedToId])
+  @@index([isHotDesk])
+  @@map("Desk")
+}
+
+// Room Bookings
+model RoomBooking {
+  id              String   @id @default(uuid())
+  
+  roomId          String
+  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  // Booking details
+  title           String
+  description     String?  @db.Text
+  
+  // Organizer
+  organizerId     String
+  organizer       User     @relation("RoomBookingOrganizer", fields: [organizerId], references: [id])
+  
+  // Attendees
+  attendees       Json?    @default("[]") // Array of user IDs
+  expectedCount   Int?
+  
+  // Timing
+  startTime       DateTime
+  endTime         DateTime
+  
+  // Setup/cleanup time
+  setupMinutes    Int      @default(0)
+  cleanupMinutes  Int      @default(0)
+  
+  // Recurrence
+  isRecurring     Boolean  @default(false)
+  recurrenceRule  String?  // iCal RRULE format
+  
+  // Status
+  status          String   @default("confirmed") // pending, confirmed, cancelled, completed
+  
+  // Check-in
+  checkedIn       Boolean  @default(false)
+  checkedInAt     DateTime?
+  
+  // Resources
+  requestedAmenities String[] @default([])
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([roomId])
+  @@index([organizerId])
+  @@index([startTime, endTime])
+  @@index([status])
+  @@map("RoomBooking")
+}
+
+// Desk Bookings (for hot desks)
+model DeskBooking {
+  id              String   @id @default(uuid())
+  
+  deskId          String
+  desk            Desk     @relation(fields: [deskId], references: [id], onDelete: Cascade)
+  
+  // User
+  userId          String
+  user            User     @relation("DeskBookingUser", fields: [userId], references: [id])
+  
+  // Timing
+  startTime       DateTime
+  endTime         DateTime
+  
+  // Status
+  status          String   @default("confirmed") // pending, confirmed, cancelled, completed
+  
+  // Check-in
+  checkedIn       Boolean  @default(false)
+  checkedInAt     DateTime?
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([deskId])
+  @@index([userId])
+  @@index([startTime, endTime])
+  @@index([status])
+  @@map("DeskBooking")
+}
+
+// Parking Spaces
+model ParkingSpace {
+  id              String   @id @default(uuid())
+  
+  buildingId      String
+  building        Building @relation("BuildingParkingSpaces", fields: [buildingId], references: [id])
+  
+  // Space details
+  number          String
+  type            String   @default("standard") // standard, accessible, ev_charging, motorcycle, etc.
+  level           String?  // P1, P2, Ground, etc.
+  
+  // Assignment
+  assignedToId    String?  @unique
+  assignedTo      User?    @relation("AssignedParkingSpace", fields: [assignedToId], references: [id])
+  
+  // Visitor parking
+  isVisitorSpace  Boolean  @default(false)
+  bookings        ParkingBooking[]
+  
+  // Status
+  isAvailable     Boolean  @default(true)
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@unique([buildingId, number])
+  @@index([buildingId])
+  @@index([assignedToId])
+  @@index([isVisitorSpace])
+  @@map("ParkingSpace")
+}
+
+// Parking Bookings
+model ParkingBooking {
+  id              String   @id @default(uuid())
+  
+  spaceId         String
+  space           ParkingSpace @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  
+  // User
+  userId          String
+  user            User     @relation("ParkingBookingUser", fields: [userId], references: [id])
+  
+  // Vehicle
+  vehiclePlate    String?
+  vehicleMake     String?
+  vehicleModel    String?
+  
+  // Timing
+  startTime       DateTime
+  endTime         DateTime
+  
+  // Status
+  status          String   @default("confirmed") // pending, confirmed, cancelled, completed
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([spaceId])
+  @@index([userId])
+  @@index([startTime, endTime])
+  @@index([status])
+  @@map("ParkingBooking")
+}
+
+// Visitor Management
+model Visitor {
+  id              String   @id @default(uuid())
+  
+  // Visitor details
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  company         String?
+  
+  // Host
+  hostId          String
+  host            User     @relation("VisitorHost", fields: [hostId], references: [id])
+  
+  // Visit details
+  purpose         String?
+  buildingId      String
+  building        Building @relation("VisitorBuilding", fields: [buildingId], references: [id])
+  
+  // Timing
+  expectedArrival DateTime
+  expectedDeparture DateTime?
+  actualArrival   DateTime?
+  actualDeparture DateTime?
+  
+  // Badge
+  badgeNumber     String?
+  badgeIssued     Boolean  @default(false)
+  badgeReturned   Boolean  @default(false)
+  
+  // Access
+  accessAreas     String[] @default([])
+  
+  // Status
+  status          String   @default("expected") // expected, checked_in, checked_out, cancelled
+  
+  // NDA/agreements
+  ndaSigned       Boolean  @default(false)
+  ndaSignedAt     DateTime?
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([hostId])
+  @@index([buildingId])
+  @@index([expectedArrival])
+  @@index([status])
+  @@map("Visitor")
+}

@@ -1,0 +1,406 @@
+// =============================================================================
+// NOVA TV (DIGITAL SIGNAGE & DASHBOARDS) SCHEMA
+// =============================================================================
+// Models for digital signage, TV dashboards, and display management
+// =============================================================================
+
+// Display Screens/TVs
+model Display {
+  id              String   @id @default(uuid())
+  
+  // Display details
+  name            String
+  code            String   @unique // Display code (e.g., "LOBBY-01", "CAFE-02")
+  type            String   @default("tv") // tv, kiosk, tablet, projector
+  
+  // Location
+  buildingId      String?
+  building        Building? @relation("DisplayBuilding", fields: [buildingId], references: [id])
+  roomId          String?
+  room            Room?    @relation("DisplayRoom", fields: [roomId], references: [id])
+  location        String   // Descriptive location
+  
+  // Hardware details
+  make            String?
+  model           String?
+  serialNumber    String?
+  screenSize      String?  // e.g., "55 inch"
+  resolution      String?  // e.g., "1920x1080"
+  
+  // Network
+  ipAddress       String?
+  macAddress      String?
+  
+  // Current playlist
+  currentPlaylistId String?
+  currentPlaylist Playlist? @relation("DisplayCurrentPlaylist", fields: [currentPlaylistId], references: [id])
+  
+  // Playback status
+  isOnline        Boolean  @default(false)
+  lastSeenAt      DateTime?
+  currentSlideIndex Int?
+  lastHeartbeat   DateTime?
+  
+  // Settings
+  orientation     String   @default("landscape") // landscape, portrait
+  brightness      Int      @default(100) // 0-100
+  volume          Int      @default(50)  // 0-100
+  scheduleId      String?
+  schedule        DisplaySchedule? @relation(fields: [scheduleId], references: [id])
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([code])
+  @@index([buildingId])
+  @@index([isOnline])
+  @@index([isActive])
+  @@map("Display")
+}
+
+// Playlists for displays
+model Playlist {
+  id              String   @id @default(uuid())
+  
+  name            String
+  description     String?  @db.Text
+  
+  // Slides
+  slides          PlaylistSlide[]
+  
+  // Settings
+  transitionType  String   @default("fade") // fade, slide, none
+  transitionDuration Int   @default(500) // Milliseconds
+  
+  // Loop settings
+  isLooping       Boolean  @default(true)
+  loopCount       Int?     // null = infinite
+  
+  // Scheduling
+  schedules       DisplaySchedule[]
+  
+  // Currently playing on
+  displays        Display[] @relation("DisplayCurrentPlaylist")
+  
+  // Status
+  isActive        Boolean  @default(true)
+  isPublished     Boolean  @default(false)
+  publishedAt     DateTime?
+  
+  // Ownership
+  createdById     String
+  createdBy       User     @relation("PlaylistCreator", fields: [createdById], references: [id])
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  tags            String[] @default([])
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([isActive, isPublished])
+  @@index([createdById])
+  @@map("Playlist")
+}
+
+// Slides within playlists
+model PlaylistSlide {
+  id              String   @id @default(uuid())
+  
+  playlistId      String
+  playlist        Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  
+  // Slide order
+  order           Int
+  
+  // Content type
+  type            String   // image, video, html, dashboard, announcement, etc.
+  
+  // Content source
+  url             String?  // URL to image/video
+  htmlContent     String?  @db.Text
+  dashboardId     String?
+  dashboard       Dashboard? @relation(fields: [dashboardId], references: [id])
+  
+  // Display duration
+  duration        Int      @default(10000) // Milliseconds
+  
+  // Metadata
+  title           String?
+  description     String?
+  metadata        Json?    @default("{}")
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([playlistId, order])
+  @@index([playlistId])
+  @@index([dashboardId])
+  @@map("PlaylistSlide")
+}
+
+// Display Schedules
+model DisplaySchedule {
+  id              String   @id @default(uuid())
+  
+  name            String
+  description     String?
+  
+  // Playlist
+  playlistId      String
+  playlist        Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  
+  // Displays using this schedule
+  displays        Display[]
+  
+  // Time rules
+  startDate       DateTime?
+  endDate         DateTime?
+  
+  // Day of week (0 = Sunday, 6 = Saturday)
+  daysOfWeek      Int[]    @default([0,1,2,3,4,5,6])
+  
+  // Time range
+  startTime       String?  // HH:MM format
+  endTime         String?  // HH:MM format
+  
+  // Priority (higher priority schedules override lower)
+  priority        Int      @default(0)
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([playlistId])
+  @@index([isActive])
+  @@map("DisplaySchedule")
+}
+
+// Dashboards for data visualization
+model Dashboard {
+  id              String   @id @default(uuid())
+  
+  name            String
+  description     String?  @db.Text
+  
+  // Dashboard type
+  type            String   // metrics, tickets, announcements, weather, calendar, etc.
+  
+  // Layout configuration (JSON)
+  layout          Json     @default("{}")
+  
+  // Widgets
+  widgets         DashboardWidget[]
+  
+  // Refresh rate
+  refreshInterval Int      @default(60000) // Milliseconds
+  
+  // Access control
+  isPublic        Boolean  @default(false)
+  allowedRoles    String[] @default([])
+  
+  // Used in slides
+  slides          PlaylistSlide[]
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Ownership
+  createdById     String
+  createdBy       User     @relation("DashboardCreator", fields: [createdById], references: [id])
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  tags            String[] @default([])
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([type])
+  @@index([isActive, isPublic])
+  @@index([createdById])
+  @@map("Dashboard")
+}
+
+// Dashboard Widgets
+model DashboardWidget {
+  id              String   @id @default(uuid())
+  
+  dashboardId     String
+  dashboard       Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  
+  // Widget details
+  type            String   // chart, table, metric, clock, weather, calendar, etc.
+  title           String?
+  
+  // Configuration
+  config          Json     @default("{}")
+  
+  // Data source
+  dataSource      String?  // tickets, assets, metrics, external_api, etc.
+  dataQuery       Json?    @default("{}")
+  
+  // Layout
+  x               Int      @default(0)
+  y               Int      @default(0)
+  width           Int      @default(4)
+  height          Int      @default(4)
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([dashboardId])
+  @@map("DashboardWidget")
+}
+
+// Announcements for display
+model Announcement {
+  id              String   @id @default(uuid())
+  
+  // Announcement details
+  title           String
+  message         String   @db.Text
+  type            String   @default("info") // info, warning, urgent, celebration
+  
+  // Visual settings
+  icon            String?
+  color           String?
+  backgroundColor String?
+  
+  // Display priority
+  priority        String   @default("normal") // low, normal, high, urgent
+  
+  // Scheduling
+  startDate       DateTime @default(now())
+  endDate         DateTime?
+  
+  // Target displays
+  displayIds      String[] @default([])
+  buildingIds     String[] @default([])
+  allDisplays     Boolean  @default(false)
+  
+  // Status
+  status          String   @default("draft") // draft, scheduled, active, expired
+  isActive        Boolean  @default(true)
+  
+  // Analytics
+  viewCount       Int      @default(0)
+  
+  // Author
+  authorId        String
+  author          User     @relation("AnnouncementAuthor", fields: [authorId], references: [id])
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([status])
+  @@index([startDate, endDate])
+  @@index([authorId])
+  @@map("Announcement")
+}
+
+// Emergency Alerts for displays
+model EmergencyAlert {
+  id              String   @id @default(uuid())
+  
+  // Alert details
+  title           String
+  message         String   @db.Text
+  severity        String   // info, warning, critical, emergency
+  
+  // Alert type
+  type            String   // fire, evacuation, weather, security, medical, all_clear
+  
+  // Target
+  buildingIds     String[] @default([])
+  allBuildings    Boolean  @default(false)
+  
+  // Visual override
+  overrideDisplay Boolean  @default(true) // Override current playlist
+  fullScreen      Boolean  @default(true)
+  backgroundColor String   @default("red")
+  textColor       String   @default("white")
+  
+  // Audio
+  playSound       Boolean  @default(true)
+  soundType       String?  // alarm, beep, voice, etc.
+  
+  // Status
+  status          String   @default("active") // active, acknowledged, resolved, cancelled
+  isActive        Boolean  @default(true)
+  
+  // Lifecycle
+  activatedAt     DateTime @default(now())
+  resolvedAt      DateTime?
+  
+  // Issued by
+  issuedById      String
+  issuedBy        User     @relation("EmergencyAlertIssuer", fields: [issuedById], references: [id])
+  
+  resolvedById    String?
+  resolvedBy      User?    @relation("EmergencyAlertResolver", fields: [resolvedById], references: [id])
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  
+  @@index([status])
+  @@index([severity])
+  @@index([isActive])
+  @@index([activatedAt])
+  @@map("EmergencyAlert")
+}
+
+// Display Health Monitoring
+model DisplayHealthLog {
+  id              String   @id @default(uuid())
+  
+  displayId       String
+  display         Display  @relation("DisplayHealthLogs", fields: [displayId], references: [id], onDelete: Cascade)
+  
+  // Health metrics
+  isOnline        Boolean
+  cpuUsage        Float?   // Percentage
+  memoryUsage     Float?   // Percentage
+  diskUsage       Float?   // Percentage
+  temperature     Float?   // Celsius
+  
+  // Errors
+  errorCount      Int      @default(0)
+  lastError       String?  @db.Text
+  
+  // Timestamp
+  timestamp       DateTime @default(now())
+  
+  @@index([displayId])
+  @@index([timestamp])
+  @@map("DisplayHealthLog")
+}

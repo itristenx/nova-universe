@@ -1,0 +1,201 @@
+// =============================================================================
+// WORKFLOW AND AUTOMATION SCHEMA
+// =============================================================================
+// Advanced workflow definitions and automation rules
+// Note: Basic workflow models are in itsm.prisma (WorkflowDefinition, WorkflowStep, WorkflowInstance)
+// This file contains extended workflow and automation features
+// =============================================================================
+
+// Automation Rules
+model AutomationRule {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?  @db.Text
+  
+  // Trigger configuration
+  triggerType     String   // Event, Schedule, Manual
+  triggerEvent    String?  // ticket.created, ticket.updated, etc.
+  triggerSchedule String?  // Cron expression for scheduled rules
+  
+  // Conditions (JSON array of condition objects)
+  conditions      Json     @default("[]")
+  
+  // Actions (JSON array of action objects)
+  actions         Json     @default("[]")
+  
+  // Status
+  isActive        Boolean  @default(true)
+  isDeleted       Boolean  @default(false)
+  
+  // Execution tracking
+  lastExecutedAt  DateTime?
+  executionCount  Int      @default(0)
+  errorCount      Int      @default(0)
+  
+  // Ownership
+  createdById     String
+  createdBy       User     @relation("AutomationRuleCreator", fields: [createdById], references: [id])
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  // Execution history
+  executions      AutomationExecution[]
+  
+  @@index([triggerType])
+  @@index([isActive])
+  @@index([createdById])
+  @@map("AutomationRule")
+}
+
+// Automation Execution History
+model AutomationExecution {
+  id              String   @id @default(uuid())
+  
+  ruleId          String
+  rule            AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  
+  // Execution details
+  status          String   // Success, Failed, Partial
+  triggeredBy     String?  // Event name or "schedule" or user ID
+  
+  // Input and output
+  input           Json?    @default("{}")
+  output          Json?    @default("{}")
+  errorMessage    String?  @db.Text
+  
+  // Performance
+  startedAt       DateTime
+  completedAt     DateTime?
+  duration        Int?     // Milliseconds
+  
+  @@index([ruleId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("AutomationExecution")
+}
+
+// Business Process Models (BPMN-like)
+model BusinessProcess {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?  @db.Text
+  version         String   @default("1.0")
+  
+  // Process definition (BPMN JSON)
+  definition      Json     @default("{}")
+  
+  // Status
+  isPublished     Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  
+  // Ownership
+  ownerId         String
+  owner           User     @relation("ProcessOwner", fields: [ownerId], references: [id])
+  
+  // Process instances
+  instances       ProcessInstance[]
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([isPublished, isActive])
+  @@index([ownerId])
+  @@map("BusinessProcess")
+}
+
+// Business Process Instances
+model ProcessInstance {
+  id              String   @id @default(uuid())
+  
+  processId       String
+  process         BusinessProcess @relation(fields: [processId], references: [id])
+  
+  // Instance state
+  status          String   // Running, Completed, Failed, Suspended
+  currentStep     String?
+  
+  // Data
+  variables       Json     @default("{}")
+  
+  // Ownership
+  startedById     String
+  startedBy       User     @relation("ProcessStarter", fields: [startedById], references: [id])
+  
+  // Timing
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  
+  // Tasks
+  tasks           ProcessTask[]
+  
+  @@index([processId])
+  @@index([status])
+  @@index([startedById])
+  @@map("ProcessInstance")
+}
+
+// Process Tasks (User tasks, service tasks, etc.)
+model ProcessTask {
+  id              String   @id @default(uuid())
+  
+  instanceId      String
+  instance        ProcessInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  
+  // Task details
+  name            String
+  type            String   // UserTask, ServiceTask, ScriptTask, etc.
+  status          String   // Pending, In Progress, Completed, Failed
+  
+  // Assignment
+  assigneeId      String?
+  assignee        User?    @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  
+  // Data
+  input           Json?    @default("{}")
+  output          Json?    @default("{}")
+  
+  // Timing
+  createdAt       DateTime @default(now())
+  completedAt     DateTime?
+  dueDate         DateTime?
+  
+  @@index([instanceId])
+  @@index([status])
+  @@index([assigneeId])
+  @@map("ProcessTask")
+}
+
+// Email Templates for automation
+model EmailTemplate {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  
+  // Template details
+  subject         String
+  body            String   @db.Text
+  format          String   @default("html") // html, text
+  
+  // Variables that can be used in template
+  variables       Json?    @default("[]")
+  
+  // Category
+  category        String?  // Ticket Updates, Approvals, Notifications, etc.
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([category])
+  @@index([isActive])
+  @@map("EmailTemplate")
+}

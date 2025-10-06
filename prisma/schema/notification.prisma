@@ -1,0 +1,284 @@
+// =============================================================================
+// NOTIFICATION SCHEMA
+// =============================================================================
+// Models for notifications, alerts, and communication channels
+// =============================================================================
+
+// Notification model
+model Notification {
+  id              String   @id @default(uuid())
+  
+  // Recipient
+  userId          String
+  user            User     @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Notification details
+  type            String   // info, success, warning, error, alert
+  channel         String   // in-app, email, sms, push, slack
+  title           String
+  message         String   @db.Text
+  
+  // Rich content
+  icon            String?
+  color           String?
+  imageUrl        String?
+  actionUrl       String?
+  actionText      String?
+  
+  // Metadata
+  metadata        Json?    @default("{}")
+  relatedEntity   String?  // ticket, asset, user, etc.
+  relatedId       String?  // ID of related entity
+  
+  // Status
+  status          String   @default("pending") // pending, sent, delivered, failed, read
+  isRead          Boolean  @default(false)
+  readAt          DateTime?
+  
+  // Delivery tracking
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  failedAt        DateTime?
+  errorMessage    String?
+  
+  // Priority
+  priority        String   @default("normal") // low, normal, high, urgent
+  
+  // Expiration
+  expiresAt       DateTime?
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([userId, isRead])
+  @@index([status])
+  @@index([type])
+  @@index([channel])
+  @@index([createdAt])
+  @@map("Notification")
+}
+
+// Notification Preferences
+model NotificationPreference {
+  id              String   @id @default(uuid())
+  
+  userId          String
+  user            User     @relation("NotificationPreferences", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Channel preferences
+  emailEnabled    Boolean  @default(true)
+  smsEnabled      Boolean  @default(false)
+  pushEnabled     Boolean  @default(true)
+  slackEnabled    Boolean  @default(false)
+  inAppEnabled    Boolean  @default(true)
+  
+  // Event subscriptions (JSON array of event types)
+  subscribedEvents Json    @default("[]")
+  
+  // Quiet hours
+  quietHoursStart String?  // HH:MM format
+  quietHoursEnd   String?  // HH:MM format
+  quietHoursTimezone String? @default("UTC")
+  
+  // Digest settings
+  enableDigest    Boolean  @default(false)
+  digestFrequency String?  // daily, weekly
+  digestTime      String?  // HH:MM format
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([userId])
+  @@map("NotificationPreference")
+}
+
+// Broadcast Messages (system-wide announcements)
+model BroadcastMessage {
+  id              String   @id @default(uuid())
+  
+  // Message details
+  title           String
+  message         String   @db.Text
+  type            String   // info, warning, maintenance, announcement
+  
+  // Delivery
+  channel         String   // in-app, email, all
+  
+  // Targeting
+  targetAudience  String   @default("all") // all, role, group, specific
+  targetRoles     Json?    @default("[]")
+  targetGroups    Json?    @default("[]")
+  targetUsers     Json?    @default("[]")
+  
+  // Scheduling
+  publishAt       DateTime @default(now())
+  expiresAt       DateTime?
+  
+  // Status
+  status          String   @default("draft") // draft, scheduled, published, expired
+  isActive        Boolean  @default(true)
+  
+  // Sender
+  senderId        String
+  sender          User     @relation("BroadcastSender", fields: [senderId], references: [id])
+  
+  // Analytics
+  viewCount       Int      @default(0)
+  clickCount      Int      @default(0)
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([status])
+  @@index([publishAt])
+  @@index([senderId])
+  @@map("BroadcastMessage")
+}
+
+// Webhook Configuration for external notifications
+model WebhookEndpoint {
+  id              String   @id @default(uuid())
+  
+  name            String
+  description     String?
+  
+  // Endpoint details
+  url             String
+  method          String   @default("POST") // POST, PUT
+  headers         Json?    @default("{}")
+  
+  // Authentication
+  authType        String?  // none, basic, bearer, api_key
+  authCredentials Json?    @default("{}")
+  
+  // Event subscriptions
+  events          Json     @default("[]") // Array of event types
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Retry configuration
+  retryCount      Int      @default(3)
+  retryDelay      Int      @default(5000) // Milliseconds
+  
+  // Delivery tracking
+  deliveries      WebhookDelivery[]
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([isActive])
+  @@map("WebhookEndpoint")
+}
+
+// Webhook Delivery Log
+model WebhookDelivery {
+  id              String   @id @default(uuid())
+  
+  endpointId      String
+  endpoint        WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  
+  // Event details
+  event           String
+  payload         Json
+  
+  // Delivery status
+  status          String   // pending, success, failed, retrying
+  attempts        Int      @default(0)
+  
+  // Response
+  statusCode      Int?
+  responseBody    String?  @db.Text
+  errorMessage    String?  @db.Text
+  
+  // Timing
+  createdAt       DateTime @default(now())
+  lastAttemptAt   DateTime?
+  deliveredAt     DateTime?
+  
+  @@index([endpointId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("WebhookDelivery")
+}
+
+// Alert Rules for monitoring
+model AlertRule {
+  id              String   @id @default(uuid())
+  
+  name            String
+  description     String?  @db.Text
+  
+  // Condition
+  metric          String   // cpu_usage, memory_usage, disk_space, etc.
+  operator        String   // gt, lt, eq, gte, lte
+  threshold       Float
+  duration        Int      // Minutes the condition must be true
+  
+  // Actions
+  notifyUsers     Json?    @default("[]")
+  notifyGroups    Json?    @default("[]")
+  notifyChannels  Json?    @default("[]")
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  // Alert history
+  alerts          Alert[]
+  
+  // Audit fields
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([isActive])
+  @@index([metric])
+  @@map("AlertRule")
+}
+
+// Alert instances
+model Alert {
+  id              String   @id @default(uuid())
+  
+  ruleId          String?
+  rule            AlertRule? @relation(fields: [ruleId], references: [id])
+  
+  // Alert details
+  severity        String   // info, warning, error, critical
+  title           String
+  message         String   @db.Text
+  
+  // Source
+  source          String?  // System component that generated the alert
+  metadata        Json?    @default("{}")
+  
+  // Status
+  status          String   @default("open") // open, acknowledged, resolved, closed
+  
+  // Resolution
+  acknowledgedAt  DateTime?
+  acknowledgedById String?
+  acknowledgedBy  User?    @relation("AlertAcknowledger", fields: [acknowledgedById], references: [id])
+  
+  resolvedAt      DateTime?
+  resolvedById    String?
+  resolvedBy      User?    @relation("AlertResolver", fields: [resolvedById], references: [id])
+  
+  resolutionNotes String?  @db.Text
+  
+  // Timing
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([ruleId])
+  @@index([status])
+  @@index([severity])
+  @@index([createdAt])
+  @@map("Alert")
+}

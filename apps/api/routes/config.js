@@ -9,6 +9,7 @@ import { logger } from '../logger.js';
 import { ensureAuth } from '../middleware/auth.js';
 import { validateConfigValue, getConfigValidationSchema } from '../utils/configValidation.js';
 import ConfigurationService from '../services/configuration.service.js';
+import { getWithCache, invalidateCache } from '../db.js';
 
 const router = Router();
 const prismaPromise = getCoreClient();
@@ -487,6 +488,9 @@ router.post('/organization', ensureAuth, async (req, res) => {
     // Clear configuration cache to ensure fresh values
     ConfigurationManager.clearCache();
 
+    // Invalidate Redis caches after config updates
+    await invalidateCache('nova:config:*');
+
     if (errors.length > 0 && updates.length === 0) {
       return res.status(400).json({
         success: false,
@@ -523,13 +527,21 @@ router.get('/organization', async (req, res) => {
       'help_message',
     ];
 
-    const result = {};
-    for (const key of organizationKeys) {
-      const resolved = await ConfigurationManager.getValue(key);
-      if (resolved) {
-        result[key] = resolved.value;
-      }
-    }
+    // Cache organization configuration for 24 hours (very stable)
+    const result = await getWithCache(
+      'nova:config:organization:v1',
+      async () => {
+        const data = {};
+        for (const key of organizationKeys) {
+          const resolved = await ConfigurationManager.getValue(key);
+          if (resolved) {
+            data[key] = resolved.value;
+          }
+        }
+        return data;
+      },
+      86400 // 24 hours TTL
+    );
 
     res.json({
       success: true,

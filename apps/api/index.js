@@ -367,17 +367,31 @@ try {
   logger.warn('Failed to load comprehensive OpenAPI spec:', error.message);
 }
 
-// Enhanced Swagger definition with proper versioning
+// Enhanced Swagger definition with V1 (2025.08) versioning
 const swaggerDefinition = {
   openapi: '3.0.3',
   info: {
     title: 'Nova Universe Platform API',
-    version: getApiVersion(),
+    version: 'v1 (2025.08)',
     description: `
-# Nova Universe IT Service Management Platform API
+# Nova Universe IT Service Management Platform API v1 (2025.08)
 
-A comprehensive API for managing IT service operations, including ticket management, 
+A comprehensive RESTful API for managing IT service operations, including ticket management, 
 asset tracking, knowledge base, user directory, AI-powered automation, and more.
+
+## 🎯 API Version: V1 (2025.08)
+
+This is the **current and only supported version** of the Nova Universe API.
+- **Version**: V1
+- **Release**: 2025.08
+- **Status**: Stable
+- **Base Path**: \`/api/v1\`
+
+Following Microsoft Azure REST API best practices:
+- URI path versioning for clarity and simplicity
+- No backward compatibility for legacy versions
+- Clean, consistent endpoint structure
+- Semantic versioning for predictable updates
 
 ## 🔐 Authentication
 
@@ -387,73 +401,152 @@ This API uses **Bearer token authentication**. Include your API token in the Aut
 Authorization: Bearer your-jwt-token-here
 \`\`\`
 
-Tokens can be obtained through the \`/auth/login\` endpoint.
+Tokens can be obtained through the \`/api/v1/auth/login\` endpoint.
 
-## 📦 API Versioning
+### Alternative Authentication Methods
 
-This API follows **semantic versioning** with **URI-based versioning**:
-
-- **v2 (Current)**: Latest stable version with all new features
-- **v1 (Legacy)**: Deprecated version maintained for backward compatibility
-
-### Version Migration
-- Breaking changes increment the major version (v1 → v2)
-- Non-breaking changes (new endpoints, optional parameters) may be added to existing versions
-- Deprecated endpoints include sunset dates in response headers
+- **API Key**: Use \`X-API-Key\` header for service-to-service authentication
+- **OAuth 2.0**: Available at \`/api/v1/oauth\` endpoints
+- **SAML SSO**: Enterprise SSO via \`/auth/saml\` (if configured)
 
 ## 🚦 Rate Limiting
 
-API requests are rate limited to ensure fair usage:
+API requests are rate limited to ensure fair usage and system stability:
 
 - **Authenticated requests**: 1000 requests per hour
 - **Unauthenticated requests**: 100 requests per hour
+- **Burst protection**: Maximum 100 requests per minute
 
 Rate limit information is included in response headers:
 - \`X-RateLimit-Limit\`: Request limit per window
 - \`X-RateLimit-Remaining\`: Requests remaining
 - \`X-RateLimit-Reset\`: Unix timestamp when window resets
+- \`Retry-After\`: Seconds to wait before retry (when rate limited)
 
 ## 📊 Response Format
 
-All API responses follow a consistent format:
+All API responses follow a consistent JSON structure:
 
+### Success Response
 \`\`\`json
 {
   "success": true,
   "data": { ... },
-  "pagination": { ... },  // For paginated responses
-  "meta": { ... }         // Additional metadata
+  "pagination": {     // For paginated responses
+    "page": 1,
+    "limit": 25,
+    "total": 100,
+    "totalPages": 4
+  },
+  "meta": {          // Additional metadata
+    "requestId": "req_123456",
+    "timestamp": "2025-08-15T10:30:00Z",
+    "version": "v1"
+  }
 }
 \`\`\`
 
-Error responses include detailed error information:
-
+### Error Response
 \`\`\`json
 {
   "success": false,
   "error": {
     "code": "ERROR_CODE",
     "message": "Human readable error message",
-    "details": [ ... ],    // Validation errors, if applicable
-    "timestamp": "2024-01-15T10:30:00Z",
-    "requestId": "req_123456"
+    "details": [],        // Validation errors, if applicable
+    "timestamp": "2025-08-15T10:30:00Z",
+    "requestId": "req_123456",
+    "path": "/api/v1/resource",
+    "statusCode": 400
   }
 }
 \`\`\`
 
-## 🔍 Filtering and Pagination
+## 🔍 Filtering, Sorting, and Pagination
 
-Most list endpoints support filtering and pagination:
+Most list endpoints support advanced querying:
 
-- **Pagination**: Use \`page\` and \`limit\` query parameters
-- **Filtering**: Use specific filter parameters (documented per endpoint)
-- **Sorting**: Use \`sort\` and \`order\` parameters
-- **Search**: Use \`search\` parameter for full-text search
+### Pagination
+- \`page\`: Page number (1-based, default: 1)
+- \`limit\`: Items per page (1-100, default: 25)
+
+### Sorting
+- \`sort\`: Field to sort by (e.g., \`createdAt\`, \`name\`)
+- \`order\`: Sort direction (\`asc\` or \`desc\`, default: \`desc\`)
+
+### Filtering
+- Use field-specific query parameters
+- Example: \`?status=open&priority=high\`
+
+### Search
+- \`search\`: Full-text search across multiple fields
+- \`q\`: Alias for search parameter
+
+### Example
+\`\`\`
+GET /api/v1/tickets?page=1&limit=50&status=open&sort=priority&order=desc&search=network
+\`\`\`
 
 ## 📡 WebSocket Support
 
 Real-time updates are available via WebSocket connections at \`/socket.io\`.
-Subscribe to specific data types for live updates on tickets, system status, and more.
+
+### Subscribing to Updates
+\`\`\`javascript
+const socket = io('wss://your-domain.com', {
+  auth: { token: 'your-jwt-token' }
+});
+
+socket.on('ticket:updated', (data) => {
+  console.log('Ticket updated:', data);
+});
+\`\`\`
+
+### Available Events
+- \`ticket:created\`, \`ticket:updated\`, \`ticket:deleted\`
+- \`alert:triggered\`, \`alert:resolved\`
+- \`notification:new\`
+- \`system:status\`
+
+## 🏗️ Resource Organization
+
+The API is organized into logical resource groups:
+
+### Core Resources
+- \`/api/v1/auth\` - Authentication & Authorization
+- \`/api/v1/organizations\` - Organization Management
+- \`/api/v1/directory\` - User Directory & LDAP
+- \`/api/v1/roles\` - Role-Based Access Control
+
+### ITSM Resources
+- \`/api/v1/tickets\` - Ticket Management
+- \`/api/v1/service-requests\` - Service Requests
+- \`/api/v1/incidents\` - Incident Management
+- \`/api/v1/service-catalog\` - Service Catalog
+
+### AI & Automation
+- \`/api/v1/synth\` - AI Orchestration Engine
+- \`/api/v1/cosmo\` - Conversational AI
+- \`/api/v1/ai-fabric\` - Enterprise AI Platform
+
+### Monitoring & Alerts
+- \`/api/v1/monitoring\` - System Monitoring
+- \`/api/v1/alerts\` - Alert Management
+- \`/api/v1/notifications\` - Notification Platform
+
+## 🛡️ Security Best Practices
+
+- **Use HTTPS**: All production requests must use HTTPS
+- **Rotate tokens**: Refresh JWT tokens before expiration
+- **Validate input**: All input is validated and sanitized
+- **Rate limits**: Respect rate limits to avoid throttling
+- **Audit logs**: All API calls are logged for security auditing
+
+## 📞 Support
+
+- **Documentation**: https://docs.nova-universe.com
+- **API Support**: api-support@nova-universe.com
+- **Status Page**: https://status.nova-universe.com
     `,
     contact: {
       name: 'Nova Universe API Support',
@@ -467,10 +560,9 @@ Subscribe to specific data types for live updates on tickets, system status, and
     termsOfService: 'https://nova-universe.com/terms',
   },
   servers: [
-    { url: '/api/v2', description: 'Current API (v2) - Latest features and improvements' },
-    {
-      url: '/api/v1',
-      description: 'Legacy API (v1) - Deprecated, maintained for backward compatibility',
+    { 
+      url: '/api/v1', 
+      description: 'Nova Universe API V1 (2025.08) - Current Stable Version' 
     },
   ],
   components: {
@@ -479,7 +571,7 @@ Subscribe to specific data types for live updates on tickets, system status, and
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        description: 'JWT token obtained from /auth/login endpoint',
+        description: 'JWT token obtained from /api/v1/auth/login endpoint',
       },
       ApiKeyAuth: {
         type: 'apiKey',
@@ -513,6 +605,12 @@ Subscribe to specific data types for live updates on tickets, system status, and
         description: 'Sort order',
         schema: { type: 'string', enum: ['asc', 'desc'], default: 'desc' },
       },
+      SearchParam: {
+        name: 'search',
+        in: 'query',
+        description: 'Full-text search query',
+        schema: { type: 'string' },
+      },
     },
     responses: {
       UnauthorizedError: {
@@ -528,6 +626,7 @@ Subscribe to specific data types for live updates on tickets, system status, and
                   properties: {
                     code: { type: 'string', example: 'UNAUTHORIZED' },
                     message: { type: 'string', example: 'Authentication required' },
+                    statusCode: { type: 'integer', example: 401 },
                   },
                 },
               },
@@ -548,6 +647,7 @@ Subscribe to specific data types for live updates on tickets, system status, and
                   properties: {
                     code: { type: 'string', example: 'FORBIDDEN' },
                     message: { type: 'string', example: 'Insufficient permissions' },
+                    statusCode: { type: 'integer', example: 403 },
                   },
                 },
               },
@@ -568,6 +668,38 @@ Subscribe to specific data types for live updates on tickets, system status, and
                   properties: {
                     code: { type: 'string', example: 'NOT_FOUND' },
                     message: { type: 'string', example: 'Resource not found' },
+                    statusCode: { type: 'integer', example: 404 },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      ValidationError: {
+        description: 'Invalid request data',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean', example: false },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: { type: 'string', example: 'VALIDATION_ERROR' },
+                    message: { type: 'string', example: 'Invalid request data' },
+                    details: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          field: { type: 'string' },
+                          message: { type: 'string' },
+                        },
+                      },
+                    },
+                    statusCode: { type: 'integer', example: 400 },
                   },
                 },
               },
@@ -629,19 +761,15 @@ function updateSwaggerServerUrls() {
 
   const servers = [
     {
-      url: `${baseUrl}/api/v2`,
-      description: 'Current API (v2) - Latest features and improvements',
-    },
-    {
       url: `${baseUrl}/api/v1`,
-      description: 'Legacy API (v1) - Deprecated, maintained for backward compatibility',
+      description: 'Nova Universe API V1 (2025.08) - Current Stable Version',
     },
   ];
 
   swaggerSpec.servers = servers;
 
-  if (process.env.NODE_ENV === 'development') {
-    logger.debug('📋 Updated Swagger server URLs:', servers);
+  if (process.env.NODE_ENV !== 'production') {
+    logger.info('📋 Swagger server URLs configured:', servers);
   }
 }
 
@@ -1031,26 +1159,34 @@ if (!DISABLE_AUTH) {
   });
 }
 
-// Create a v1Router to wrap all direct /api/* endpoints with deprecation warnings
+// ========================================
+// API VERSIONING - V1 (2025.08)
+// ========================================
+// Nova Universe API follows industry-standard URI path versioning
+// Following Microsoft Azure REST API best practices:
+// - Single version: V1 (2025.08)
+// - No backward compatibility for legacy versions
+// - Clean, consistent endpoint structure
+// - All routes under /api/v1/* namespace
+// ========================================
+
 const v1Router = express.Router();
 
-// Add deprecation middleware for v1 API
-const addDeprecationHeaders = (req, res, next) => {
-  // Add deprecation warning headers for v1 API
+// Version information middleware for V1 (2025.08)
+const addV1VersionHeaders = (req, res, next) => {
   res.set({
-    Deprecation: 'true',
-    Sunset: '2024-12-31T23:59:59Z', // RFC 8594 compliant sunset date
-    Link: '</api/v2>; rel="successor-version"; type="application/json"',
-    Warning:
-      '299 "This API version is deprecated. Please migrate to v2. See https://docs.nova-universe.com/api/migration"',
     'X-API-Version': 'v1',
-    'X-API-Deprecation-Notice': 'This version will be sunset on 2024-12-31. Please upgrade to v2.',
+    'X-API-Release': '2025.08',
+    'X-API-Status': 'stable',
+    'Cache-Control': 'public, max-age=300', // Cache responses for 5 minutes
+    'X-Rate-Limit-Policy': 'https://docs.nova-universe.com/api/rate-limits',
+    'X-Content-Type-Options': 'nosniff',
   });
   next();
 };
 
-// Apply deprecation middleware to v1 router
-v1Router.use(addDeprecationHeaders);
+// Apply version headers to v1 router
+v1Router.use(addV1VersionHeaders);
 
 // Version validation middleware
 const validateApiVersion = (req, res, next) => {
@@ -1062,7 +1198,7 @@ const validateApiVersion = (req, res, next) => {
 
     // Log version usage for analytics
     if (process.env.NODE_ENV !== 'test') {
-      logger.debug(`API ${apiVersion} accessed: ${req.method} ${req.path}`, {
+      logger.info(`API ${apiVersion} accessed: ${req.method} ${req.path}`, {
         userAgent: req.headers['user-agent'],
         ip: req.ip,
         endpoint: req.path,
@@ -1075,22 +1211,6 @@ const validateApiVersion = (req, res, next) => {
 
 // Apply version validation to all API routes
 app.use('/api', validateApiVersion);
-
-// Create v2Router for current API version
-const v2Router = express.Router();
-
-// Add current version headers for v2 API
-const addCurrentVersionHeaders = (req, res, next) => {
-  res.set({
-    'X-API-Version': 'v2',
-    'X-API-Status': 'stable',
-    'Cache-Control': 'public, max-age=300', // Cache responses for 5 minutes
-    'X-Rate-Limit-Policy': 'https://docs.nova-universe.com/api/rate-limits',
-  });
-  next();
-};
-
-v2Router.use(addCurrentVersionHeaders);
 
 // Create kiosksRouter for kiosk management endpoints
 const kiosksRouter = express.Router();
@@ -2116,15 +2236,9 @@ v1Router.delete('/api/notifications', ensureAuth, (req, res) => {
   });
 });
 
-// --- API v1 Kiosks endpoints ---
-app.use('/api/v1/kiosks', kioskOrAuth, kiosksRouter);
-
-// Mount at both /api/kiosks and /api/v1/kiosks
-app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
-app.use('/api/v1/kiosks', kioskOrAuth, kiosksRouter);
-
-// Register v1 router for legacy API endpoints
-app.use('/api/v1', v1Router);
+// ========================================
+// API Documentation & Developer Tools
+// ========================================
 
 // Enhanced Swagger UI setup with comprehensive documentation
 const docsRequireAuth =
@@ -2344,203 +2458,204 @@ app.use(
   }),
 );
 
-// === API VERSION ROUTING STRATEGY ===
-//
-// This API follows semantic versioning with URI-based versioning:
-// - v2: Current stable version with latest features (default for new endpoints)
-// - v1: Legacy version with deprecation warnings (maintained for backward compatibility)
-//
-// Route organization:
-// 1. v2 routes: /api/v2/* - Latest features and improvements
-// 2. v1 routes: /api/v1/* - Legacy routes with deprecation headers
-// 3. Backward compatibility: Legacy unversioned routes (/api/*) map to v1
-//
-// Migration strategy:
-// - New features are added to v2 only
-// - v1 receives only critical security fixes
-// - Breaking changes require a new major version
-// - Deprecation notices are sent via response headers
+// ========================================
+// API ROUTE REGISTRATION - V1 (2025.08)
+// ========================================
+// All API endpoints are registered under /api/v1/* following REST best practices
+// Organization:
+// - Authentication & Identity: /api/v1/auth, /api/v1/helix, /api/v1/oauth
+// - Core Resources: /api/v1/organizations, /api/v1/directory, /api/v1/users
+// - ITSM: /api/v1/tickets, /api/v1/incidents, /api/v1/service-requests
+// - AI & Automation: /api/v1/synth, /api/v1/cosmo, /api/v1/ai-fabric
+// - Monitoring & Alerts: /api/v1/monitoring, /api/v1/alerts, /api/v1/notifications
+// - Integrations: /api/v1/integrations, /api/v1/scim, /api/v1/webhooks
+// ========================================
 
-// Register versioned routers first
+// Register V1 router
 app.use('/api/v1', v1Router);
-app.use('/api/v2', v2Router);
 
-// === API v2 ROUTES (Current Stable Version) ===
+// ========================================
+// V1 Core Authentication & Identity Routes
+// ========================================
+v1Router.use('/auth', authRouter); // Authentication & Authorization
+v1Router.use('/helix', helixRouter); // Nova Helix - Identity Engine
+v1Router.use('/helix/login', helixUniversalLoginRouter); // Nova Helix - Universal Login
+v1Router.use('/oauth', oauth2Router); // OAuth 2.0 Authorization Server (RFC 6749)
+v1Router.use('/tenants', tenantDiscoveryRouter); // Enhanced Tenant Discovery
 
-// Core v2 endpoints
-v2Router.use('/user360', user360Router); // User 360 API (v2 only)
-v2Router.use('/user360', user360InteractionsRouter); // User 360 Interactions API (v2 only)
-// Conditionally enable v2 MCP & Synth (AI-dependent)
-if (process.env.ENABLE_AI_COMPONENTS === 'true') {
-  try {
-    const mcpMod = await import('./routes/mcp-server.js');
-    mcpServerRouter = mcpMod.default || mcpMod;
-    v2Router.use('/mcp', mcpServerRouter);
-  } catch (e) {
-    logger.warn('v2 MCP routes disabled (failed to load):', e.message);
-  }
-  try {
-    const synthMod = await import('./routes/synth-v2.js');
-    synthV2Router = synthMod.default || synthMod;
-    v2Router.use('/synth', synthV2Router);
-  } catch (e) {
-    logger.warn('v2 Synth routes disabled (failed to load):', e.message);
-  }
-} else {
-  logger.info('v2 MCP/Synth routes disabled (ENABLE_AI_COMPONENTS not true)');
-}
-v2Router.use('/alerts', alertsRouter); // Unified Alerts facade (Nova Alert)
-v2Router.use('/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
-v2Router.use('/email-actions', emailActionsRouter); // Enhanced Email Actions for Workflows (no auth required for tokens)
-v2Router.use('/beacon', beaconRouter); // Nova Beacon - Kiosk Management v2
-v2Router.use('/goalert', goalertProxyRouter); // GoAlert Proxy for alerting
+// ========================================
+// V1 Core Resource Management Routes
+// ========================================
+v1Router.use('/organizations', organizationsRouter); // Organization Management
+v1Router.use('/directory', directoryRouter); // User Directory & LDAP Integration
+v1Router.use('/roles', rolesRouter); // Role-Based Access Control
+v1Router.use('/users', v1Router); // User management (alias for directory)
+v1Router.use('/configuration', requirePermission('admin'), configurationRouter); // System Configuration
+v1Router.use('/modules', modulesRouter); // Module/Feature Flag Management
+v1Router.use('/api-keys', apiKeysRouter); // API Key Management
+v1Router.use('/', serverRouter); // Server Info (handles /api/v1/health, /api/v1/server-info)
+v1Router.use('/logs', logsRouter); // System Logs
 
-// v2 aliases for monitoring (backward compatibility)
-v2Router.use('/monitoring', unifiedMonitoringRouter); // Unified Monitoring & Alerting API
-v2Router.use('/sentinel', monitoringRouter); // Legacy Nova-Sentinel routes
+// ========================================
+// V1 Asset & Inventory Management Routes
+// ========================================
+v1Router.use('/assets', assetsRouter); // Asset Management
+v1Router.use('/inventory', inventoryRouter); // Inventory Tracking
+v1Router.use('/cmdb', cmdbRouter); // Configuration Management Database
+v1Router.use('/cmdb', cmdbExtendedRouter); // Extended CMDB Features
 
-// === API v1 ROUTES (Legacy/Deprecated Version) ===
-
-// Legacy configuration and core endpoints
-v1Router.use('/organizations', organizationsRouter);
-v1Router.use('/directory', directoryRouter);
-v1Router.use('/roles', rolesRouter);
-v1Router.use('/assets', assetsRouter);
-v1Router.use('/inventory', inventoryRouter);
-v1Router.use('/cmdb', cmdbRouter);
-v1Router.use('/cmdb', cmdbExtendedRouter);
-v1Router.use('/integrations', integrationsRouter);
-v1Router.use('/catalog-items', catalogItemsRouter);
-v1Router.use('/search', searchRouter);
-v1Router.use('/configuration', requirePermission('admin'), configurationRouter);
-v1Router.use('/', serverRouter); // Handles /api/v1/server-info
-v1Router.use('/logs', logsRouter);
-v1Router.use('/reports', reportsRouter);
-v1Router.use('/vip', vipRouter);
-v1Router.use('/workflows', workflowsRouter);
-v1Router.use('/modules', modulesRouter);
-v1Router.use('/api-keys', apiKeysRouter);
-v1Router.use('/websocket', websocketRouter);
-v1Router.use('/helpscout', helpscoutRouter);
-v1Router.use('/analytics', analyticsRouter);
-v1Router.use('/monitoring', monitoringRouter);
-v1Router.use('/uptime-kuma', uptimeKumaProxyRouter);
-v1Router.use('/websocket/uptime-kuma', uptimeKumaWebSocketRouter);
-v1Router.use('/auth', authRouter);
-v1Router.use('/email-actions', emailActionsRouter); // Enhanced Email Actions for Workflows (backward compatibility)
-v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
-  // Conditionally enable AI Control Tower when AI components are enabled
-  if (process.env.ENABLE_AI_COMPONENTS === 'true') {
-    try {
-      const mod = await import('./routes/ai-control-tower.js');
-      aiControlTowerRouter = mod.default || mod;
-      v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - Enterprise AI/ML/RAG Management
-    } catch (e) {
-      logger.warn('AI Control Tower disabled (failed to load):', e.message);
-    }
-  } else {
-    logger.info('AI Control Tower disabled (ENABLE_AI_COMPONENTS not true)');
-  }
-v1Router.use('/tickets', ticketsRouter);
+// ========================================
+// V1 ITSM & Service Management Routes
+// ========================================
+v1Router.use('/tickets', ticketsRouter); // Ticket Management
 v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
-v1Router.use('/service-requests', serviceRequestsRouter); // Service Requests API
-// TEMPORARILY COMMENTED OUT - ESM IMPORT ISSUES WITH @prisma/client
-// v1Router.use('/service-catalog', serviceCatalogAPIRouter); // Service Catalog API
-// v1Router.use('/incidents', incidentsRouter); // Incidents API
-// v1Router.use('/changes', changesRouter); // Changes API
-// v1Router.use('/problems', problemsRouter); // Problems API
-// v1Router.use('/knowledge-articles', knowledgeArticlesRouter); // Knowledge Articles API
-// v1Router.use('/workflow-analytics', workflowAnalyticsRouter); // Workflow Analytics API
-// v1Router.use('/ml-pipeline', mlPipelineRouter); // ML Pipeline Management with Cosmo AI - TEMPORARILY DISABLED
-// v1Router.use('/nova-rag', novaRAGRouter); // Nova RAG with RBAC and Synth Integration - TEMPORARILY DISABLED
-v1Router.use('/spaces', spacesRouter);
+v1Router.use('/service-requests', serviceRequestsRouter); // Service Request Management
+v1Router.use('/service-catalog', serviceCatalogRouter); // Service Catalog
+v1Router.use('/service-catalog-requests', serviceCatalogRequestsRouter); // Service Catalog Requests
+v1Router.use('/catalog-items', catalogItemsRouter); // Legacy Catalog Items
+v1Router.use('/approvals', approvalsRouter); // Approval Workflows
+
+// ========================================
+// V1 Knowledge & Documentation Routes
+// ========================================
+v1Router.use('/lore', loreRouter); // Nova Lore - Knowledge Base
+v1Router.use('/search', searchRouter); // Global Search
+
+// ========================================
+// V1 Workflow & Automation Routes
+// ========================================
+v1Router.use('/workflows', workflowsRouter); // Workflow Engine
+v1Router.use('/rbac', rbacRouter); // Role-Based Access Control Engine
+
+// ========================================
+// V1 AI & Intelligence Routes
+// ========================================
+v1Router.use('/synth', synthRouter); // Nova Synth - AI Orchestration Engine
+
+// Conditionally load AI-dependent routes
 if (process.env.ENABLE_AI_COMPONENTS === 'true') {
   try {
-    const mod = await import('./routes/ai-fabric.js');
-    aiFabricRouter = mod.default || mod;
-    v1Router.use('/ai-fabric', aiFabricRouter);
+    const cosmoMod = await import('./routes/cosmo.js');
+    cosmoRouter = cosmoMod.default || cosmoMod;
+    v1Router.use('/cosmo', cosmoRouter); // Nova Cosmo - Conversational AI
+  } catch (e) {
+    logger.warn('Cosmo routes disabled (failed to load):', e.message);
+  }
+
+  try {
+    const aiFabricMod = await import('./routes/ai-fabric.js');
+    aiFabricRouter = aiFabricMod.default || aiFabricMod;
+    v1Router.use('/ai-fabric', aiFabricRouter); // AI Fabric - Enterprise AI Platform
   } catch (e) {
     logger.warn('AI Fabric routes disabled (failed to load):', e.message);
   }
-} else {
-  logger.info('AI Fabric routes disabled (ENABLE_AI_COMPONENTS not true)');
-}
-v1Router.use('/setup', setupRouter);
-v1Router.use('/comms', commsRouter); // Nova Comms - Slack integration
-v1Router.use('/nova-tv', novaTVRouter); // Nova TV - Channel Management
-v1Router.use('/scim/monitor', scimMonitorRouter); // SCIM Monitoring and Logging
-v1Router.use('/core', coreRouter);
-v1Router.use('/status', statusSummaryRouter);
-v1Router.use('/announcements', announcementsRouter);
-// Conditionally mount Cosmo (AI) under v1
-if (process.env.ENABLE_AI_COMPONENTS === 'true') {
+
   try {
-    const mod = await import('./routes/cosmo.js');
-    cosmoRouter = mod.default || mod;
-    v1Router.use('/cosmo', cosmoRouter);
+    const aiControlTowerMod = await import('./routes/ai-control-tower.js');
+    aiControlTowerRouter = aiControlTowerMod.default || aiControlTowerMod;
+    v1Router.use('/ai-control-tower', aiControlTowerRouter); // AI Control Tower - AI/ML/RAG Management
   } catch (e) {
-    logger.warn('v1 Cosmo routes disabled (failed to load):', e.message);
+    logger.warn('AI Control Tower disabled (failed to load):', e.message);
+  }
+
+  try {
+    const mcpMod = await import('./routes/mcp-server.js');
+    mcpServerRouter = mcpMod.default || mcpMod;
+    v1Router.use('/mcp', mcpServerRouter); // Model Context Protocol Server
+  } catch (e) {
+    logger.warn('MCP routes disabled (failed to load):', e.message);
+  }
+
+  try {
+    const synthV2Mod = await import('./routes/synth-v2.js');
+    synthV2Router = synthV2Mod.default || synthV2Router;
+    v1Router.use('/synth-enhanced', synthV2Router); // Enhanced Synth with MCP support
+  } catch (e) {
+    logger.warn('Enhanced Synth routes disabled (failed to load):', e.message);
   }
 } else {
-  logger.info('v1 Cosmo routes disabled (ENABLE_AI_COMPONENTS not true)');
+  logger.info('AI components disabled (ENABLE_AI_COMPONENTS not set to true)');
 }
 
-// Nova module routes (v1)
-v1Router.use('/helix', helixRouter); // Nova Helix - Identity Engine
-v1Router.use('/helix/login', helixUniversalLoginRouter); // Nova Helix - Universal Login
-v1Router.use('/lore', loreRouter); // Nova Lore - Knowledge Base
+// ========================================
+// V1 Monitoring & Alerting Routes
+// ========================================
+v1Router.use('/monitoring', monitoringRouter); // System Monitoring
+v1Router.use('/unified-monitoring', unifiedMonitoringRouter); // Unified Monitoring & Alerting
+v1Router.use('/alerts', alertsRouter); // Alert Management (Nova Alert)
+v1Router.use('/notifications', ensureAuth, notificationsRouter); // Universal Notification Platform
+v1Router.use('/analytics', analyticsRouter); // Analytics & Reporting
+v1Router.use('/uptime-kuma', uptimeKumaProxyRouter); // Uptime Kuma Proxy
+v1Router.use('/websocket/uptime-kuma', uptimeKumaWebSocketRouter); // Uptime Kuma WebSocket
+v1Router.use('/status', statusSummaryRouter); // Status Page
+v1Router.use('/announcements', announcementsRouter); // System Announcements
+
+// ========================================
+// V1 Integration & Communication Routes
+// ========================================
+v1Router.use('/integrations', integrationsRouter); // Third-Party Integrations
+v1Router.use('/helpscout', helpscoutRouter); // HelpScout Integration
+v1Router.use('/comms', commsRouter); // Nova Comms - Slack Integration
+v1Router.use('/websocket', websocketRouter); // WebSocket Management
+v1Router.use('/scim/monitor', scimMonitorRouter); // SCIM Monitoring
+v1Router.use('/email-actions', emailActionsRouter); // Enhanced Email Actions for Workflows
+v1Router.use('/email-templates', emailTemplatesRouter); // Email Template Management
+v1Router.use('/customer-activity', customerActivityRouter); // Customer Activity Tracking
+
+// ========================================
+// V1 Portal & User Experience Routes
+// ========================================
 v1Router.use('/pulse', pulseRouter); // Nova Pulse - Technician Portal
 v1Router.use('/orbit', orbitRouter); // Nova Orbit - End-User Portal
-v1Router.use('/synth', synthRouter); // Nova Synth - AI Engine (Legacy v1)
+v1Router.use('/beacon', beaconRouter); // Nova Beacon - Kiosk Management
+v1Router.use('/kiosks', kioskOrAuth, kiosksRouter); // Kiosk Management
+v1Router.use('/app-switcher', appSwitcherRouter); // Enhanced App Switcher
+v1Router.use('/spaces', spacesRouter); // Collaborative Spaces
+v1Router.use('/nova-tv', novaTVRouter); // Nova TV - Digital Signage Channel Management
+v1Router.use('/nova-tv/digital-signage', novaTVDigitalSignageRouter); // Nova TV Digital Signage
 
-// Kiosk management (available in both versions)
-v1Router.use('/kiosks', kioskOrAuth, kiosksRouter);
-v2Router.use('/kiosks', kioskOrAuth, kiosksRouter);
+// ========================================
+// V1 User360 & Engagement Routes
+// ========================================
+v1Router.use('/user360', user360Router); // User 360 - Complete User Profile
+v1Router.use('/user360/interactions', user360InteractionsRouter); // User 360 Interactions
 
-// === BACKWARD COMPATIBILITY ROUTES ===
-// Map legacy unversioned routes to v1 for backward compatibility
-// These routes include deprecation warnings via the v1Router middleware
+// ========================================
+// V1 Reporting & Analytics Routes
+// ========================================
+v1Router.use('/reports', reportsRouter); // Report Generation
+v1Router.use('/vip', vipRouter); // VIP Management
 
-app.use('/api/catalog-items', catalogItemsRouter);
-app.use('/api/reports', reportsRouter);
-app.use('/api/workflows', workflowsRouter);
-app.use('/api/helpscout', helpscoutRouter);
-app.use('/api/analytics', analyticsRouter);
-app.use('/api/monitoring', monitoringRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/tickets', ticketLimiter, ticketsRouter);
-app.use('/api/spaces', spacesRouter);
-if (aiFabricRouter) {
-  app.use('/api/ai-fabric', aiFabricRouter);
-}
-// app.use('/api/ai-agent', aiAgentRouter); // Nova AI Agent Framework - TEMPORARILY DISABLED
-app.use('/api/setup', setupRouter);
-app.use('/api/nova-tv', novaTVRouter);
-app.use('/api/nova-tv/digital-signage', novaTVDigitalSignageRouter);
-app.use('/api/v1/nova-tv/digital-signage', novaTVDigitalSignageRouter);
-app.use('/api/kiosks', kioskOrAuth, kiosksRouter);
+// ========================================
+// V1 Advanced Features Routes
+// ========================================
+v1Router.use('/feature-flags', featureFlagsRouter); // Feature Flag Management
+v1Router.use('/ab-testing', abTestingRouter); // A/B Testing
+v1Router.use('/cost-centers', costCentersRouter); // Cost Center Management
 
-// Service Catalog API routes
-app.use('/api/service-catalog', serviceCatalogRouter);
-app.use('/api/service-catalog-requests', serviceCatalogRequestsRouter);
-app.use('/api/rbac', rbacRouter);
-app.use('/api/approvals', approvalsRouter);
-app.use('/api/feature-flags', featureFlagsRouter);
-app.use('/api/ab-testing', abTestingRouter);
-app.use('/api/cost-centers', costCentersRouter);
-// app.use('/api/email', emailIntegrationRouter); // TEMPORARILY DISABLED
-app.use('/api/email-templates', emailTemplatesRouter);
-app.use('/api/customer-activity', customerActivityRouter);
+// ========================================
+// V1 Setup & Administration Routes
+// ========================================
+v1Router.use('/setup', setupRouter); // System Setup & Configuration
+v1Router.use('/core', coreRouter); // Core System Functions
 
-// Special routes that maintain their own paths
-app.use('/scim/v2', ensureScimAuth, scimRouter); // SCIM 2.0 Provisioning API with authentication
-app.use('/api/v1/oauth', oauth2Router); // OAuth 2.0 Authorization Server (RFC 6749)
-app.use('/api/v1/oauth', oauth2Router); // OAuth 2.0 metadata endpoint
-app.use('/.well-known', oauth2Router); // OAuth 2.0 well-known endpoints
-app.use('/api/v1/tenants', tenantDiscoveryRouter); // Enhanced Tenant Discovery (API & UI)
-app.use('/core', coreRouter);
+// ========================================
+// V1 GoAlert Integration Route
+// ========================================
+v1Router.use('/goalert', goalertProxyRouter); // GoAlert Proxy for alerting
 
-// Feature-gated status pages
+// ========================================
+// Special Routes (Outside /api/v1 namespace)
+// ========================================
+// These routes maintain their own paths for compatibility with external systems
+
+// SCIM 2.0 Provisioning API (maintains /scim/v2 path per SCIM spec)
+app.use('/scim/v2', ensureScimAuth, scimRouter);
+
+// OAuth 2.0 well-known endpoints (maintains /.well-known path per RFC 8414)
+app.use('/.well-known', oauth2Router);
+
+// Status page (public endpoint, no versioning)
 const featureStatusPagesEnv = process.env.FEATURE_STATUS_PAGES === 'true';
 let featureStatusPagesConfig = false;
 try {
@@ -2549,12 +2664,13 @@ try {
 
 if (featureStatusPagesEnv || featureStatusPagesConfig) {
   app.use('/status', statusSummaryRouter);
-} else {
-  // Still expose summary for legacy clients without pages
-  v1Router.use('/status', statusSummaryRouter);
 }
 
+// Announcements (public endpoint)
 app.use('/announcements', announcementsRouter);
+
+// Core functions (maintains /core path)
+app.use('/core', coreRouter);
 
 // Wrap all app setup in an async function
 export async function createApp() {

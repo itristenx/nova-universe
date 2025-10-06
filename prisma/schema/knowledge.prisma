@@ -1,0 +1,187 @@
+// =============================================================================
+// KNOWLEDGE BASE DOMAIN
+// =============================================================================
+// Contains: KB Articles, Categories, Comments, Feedback
+// =============================================================================
+
+model KbArticle {
+  id                String              @id @default(uuid())
+  title             String
+  slug              String              @unique
+  summary           String?             @db.Text
+  content           String              @db.Text
+  categoryId        String?             @map("category_id")
+  authorId          String              @map("author_id")
+  status            KbArticleStatus     @default(DRAFT)
+  visibility        KbVisibility        @default(INTERNAL)
+  viewCount         Int                 @default(0) @map("view_count")
+  helpfulCount      Int                 @default(0) @map("helpful_count")
+  notHelpfulCount   Int                 @default(0) @map("not_helpful_count")
+  featured          Boolean             @default(false)
+  tags              String[]            @default([])
+  metadata          Json?
+  
+  // AI and Search Capabilities (Industry Standard 2024/2025)
+  // Full-text search vector for PostgreSQL tsvector
+  searchVector      Unsupported("tsvector")?  @map("search_vector")
+  // AI embedding for semantic search (OpenAI, etc.) - 1536 dimensions for text-embedding-3-small
+  embedding         Unsupported("vector(1536)")? // pgvector for similarity search
+  
+  publishedAt       DateTime?           @map("published_at")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  
+  category          KbCategory?         @relation(fields: [categoryId], references: [id])
+  author            User                @relation("ArticleAuthor", fields: [authorId], references: [id])
+  versions          KbArticleVersion[]
+  comments          KbArticleComment[]
+  feedback          Feedback[]
+  
+  @@map("kb_articles")
+  @@index([slug])
+  @@index([status])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([publishedAt])
+  // GIN index for full-text search (industry standard)
+  @@index([searchVector], type: Gin)
+  // HNSW index for vector similarity search (best performance for AI embeddings)
+  @@index([embedding(ops: raw("vector_cosine_ops"))], type: Hnsw)
+}
+
+enum KbArticleStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum KbVisibility {
+  PUBLIC
+  INTERNAL
+  PRIVATE
+}
+
+model KbCategory {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  slug        String       @unique
+  description String?      @db.Text
+  parentId    String?      @map("parent_id")
+  icon        String?
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  
+  parent      KbCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    KbCategory[] @relation("CategoryHierarchy")
+  articles    KbArticle[]
+  
+  @@map("kb_categories")
+  @@index([slug])
+  @@index([parentId])
+}
+
+model KbArticleVersion {
+  id          String    @id @default(uuid())
+  articleId   String    @map("article_id")
+  version     Int
+  title       String
+  content     String    @db.Text
+  summary     String?   @db.Text
+  authorId    String    @map("author_id")
+  changeNote  String?   @db.Text @map("change_note")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  article     KbArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  author      User      @relation("VersionAuthor", fields: [authorId], references: [id])
+  
+  @@unique([articleId, version])
+  @@map("kb_article_versions")
+  @@index([articleId])
+}
+
+model KbArticleComment {
+  id        String    @id @default(uuid())
+  articleId String    @map("article_id")
+  userId    String    @map("user_id")
+  content   String    @db.Text
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  
+  article   KbArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+  
+  @@map("kb_article_comments")
+  @@index([articleId])
+  @@index([userId])
+}
+
+model Feedback {
+  id         String     @id @default(uuid())
+  userId     String?    @map("user_id")
+  articleId  String?    @map("article_id")
+  ticketId   String?    @map("ticket_id")
+  type       FeedbackType
+  rating     Int?       // 1-5 scale
+  comment    String?    @db.Text
+  helpful    Boolean?   // For KB articles
+  resolved   Boolean?   // For tickets
+  metadata   Json?
+  createdAt  DateTime   @default(now()) @map("created_at")
+  
+  user       User?      @relation(fields: [userId], references: [id])
+  article    KbArticle? @relation(fields: [articleId], references: [id])
+  
+  @@map("feedback")
+  @@index([userId])
+  @@index([articleId])
+  @@index([ticketId])
+  @@index([type])
+}
+
+enum FeedbackType {
+  ARTICLE
+  TICKET
+  PORTAL
+  FEATURE
+  BUG
+}
+
+// =============================================================================
+// GAMIFICATION
+// =============================================================================
+
+model XpEvent {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  eventType   String   @map("event_type")
+  points      Int
+  description String?  @db.Text
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("xp_events")
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+model Leaderboard {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  totalPoints     Int      @default(0) @map("total_points")
+  level           Int      @default(1)
+  rank            Int?
+  streak          Int      @default(0)
+  lastActivityAt  DateTime? @map("last_activity_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("leaderboard")
+  @@index([totalPoints])
+  @@index([rank])
+}

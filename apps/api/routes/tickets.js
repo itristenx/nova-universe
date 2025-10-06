@@ -6,7 +6,7 @@ import { createRateLimit } from '../middleware/rateLimiter.js';
 import { TicketService } from '../services/enhanced-ticket.service.js';
 import { NotificationService } from '../services/notification-simple.service.js';
 import { AuditService } from '../services/audit-simple.service.js';
-import { prisma } from '../db.js';
+import { prisma, getWithCache, invalidateCache } from '../db.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
@@ -133,7 +133,17 @@ router.get(
         overdue: req.query.overdue === 'true',
       };
 
-      const result = await TicketService.getTickets(filters, req.user);
+      // Build cache key from filter parameters
+      const cacheKey = `nova:tickets:list:page:${filters.page}:status:${filters.status || 'all'}:priority:${filters.priority || 'all'}:type:${filters.type || 'all'}:assignee:${filters.assignee || 'all'}:user:${req.user.id}:v1`;
+
+      // Cache ticket list queries for 5 minutes (balance between freshness and performance)
+      const result = await getWithCache(
+        cacheKey,
+        async () => {
+          return await TicketService.getTickets(filters, req.user);
+        },
+        300 // 5 minutes TTL
+      );
 
       res.json({
         success: true,
@@ -185,7 +195,17 @@ router.get(
       const ticketId = req.params.id;
       const include = req.query.include ? req.query.include.split(',') : [];
 
-      const ticket = await TicketService.getTicketById(ticketId, include, req.user);
+      // Build cache key including include options
+      const cacheKey = `nova:ticket:${ticketId}:include:${include.sort().join(',')}:v1`;
+
+      // Cache individual ticket queries for 30 minutes
+      const ticket = await getWithCache(
+        cacheKey,
+        async () => {
+          return await TicketService.getTicketById(ticketId, include, req.user);
+        },
+        1800 // 30 minutes TTL
+      );
 
       if (!ticket) {
         return res.status(404).json({
@@ -283,6 +303,13 @@ router.post(
       };
 
       const ticket = await TicketService.createTicket(ticketData, req.files || [], req.user);
+
+      // Invalidate ticket list caches after creation
+      await Promise.all([
+        invalidateCache(`nova:tickets:list:*`),
+        invalidateCache(`nova:tickets:queue:${ticket.assignedToGroupId || 'unassigned'}:*`),
+        invalidateCache(`nova:tickets:user:${req.user.id}:*`),
+      ]);
 
       // Send notifications for new ticket creation
       try {
@@ -383,6 +410,14 @@ router.put(
           errorCode: 'TICKET_NOT_FOUND',
         });
       }
+
+      // Invalidate ticket caches after update
+      await Promise.all([
+        invalidateCache(`nova:ticket:${ticketId}:*`), // Specific ticket
+        invalidateCache(`nova:tickets:list:*`), // All ticket lists
+        invalidateCache(`nova:tickets:queue:*`), // Queue-based lists
+        invalidateCache(`nova:tickets:user:*`), // User-based lists
+      ]);
 
       res.json({
         success: true,

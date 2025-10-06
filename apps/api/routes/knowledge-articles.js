@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { authenticateJWT } from '../middleware/auth.js';
 import { logger } from '../logger.js';
+import { getWithCache, invalidateCache } from '../db.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -77,37 +78,49 @@ router.get('/', authenticateJWT, async (req, res) => {
       ];
     }
 
-    const [articles, total] = await Promise.all([
-      prisma.knowledgeArticle.findMany({
-        where,
-        include: {
-          author: {
-            select: { id: true, email: true, first_name: true, last_name: true }
-          },
-          approved_by: {
-            select: { id: true, email: true, first_name: true, last_name: true }
-          },
-          _count: {
-            select: { ratings: true, views: true }
-          }
-        },
-        orderBy: [
-          { updated_at: 'desc' }
-        ],
-        skip: offset,
-        take: parseInt(limit)
-      }),
-      prisma.knowledgeArticle.count({ where })
-    ]);
+    // Build cache key from filter parameters
+    const cacheKey = `nova:kb:articles:list:page:${page}:status:${status || 'all'}:category:${category || 'all'}:search:${search || 'none'}:user:${req.user.id}:v1`;
+
+    // Cache KB article lists for 15 minutes (mostly static content)
+    const result = await getWithCache(
+      cacheKey,
+      async () => {
+        const [articles, total] = await Promise.all([
+          prisma.knowledgeArticle.findMany({
+            where,
+            include: {
+              author: {
+                select: { id: true, email: true, first_name: true, last_name: true }
+              },
+              approved_by: {
+                select: { id: true, email: true, first_name: true, last_name: true }
+              },
+              _count: {
+                select: { ratings: true, views: true }
+              }
+            },
+            orderBy: [
+              { updated_at: 'desc' }
+            ],
+            skip: offset,
+            take: parseInt(limit)
+          }),
+          prisma.knowledgeArticle.count({ where })
+        ]);
+
+        return { articles, total };
+      },
+      900 // 15 minutes TTL
+    );
 
     res.json({
       success: true,
-      data: articles,
+      data: result.articles,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / parseInt(limit))
+        total: result.total,
+        pages: Math.ceil(result.total / parseInt(limit))
       }
     });
   } catch (error) {
@@ -123,33 +136,43 @@ router.get('/', authenticateJWT, async (req, res) => {
 // GET /api/v1/knowledge-articles/:id - Get knowledge article by ID
 router.get('/:id', authenticateJWT, async (req, res) => {
   try {
-    const article = await prisma.knowledgeArticle.findUnique({
-      where: { id: req.params.id },
-      include: {
-        author: {
-          select: { id: true, email: true, first_name: true, last_name: true }
-        },
-        approved_by: {
-          select: { id: true, email: true, first_name: true, last_name: true }
-        },
-        ratings: {
+    // Build cache key for this article
+    const cacheKey = `nova:kb:article:${req.params.id}:v1`;
+
+    // Cache individual KB articles for 2 hours (very stable content)
+    const article = await getWithCache(
+      cacheKey,
+      async () => {
+        return await prisma.knowledgeArticle.findUnique({
+          where: { id: req.params.id },
           include: {
-            user: {
+            author: {
               select: { id: true, email: true, first_name: true, last_name: true }
+            },
+            approved_by: {
+              select: { id: true, email: true, first_name: true, last_name: true }
+            },
+            ratings: {
+              include: {
+                user: {
+                  select: { id: true, email: true, first_name: true, last_name: true }
+                }
+              }
+            },
+            views: {
+              include: {
+                user: {
+                  select: { id: true, email: true, first_name: true, last_name: true }
+                }
+              },
+              orderBy: { viewed_at: 'desc' },
+              take: 50
             }
           }
-        },
-        views: {
-          include: {
-            user: {
-              select: { id: true, email: true, first_name: true, last_name: true }
-            }
-          },
-          orderBy: { viewed_at: 'desc' },
-          take: 50
-        }
-      }
-    });
+        });
+      },
+      7200 // 2 hours TTL
+    );
 
     if (!article) {
       return res.status(404).json({ 
@@ -224,6 +247,9 @@ router.post('/', authenticateJWT, async (req, res) => {
       }
     });
 
+    // Invalidate KB article list caches after creation
+    await invalidateCache('nova:kb:articles:list:*');
+
     logger.info(`Knowledge article created: ${article.title} by user ${userId}`);
 
     res.status(201).json({
@@ -289,6 +315,12 @@ router.put('/:id', authenticateJWT, async (req, res) => {
         }
       }
     });
+
+    // Invalidate KB article caches after update
+    await Promise.all([
+      invalidateCache(`nova:kb:article:${req.params.id}:*`), // Specific article
+      invalidateCache('nova:kb:articles:list:*'), // All article lists
+    ]);
 
     logger.info(`Knowledge article updated: ${article.title} by user ${userId}`);
 

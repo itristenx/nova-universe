@@ -1,0 +1,350 @@
+// =============================================================================
+// USER MANAGEMENT & AUTHENTICATION DOMAIN
+// =============================================================================
+// Consolidated from: core/schema.prisma, auth/schema.prisma
+// Contains: User accounts, roles, permissions, authentication
+// =============================================================================
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  name             String?
+  passwordHash     String?   @map("password_hash")
+  disabled         Boolean   @default(false)
+  isDefault        Boolean   @default(false) @map("is_default")
+  
+  // Multi-factor Authentication
+  twoFactorEnabled Boolean   @default(false) @map("two_factor_enabled")
+  twoFactorSecret  String?   @map("two_factor_secret")
+  twoFactorBackupCodes Json?  @map("two_factor_backup_codes")
+  twoFactorVerified Boolean  @default(false) @map("two_factor_verified")
+  
+  // SSO & External Auth
+  samlNameId       String?   @unique @map("saml_name_id")
+  samlSessionIndex String?   @map("saml_session_index")
+  scimExternalId   String?   @map("scim_external_id")
+  lastSamlLogin    DateTime? @map("last_saml_login")
+  
+  // User Profile
+  department       String?
+  jobTitle         String?   @map("job_title")
+  phone            String?
+  location         String?
+  manager          String?   // Reference to another user ID
+  
+  // VIP Status
+  isVip            Boolean   @default(false) @map("is_vip")
+  vipLevel         String?   @map("vip_level") // BRONZE, SILVER, GOLD, PLATINUM
+  vipSlaOverride   Json?     @map("vip_sla_override")
+  
+  // Timestamps
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  lastLogin        DateTime? @map("last_login")
+  
+  // Relationships - Authentication
+  sessions         Session[]
+  passkeys         Passkey[]
+  passwordResets   PasswordReset[]
+  loginAttempts    LoginAttempt[]
+  userProviders    UserProvider[]
+  mfaDevices       MfaDevice[]
+  apiKeys          ApiKey[]
+  
+  // Relationships - RBAC
+  roles            UserRole[]
+  
+  // Relationships - ITSM
+  requestedTickets SupportTicket[]      @relation("TicketRequester")
+  assignedTickets  SupportTicket[]      @relation("TicketAssigned")
+  ticketComments   TicketComment[]
+  ticketWatchers   TicketWatcher[]
+  ticketHistory    TicketHistory[]
+  ticketAttachments TicketAttachment[]
+  ticketTimeEntries TicketTimeEntry[]
+  ticketApprovals  TicketApproval[]
+  
+  // Relationships - Groups & Teams
+  groupMemberships GroupMember[]
+  managedGroups    Group[]              @relation("GroupManager")
+  
+  // Relationships - Knowledge Base
+  kbArticlesAuthored       KbArticle[]        @relation("ArticleAuthor")
+  kbArticleVersionsAuthored KbArticleVersion[] @relation("VersionAuthor")
+  kbArticleComments        KbArticleComment[]
+  
+  // Relationships - Gamification
+  xpEvents         XpEvent[]
+  leaderboard      Leaderboard?
+  
+  // Relationships - Other
+  feedback         Feedback[]
+  logs             Log[]
+  scimMappings     ScimMapping[]
+  vipSlaHistory    VipSlaHistory[]
+  
+  @@map("users")
+  @@index([email])
+  @@index([department])
+  @@index([isVip])
+  @@index([disabled])
+}
+
+// =============================================================================
+// ROLE-BASED ACCESS CONTROL (RBAC)
+// =============================================================================
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  isSystem    Boolean          @default(false) @map("is_system") // System roles cannot be deleted
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  
+  permissions RolePermission[]
+  users       UserRole[]
+  
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  resource    String           // e.g., "tickets", "users", "settings"
+  action      String           // e.g., "create", "read", "update", "delete"
+  isSystem    Boolean          @default(false) @map("is_system")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  
+  roles       RolePermission[]
+  
+  @@unique([resource, action])
+  @@map("permissions")
+}
+
+model UserRole {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  roleId     String   @map("role_id")
+  assignedAt DateTime @default(now()) @map("assigned_at")
+  assignedBy String?  @map("assigned_by") // User ID who assigned the role
+  expiresAt  DateTime? @map("expires_at") // Optional role expiration
+  
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, roleId])
+  @@map("user_roles")
+  @@index([userId])
+  @@index([roleId])
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String     @map("role_id")
+  permissionId String     @map("permission_id")
+  assignedAt   DateTime   @default(now()) @map("assigned_at")
+  
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+// =============================================================================
+// AUTHENTICATION & SESSIONS
+// =============================================================================
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  sessionToken String   @unique @map("session_token")
+  expires      DateTime
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([expires])
+}
+
+model Passkey {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  credentialId String    @unique @map("credential_id")
+  publicKey    String    @map("public_key")
+  counter      Int       @default(0)
+  transports   String?
+  deviceType   String?   @map("device_type")
+  backedUp     Boolean   @default(false) @map("backed_up")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  lastUsed     DateTime? @map("last_used")
+  
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("passkeys")
+  @@index([userId])
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expires   DateTime
+  used      Boolean  @default(false)
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("password_resets")
+  @@index([userId])
+  @@index([token])
+  @@index([expires])
+}
+
+model LoginAttempt {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id") // Null if email doesn't exist
+  email      String
+  ipAddress  String   @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  success    Boolean  @default(false)
+  failReason String?  @map("fail_reason")
+  timestamp  DateTime @default(now())
+  
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("login_attempts")
+  @@index([email, timestamp])
+  @@index([ipAddress, timestamp])
+  @@index([userId])
+}
+
+model AuthProvider {
+  id            String         @id @default(uuid())
+  provider      String         // "saml", "oauth", "local", "ldap"
+  name          String
+  isEnabled     Boolean        @default(true) @map("is_enabled")
+  configuration Json?
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  
+  userProviders UserProvider[]
+  
+  @@unique([provider, name])
+  @@map("auth_providers")
+}
+
+model UserProvider {
+  id               String       @id @default(uuid())
+  userId           String       @map("user_id")
+  providerId       String       @map("provider_id")
+  providerUserId   String       @map("provider_user_id")
+  providerUsername String?      @map("provider_username")
+  metadata         Json?
+  isActive         Boolean      @default(true) @map("is_active")
+  lastLoginAt      DateTime?    @map("last_login_at")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+  
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider         AuthProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  
+  @@unique([providerId, providerUserId])
+  @@map("user_providers")
+  @@index([userId])
+}
+
+model MfaDevice {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  deviceType  String    @map("device_type") // "totp", "sms", "email", "passkey"
+  deviceName  String    @map("device_name")
+  secret      String?   // For TOTP devices
+  phoneNumber String?   @map("phone_number") // For SMS devices
+  isVerified  Boolean   @default(false) @map("is_verified")
+  isActive    Boolean   @default(true) @map("is_active")
+  lastUsedAt  DateTime? @map("last_used_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("mfa_devices")
+  @@index([userId])
+}
+
+model ApiKey {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  name        String
+  keyHash     String    @unique @map("key_hash")
+  permissions String[]  @default([])
+  lastUsedAt  DateTime? @map("last_used_at")
+  expiresAt   DateTime? @map("expires_at")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("api_keys")
+  @@index([userId])
+  @@index([keyHash])
+}
+
+// =============================================================================
+// SCIM (System for Cross-domain Identity Management)
+// =============================================================================
+
+model ScimMapping {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  scimId        String   @unique @map("scim_id")
+  resourceType  String   @map("resource_type") // "User", "Group", etc.
+  externalId    String?  @map("external_id")
+  metadata      Json?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("scim_mappings")
+  @@index([userId])
+}
+
+// =============================================================================
+// AUDIT & LOGGING
+// =============================================================================
+
+model Log {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  ticketId    String?  @map("ticket_id")
+  name        String?
+  email       String?
+  title       String?
+  system      String?
+  urgency     String?
+  timestamp   DateTime @default(now())
+  emailStatus String?  @map("email_status")
+  action      String?  // Type of action logged
+  details     Json?    // Additional context
+  ipAddress   String?  @map("ip_address")
+  
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@map("logs")
+  @@index([userId])
+  @@index([ticketId])
+  @@index([timestamp])
+  @@index([action])
+}
