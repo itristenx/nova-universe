@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { workflowService, type Workflow, type WorkflowExecution } from '@services/workflow';
 import {
   PlayIcon,
   PauseIcon,
@@ -18,33 +19,6 @@ import {
   ArrowRightIcon,
   BoltIcon,
 } from '@heroicons/react/24/outline';
-
-interface Workflow {
-  id: string;
-  name: string;
-  description: string;
-  type: 'PROCESS' | 'APPROVAL' | 'AUTOMATION' | 'INTEGRATION';
-  category: string;
-  status: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'ARCHIVED';
-  version: string;
-  created_by: string;
-  created_at: string;
-  last_executed?: string;
-  execution_count: number;
-  success_rate: number;
-}
-
-interface WorkflowExecution {
-  execution_id: string;
-  workflow_id: string;
-  status: 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
-  started_at: string;
-  completed_at?: string;
-  duration?: number;
-  triggered_by: string;
-  result?: string;
-  error?: string;
-}
 
 interface WorkflowManagerProps {
   className?: string;
@@ -211,113 +185,29 @@ export default function WorkflowManager({ className = '' }: WorkflowManagerProps
     }
   };
 
-  // Mock data - replace with API calls
+  // Load workflows and executions from API
   useEffect(() => {
-    const mockWorkflows: Workflow[] = [
-      {
-        id: 'wf_incident_mgmt',
-        name: 'Incident Management',
-        description: 'Automated incident handling and escalation process',
-        type: 'PROCESS',
-        category: 'INCIDENT',
-        status: 'ACTIVE',
-        version: '1.2.0',
-        created_by: 'admin',
-        created_at: '2024-01-15T10:30:00Z',
-        last_executed: '2024-01-20T14:22:00Z',
-        execution_count: 156,
-        success_rate: 94.5
-      },
-      {
-        id: 'wf_change_approval',
-        name: 'Change Approval Process',
-        description: 'Multi-level change approval workflow with CAB review',
-        type: 'APPROVAL',
-        category: 'CHANGE',
-        status: 'ACTIVE',
-        version: '2.1.0',
-        created_by: 'admin',
-        created_at: '2024-01-10T09:15:00Z',
-        last_executed: '2024-01-20T16:45:00Z',
-        execution_count: 89,
-        success_rate: 98.9
-      },
-      {
-        id: 'wf_user_provisioning',
-        name: 'User Provisioning',
-        description: 'Automated user account and access management',
-        type: 'AUTOMATION',
-        category: 'IAM',
-        status: 'ACTIVE',
-        version: '1.0.0',
-        created_by: 'admin',
-        created_at: '2024-01-08T11:00:00Z',
-        last_executed: '2024-01-20T13:30:00Z',
-        execution_count: 234,
-        success_rate: 96.2
-      },
-      {
-        id: 'wf_backup_routine',
-        name: 'Daily Backup Routine',
-        description: 'Automated daily backup and verification process',
-        type: 'AUTOMATION',
-        category: 'BACKUP',
-        status: 'PAUSED',
-        version: '1.1.2',
-        created_by: 'admin',
-        created_at: '2024-01-05T08:00:00Z',
-        last_executed: '2024-01-19T02:00:00Z',
-        execution_count: 45,
-        success_rate: 100.0
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [workflowsResponse, executionsResponse] = await Promise.all([
+          workflowService.getWorkflows({ limit: 100 }),
+          workflowService.getExecutions({ limit: 50 }),
+        ]);
+        
+        setWorkflows(workflowsResponse.workflows || []);
+        setWorkflowExecutions(executionsResponse.executions || []);
+      } catch (error) {
+        console.error('Failed to load workflow data:', error);
+        // Set empty state on error
+        setWorkflows([]);
+        setWorkflowExecutions([]);
+      } finally {
+        setLoading(false);
       }
-    ];
-
-    // Mock execution data
-    const mockExecutions: WorkflowExecution[] = [
-      {
-        execution_id: 'exec_001',
-        workflow_id: 'wf_incident_mgmt',
-        status: 'COMPLETED',
-        started_at: '2024-01-20T14:22:00Z',
-        completed_at: '2024-01-20T14:25:30Z',
-        duration: 210000,
-        triggered_by: 'user@company.com',
-        result: 'Incident INC001234 created and assigned to Level 1 Support',
-      },
-      {
-        execution_id: 'exec_002',
-        workflow_id: 'wf_change_approval',
-        status: 'RUNNING',
-        started_at: '2024-01-20T16:45:00Z',
-        triggered_by: 'manager@company.com',
-      },
-      {
-        execution_id: 'exec_003',
-        workflow_id: 'wf_user_provisioning',
-        status: 'FAILED',
-        started_at: '2024-01-20T13:30:00Z',
-        completed_at: '2024-01-20T13:32:15Z',
-        duration: 165000,
-        triggered_by: 'hr@company.com',
-        error: 'Active Directory connection timeout',
-      },
-      {
-        execution_id: 'exec_004',
-        workflow_id: 'wf_backup_routine',
-        status: 'COMPLETED',
-        started_at: '2024-01-19T02:00:00Z',
-        completed_at: '2024-01-19T02:45:20Z',
-        duration: 2720000,
-        triggered_by: 'scheduler',
-        result: 'Backup completed successfully - 450GB archived',
-      },
-    ];
-
-    setTimeout(() => {
-      setWorkflows(mockWorkflows);
-      setWorkflowExecutions(mockExecutions);
-      setLoading(false);
-    }, 1000);
+    };
+    
+    loadData();
   }, []);
 
   const getStatusIcon = (status: string) => {
