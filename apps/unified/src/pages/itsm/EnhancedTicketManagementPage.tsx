@@ -448,13 +448,8 @@ export const EnhancedTicketManagementPage: React.FC = () => {
             loading={loading}
             onRowClick={handleRowClick}
             selectable
-            onSelectionChange={setSelectedRows}
-            pagination={{
-              page,
-              perPage: 25,
-              total,
-              onPageChange: setPage,
-            }}
+            onSelectionChange={(rows) => setSelectedRows(rows.map((r) => r.id))}
+            pageSize={25}
           />
         </div>
       </div>
@@ -469,18 +464,24 @@ export const EnhancedTicketManagementPage: React.FC = () => {
       >
         {selectedTicket && (
           <>
-            <ContextPanelSection title="Details" defaultOpen>
-              <ContextPanelField label="Status">
-                <StatusBadge variant={selectedTicket.status as any} showDot />
-              </ContextPanelField>
-              <ContextPanelField label="Priority">
-                <StatusBadge variant={selectedTicket.priority as any} />
-              </ContextPanelField>
+            <ContextPanelSection title="Details">
+              <ContextPanelField
+                label="Status"
+                value={
+                  <StatusBadge variant={selectedTicket.status as any} showDot />
+                }
+              />
+              <ContextPanelField
+                label="Priority"
+                value={
+                  <StatusBadge variant={selectedTicket.priority as any} />
+                }
+              />
               <ContextPanelField label="Type" value={selectedTicket.type} />
               <ContextPanelField label="Category" value={selectedTicket.category || 'N/A'} />
             </ContextPanelSection>
 
-            <ContextPanelSection title="Description" defaultOpen>
+            <ContextPanelSection title="Description">
               <p className="font-sf-text text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                 {selectedTicket.description}
               </p>
@@ -489,11 +490,11 @@ export const EnhancedTicketManagementPage: React.FC = () => {
             <ContextPanelSection title="Assignment">
               <ContextPanelField
                 label="Requester"
-                value={selectedTicket.requester?.name || 'Unknown'}
+                value={selectedTicket.requester?.displayName || selectedTicket.requester?.email || 'Unknown'}
               />
               <ContextPanelField
                 label="Assignee"
-                value={selectedTicket.assignee?.name || 'Unassigned'}
+                value={selectedTicket.assignee?.displayName || selectedTicket.assignee?.email || 'Unassigned'}
               />
               <ContextPanelField
                 label="Group"
