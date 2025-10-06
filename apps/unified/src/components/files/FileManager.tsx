@@ -49,10 +49,10 @@ export function FileManager({
       setLoading(true);
       setError(null);
 
-      // This would typically call a list files API endpoint
-      // For now, we'll simulate it
-      const mockFiles: UploadedFile[] = [];
-      setFiles(mockFiles);
+      // Load files from API
+      // TODO: Implement files API call via filesService.getFiles()
+      const files: UploadedFile[] = [];
+      setFiles(files);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load files');
     } finally {

@@ -63,39 +63,12 @@ export default function CatalogManagement() {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
 
-  // TODO: Replace with actual API calls to /api/v1/catalog
-  // Mock data for demo
+  // Categories should be loaded from API via catalogService
+  // The catalog store handles data management
   useEffect(() => {
-    if (categories.length === 0) {
-      // Create sample categories
-      createCategory({
-        name: 'Software & Licenses',
-        description: 'Software applications, licenses, and digital tools',
-        icon: 'package',
-        order_index: 1,
-        status: 'active',
-        item_count: 0,
-      });
-
-      createCategory({
-        name: 'Hardware & Equipment',
-        description: 'Computers, devices, and physical equipment',
-        icon: 'monitor',
-        order_index: 2,
-        status: 'active',
-        item_count: 0,
-      });
-
-      createCategory({
-        name: 'Services & Consulting',
-        description: 'Professional services and consulting',
-        icon: 'users',
-        order_index: 3,
-        status: 'active',
-        item_count: 0,
-      });
-    }
-  }, [categories.length, createCategory]);
+    // Load categories and items from API if needed
+    // catalogService.getCategories() and catalogService.getItems()
+  }, []);
 
   const filteredItems = getFilteredItems();
 

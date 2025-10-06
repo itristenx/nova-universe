@@ -652,33 +652,19 @@ const CMDBDashboard: React.FC<CMDBDashboardProps> = ({
   };
 
   // Handle impact analysis
-  const handleImpactAnalysis = (ci: ConfigurationItem) => {
+  const handleImpactAnalysis = async (ci: ConfigurationItem) => {
     setSelectedCI(ci);
 
-    // Mock impact analysis
-    const mockImpactAnalysis: ImpactAnalysisResult = {
-      affected_cis: configurationItems.filter((item) => item.id !== ci.id).slice(0, 3),
-      dependency_depth: 3,
-      business_impact: 'HIGH',
-      affected_services: ['Customer Portal', 'Mobile App', 'API Gateway'],
-      estimated_users_affected: 15000,
-      recovery_time_estimate: 4.5,
-      dependencies: [
-        {
-          ci: configurationItems[1],
-          relationship: 'DEPENDS_ON',
-          impact_level: 'DIRECT',
-        },
-        {
-          ci: configurationItems[2],
-          relationship: 'RUNS_ON',
-          impact_level: 'INDIRECT',
-        },
-      ],
-    };
-
-    setImpactAnalysis(mockImpactAnalysis);
-    onPerformImpactAnalysis?.(ci.id);
+    try {
+      // Load impact analysis from API
+      const analysis = await cmdbService.performImpactAnalysis(ci.id);
+      setImpactAnalysis(analysis);
+      onPerformImpactAnalysis?.(ci.id);
+    } catch (error) {
+      console.error('Failed to perform impact analysis:', error);
+      // Set empty impact analysis on error
+      setImpactAnalysis(null);
+    }
   };
 
   // Render metrics cards

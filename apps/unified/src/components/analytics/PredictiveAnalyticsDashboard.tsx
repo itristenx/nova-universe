@@ -60,79 +60,11 @@ interface PredictiveAnalyticsDashboardProps {
   refreshInterval?: number;
 }
 
-// Mock data for demonstration
-const mockMetrics: Metric[] = [
-  {
-    id: 'total-tickets',
-    name: 'Total Tickets',
-    value: 1247,
-    previousValue: 1156,
-    change: 7.9,
-    changeType: 'increase',
-    trend: 'up',
-    description: 'Total number of support tickets created',
-    category: 'volume',
-  },
-  {
-    id: 'avg-resolution-time',
-    name: 'Avg Resolution Time',
-    value: '4.2h',
-    previousValue: '5.1h',
-    change: -17.6,
-    changeType: 'decrease',
-    trend: 'down',
-    unit: 'hours',
-    description: 'Average time to resolve tickets',
-    category: 'performance',
-  },
-  {
-    id: 'satisfaction-score',
-    name: 'Satisfaction Score',
-    value: '4.6/5',
-    previousValue: '4.4/5',
-    change: 4.5,
-    changeType: 'increase',
-    trend: 'up',
-    description: 'Customer satisfaction rating',
-    category: 'satisfaction',
-  },
-  {
-    id: 'first-contact-resolution',
-    name: 'First Contact Resolution',
-    value: '78%',
-    previousValue: '73%',
-    change: 6.8,
-    changeType: 'increase',
-    trend: 'up',
-    unit: '%',
-    description: 'Tickets resolved on first contact',
-    category: 'efficiency',
-  },
-  {
-    id: 'escalation-rate',
-    name: 'Escalation Rate',
-    value: '12%',
-    previousValue: '15%',
-    change: -20.0,
-    changeType: 'decrease',
-    trend: 'down',
-    unit: '%',
-    description: 'Percentage of tickets escalated',
-    category: 'efficiency',
-  },
-  {
-    id: 'active-agents',
-    name: 'Active Agents',
-    value: 34,
-    previousValue: 32,
-    change: 6.3,
-    changeType: 'increase',
-    trend: 'up',
-    description: 'Number of agents currently handling tickets',
-    category: 'volume',
-  },
-];
+// Predictive analytics data should be loaded from ML/analytics API
+const mockMetrics: Metric[] = [];
 
+const mockPredictions: Prediction[] = [];
+const mockChartData: ChartDataPoint[] = [];
 const mockPredictions: Prediction[] = [
   {
     id: 'volume-surge-monday',
