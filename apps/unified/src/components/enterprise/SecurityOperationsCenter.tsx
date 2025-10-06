@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { securityService } from '@services/security';
 
 // Local type definitions
 interface BaseRecord {
@@ -549,188 +550,23 @@ const SecurityOperationsCenter: React.FC<SecurityOperationsCenterProps> = ({
       setError(null);
 
       // TODO: Replace with actual API calls to /api/v1/security/incidents, /api/v1/security/vulnerabilities
-      // Mock data for demonstration
-      const mockSecurityIncidents: SecurityIncident[] = [
-        {
-          id: '1',
-          number: 'SEC0001001',
-          short_description: 'Suspicious network activity detected',
-          description: 'Unusual outbound network traffic patterns detected from workstation WS-001',
-          state: 'INVESTIGATION',
-          severity: 'HIGH',
-          category: 'UNAUTHORIZED_ACCESS',
-          assigned_to_id: '1',
-          assigned_to: {
-            id: '1',
-            email: 'security@company.com',
-            first_name: 'Security',
-            last_name: 'Team',
-            created_at: '',
-            updated_at: '',
-          },
-          assignment_group: 'SOC Team',
-          source: 'Network IDS',
-          attack_vector: 'Network',
-          affected_users: ['user1@company.com', 'user2@company.com'],
-          affected_systems: ['WS-001', 'SERVER-001'],
-          mitre_tactics: ['T1071', 'T1059'],
-          mitre_techniques: ['Application Layer Protocol', 'Command and Scripting Interpreter'],
-          detected_at: '2024-01-10T14:30:00Z',
-          opened_at: '2024-01-10T14:30:00Z',
-          created_at: '2024-01-10T14:30:00Z',
-          updated_at: '2024-01-10T14:30:00Z',
-        },
-        {
-          id: '2',
-          number: 'SEC0001002',
-          short_description: 'Malware detected on user workstation',
-          description: 'Antivirus software detected malware on employee workstation',
-          state: 'CONTAINMENT',
-          severity: 'CRITICAL',
-          category: 'MALWARE',
-          assigned_to_id: '1',
-          assigned_to: {
-            id: '1',
-            email: 'security@company.com',
-            first_name: 'Security',
-            last_name: 'Team',
-            created_at: '',
-            updated_at: '',
-          },
-          assignment_group: 'SOC Team',
-          source: 'Endpoint Protection',
-          attack_vector: 'Email',
-          affected_users: ['victim@company.com'],
-          affected_systems: ['WS-042'],
-          mitre_tactics: ['T1566'],
-          mitre_techniques: ['Phishing'],
-          containment_actions: 'Workstation isolated from network',
-          detected_at: '2024-01-10T16:15:00Z',
-          opened_at: '2024-01-10T16:15:00Z',
-          created_at: '2024-01-10T16:15:00Z',
-          updated_at: '2024-01-10T16:15:00Z',
-        },
-      ];
 
-      const mockVulnerabilities: Vulnerability[] = [
-        {
-          id: '1',
-          number: 'VUL0001001',
-          cve_id: 'CVE-2024-0001',
-          title: 'Critical RCE vulnerability in web application',
-          description: 'Remote code execution vulnerability in customer portal',
-          severity: 'CRITICAL',
-          cvss_score: 9.8,
-          state: 'REMEDIATION',
-          assigned_to_id: '2',
-          assigned_to: {
-            id: '2',
-            email: 'dev@company.com',
-            first_name: 'Dev',
-            last_name: 'Team',
-            created_at: '',
-            updated_at: '',
-          },
-          assignment_group: 'Security Engineering',
-          affected_software: 'Customer Portal',
-          affected_version: '2.1.3',
-          exploit_available: true,
-          patch_available: true,
-          patch_details: 'Upgrade to version 2.1.4',
-          remediation_plan: 'Apply security patch during next maintenance window',
-          due_date: '2024-01-12T00:00:00Z',
-          discovered_at: '2024-01-08T10:00:00Z',
-          opened_at: '2024-01-08T10:00:00Z',
-          created_at: '2024-01-08T10:00:00Z',
-          updated_at: '2024-01-08T10:00:00Z',
-        },
-      ];
-
-      const mockPlaybookExecutions: PlaybookExecution[] = [
-        {
-          id: '1',
-          playbook_name: 'Malware Containment and Eradication',
-          security_incident_id: '2',
-          status: 'RUNNING',
-          started_at: '2024-01-10T16:20:00Z',
-          executed_by_id: '1',
-          executed_by: {
-            id: '1',
-            email: 'security@company.com',
-            first_name: 'Security',
-            last_name: 'Team',
-            created_at: '',
-            updated_at: '',
-          },
-          steps_completed: 3,
-          total_steps: 8,
-          success_rate: 100,
-          created_at: '2024-01-10T16:20:00Z',
-          updated_at: '2024-01-10T16:20:00Z',
-        },
-      ];
-
-      const mockDashboard: SecurityOperationsDashboard = {
-        securityIncidents: {
-          total: 15,
-          new: 3,
-          investigation: 7,
-          containment: 3,
-          closed: 2,
-          by_severity: { CRITICAL: 4, HIGH: 6, MEDIUM: 3, LOW: 2, INFORMATIONAL: 0 },
-          by_category: {
-            MALWARE: 5,
-            PHISHING: 3,
-            DATA_BREACH: 1,
-            UNAUTHORIZED_ACCESS: 4,
-            DDoS: 1,
-            INSIDER_THREAT: 0,
-            APT: 1,
-            VULNERABILITY_EXPLOITATION: 0,
-            OTHER: 0,
-          },
-        },
-        vulnerabilities: {
-          total: 42,
-          new: 8,
-          assessment: 15,
-          remediation: 12,
-          closed: 7,
-          by_severity: { CRITICAL: 6, HIGH: 15, MEDIUM: 18, LOW: 3 },
-          critical_overdue: 2,
-        },
-        threatIntelligence: {
-          active_threats: 23,
-          blocked_ips: 156,
-          quarantined_files: 89,
-          recent_attacks: [
-            { type: 'Brute Force', count: 45, trend: 'up' },
-            { type: 'Phishing', count: 23, trend: 'down' },
-            { type: 'Malware', count: 17, trend: 'stable' },
-          ],
-        },
-        playbooks: {
-          total_playbooks: 12,
-          executions_today: 8,
-          success_rate: 94,
-          average_execution_time: 15.3,
-        },
-        securityMetrics: {
-          mean_time_to_detection: 8.5,
-          mean_time_to_response: 12.3,
-          mean_time_to_recovery: 156.7,
-          security_incidents_prevented: 234,
-        },
-        timestamp: new Date().toISOString(),
-      };
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setSecurityIncidents(mockSecurityIncidents);
-      setVulnerabilities(mockVulnerabilities);
-      setPlaybookExecutions(mockPlaybookExecutions);
-      setDashboardData(mockDashboard);
+      // Load security data from API
+      const [incidentsResponse, vulnerabilitiesResponse] = await Promise.all([
+        securityService.getIncidents({ limit: 100 }),
+        securityService.getVulnerabilities({ limit: 100 }),
+      ]);
+      
+      setSecurityIncidents(incidentsResponse.incidents || []);
+      setVulnerabilities(vulnerabilitiesResponse.vulnerabilities || []);
+      
+      // Set dashboard data based on loaded data
+      setDashboardData({
+        total_incidents: incidentsResponse.total || 0,
+        critical_incidents: (incidentsResponse.incidents || []).filter(i => i.severity === 'CRITICAL').length,
+        total_vulnerabilities: vulnerabilitiesResponse.total || 0,
+        critical_vulnerabilities: (vulnerabilitiesResponse.vulnerabilities || []).filter(v => v.severity === 'CRITICAL').length,
+      } as any);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load security operations data');
     } finally {

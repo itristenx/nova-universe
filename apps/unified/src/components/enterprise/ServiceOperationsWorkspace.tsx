@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { apiClient } from '../../services/api';
+import { serviceOperationsService } from '@services/serviceOperations';
 
 // Local type definitions
 interface BaseRecord {
@@ -488,240 +488,27 @@ const ServiceOperationsWorkspace: React.FC<ServiceOperationsWorkspaceProps> = ({
       setLoading(true);
       setError(null);
 
-      // TODO: Replace with actual API calls to /api/v1/service-requests, /api/v1/incidents, /api/v1/changes, /api/v1/problems
-      const mockServiceRequests: ServiceRequest[] = [
-        {
-          id: '1',
-          number: 'SR0001001',
-          short_description: 'Request for new laptop',
-          description: 'Employee needs a new Dell laptop for remote work',
-          state: 'IN_PROGRESS',
-          priority: 'MEDIUM',
-          urgency: 'MEDIUM',
-          impact: 'LOW',
-          category: 'Hardware',
-          subcategory: 'Laptop',
-          requested_by_id: '1',
-          requested_by: {
-            id: '1',
-            email: 'john@company.com',
-            first_name: 'John',
-            last_name: 'Doe',
-            created_at: '',
-            updated_at: '',
-          },
-          assigned_to_id: '2',
-          assigned_to: {
-            id: '2',
-            email: 'jane@company.com',
-            first_name: 'Jane',
-            last_name: 'Smith',
-            created_at: '',
-            updated_at: '',
-          },
-          assignment_group: 'Hardware Team',
-          sla_due_date: '2024-01-15T10:00:00Z',
-          opened_at: '2024-01-10T09:00:00Z',
-          created_at: '2024-01-10T09:00:00Z',
-          updated_at: '2024-01-10T09:00:00Z',
-        },
-      ];
 
-      const mockIncidents: Incident[] = [
-        {
-          id: '1',
-          number: 'INC0001001',
-          short_description: 'Email server down',
-          description: 'Users unable to access email services',
-          state: 'IN_PROGRESS',
-          priority: 'HIGH',
-          urgency: 'HIGH',
-          impact: 'HIGH',
-          category: 'Infrastructure',
-          subcategory: 'Email',
-          assigned_to_id: '3',
-          assigned_to: {
-            id: '3',
-            email: 'tech@company.com',
-            first_name: 'Tech',
-            last_name: 'Support',
-            created_at: '',
-            updated_at: '',
-          },
-          assignment_group: 'Infrastructure Team',
-          caller_id: '1',
-          caller: {
-            id: '1',
-            email: 'john@company.com',
-            first_name: 'John',
-            last_name: 'Doe',
-            created_at: '',
-            updated_at: '',
-          },
-          sla_due_date: '2024-01-11T10:00:00Z',
-          opened_at: '2024-01-10T08:00:00Z',
-          created_at: '2024-01-10T08:00:00Z',
-          updated_at: '2024-01-10T08:00:00Z',
-        },
-      ];
-
-      const mockChanges: Change[] = [
-        {
-          id: '1',
-          number: 'CHG0001001',
-          short_description: 'Server maintenance window',
-          description: 'Scheduled maintenance for production servers',
-          state: 'SCHEDULED',
-          priority: 'MEDIUM',
-          risk: 'MODERATE',
-          impact: 'HIGH',
-          category: 'Infrastructure',
-          type: 'NORMAL',
-          assigned_to_id: '3',
-          assigned_to: {
-            id: '3',
-            email: 'tech@company.com',
-            first_name: 'Tech',
-            last_name: 'Support',
-            created_at: '',
-            updated_at: '',
-          },
-          assignment_group: 'Change Advisory Board',
-          requested_by_id: '2',
-          requested_by: {
-            id: '2',
-            email: 'jane@company.com',
-            first_name: 'Jane',
-            last_name: 'Smith',
-            created_at: '',
-            updated_at: '',
-          },
-          planned_start_date: '2024-01-15T02:00:00Z',
-          planned_end_date: '2024-01-15T06:00:00Z',
-          implementation_plan: 'Update server OS and security patches',
-          backout_plan: 'Rollback to previous OS version if issues occur',
-          opened_at: '2024-01-08T14:00:00Z',
-          created_at: '2024-01-08T14:00:00Z',
-          updated_at: '2024-01-08T14:00:00Z',
-        },
-      ];
-
-      const mockProblems: Problem[] = [
-        {
-          id: '1',
-          number: 'PRB0001001',
-          short_description: 'Recurring network timeouts',
-          description: 'Intermittent network connectivity issues affecting multiple users',
-          state: 'INVESTIGATION',
-          priority: 'HIGH',
-          impact: 'HIGH',
-          category: 'Network',
-          subcategory: 'Connectivity',
-          assigned_to_id: '3',
-          assigned_to: {
-            id: '3',
-            email: 'tech@company.com',
-            first_name: 'Tech',
-            last_name: 'Support',
-            created_at: '',
-            updated_at: '',
-          },
-          assignment_group: 'Network Team',
-          opened_at: '2024-01-09T11:00:00Z',
-          created_at: '2024-01-09T11:00:00Z',
-          updated_at: '2024-01-09T11:00:00Z',
-        },
-      ];
-
-      const mockDashboard: ServiceOperationsDashboard = {
-        incidents: {
-          total: 25,
-          new: 5,
-          in_progress: 12,
-          resolved: 6,
-          closed: 2,
-          overdue: 3,
-          by_priority: { CRITICAL: 2, HIGH: 8, MEDIUM: 10, LOW: 5 },
-        },
-        serviceRequests: {
-          total: 45,
-          new: 8,
-          in_progress: 22,
-          resolved: 12,
-          closed: 3,
-          overdue: 5,
-          by_priority: { CRITICAL: 1, HIGH: 6, MEDIUM: 25, LOW: 13 },
-        },
-        changes: {
-          total: 15,
-          new: 3,
-          in_progress: 7,
-          resolved: 4,
-          closed: 1,
-          overdue: 2,
-          by_priority: { CRITICAL: 0, HIGH: 3, MEDIUM: 8, LOW: 4 },
-        },
-        problems: {
-          total: 8,
-          new: 2,
-          in_progress: 4,
-          resolved: 2,
-          closed: 0,
-          overdue: 1,
-          by_priority: { CRITICAL: 1, HIGH: 3, MEDIUM: 3, LOW: 1 },
-        },
-        sla: {
-          response_sla_met: 85,
-          resolution_sla_met: 78,
-          average_response_time: 2.5,
-          average_resolution_time: 24.8,
-        },
-        timestamp: new Date().toISOString(),
-      };
-
-      // Fetch real data from API endpoints
-      try {
-        const [requestsResponse, incidentsResponse, changesResponse, problemsResponse] = await Promise.all([
-          apiClient.get('/api/v1/service-requests'),
-          apiClient.get('/api/v1/incidents'),
-          apiClient.get('/api/v1/changes'),
-          apiClient.get('/api/v1/problems'),
-        ]);
-
-        const serviceRequests = Array.isArray(requestsResponse.data) ? requestsResponse.data : [];
-        const incidents = Array.isArray(incidentsResponse.data) ? incidentsResponse.data : [];
-        const changes = Array.isArray(changesResponse.data) ? changesResponse.data : [];
-        const problems = Array.isArray(problemsResponse.data) ? problemsResponse.data : [];
-
-        setServiceRequests(serviceRequests);
-        setIncidents(incidents);
-        setChanges(changes);
-        setProblems(problems);
-        
-        // Generate dashboard metrics from real data
-        const dashboardData = {
-          totalServiceRequests: serviceRequests.length,
-          openIncidents: incidents.filter((i: any) => ['NEW', 'IN_PROGRESS'].includes(i.state)).length,
-          scheduledChanges: changes.filter((c: any) => c.state === 'SCHEDULED').length,
-          activeProblems: problems.filter((p: any) => ['NEW', 'INVESTIGATION', 'ROOT_CAUSE_ANALYSIS'].includes(p.state)).length,
-        };
-        setDashboardData(dashboardData);
-      } catch (apiError) {
-        console.warn('API endpoints not available, using empty data:', apiError);
-        // Set empty data when API is not available
-        setServiceRequests([]);
-        setIncidents([]);
-        setChanges([]);
-        setProblems([]);
-        setDashboardData({
-          totalServiceRequests: 0,
-          openIncidents: 0,
-          scheduledChanges: 0,
-          activeProblems: 0,
-        });
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load service operations data');
+      // Load service operations data from API
+      const [requestsResp, incidentsResp, changesResp, problemsResp] = await Promise.all([
+        serviceOperationsService.getServiceRequests({ limit: 100 }),
+        serviceOperationsService.getIncidents({ limit: 100 }),
+        serviceOperationsService.getChanges({ limit: 100 }),
+        serviceOperationsService.getProblems({ limit: 100 }),
+      ]);
+      
+      setServiceRequests(requestsResp.requests || []);
+      setIncidents(incidentsResp.incidents || []);
+      setChanges(changesResp.changes || []);
+      setProblems(problemsResp.problems || []);
+      
+      // Set dashboard data
+      setDashboard({
+        total_requests: requestsResp.total || 0,
+        total_incidents: incidentsResp.total || 0,
+        total_changes: changesResp.total || 0,
+        total_problems: problemsResp.total || 0,
+      } as any);
     } finally {
       setLoading(false);
     }

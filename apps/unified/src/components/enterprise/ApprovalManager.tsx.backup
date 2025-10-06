@@ -39,28 +39,147 @@ export default function ApprovalManager({ className = '', mode = 'admin' }: Appr
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectReason, setShowRejectReason] = useState(false);
 
-  // Load approval flows and instances from API
+  // TODO: Replace with actual API calls to /api/v1/approvals/flows, /api/v1/approvals/instances
+  // Mock data - replace with API calls
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const [flowsResponse, instancesResponse] = await Promise.all([
-          approvalsService.getFlows({ limit: 100 }),
-          approvalsService.getInstances({ limit: 100 }),
-        ]);
-        
-        setApprovalFlows(flowsResponse.flows || []);
-        setApprovalInstances(instancesResponse.instances || []);
-      } catch (error) {
-        console.error('Failed to load approval data:', error);
-        setApprovalFlows([]);
-        setApprovalInstances([]);
-      } finally {
-        setLoading(false);
+    const mockFlows: ApprovalFlow[] = [
+      {
+        id: 'flow_standard_purchase',
+        name: 'Standard Purchase Approval',
+        description: 'Standard approval process for purchase requests under $5000',
+        trigger_conditions: {
+          request_types: ['purchase', 'equipment'],
+          cost_threshold: 5000,
+          department: ['IT', 'Operations']
+        },
+        steps: [
+          {
+            step_number: 1,
+            name: 'Manager Approval',
+            approvers: ['mgr_001', 'mgr_002'],
+            approver_roles: ['Manager', 'Team Lead'],
+            conditions: { all_required: false, minimum_approvals: 1 },
+            timeout_hours: 24,
+            escalation: {
+              enabled: true,
+              timeout_hours: 48,
+              escalate_to: ['dir_001']
+            }
+          },
+          {
+            step_number: 2,
+            name: 'Finance Approval',
+            approvers: ['fin_001'],
+            approver_roles: ['Finance Manager'],
+            conditions: { all_required: true },
+            timeout_hours: 48
+          }
+        ],
+        is_active: true,
+        priority: 1,
+        created_by: 'admin',
+        created_at: '2024-01-15T10:00:00Z',
+        updated_at: '2024-01-15T10:00:00Z'
+      },
+      {
+        id: 'flow_high_value_purchase',
+        name: 'High Value Purchase Approval',
+        description: 'Enhanced approval process for purchases over $5000',
+        trigger_conditions: {
+          request_types: ['purchase', 'equipment'],
+          cost_threshold: 5000,
+        },
+        steps: [
+          {
+            step_number: 1,
+            name: 'Manager Approval',
+            approvers: ['mgr_001'],
+            approver_roles: ['Manager'],
+            conditions: { all_required: true },
+            timeout_hours: 24
+          },
+          {
+            step_number: 2,
+            name: 'Finance Review',
+            approvers: ['fin_001'],
+            approver_roles: ['Finance Manager'],
+            conditions: { all_required: true },
+            timeout_hours: 48
+          },
+          {
+            step_number: 3,
+            name: 'Executive Approval',
+            approvers: ['exec_001'],
+            approver_roles: ['Director', 'VP'],
+            conditions: { all_required: true },
+            timeout_hours: 72
+          }
+        ],
+        is_active: true,
+        priority: 2,
+        created_by: 'admin',
+        created_at: '2024-01-10T14:30:00Z',
+        updated_at: '2024-01-10T14:30:00Z'
       }
-    };
-    
-    loadData();
+    ];
+
+    const mockInstances: ApprovalInstance[] = [
+      {
+        id: 'inst_001',
+        workflow_id: 'flow_standard_purchase',
+        request_id: 'req_001',
+        current_step: 1,
+        status: 'pending',
+        metadata: {
+          request_details: {
+            item_name: 'MacBook Pro 16-inch',
+            cost: 2999,
+            justification: 'Replacement for development work'
+          }
+        },
+        created_at: '2024-01-20T09:30:00Z',
+        updated_at: '2024-01-20T09:30:00Z',
+        workflow_name: 'Standard Purchase Approval',
+        requester_name: 'John Smith',
+        item_name: 'MacBook Pro 16-inch',
+        total_cost: 2999
+      },
+      {
+        id: 'inst_002',
+        workflow_id: 'flow_high_value_purchase',
+        request_id: 'req_002',
+        current_step: 2,
+        status: 'pending',
+        metadata: {
+          actions: [
+            {
+              step: 1,
+              action: 'approve',
+              comment: 'Request approved for business need',
+              approved_by: 'mgr_001',
+              approved_at: '2024-01-19T14:00:00Z'
+            }
+          ],
+          request_details: {
+            item_name: 'Server Hardware Upgrade',
+            cost: 15000,
+            justification: 'Critical infrastructure upgrade'
+          }
+        },
+        created_at: '2024-01-19T11:00:00Z',
+        updated_at: '2024-01-19T14:00:00Z',
+        workflow_name: 'High Value Purchase Approval',
+        requester_name: 'Sarah Johnson',
+        item_name: 'Server Hardware Upgrade',
+        total_cost: 15000
+      }
+    ];
+
+    setTimeout(() => {
+      setApprovalFlows(mockFlows);
+      setApprovalInstances(mockInstances);
+      setLoading(false);
+    }, 1000);
   }, []);
 
   const getStatusIcon = (status: string) => {
