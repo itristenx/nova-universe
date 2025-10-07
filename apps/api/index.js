@@ -54,6 +54,9 @@ import agentPortalRouter from './routes/agent-portal.js'; // Agent Portal APIs (
 import knowledgeRouter from './routes/knowledge.js'; // Knowledge Base APIs (articles, search, categories)
 import servicesRouter from './routes/services.js'; // Services APIs (popular, featured, categories)
 
+// Week 2 Backend Integration - Admin & Monitoring APIs
+import webhooksRouter from './routes/webhooks.js'; // Webhook Configuration APIs (CRUD, test, logs)
+
 // TEMPORARILY COMMENTED OUT - ESM IMPORT ISSUES WITH @prisma/client
 // import serviceCatalogAPIRouter from './routes/service-catalog.js'; // Service Catalog API  
 // import incidentsRouter from './routes/incidents.js'; // Incidents API
@@ -2500,6 +2503,7 @@ v1Router.use('/announcements', announcementsRouter); // System Announcements
 // V1 Integration & Communication Routes
 // ========================================
 v1Router.use('/integrations', integrationsRouter); // Third-Party Integrations
+v1Router.use('/webhooks', webhooksRouter); // Webhook Configuration (CRUD, test, logs) - Week 2
 v1Router.use('/helpscout', helpscoutRouter); // HelpScout Integration
 v1Router.use('/comms', commsRouter); // Nova Comms - Slack Integration
 v1Router.use('/websocket', websocketRouter); // WebSocket Management
