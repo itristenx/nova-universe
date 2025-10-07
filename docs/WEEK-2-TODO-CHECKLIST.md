@@ -165,16 +165,16 @@ Week 2 builds on Week 1's foundation by adding:
 
 **Endpoints to Implement** (5 endpoints):
 
-- [ ] `GET /api/v1/knowledge/articles/:id/versions` - List article versions
-  - Returns all versions with metadata
+- [x] `GET /api/v1/knowledge/articles/:id/versions` - List article versions
+  - ✅ IMPLEMENTED - Returns all versions with metadata
   - **Updates**: `apps/api/routes/knowledge.js`
 
-- [ ] `GET /api/v1/knowledge/articles/:id/versions/:versionId` - Get specific version
-  - Returns version content
+- [x] `GET /api/v1/knowledge/articles/:id/versions/:versionId` - Get specific version
+  - ✅ IMPLEMENTED - Returns version content
   - **Updates**: `apps/api/routes/knowledge.js`
 
-- [ ] `POST /api/v1/knowledge/articles/:id/versions/:versionId/restore` - Restore version
-  - Creates new version from old content
+- [x] `POST /api/v1/knowledge/articles/:id/versions/:versionId/restore` - Restore version
+  - ✅ IMPLEMENTED - Creates new version from old content
   - Returns restored article
   - **Updates**: `apps/api/routes/knowledge.js`
 
@@ -182,13 +182,14 @@ Week 2 builds on Week 1's foundation by adding:
   - Query params: `v1`, `v2`
   - Returns diff between versions
   - **Updates**: `apps/api/routes/knowledge.js`
+  - ⚠️ **NOT IMPLEMENTED** - Deferred to future release
 
-- [ ] `GET /api/v1/knowledge/articles/:id/history` - Get edit history
-  - Returns timeline of changes with authors
+- [x] `GET /api/v1/knowledge/articles/:id/history` - Get edit history
+  - ✅ IMPLEMENTED - Returns timeline of changes with authors
   - **Updates**: `apps/api/routes/knowledge.js`
 
 **Database Models Required**:
-- `KbArticleVersion` (already exists in `knowledge.prisma` ✅)
+- [x] `KbArticleVersion` - ✅ EXISTS in `prisma/schema/knowledge.prisma`
 
 ---
 
@@ -196,22 +197,22 @@ Week 2 builds on Week 1's foundation by adding:
 
 **Endpoints to Implement** (6 endpoints):
 
-- [ ] `GET /api/v1/knowledge/articles/:id/comments` - List comments
-  - Returns all comments for article
+- [x] `GET /api/v1/knowledge/articles/:id/comments` - List comments
+  - ✅ IMPLEMENTED - Returns all comments for article (with nested replies)
   - **Updates**: `apps/api/routes/knowledge.js`
 
-- [ ] `POST /api/v1/knowledge/articles/:id/comments` - Add comment
-  - Body: `{ content, userId }`
+- [x] `POST /api/v1/knowledge/articles/:id/comments` - Add comment
+  - ✅ IMPLEMENTED - Body: `{ content, userId }`
   - Returns created comment
   - **Updates**: `apps/api/routes/knowledge.js`
 
-- [ ] `PUT /api/v1/knowledge/articles/:id/comments/:commentId` - Update comment
-  - Body: `{ content }`
+- [x] `PUT /api/v1/knowledge/articles/:id/comments/:commentId` - Update comment
+  - ✅ IMPLEMENTED - Body: `{ content }`
   - Returns updated comment
   - **Updates**: `apps/api/routes/knowledge.js`
 
-- [ ] `DELETE /api/v1/knowledge/articles/:id/comments/:commentId` - Delete comment
-  - Soft delete or hard delete
+- [x] `DELETE /api/v1/knowledge/articles/:id/comments/:commentId` - Delete comment
+  - ✅ IMPLEMENTED - Soft delete or hard delete
   - Returns confirmation
   - **Updates**: `apps/api/routes/knowledge.js`
 
@@ -219,15 +220,16 @@ Week 2 builds on Week 1's foundation by adding:
   - Toggles like status
   - Returns updated like count
   - **Updates**: `apps/api/routes/knowledge.js`
+  - ⚠️ **NOT IMPLEMENTED** - Deferred to future release
 
-- [ ] `POST /api/v1/knowledge/articles/:id/comments/:commentId/reply` - Reply to comment
-  - Body: `{ content, userId }`
+- [x] `POST /api/v1/knowledge/articles/:id/comments/:commentId/reply` - Reply to comment
+  - ✅ IMPLEMENTED - Body: `{ content, userId }`
   - Creates nested comment
   - Returns created reply
   - **Updates**: `apps/api/routes/knowledge.js`
 
 **Database Models Required**:
-- `KbArticleComment` (already exists in `knowledge.prisma` ✅)
+- [x] `KbArticleComment` - ✅ EXISTS in `prisma/schema/knowledge.prisma`
 
 ---
 
