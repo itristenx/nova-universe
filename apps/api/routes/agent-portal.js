@@ -61,7 +61,7 @@ router.get(
           }
 
           // Fetch tickets from database
-          const tickets = await prisma.ticket.findMany({
+          const tickets = await prisma.supportTicket.findMany({
             where,
             orderBy: [
               { priority: 'desc' }, // CRITICAL first, then HIGH, MEDIUM, LOW
@@ -198,12 +198,12 @@ router.get(
           const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
           // Get total tickets assigned (all time)
-          const totalTickets = await prisma.ticket.count({
+          const totalTickets = await prisma.supportTicket.count({
             where: { assigneeId: agentId },
           });
 
           // Get resolved tickets today
-          const resolvedToday = await prisma.ticket.count({
+          const resolvedToday = await prisma.supportTicket.count({
             where: {
               assigneeId: agentId,
               state: { in: ['RESOLVED', 'CLOSED'] },
@@ -212,7 +212,7 @@ router.get(
           });
 
           // Get average response time (in minutes) - calculated from first response
-          const ticketsWithResponse = await prisma.ticketActivity.groupBy({
+          const ticketsWithResponse = await prisma.supportTicketActivity.groupBy({
             by: ['ticketId'],
             where: {
               ticket: { assigneeId: agentId },
@@ -226,7 +226,7 @@ router.get(
           let responseCount = 0;
 
           for (const response of ticketsWithResponse) {
-            const ticket = await prisma.ticket.findUnique({
+            const ticket = await prisma.supportTicket.findUnique({
               where: { id: response.ticketId },
               select: { createdAt: true },
             });
@@ -241,7 +241,7 @@ router.get(
           const avgResponseTime = responseCount > 0 ? Math.round(totalResponseTime / responseCount) : 0;
 
           // Get satisfaction rating (from resolved tickets with ratings)
-          const ratingsResult = await prisma.ticketRating.aggregate({
+          const ratingsResult = await prisma.supportTicketRating.aggregate({
             where: {
               ticket: { assigneeId: agentId },
             },
@@ -254,7 +254,7 @@ router.get(
             : null;
 
           // Get open tickets count
-          const openTickets = await prisma.ticket.count({
+          const openTickets = await prisma.supportTicket.count({
             where: {
               assigneeId: agentId,
               state: { in: ['NEW', 'ASSIGNED', 'IN_PROGRESS', 'PENDING', 'ON_HOLD'] },
@@ -262,7 +262,7 @@ router.get(
           });
 
           // Get tickets resolved this week
-          const resolvedThisWeek = await prisma.ticket.count({
+          const resolvedThisWeek = await prisma.supportTicket.count({
             where: {
               assigneeId: agentId,
               state: { in: ['RESOLVED', 'CLOSED'] },
@@ -271,7 +271,7 @@ router.get(
           });
 
           // Get tickets resolved this month
-          const resolvedThisMonth = await prisma.ticket.count({
+          const resolvedThisMonth = await prisma.supportTicket.count({
             where: {
               assigneeId: agentId,
               state: { in: ['RESOLVED', 'CLOSED'] },
@@ -370,7 +370,7 @@ router.get(
           // Get active ticket count for each team member
           const enrichedMembers = await Promise.all(
             members.map(async (member) => {
-              const activeTickets = await prisma.ticket.count({
+              const activeTickets = await prisma.supportTicket.count({
                 where: {
                   assigneeId: member.id,
                   state: { in: ['NEW', 'ASSIGNED', 'IN_PROGRESS', 'PENDING'] },

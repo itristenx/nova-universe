@@ -48,7 +48,7 @@ router.get(
             ...(category && { category }),
           };
 
-          const popularArticles = await prisma.knowledgeArticle.findMany({
+          const popularArticles = await prisma.kbArticle.findMany({
             where,
             orderBy: [
               { viewCount: 'desc' }, // Most viewed first
@@ -172,7 +172,7 @@ router.get(
         ],
       };
 
-      const articles = await prisma.knowledgeArticle.findMany({
+      const articles = await prisma.kbArticle.findMany({
         where,
         orderBy: [
           { viewCount: 'desc' }, // Popular articles ranked higher
@@ -265,7 +265,7 @@ router.get('/categories', createRateLimit(60 * 1000, 60), async (req, res) => {
     const categories = await getWithCache(
       cacheKey,
       async () => {
-        const categoryStats = await prisma.knowledgeArticle.groupBy({
+        const categoryStats = await prisma.kbArticle.groupBy({
           by: ['category'],
           where: { published: true },
           _count: { id: true },
@@ -323,7 +323,7 @@ router.get('/:id', createRateLimit(60 * 1000, 120), async (req, res) => {
   try {
     const articleId = req.params.id;
 
-    const article = await prisma.knowledgeArticle.findUnique({
+    const article = await prisma.kbArticle.findUnique({
       where: { id: articleId },
       include: {
         author: {
@@ -352,7 +352,7 @@ router.get('/:id', createRateLimit(60 * 1000, 120), async (req, res) => {
     }
 
     // Increment view count (fire and forget)
-    prisma.knowledgeArticle
+    prisma.kbArticle
       .update({
         where: { id: articleId },
         data: { viewCount: { increment: 1 } },

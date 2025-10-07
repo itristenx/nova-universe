@@ -317,7 +317,7 @@ router.post(
       }
 
       // Create service request (creates a ticket behind the scenes)
-      const request = await prisma.serviceRequest.create({
+      const request = await prisma.ritm.create({
         data: {
           serviceId,
           requesterId: userId,

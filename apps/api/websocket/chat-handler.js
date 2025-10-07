@@ -217,7 +217,7 @@ export class ChatWebSocketHandler {
    */
   async loadRecentMessages(sessionId, limit = 50) {
     try {
-      const messages = await prisma.chatMessage.findMany({
+      const messages = await prisma.chatbotMessage.findMany({
         where: { sessionId },
         orderBy: { createdAt: 'desc' },
         take: limit,
@@ -258,7 +258,7 @@ export class ChatWebSocketHandler {
    */
   async saveMessage(message) {
     try {
-      await prisma.chatMessage.create({
+      await prisma.chatbotMessage.create({
         data: {
           id: message.id,
           sessionId: message.sessionId,

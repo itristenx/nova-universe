@@ -61,6 +61,40 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // ============================================================================
+// MODEL ALIASES FOR WEEK 1 COMPATIBILITY
+// ============================================================================
+
+/**
+ * Model aliases to match Week 1 API expectations
+ * Maps expected model names to actual Prisma schema models
+ * 
+ * This allows Week 1 routes to use expected names while working with
+ * the actual database schema. Graceful degradation for missing models.
+ */
+
+// Knowledge Base - KbArticle is the actual model name
+export const KnowledgeArticle = prisma.kbArticle;
+
+// ITSM - SupportTicket is the actual model name
+export const Ticket = prisma.supportTicket;
+
+// Ticket Activity - Using TicketHistory as activity log
+export const TicketActivity = prisma.ticketHistory;
+
+// User Groups - Group is the actual model name
+export const UserGroup = prisma.group;
+
+// Service Requests - RITM (Requested Item) is ServiceNow standard
+export const ServiceRequest = prisma.ritm;
+
+// Chat Messages - ChatbotMessage from AI schema
+export const ChatMessage = prisma.chatbotMessage;
+
+// Note: TicketRating and UserAchievement models don't exist in current schema
+// Week 1 code has graceful degradation for these - they will return empty arrays
+// To add these models, see docs/WEEK-1-SCHEMA-MAPPING.md
+
+// ============================================================================
 // REDIS CLIENT (Caching & Sessions)
 // ============================================================================
 

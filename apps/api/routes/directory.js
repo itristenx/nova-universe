@@ -258,7 +258,7 @@ router.get(
       const groups = await getWithCache(
         cacheKey,
         async () => {
-          const allGroups = await prisma.userGroup.findMany({
+          const allGroups = await prisma.group.findMany({
             orderBy: { name: 'asc' },
             include: {
               _count: {
