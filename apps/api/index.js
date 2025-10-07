@@ -48,6 +48,12 @@ import mfaRouter from './routes/mfa.js'; // Multi-Factor Authentication
 import ticketsRouter from './routes/tickets.js';
 import itsmRouter from './routes/itsm.js'; // Enhanced ITSM routes
 import serviceRequestsRouter from './routes/service-requests.js'; // Service Requests API
+
+// Week 1 Backend Integration - New Routes for Agent Portal & Self-Service Portal
+import agentPortalRouter from './routes/agent-portal.js'; // Agent Portal APIs (queue, stats, team, achievements)
+import knowledgeRouter from './routes/knowledge.js'; // Knowledge Base APIs (articles, search, categories)
+import servicesRouter from './routes/services.js'; // Services APIs (popular, featured, categories)
+
 // TEMPORARILY COMMENTED OUT - ESM IMPORT ISSUES WITH @prisma/client
 // import serviceCatalogAPIRouter from './routes/service-catalog.js'; // Service Catalog API  
 // import incidentsRouter from './routes/incidents.js'; // Incidents API
@@ -276,6 +282,12 @@ app.io = io;
 import WebSocketManager from './websocket/events.js';
 const wsManager = new WebSocketManager(io);
 app.wsManager = wsManager;
+
+// Initialize Live Chat WebSocket handler for Self-Service Portal (Week 1)
+import ChatWebSocketHandler from './websocket/chat-handler.js';
+const chatHandler = new ChatWebSocketHandler(io);
+app.chatHandler = chatHandler;
+logger.info('✅ Live Chat WebSocket handler initialized');
 
 // Initialize Uptime Kuma WebSocket handler (only if Uptime Kuma is available)
 import {
@@ -2402,6 +2414,7 @@ v1Router.use('/cmdb', cmdbExtendedRouter); // Extended CMDB Features
 v1Router.use('/tickets', ticketsRouter); // Ticket Management
 v1Router.use('/itsm', itsmRouter); // Enhanced ITSM Ticket Management
 v1Router.use('/service-requests', serviceRequestsRouter); // Service Request Management
+v1Router.use('/services', servicesRouter); // IT Services (popular, featured, categories) - Week 1
 v1Router.use('/service-catalog', serviceCatalogRouter); // Service Catalog
 v1Router.use('/service-catalog-requests', serviceCatalogRequestsRouter); // Service Catalog Requests
 v1Router.use('/catalog-items', catalogItemsRouter); // Legacy Catalog Items
@@ -2411,6 +2424,7 @@ v1Router.use('/approvals', approvalsRouter); // Approval Workflows
 // V1 Knowledge & Documentation Routes
 // ========================================
 v1Router.use('/lore', loreRouter); // Nova Lore - Knowledge Base
+v1Router.use('/knowledge', knowledgeRouter); // Knowledge Base (articles, search, popular) - Week 1
 v1Router.use('/search', searchRouter); // Global Search
 
 // ========================================
@@ -2498,6 +2512,7 @@ v1Router.use('/customer-activity', customerActivityRouter); // Customer Activity
 // V1 Portal & User Experience Routes
 // ========================================
 v1Router.use('/pulse', pulseRouter); // Nova Pulse - Technician Portal
+v1Router.use('/agent', agentPortalRouter); // Agent Portal APIs (queue, stats, team, achievements) - Week 1
 v1Router.use('/orbit', orbitRouter); // Nova Orbit - End-User Portal
 v1Router.use('/beacon', beaconRouter); // Nova Beacon - Kiosk Management
 v1Router.use('/kiosks', kioskOrAuth, kiosksRouter); // Kiosk Management

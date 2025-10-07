@@ -14,7 +14,7 @@ import KioskRedirect from '@components/KioskRedirect';
 import { lazy, Suspense } from 'react';
 
 // Authentication pages
-const LoginPage = lazy(() => import('@pages/auth/AppleInspiredLoginPage'));
+const LoginPage = lazy(() => import('@pages/auth/ModernLoginPage'));
 const RegisterPage = lazy(() => import('@pages/auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('@pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@pages/auth/ResetPasswordPage'));
@@ -41,6 +41,25 @@ const TicketsPage = lazy(() => import('@pages/tickets/TicketsPage'));
 const TicketDetailPage = lazy(() => import('@pages/tickets/TicketDetailPage'));
 const CreateTicketPage = lazy(() => import('@pages/tickets/CreateTicketPage'));
 const EnhancedTicketGrid = lazy(() => import('@pages/tickets/EnhancedTicketGrid'));
+
+// Phase 3: Enhanced ITSM Module Pages
+const EnhancedTicketManagementPage = lazy(() => import('@pages/itsm/EnhancedTicketManagementPage'));
+const ServiceCatalogBrowserPage = lazy(() => import('@pages/itsm/ServiceCatalogBrowserPage'));
+const AITicketCreationPage = lazy(() => import('@pages/itsm/AITicketCreationPage'));
+
+// Phase 4: Analytics & AI Pages
+const ConfigurableDashboardPage = lazy(() => import('@pages/analytics/ConfigurableDashboardPage'));
+const AnalyticsVisualizationPage = lazy(() => import('@pages/analytics/AnalyticsVisualizationPage'));
+
+// Phase 5: Monitoring & Integration Pages
+const AlertManagementPage = lazy(() => import('@pages/monitoring/AlertManagementPage'));
+const WebhookConfigurationPage = lazy(() => import('@pages/integrations/WebhookConfigurationPage'));
+
+// Phase 6: User Management & Portals Pages
+const AgentPortalPage = lazy(() => import('@pages/portals/AgentPortalPage'));
+const SelfServicePortalPage = lazy(() => import('@pages/portals/SelfServicePortalPage'));
+const User360Page = lazy(() => import('@pages/user360/User360Page'));
+const DirectoryManagementPage = lazy(() => import('@pages/directory/DirectoryManagementPage'));
 
 // Deep Work pages
 const EnhancedDeepWorkMode = lazy(() => import('@pages/deepwork/EnhancedDeepWorkMode'));
@@ -101,6 +120,7 @@ const EnterpriseAppLauncher = lazy(() => import('@pages/admin/EnterpriseAppLaunc
 // Knowledge Base pages
 const KnowledgeBasePage = lazy(() => import('@pages/knowledge/KnowledgeBasePage'));
 const KnowledgeCommunityPage = lazy(() => import('@pages/knowledge/KnowledgeCommunityPage'));
+const ArticleEditorPage = lazy(() => import('@pages/knowledge/ArticleEditorPage'));
 
 // Profile pages
 const UserProfilePage = lazy(() => import('@pages/profile/UserProfilePage'));
@@ -122,6 +142,12 @@ const AIChatbotPage = lazy(() => import('@pages/ai/AIChatbotPage'));
 // Automation pages
 const AutomationHubPage = lazy(() => import('@pages/automation/AutomationHubPage'));
 const MailroomIntegrationPage = lazy(() => import('@pages/automation/MailroomIntegrationPage'));
+
+// Workflow pages
+const WorkflowBuilderPage = lazy(() => import('@pages/workflow/WorkflowBuilderPage'));
+
+// Change Management pages
+const ChangeManagementPage = lazy(() => import('@pages/change/ChangeManagementPage'));
 const MobileCompanionPage = lazy(() => import('@pages/mobile/MobileCompanionPage'));
 const AccessibilityAuditPage = lazy(() => import('@pages/accessibility/AccessibilityAuditPage'));
 
@@ -181,6 +207,12 @@ function App() {
       <KioskRedirect />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Routes>
+          {/* Legacy login redirect for backwards compatibility */}
+          <Route
+            path="/login"
+            element={<Navigate to="/auth/login" replace />}
+          />
+          
           {/* Public authentication routes */}
           <Route
             path="/auth/*"
@@ -264,6 +296,29 @@ function App() {
                       <Route path="/tickets/:id" element={<TicketDetailPage />} />
                       <Route path="/tickets/grid" element={<EnhancedTicketGrid />} />
 
+                      {/* Phase 3: Enhanced ITSM Module routes */}
+                      <Route path="/tickets/enhanced" element={<EnhancedTicketManagementPage />} />
+                      <Route path="/tickets/ai-create" element={<AITicketCreationPage />} />
+                      <Route path="/catalog" element={<ServiceCatalogBrowserPage />} />
+                      <Route path="/catalog/browser" element={<ServiceCatalogBrowserPage />} />
+
+                      {/* Phase 4: Analytics & AI routes */}
+                      <Route path="/dashboard/builder" element={<ConfigurableDashboardPage />} />
+                      <Route path="/analytics" element={<AnalyticsVisualizationPage />} />
+                      <Route path="/analytics/visualization" element={<AnalyticsVisualizationPage />} />
+
+                      {/* Phase 5: Monitoring & Integration routes */}
+                      <Route path="/monitoring/alerts" element={<AlertManagementPage />} />
+                      <Route path="/integrations/webhooks" element={<WebhookConfigurationPage />} />
+
+                      {/* Phase 6: User Management & Portals routes */}
+                      <Route path="/portals/agent" element={<AgentPortalPage />} />
+                      <Route path="/portals/pulse" element={<AgentPortalPage />} />
+                      <Route path="/portals/self-service" element={<SelfServicePortalPage />} />
+                      <Route path="/portals/orbit" element={<SelfServicePortalPage />} />
+                      <Route path="/users/:userId" element={<User360Page />} />
+                      <Route path="/admin/directory" element={<DirectoryManagementPage />} />
+
                       {/* Deep Work routes */}
                       <Route path="/deepwork" element={<EnhancedDeepWorkMode />} />
                       <Route path="/deepwork/:ticketId" element={<EnhancedDeepWorkMode />} />
@@ -297,6 +352,8 @@ function App() {
                       {/* Knowledge Base routes */}
                       <Route path="/knowledge" element={<KnowledgeBasePage />} />
                       <Route path="/knowledge/community" element={<KnowledgeCommunityPage />} />
+                      <Route path="/knowledge/editor" element={<ArticleEditorPage />} />
+                      <Route path="/knowledge/articles/new" element={<ArticleEditorPage />} />
 
                       {/* Service Catalog routes */}
                       <Route path="/services" element={<ServiceCatalogPage />} />
@@ -324,6 +381,15 @@ function App() {
                       <Route path="/automation" element={<AutomationHubPage />} />
                       <Route path="/automation/hub" element={<AutomationHubPage />} />
                       <Route path="/automation/mailroom" element={<MailroomIntegrationPage />} />
+                      
+                      {/* Workflow routes */}
+                      <Route path="/workflows" element={<WorkflowBuilderPage />} />
+                      <Route path="/workflows/builder" element={<WorkflowBuilderPage />} />
+                      
+                      {/* Change Management routes */}
+                      <Route path="/changes" element={<ChangeManagementPage />} />
+                      <Route path="/change-management" element={<ChangeManagementPage />} />
+                      
                       <Route path="/mobile/companion" element={<MobileCompanionPage />} />
                       <Route path="/accessibility/audit" element={<AccessibilityAuditPage />} />
 

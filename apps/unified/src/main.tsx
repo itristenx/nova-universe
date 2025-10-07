@@ -6,7 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { toast } from 'react-hot-toast';
 import App from './App';
-import FallbackApp from './FallbackApp';
+// import FallbackApp from './FallbackApp'; // Commented out - not needed
 import '@/styles/globals.css';
 import './i18n/config'; // Initialize i18n
 
@@ -43,14 +43,12 @@ if (!rootElement) {
 // Create root and render app
 const root = ReactDOM.createRoot(rootElement);
 
-// Decide which app to render
-const useRealApp = import.meta.env.PROD || import.meta.env.VITE_E2E === 'true';
-
+// Always use the real app (FallbackApp removed for simplicity)
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        {useRealApp ? <App /> : <FallbackApp />}
+        <App />
         <Toaster
           position="top-right"
           toastOptions={{
