@@ -6,20 +6,16 @@
 // =============================================================================
 
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth.js';
-import { createRateLimit } from '../utils/rateLimit.js';
-import { prisma } from '../db.js';
-import { getWithCache, invalidateCache } from '../utils/cache.js';
+import { authenticateJWT } from '../middleware/auth.js';
+import { createRateLimit } from '../middleware/rateLimiter.js';
+import { prisma, getWithCache, invalidateCache } from '../db.js';
 import fetch from 'node-fetch';
 
 const router = Router();
+const authenticateToken = authenticateJWT; // Alias for consistency
 
 // Rate limiting: 30 requests per minute for webhooks
-const webhookRateLimit = createRateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 30,
-  message: 'Too many webhook requests, please try again later'
-});
+const webhookRateLimit = createRateLimit(60 * 1000, 30);
 
 // Available webhook events
 const WEBHOOK_EVENTS = [

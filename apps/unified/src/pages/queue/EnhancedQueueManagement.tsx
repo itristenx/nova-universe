@@ -13,6 +13,7 @@ import { LoadingSpinner } from '@components/common/LoadingSpinner';
 import { cn, formatRelativeTime } from '@utils/index';
 import { ticketService } from '@services/tickets';
 import { pulseService } from '@services/pulse';
+import backendAPI from '@services/backend-api-client';
 import type { Ticket } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -59,6 +60,13 @@ export default function EnhancedQueueManagement({
   const { data: queueMetrics, isLoading: queuesLoading } = useQuery({
     queryKey: ['queue-metrics'],
     queryFn: () => pulseService.getQueueMetrics(),
+    refetchInterval: autoRefresh ? 30000 : false,
+  });
+
+  // Load agent statistics from backend API
+  const { data: agentStats } = useQuery({
+    queryKey: ['agent-stats'],
+    queryFn: () => backendAPI.agent.getStats(),
     refetchInterval: autoRefresh ? 30000 : false,
   });
 

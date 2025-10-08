@@ -57,10 +57,12 @@ import servicesRouter from './routes/services.js'; // Services APIs (popular, fe
 // Week 2 Backend Integration - Admin & Monitoring APIs
 import webhooksRouter from './routes/webhooks.js'; // Webhook Configuration APIs (CRUD, test, logs)
 
+// Week 3 Backend Integration - Change Management & Workflow APIs
+import changesRouter from './routes/changes.js'; // Change Management APIs
+
 // TEMPORARILY COMMENTED OUT - ESM IMPORT ISSUES WITH @prisma/client
 // import serviceCatalogAPIRouter from './routes/service-catalog.js'; // Service Catalog API  
 // import incidentsRouter from './routes/incidents.js'; // Incidents API
-// import changesRouter from './routes/changes.js'; // Changes API
 // import problemsRouter from './routes/problems.js'; // Problems API
 // import knowledgeArticlesRouter from './routes/knowledge-articles.js'; // Knowledge Articles API
 // import workflowAnalyticsRouter from './routes/workflow-analytics.js'; // Workflow Analytics API
@@ -2511,6 +2513,12 @@ v1Router.use('/scim/monitor', scimMonitorRouter); // SCIM Monitoring
 v1Router.use('/email-actions', emailActionsRouter); // Enhanced Email Actions for Workflows
 v1Router.use('/email-templates', emailTemplatesRouter); // Email Template Management
 v1Router.use('/customer-activity', customerActivityRouter); // Customer Activity Tracking
+
+// ========================================
+// V1 Change Management & Workflow Routes (Week 3)
+// ========================================
+v1Router.use('/changes', changesRouter); // Change Management (CRUD, approvals, calendar)
+v1Router.use('/workflows', workflowsRouter); // Workflow Builder & Execution
 
 // ========================================
 // V1 Portal & User Experience Routes

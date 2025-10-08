@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   MagnifyingGlassIcon,
   BookOpenIcon,
@@ -6,69 +6,107 @@ import {
   TagIcon,
   PlusIcon,
 } from '@heroicons/react/24/outline';
+import backendAPI from '../../services/backend-api-client';
 
 export default function KnowledgeBasePage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // State for backend data
+  const [categories, setCategories] = useState<Array<{ name: string; count: number; color: string }>>([]);
+  const [popularArticles, setPopularArticles] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
-  const categories = [
-    { name: 'Getting Started', count: 24, color: 'bg-blue-500' },
-    { name: 'Hardware Support', count: 18, color: 'bg-green-500' },
-    { name: 'Software Issues', count: 32, color: 'bg-purple-500' },
-    { name: 'Network & Connectivity', count: 15, color: 'bg-orange-500' },
-    { name: 'Account Management', count: 12, color: 'bg-red-500' },
-    { name: 'Policies & Procedures', count: 8, color: 'bg-indigo-500' },
-  ];
+  // Fetch popular articles and categories on mount
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // Fetch popular articles from backend
+        const articles = await backendAPI.knowledge.getPopular();
+        setPopularArticles(articles);
+        
+        // Fetch categories from backend
+        const cats = await backendAPI.knowledge.getCategories();
+        // Map categories to include colors
+        const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500', 'bg-red-500', 'bg-indigo-500'];
+        const categoriesWithColors = cats.map((cat: any, idx: number) => ({
+          ...cat,
+          color: colors[idx % colors.length]
+        }));
+        setCategories(categoriesWithColors);
+      } catch (err: any) {
+        console.error('Error fetching knowledge base data:', err);
+        setError(err.message || 'Failed to load knowledge base');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, []);
 
-  const featuredArticles = [
-    {
-      id: 1,
-      title: 'How to Connect to Company VPN',
-      excerpt: 'Step-by-step guide to connecting to the company VPN from any device.',
-      category: 'Network & Connectivity',
-      views: 1234,
-      helpful: 45,
-      updated: '2 days ago',
-    },
-    {
-      id: 2,
-      title: 'Password Reset Guide',
-      excerpt: 'Learn how to reset your password and set up two-factor authentication.',
-      category: 'Account Management',
-      views: 987,
-      helpful: 38,
-      updated: '1 week ago',
-    },
-    {
-      id: 3,
-      title: 'Installing Microsoft Office 365',
-      excerpt: 'Complete installation guide for Microsoft Office 365 on Windows and Mac.',
-      category: 'Software Issues',
-      views: 756,
-      helpful: 29,
-      updated: '3 days ago',
-    },
-  ];
+  // Handle search
+  useEffect(() => {
+    async function performSearch() {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        return;
+      }
+      
+      try {
+        const results = await backendAPI.knowledge.search(searchQuery);
+        setSearchResults(results);
+      } catch (err) {
+        console.error('Error searching:', err);
+      }
+    }
+    
+    // Debounce search
+    const timeoutId = setTimeout(performSearch, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
-  const recentArticles = [
-    {
-      id: 4,
-      title: 'New Employee Onboarding Checklist',
-      category: 'Getting Started',
-      updated: '1 day ago',
-    },
-    {
-      id: 5,
-      title: 'Printer Setup and Troubleshooting',
-      category: 'Hardware Support',
-      updated: '2 days ago',
-    },
-    {
-      id: 6,
-      title: 'Email Configuration for Mobile Devices',
-      category: 'Software Issues',
-      updated: '4 days ago',
-    },
-  ];
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+        </div>
+        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <h3 className="text-red-800 dark:text-red-200 font-medium">Error Loading Knowledge Base</h3>
+          <p className="text-red-600 dark:text-red-300 text-sm mt-1">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 text-sm font-medium"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const articlesToDisplay = searchQuery.trim() ? searchResults : popularArticles;
 
   return (
     <div className="space-y-6 p-6">
@@ -130,56 +168,46 @@ export default function KnowledgeBasePage() {
       <div className="card p-6">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
           <DocumentTextIcon className="h-5 w-5" />
-          Featured Articles
+          {searchQuery.trim() ? 'Search Results' : 'Popular Articles'}
         </h2>
-        <div className="space-y-4">
-          {featuredArticles.map((article) => (
-            <div
-              key={article.id}
-              className="cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-            >
-              <div className="flex items-start justify-between">
-                <div className="min-w-0 flex-1">
-                  <h3 className="hover:text-nova-600 dark:hover:text-nova-400 font-medium text-gray-900 dark:text-white">
-                    {article.title}
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{article.excerpt}</p>
-                  <div className="mt-2 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500">
-                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-                      {article.category}
-                    </span>
-                    <span>{article.views} views</span>
-                    <span>{article.helpful} found helpful</span>
-                    <span>Updated {article.updated}</span>
+        {articlesToDisplay.length === 0 ? (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <BookOpenIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>{searchQuery.trim() ? 'No articles found' : 'No articles available'}</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {articlesToDisplay.map((article: any) => (
+              <div
+                key={article.id}
+                className="cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="hover:text-nova-600 dark:hover:text-nova-400 font-medium text-gray-900 dark:text-white">
+                      {article.title}
+                    </h3>
+                    {article.summary && (
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{article.summary}</p>
+                    )}
+                    <div className="mt-2 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500">
+                      {article.categoryId && (
+                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                          {article.categoryId}
+                        </span>
+                      )}
+                      <span>{article.viewCount || 0} views</span>
+                      <span>{article.helpfulCount || 0} found helpful</span>
+                      {article.publishedAt && (
+                        <span>Published {new Date(article.publishedAt).toLocaleDateString()}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Articles */}
-      <div className="card p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-          Recently Updated
-        </h2>
-        <div className="space-y-3">
-          {recentArticles.map((article) => (
-            <div
-              key={article.id}
-              className="flex cursor-pointer items-center justify-between rounded-lg p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              <div>
-                <h3 className="hover:text-nova-600 dark:hover:text-nova-400 font-medium text-gray-900 dark:text-white">
-                  {article.title}
-                </h3>
-                <span className="text-sm text-gray-600 dark:text-gray-400">{article.category}</span>
-              </div>
-              <span className="text-sm text-gray-500 dark:text-gray-500">{article.updated}</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

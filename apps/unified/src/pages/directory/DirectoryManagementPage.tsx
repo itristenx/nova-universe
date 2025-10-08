@@ -35,6 +35,7 @@ import {
   Folder,
   FolderPlus,
 } from 'lucide-react';
+import backendAPI from '@services/backend-api-client';
 
 /**
  * Directory Management Page
@@ -104,6 +105,8 @@ const DirectoryManagementPage: React.FC = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   const [stats, setStats] = useState<DirectoryStats>({
     totalUsers: 247,
@@ -113,6 +116,34 @@ const DirectoryManagementPage: React.FC = () => {
     totalGroups: 32,
     newUsersThisMonth: 18,
   });
+
+  // Search users via backend API
+  useEffect(() => {
+    async function searchBackend() {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        if (activeTab === 'users') {
+          const results = await backendAPI.directory.searchUsers(searchQuery);
+          setSearchResults(results);
+        } else if (activeTab === 'groups') {
+          const results = await backendAPI.directory.searchGroups(searchQuery);
+          setSearchResults(results);
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    }
+
+    const timeoutId = setTimeout(searchBackend, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, activeTab]);
 
   const [users, setUsers] = useState<User[]>([
     {

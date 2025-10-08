@@ -1,11 +1,10 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { authenticateJWT } from '../middleware/auth.js';
 import { logger } from '../logger.js';
+import { prisma } from '../db.js';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Validation schemas
 const createChangeSchema = z.object({

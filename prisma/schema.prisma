@@ -15,18 +15,17 @@
 // =============================================================================
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
-  // Enable PostgreSQL extensions for AI and advanced search
-  extensions = [pgvector(map: "vector", schema: "public")]
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+extensions = [pgvector(map: "vector", schema: "public")]
 }
 
 generator client {
   provider        = "prisma-client-js"
   output          = "./generated/client"
   binaryTargets   = ["native", "debian-openssl-3.0.x", "darwin", "darwin-arm64", "linux-arm64-openssl-3.0.x"]
-  // Enable preview features for PostgreSQL extensions and full-text search
-  previewFeatures = ["postgresqlExtensions", "fullTextSearchPostgres"]
+  // Enable preview features for PostgreSQL extensions, full-text search, and multi-file schemas
+  previewFeatures = ["postgresqlExtensions", "fullTextSearchPostgres", "prismaSchemaFolder"]
 }
 
 // =============================================================================
