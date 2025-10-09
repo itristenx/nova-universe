@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { workflowsAPI, type Workflow, type WorkflowTemplate, type WorkflowInstance, type WorkflowAnalytics } from '@services/backend-api-client';
 import { cn } from '@utils/index';
 import toast from 'react-hot-toast';
+import { useRoles } from '@hooks/usePermission';
+import { AdminOnly, WorkflowAdminOnly } from '@components/common/PermissionGuard';
+import { DisabledButton, ReadOnlyBadge } from '@components/common/UnauthorizedTooltip';
 
 // Icons
 const PlusIcon = ({ className }: { className?: string }) => (
@@ -66,6 +69,10 @@ const TemplateIcon = ({ className }: { className?: string }) => (
 );
 
 export const WorkflowBuilderPage: React.FC = () => {
+  // RBAC checks
+  const { isAdmin, isWorkflowAdmin } = useRoles();
+  const canManageWorkflows = isAdmin || isWorkflowAdmin;
+  
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
@@ -292,6 +299,14 @@ export const WorkflowBuilderPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Read-only badge for non-workflow-admins */}
+      {!canManageWorkflows && (
+        <ReadOnlyBadge 
+          message="You have read-only access to workflows" 
+          showContact 
+        />
+      )}
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -300,13 +315,26 @@ export const WorkflowBuilderPage: React.FC = () => {
             Design, publish, and manage automated workflows
           </p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <PlusIcon />
-          New Workflow
-        </button>
+        
+        {/* New Workflow button - Admin/WorkflowAdmin only */}
+        <WorkflowAdminOnly fallback={
+          <DisabledButton 
+            requiredRole="Workflow Admin"
+            tooltip="Only workflow administrators can create workflows"
+            showContact
+          >
+            <PlusIcon />
+            New Workflow
+          </DisabledButton>
+        }>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <PlusIcon />
+            New Workflow
+          </button>
+        </WorkflowAdminOnly>
       </div>
 
       {/* System Status */}
@@ -480,41 +508,76 @@ export const WorkflowBuilderPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    {/* Execute Button - Workflow Admin Only */}
                     {workflow.status === 'PUBLISHED' && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedWorkflow(workflow);
-                          setShowExecuteModal(true);
-                        }}
-                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                        title="Execute Workflow"
-                      >
-                        <PlayIcon />
-                      </button>
+                      <WorkflowAdminOnly fallback={
+                        <button
+                          disabled
+                          className="p-2 text-gray-400 cursor-not-allowed rounded-lg"
+                          title="Only workflow administrators can execute workflows"
+                        >
+                          <PlayIcon />
+                        </button>
+                      }>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedWorkflow(workflow);
+                            setShowExecuteModal(true);
+                          }}
+                          className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                          title="Execute Workflow"
+                        >
+                          <PlayIcon />
+                        </button>
+                      </WorkflowAdminOnly>
                     )}
+                    
+                    {/* Publish Button - Workflow Admin Only */}
                     {workflow.status === 'DRAFT' && (
+                      <WorkflowAdminOnly fallback={
+                        <button
+                          disabled
+                          className="p-2 text-gray-400 cursor-not-allowed rounded-lg"
+                          title="Only workflow administrators can publish workflows"
+                        >
+                          <CheckCircleIcon />
+                        </button>
+                      }>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePublish(workflow.id);
+                          }}
+                          className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                          title="Publish Workflow"
+                        >
+                          <CheckCircleIcon />
+                        </button>
+                      </WorkflowAdminOnly>
+                    )}
+                    
+                    {/* Delete Button - Admin Only */}
+                    <AdminOnly fallback={
+                      <button
+                        disabled
+                        className="p-2 text-gray-400 cursor-not-allowed rounded-lg"
+                        title="Only administrators can delete workflows"
+                      >
+                        <TrashIcon />
+                      </button>
+                    }>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handlePublish(workflow.id);
+                          handleDelete(workflow.id);
                         }}
-                        className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
-                        title="Publish Workflow"
+                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        title="Delete Workflow"
                       >
-                        <CheckCircleIcon />
+                        <TrashIcon />
                       </button>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(workflow.id);
-                      }}
-                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                      title="Delete Workflow"
-                    >
-                      <TrashIcon />
-                    </button>
+                    </AdminOnly>
                   </div>
                 </div>
               </div>

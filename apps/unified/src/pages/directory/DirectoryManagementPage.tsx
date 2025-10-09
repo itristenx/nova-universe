@@ -36,6 +36,9 @@ import {
   FolderPlus,
 } from 'lucide-react';
 import backendAPI from '@services/backend-api-client';
+import { useRoles } from '@hooks/usePermission';
+import { AdminOnly } from '@components/common/PermissionGuard';
+import { DisabledButton, ReadOnlyBadge } from '@components/common/UnauthorizedTooltip';
 
 /**
  * Directory Management Page
@@ -95,6 +98,9 @@ interface DirectoryStats {
 }
 
 const DirectoryManagementPage: React.FC = () => {
+  // RBAC checks
+  const { isAdmin } = useRoles();
+  
   // State
   const [activeTab, setActiveTab] = useState<'users' | 'groups' | 'audit'>('users');
   const [searchQuery, setSearchQuery] = useState('');
@@ -478,27 +484,58 @@ const DirectoryManagementPage: React.FC = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2">
-            <button 
-              aria-label="Export users"
-              className="rounded-xl bg-white/70 p-2 backdrop-blur-xl transition-all hover:bg-white hover:shadow-lg dark:bg-gray-800/70 dark:hover:bg-gray-800"
-            >
-              <Download className="h-5 w-5 text-gray-700 dark:text-gray-200" />
-            </button>
-            <button 
-              aria-label="Import users"
-              className="rounded-xl bg-white/70 p-2 backdrop-blur-xl transition-all hover:bg-white hover:shadow-lg dark:bg-gray-800/70 dark:hover:bg-gray-800"
-            >
-              <Upload className="h-5 w-5 text-gray-700 dark:text-gray-200" />
-            </button>
-            <button
-              onClick={() => setShowUserModal(true)}
-              aria-label="Add new user"
-              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-blue-700"
-            >
-              <UserPlus className="h-5 w-5" />
-              Add User
-            </button>
+          <div className="flex items-center gap-3">
+            {!isAdmin && (
+              <ReadOnlyBadge 
+                message="You have read-only access to the directory" 
+                showContact 
+              />
+            )}
+            <AdminOnly>
+              <button 
+                aria-label="Export users"
+                className="rounded-xl bg-white/70 p-2 backdrop-blur-xl transition-all hover:bg-white hover:shadow-lg dark:bg-gray-800/70 dark:hover:bg-gray-800"
+              >
+                <Download className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+              </button>
+              <DisabledButton 
+                tooltip="Only administrators can export users"
+                showContact
+              >
+                <Download className="h-5 w-5" />
+              </DisabledButton>
+            </AdminOnly>
+            <AdminOnly>
+              <button 
+                aria-label="Import users"
+                className="rounded-xl bg-white/70 p-2 backdrop-blur-xl transition-all hover:bg-white hover:shadow-lg dark:bg-gray-800/70 dark:hover:bg-gray-800"
+              >
+                <Upload className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+              </button>
+              <DisabledButton 
+                tooltip="Only administrators can import users"
+                showContact
+              >
+                <Upload className="h-5 w-5" />
+              </DisabledButton>
+            </AdminOnly>
+            <AdminOnly>
+              <button
+                onClick={() => setShowUserModal(true)}
+                aria-label="Add new user"
+                className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-blue-700"
+              >
+                <UserPlus className="h-5 w-5" />
+                Add User
+              </button>
+              <DisabledButton 
+                tooltip="Only administrators can add users"
+                showContact
+              >
+                <UserPlus className="h-5 w-5" />
+                Add User
+              </DisabledButton>
+            </AdminOnly>
           </div>
         </div>
 
@@ -508,26 +545,32 @@ const DirectoryManagementPage: React.FC = () => {
             <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
               {selectedUsers.length} user{selectedUsers.length > 1 ? 's' : ''} selected
             </span>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleBulkAction('activate')}
-                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-              >
-                Activate
-              </button>
-              <button
-                onClick={() => handleBulkAction('suspend')}
-                className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
-              >
-                Suspend
-              </button>
-              <button
-                onClick={() => handleBulkAction('delete')}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </div>
+            {isAdmin ? (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleBulkAction('activate')}
+                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                >
+                  Activate
+                </button>
+                <button
+                  onClick={() => handleBulkAction('suspend')}
+                  className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+                >
+                  Suspend
+                </button>
+                <button
+                  onClick={() => handleBulkAction('delete')}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            ) : (
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Only administrators can perform bulk actions
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -571,12 +614,20 @@ const DirectoryManagementPage: React.FC = () => {
                       {getStatusIcon(user.status)}
                       {user.status}
                     </span>
-                    <button 
-                      aria-label={`More options for ${user.name}`}
-                      className="rounded-lg p-2 opacity-0 transition-all hover:bg-white group-hover:opacity-100 dark:hover:bg-gray-800"
-                    >
-                      <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                    </button>
+                    <AdminOnly>
+                      <button 
+                        aria-label={`More options for ${user.name}`}
+                        className="rounded-lg p-2 opacity-0 transition-all hover:bg-white group-hover:opacity-100 dark:hover:bg-gray-800"
+                      >
+                        <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      </button>
+                      <DisabledButton 
+                        tooltip="Only administrators can manage users"
+                        showContact
+                      >
+                        <MoreVertical className="h-5 w-5" />
+                      </DisabledButton>
+                    </AdminOnly>
                   </div>
                 </div>
 

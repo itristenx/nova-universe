@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { changesAPI, type ChangeRequest, type ChangeFilters } from '@services/backend-api-client';
 import { cn } from '@utils/index';
 import toast from 'react-hot-toast';
+import { useRoles } from '@hooks/usePermission';
+import { AdminOnly, ApproverOnly } from '@components/common/PermissionGuard';
+import { DisabledButton, ReadOnlyBadge } from '@components/common/UnauthorizedTooltip';
 
 // Icons
 const CalendarIcon = () => (
@@ -25,6 +28,12 @@ const PlusIcon = () => (
 const CheckIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+  </svg>
+);
+
+const CheckCircleIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
 
@@ -66,6 +75,9 @@ const EyeIcon = () => (
 );
 
 export const ChangeManagementPage: React.FC = () => {
+  // RBAC checks
+  const { isAdmin, isApprover } = useRoles();
+  
   const [changes, setChanges] = useState<ChangeRequest[]>([]);
   const [calendarChanges, setCalendarChanges] = useState<ChangeRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -272,6 +284,9 @@ export const ChangeManagementPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Read-only badge for non-admins */}
+      {!isAdmin && <ReadOnlyBadge message="You have read-only access to change management" showContact />}
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -300,13 +315,25 @@ export const ChangeManagementPage: React.FC = () => {
             <CalendarIcon />
             {activeView === 'list' ? 'Calendar View' : 'List View'}
           </button>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-          >
-            <PlusIcon />
-            New Change Request
-          </button>
+          {/* Admin-only: Create Change button */}
+          <AdminOnly fallback={
+            <DisabledButton 
+              requiredRole="Admin"
+              tooltip="Only admins can create change requests"
+              showContact
+            >
+              <PlusIcon />
+              New Change Request
+            </DisabledButton>
+          }>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
+              <PlusIcon />
+              New Change Request
+            </button>
+          </AdminOnly>
         </div>
       </div>
 
@@ -525,41 +552,75 @@ export const ChangeManagementPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    {/* Approve/Reject Buttons - Approver Only */}
                     {change.state === 'ASSESSMENT' && (
                       <>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleApprove(change.id);
-                          }}
-                          className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
-                          title="Approve"
-                        >
-                          <CheckIcon />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleReject(change.id);
-                          }}
-                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                          title="Reject"
-                        >
-                          <XIcon />
-                        </button>
+                        <ApproverOnly fallback={
+                          <button
+                            disabled
+                            className="p-2 text-gray-400 cursor-not-allowed rounded-lg"
+                            title="Only approvers can approve change requests"
+                          >
+                            <CheckIcon />
+                          </button>
+                        }>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleApprove(change.id);
+                            }}
+                            className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                            title="Approve"
+                          >
+                            <CheckIcon />
+                          </button>
+                        </ApproverOnly>
+                        
+                        <ApproverOnly fallback={
+                          <button
+                            disabled
+                            className="p-2 text-gray-400 cursor-not-allowed rounded-lg"
+                            title="Only approvers can reject change requests"
+                          >
+                            <XIcon />
+                          </button>
+                        }>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReject(change.id);
+                            }}
+                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            title="Reject"
+                          >
+                            <XIcon />
+                          </button>
+                        </ApproverOnly>
                       </>
                     )}
+                    
+                    {/* Implement Button - Admin Only */}
                     {change.state === 'SCHEDULED' && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleImplement(change.id);
-                        }}
-                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                        title="Mark as Implemented"
-                      >
-                        <CheckIcon />
-                      </button>
+                      <AdminOnly fallback={
+                        <button
+                          disabled
+                          className="p-2 text-gray-400 cursor-not-allowed rounded-lg"
+                          title="Only administrators can mark changes as implemented"
+                        >
+                          <CheckCircleIcon />
+                        </button>
+                      }>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImplement(change.id);
+                          }}
+                          className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                          title="Mark as Implemented"
+                        >
+                          <CheckCircleIcon />
+                        </button>
+                      </AdminOnly>
                     )}
                   </div>
                 </div>
@@ -697,8 +758,8 @@ export const ChangeManagementPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date</label>
                   <input
                     type="datetime-local"
-                    value={formData.start_date}
-                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
@@ -706,8 +767,8 @@ export const ChangeManagementPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Date</label>
                   <input
                     type="datetime-local"
-                    value={formData.end_date}
-                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>

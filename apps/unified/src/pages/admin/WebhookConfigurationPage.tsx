@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { webhooksAPI, type WebhookEndpoint, type WebhookEvent, type WebhookDelivery } from '@services/backend-api-client';
 import { cn } from '@utils/index';
 import toast from 'react-hot-toast';
+import { useRoles } from '@hooks/usePermission';
+import { AdminOnly } from '@components/common/PermissionGuard';
+import { DisabledButton, ReadOnlyBadge } from '@components/common/UnauthorizedTooltip';
 
 // Icon Components
 const PlusIcon = ({ className }: { className?: string }) => (
@@ -53,6 +56,9 @@ const ChartBarIcon = ({ className }: { className?: string }) => (
 );
 
 export default function WebhookConfigurationPage() {
+  // RBAC checks
+  const { isAdmin } = useRoles();
+  
   const [webhooks, setWebhooks] = useState<WebhookEndpoint[]>([]);
   const [availableEvents, setAvailableEvents] = useState<WebhookEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -250,16 +256,33 @@ export default function WebhookConfigurationPage() {
             Manage webhooks to receive real-time event notifications
           </p>
         </div>
-        <button
-          onClick={() => {
-            setEditingWebhook(null);
-            setShowCreateModal(true);
-          }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <PlusIcon className="h-5 w-5" />
-          Add Webhook
-        </button>
+        <div className="flex items-center gap-3">
+          {!isAdmin && (
+            <ReadOnlyBadge 
+              message="You have read-only access to webhooks" 
+              showContact 
+            />
+          )}
+          <AdminOnly>
+            <button
+              onClick={() => {
+                setEditingWebhook(null);
+                setShowCreateModal(true);
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <PlusIcon className="h-5 w-5" />
+              Add Webhook
+            </button>
+            <DisabledButton 
+              tooltip="Only administrators can create webhooks"
+              showContact
+            >
+              <PlusIcon className="h-5 w-5" />
+              Add Webhook
+            </DisabledButton>
+          </AdminOnly>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -315,13 +338,22 @@ export default function WebhookConfigurationPage() {
       {webhooks.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
           <p className="text-gray-600 dark:text-gray-400 mb-4">No webhooks configured yet</p>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            <PlusIcon className="h-5 w-5" />
-            Create Your First Webhook
-          </button>
+          <AdminOnly>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <PlusIcon className="h-5 w-5" />
+              Create Your First Webhook
+            </button>
+            <DisabledButton 
+              tooltip="Only administrators can create webhooks"
+              showContact
+            >
+              <PlusIcon className="h-5 w-5" />
+              Create Your First Webhook
+            </DisabledButton>
+          </AdminOnly>
         </div>
       ) : (
         <div className="space-y-4">
@@ -368,13 +400,21 @@ export default function WebhookConfigurationPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleTestWebhook(webhook.id)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
-                      title="Test webhook"
-                    >
-                      <PlayIcon className="h-5 w-5" />
-                    </button>
+                    <AdminOnly>
+                      <button
+                        onClick={() => handleTestWebhook(webhook.id)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                        title="Test webhook"
+                      >
+                        <PlayIcon className="h-5 w-5" />
+                      </button>
+                      <DisabledButton 
+                        tooltip="Only administrators can test webhooks"
+                        showContact
+                      >
+                        <PlayIcon className="h-5 w-5" />
+                      </DisabledButton>
+                    </AdminOnly>
                     <button
                       onClick={() => {
                         setSelectedWebhook(webhook);
@@ -385,23 +425,39 @@ export default function WebhookConfigurationPage() {
                     >
                       <ChartBarIcon className="h-5 w-5" />
                     </button>
-                    <button
-                      onClick={() => {
-                        setEditingWebhook(webhook);
-                        setShowCreateModal(true);
-                      }}
-                      className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg"
-                      title="Edit webhook"
-                    >
-                      <PencilIcon className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteWebhook(webhook.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                      title="Delete webhook"
-                    >
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
+                    <AdminOnly>
+                      <button
+                        onClick={() => {
+                          setEditingWebhook(webhook);
+                          setShowCreateModal(true);
+                        }}
+                        className="p-2 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg"
+                        title="Edit webhook"
+                      >
+                        <PencilIcon className="h-5 w-5" />
+                      </button>
+                      <DisabledButton 
+                        tooltip="Only administrators can edit webhooks"
+                        showContact
+                      >
+                        <PencilIcon className="h-5 w-5" />
+                      </DisabledButton>
+                    </AdminOnly>
+                    <AdminOnly>
+                      <button
+                        onClick={() => handleDeleteWebhook(webhook.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                        title="Delete webhook"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                      <DisabledButton 
+                        tooltip="Only administrators can delete webhooks"
+                        showContact
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </DisabledButton>
+                    </AdminOnly>
                   </div>
                 </div>
               </div>

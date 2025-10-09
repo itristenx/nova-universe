@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { alertsAPI, type Alert, type AlertRule, type AlertStats } from '@services/backend-api-client';
 import { cn } from '@utils/index';
 import toast from 'react-hot-toast';
+import { useRoles } from '@hooks/usePermission';
+import { AdminOnly } from '@components/common/PermissionGuard';
+import { DisabledButton, ReadOnlyBadge } from '@components/common/UnauthorizedTooltip';
 
 // Icon Components
 const BellIcon = ({ className }: { className?: string }) => (
@@ -59,6 +62,9 @@ const ChartBarIcon = ({ className }: { className?: string }) => (
 );
 
 export default function AlertManagementPage() {
+  // RBAC checks
+  const { isAdmin } = useRoles();
+  
   const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
   const [allAlerts, setAllAlerts] = useState<Alert[]>([]);
   const [alertRules, setAlertRules] = useState<AlertRule[]>([]);
@@ -284,6 +290,14 @@ export default function AlertManagementPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Read-only badge for non-admins */}
+          {!isAdmin && (
+            <ReadOnlyBadge 
+              message="You have read-only access to alerts" 
+              showContact 
+            />
+          )}
+          
           <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
             <input
               type="checkbox"
@@ -293,16 +307,29 @@ export default function AlertManagementPage() {
             />
             Auto-refresh (30s)
           </label>
-          <button
-            onClick={() => {
-              setEditingRule(null);
-              setShowRuleModal(true);
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            <PlusIcon className="h-5 w-5" />
-            New Rule
-          </button>
+          
+          {/* New Rule Button - Admin Only */}
+          <AdminOnly fallback={
+            <DisabledButton 
+              requiredRole="Admin"
+              tooltip="Only administrators can create alert rules"
+              showContact
+            >
+              <PlusIcon className="h-5 w-5" />
+              New Rule
+            </DisabledButton>
+          }>
+            <button
+              onClick={() => {
+                setEditingRule(null);
+                setShowRuleModal(true);
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <PlusIcon className="h-5 w-5" />
+              New Rule
+            </button>
+          </AdminOnly>
         </div>
       </div>
 

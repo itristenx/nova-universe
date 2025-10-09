@@ -7,8 +7,14 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/outline';
 import backendAPI from '../../services/backend-api-client';
+import { usePermission } from '@hooks/usePermission';
+import { PermissionGuard } from '@components/common/PermissionGuard';
+import { DisabledButton, ReadOnlyBadge } from '@components/common/UnauthorizedTooltip';
 
 export default function KnowledgeBasePage() {
+  // RBAC checks
+  const canCreateArticle = usePermission('articles:create');
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,10 +124,27 @@ export default function KnowledgeBasePage() {
             Find answers and solutions to common questions
           </p>
         </div>
-        <button className="bg-nova-600 hover:bg-nova-700 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors">
-          <PlusIcon className="h-4 w-4" />
-          Suggest Article
-        </button>
+        <div className="flex items-center gap-3">
+          {!canCreateArticle && (
+            <ReadOnlyBadge 
+              message="You have read-only access to the knowledge base" 
+              showContact 
+            />
+          )}
+          <PermissionGuard permission="articles:create">
+            <button className="bg-nova-600 hover:bg-nova-700 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors">
+              <PlusIcon className="h-4 w-4" />
+              Suggest Article
+            </button>
+            <DisabledButton 
+              tooltip="You don't have permission to suggest articles"
+              showContact
+            >
+              <PlusIcon className="h-4 w-4" />
+              Suggest Article
+            </DisabledButton>
+          </PermissionGuard>
+        </div>
       </div>
 
       {/* Search */}
