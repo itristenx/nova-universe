@@ -24,7 +24,7 @@
     "@node-saml/passport-saml": "^5.1.0",
     "@simplewebauthn/server": "^13.1.2",
     "@types/nodemailer": "^6.4.17",
-    "axios": "^1.11.0",
+    "axios": "^1.13.1",
     "base64url": "^3.0.1",
     "bcryptjs": "^3.0.2",
     "chalk": "^5.5.0",
